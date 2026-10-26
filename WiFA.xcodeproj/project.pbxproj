@@ -3,50 +3,72 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		012DAD482A4A41B4D1F35382 /* TableCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C187D48683DD8BD7BD45222 /* TableCells.swift */; };
+		176F613137FEA388958A9E94 /* OUIParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120C3F81B44F59A4708A8E94 /* OUIParserTests.swift */; };
+		21B8061CF9277C5B722B34FB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0B5BD4EBBDAD2190715E896B /* PrivacyInfo.xcprivacy */; };
+		22919D0EB83A09CA6731A8DB /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBCE61A832436130082EDAEC /* OUIParser.swift */; };
 		36245084ECA4F4F214948642 /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBCE61A832436130082EDAEC /* OUIParser.swift */; };
-		B1C2D3E4F5A60718293A4B5C /* oui in Resources */ = {isa = PBXBuildFile; fileRef = A2C1B3D4E5F60718293A4B5C /* oui */; };
-		B1C2D3E4F5A60718293A4B5D /* oui.csv in Resources */ = {isa = PBXBuildFile; fileRef = A2C1B3D4E5F60718293A4B5D /* oui.csv */; };
-		B3C4D5E6F708192A3B4C5D6E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A3C4D5E6F708192A3B4C5D6E /* Assets.xcassets */; };
+		371B6F546CC19ED86BE9CD04 /* SignalHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B071190AAF5B797D72395BE /* SignalHistoryView.swift */; };
+		3F33672829B6D1066B2C3D3D /* oui in Resources */ = {isa = PBXBuildFile; fileRef = EE79C6FB8033D1F9C40DAEA2 /* oui */; };
+		47ED85A9923483C60A73EEB6 /* NetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43A0B8206DD0F884B99C4A4 /* NetworkModel.swift */; };
 		52CF4CC5AD5E69371F099813 /* WiFiScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54097B9F917D9C35FEFF88B6 /* WiFiScanner.swift */; };
+		59156C444DBE586470B2D6F5 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8675AEF24CDD69F5F55C891 /* AppCommands.swift */; };
 		5FFDD7BB183ACFFF5BF9DC82 /* WifiAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD168DE6176AD8421884C9B /* WifiAnalyzerApp.swift */; };
-		B2C3D4E5F6A708192A3B4C5D /* RawDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4C5D6E7F8091A2B3C4D5E /* RawDataView.swift */; };
-		B4C2D6E8F0A123456789ABCD /* TableCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4D2B6C7E9F0123456789ABC /* TableCells.swift */; };
-		B8C1D2E3F4A5B6C7D8E9F0A1 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C1D2E3F4A5B6C7D8E9F0A1 /* AppCommands.swift */; };
-		EC1D2E3F4A5B6C7D8E9F0A3B /* AppUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C1D2E3F4A5B6C7D8E9F0A2 /* AppUIState.swift */; };
-		B2C3D4E5F6A708192A3B4C5E /* SidebarFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4C5D6E7F8091A2B3C4D5F /* SidebarFilterView.swift */; };
 		6790B1CD86EEA43B14979366 /* WiFiTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62024E6F893E4295349162CB /* WiFiTableView.swift */; };
-		7F1851672EE6B4D500364CBD /* SpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1851662EE6B4CF00364CBD /* SpectrumView.swift */; };
-		7F1851692EE6B4EF00364CBD /* SignalHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1851682EE6B4E700364CBD /* SignalHistoryView.swift */; };
+		7C7AE9F86B5DF8DDED941FC1 /* RawDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B4FC7D4D62D74CAC97B92 /* RawDataView.swift */; };
+		849817A9570FF0E85698C08B /* InformationElementParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F0B0E5EE10683C9B45F349 /* InformationElementParserTests.swift */; };
 		91518EA9A395F98E1AC24203 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484B4FF2201807679C76786 /* LocationManager.swift */; };
+		9B2EC60CEF413FD60EA5EAD6 /* AppUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7568B5BC9E2EC79D459892F /* AppUIState.swift */; };
 		9BFEBFA6E4409FABE343BB59 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66FB61ECE0EF0D3C4233D85 /* AnalyzerViewModel.swift */; };
+		9D186177B1A1B22E6D40BFFF /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5408B89DD852D748560BAE91 /* InsightsView.swift */; };
+		B93F7182D3B07A593F6B8398 /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28D581AF7A61D11083E849C /* InformationElementParser.swift */; };
+		BA7360E2216B5414A9AE27D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA0CC5A50C9968EEAFC9EE2D /* Assets.xcassets */; };
+		BDE5C73AA224C1C9908C34FE /* NetworkAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FAF59199E3D014F65F5CE90 /* NetworkAnalyzerTests.swift */; };
 		C61F66CCCD676D9265B951D0 /* NetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43A0B8206DD0F884B99C4A4 /* NetworkModel.swift */; };
 		CA093E366A69E5CD193755CC /* MainTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890310A7A26864B2948ED454 /* MainTableView.swift */; };
+		CA0DE6286487B406D3AFD44B /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF030667AA8D26CC0CFB1F9A /* NetworkAnalyzer.swift */; };
+		D56E34A6AB12B2FFCA155448 /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28D581AF7A61D11083E849C /* InformationElementParser.swift */; };
+		E135234AC59C9F6D27F3A2FC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AF5C38B3ECA559B39D93BCEE /* InfoPlist.strings */; };
+		E2923D2ABEEB1AADD14F01A3 /* SidebarFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 318B6595D21947EDBFF30103 /* SidebarFilterView.swift */; };
+		E302F4803ECC11D33982DA04 /* SpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E352A3F0D7CE942F36A35EF0 /* SpectrumView.swift */; };
+		EF682B1B39A082CC3BB2C2EE /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CA6E5A6CA1C3F700446F05 /* MenuBarView.swift */; };
+		F8D2D631FA44DFB30CE215D4 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF030667AA8D26CC0CFB1F9A /* NetworkAnalyzer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01CA6E5A6CA1C3F700446F05 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		0B5BD4EBBDAD2190715E896B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		120C3F81B44F59A4708A8E94 /* OUIParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIParserTests.swift; sourceTree = "<group>"; };
+		139B4FC7D4D62D74CAC97B92 /* RawDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataView.swift; sourceTree = "<group>"; };
+		1C187D48683DD8BD7BD45222 /* TableCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCells.swift; sourceTree = "<group>"; };
 		1FD168DE6176AD8421884C9B /* WifiAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiAnalyzerApp.swift; sourceTree = "<group>"; };
 		2D4575B772C5F5432D0D5051 /* WiFA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WiFA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		318B6595D21947EDBFF30103 /* SidebarFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFilterView.swift; sourceTree = "<group>"; };
 		3484B4FF2201807679C76786 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		4FAF59199E3D014F65F5CE90 /* NetworkAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnalyzerTests.swift; sourceTree = "<group>"; };
+		5408B89DD852D748560BAE91 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		54097B9F917D9C35FEFF88B6 /* WiFiScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiScanner.swift; sourceTree = "<group>"; };
 		62024E6F893E4295349162CB /* WiFiTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiTableView.swift; sourceTree = "<group>"; };
-		7F1851662EE6B4CF00364CBD /* SpectrumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrumView.swift; sourceTree = "<group>"; };
-		7F1851682EE6B4E700364CBD /* SignalHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHistoryView.swift; sourceTree = "<group>"; };
-		A3B4C5D6E7F8091A2B3C4D5E /* RawDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataView.swift; sourceTree = "<group>"; };
-		A3B4C5D6E7F8091A2B3C4D5F /* SidebarFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFilterView.swift; sourceTree = "<group>"; };
-		A4D2B6C7E9F0123456789ABC /* TableCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCells.swift; sourceTree = "<group>"; };
-		A8C1D2E3F4A5B6C7D8E9F0A1 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
-		A9C1D2E3F4A5B6C7D8E9F0A2 /* AppUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUIState.swift; sourceTree = "<group>"; };
-		A3C4D5E6F708192A3B4C5D6E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A2C1B3D4E5F60718293A4B5C /* oui */ = {isa = PBXFileReference; lastKnownFileType = text; path = oui; sourceTree = "<group>"; };
-		A2C1B3D4E5F60718293A4B5D /* oui.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = oui.csv; sourceTree = "<group>"; };
+		6B071190AAF5B797D72395BE /* SignalHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHistoryView.swift; sourceTree = "<group>"; };
 		890310A7A26864B2948ED454 /* MainTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableView.swift; sourceTree = "<group>"; };
+		97F0B0E5EE10683C9B45F349 /* InformationElementParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParserTests.swift; sourceTree = "<group>"; };
+		A8675AEF24CDD69F5F55C891 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
+		C28D581AF7A61D11083E849C /* InformationElementParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParser.swift; sourceTree = "<group>"; };
+		C348340C8C9B231E2CC447B7 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C66FB61ECE0EF0D3C4233D85 /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
+		C7568B5BC9E2EC79D459892F /* AppUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUIState.swift; sourceTree = "<group>"; };
+		CA0CC5A50C9968EEAFC9EE2D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D43A0B8206DD0F884B99C4A4 /* NetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkModel.swift; sourceTree = "<group>"; };
 		DBCE61A832436130082EDAEC /* OUIParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIParser.swift; sourceTree = "<group>"; };
+		E0F2808A007DBF1A49BA87D5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E352A3F0D7CE942F36A35EF0 /* SpectrumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrumView.swift; sourceTree = "<group>"; };
+		E9A5B23BC2E744D726F0EE14 /* WiFATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WiFATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE79C6FB8033D1F9C40DAEA2 /* oui */ = {isa = PBXFileReference; path = oui; sourceTree = "<group>"; };
+		EF030667AA8D26CC0CFB1F9A /* NetworkAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnalyzer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -61,14 +83,15 @@
 		135411DBF13D286337DF5BFC = {
 			isa = PBXGroup;
 			children = (
-				1FD168DE6176AD8421884C9B /* WifiAnalyzerApp.swift */,
-				A3C4D5E6F708192A3B4C5D6E /* Assets.xcassets */,
 				07941B643945EA5719C1827A /* Models */,
+				99F46F14FE49596748B08B38 /* Resources */,
 				24347E94EB870D39608D2E35 /* Services */,
+				294221E327D1D50A4B183E97 /* Tests */,
 				C885DF41AD3E4543CD9B224E /* Utils */,
-				A2C1B3D4E5F60718293A4B5E /* Resources */,
 				A9B7C4985594E65A4FC2A2B8 /* ViewModels */,
 				96A03B1E3E4171B72E10938A /* Views */,
+				CA0CC5A50C9968EEAFC9EE2D /* Assets.xcassets */,
+				1FD168DE6176AD8421884C9B /* WifiAnalyzerApp.swift */,
 				563BFD325C36CD782BE3739A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -76,24 +99,28 @@
 		24347E94EB870D39608D2E35 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				C28D581AF7A61D11083E849C /* InformationElementParser.swift */,
+				EF030667AA8D26CC0CFB1F9A /* NetworkAnalyzer.swift */,
 				54097B9F917D9C35FEFF88B6 /* WiFiScanner.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
 		};
-		A2C1B3D4E5F60718293A4B5E /* Resources */ = {
+		294221E327D1D50A4B183E97 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				A2C1B3D4E5F60718293A4B5C /* oui */,
-				A2C1B3D4E5F60718293A4B5D /* oui.csv */,
+				97F0B0E5EE10683C9B45F349 /* InformationElementParserTests.swift */,
+				4FAF59199E3D014F65F5CE90 /* NetworkAnalyzerTests.swift */,
+				120C3F81B44F59A4708A8E94 /* OUIParserTests.swift */,
 			);
-			path = Resources;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		563BFD325C36CD782BE3739A /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				2D4575B772C5F5432D0D5051 /* WiFA.app */,
+				E9A5B23BC2E744D726F0EE14 /* WiFATests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -101,23 +128,35 @@
 		96A03B1E3E4171B72E10938A /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A8C1D2E3F4A5B6C7D8E9F0A1 /* AppCommands.swift */,
-				7F1851682EE6B4E700364CBD /* SignalHistoryView.swift */,
-				7F1851662EE6B4CF00364CBD /* SpectrumView.swift */,
-				A3B4C5D6E7F8091A2B3C4D5E /* RawDataView.swift */,
-				A3B4C5D6E7F8091A2B3C4D5F /* SidebarFilterView.swift */,
-				A4D2B6C7E9F0123456789ABC /* TableCells.swift */,
+				A8675AEF24CDD69F5F55C891 /* AppCommands.swift */,
+				5408B89DD852D748560BAE91 /* InsightsView.swift */,
 				890310A7A26864B2948ED454 /* MainTableView.swift */,
+				01CA6E5A6CA1C3F700446F05 /* MenuBarView.swift */,
+				139B4FC7D4D62D74CAC97B92 /* RawDataView.swift */,
+				318B6595D21947EDBFF30103 /* SidebarFilterView.swift */,
+				6B071190AAF5B797D72395BE /* SignalHistoryView.swift */,
+				E352A3F0D7CE942F36A35EF0 /* SpectrumView.swift */,
+				1C187D48683DD8BD7BD45222 /* TableCells.swift */,
 				62024E6F893E4295349162CB /* WiFiTableView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
+		99F46F14FE49596748B08B38 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AF5C38B3ECA559B39D93BCEE /* InfoPlist.strings */,
+				EE79C6FB8033D1F9C40DAEA2 /* oui */,
+				0B5BD4EBBDAD2190715E896B /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		A9B7C4985594E65A4FC2A2B8 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				A9C1D2E3F4A5B6C7D8E9F0A2 /* AppUIState.swift */,
 				C66FB61ECE0EF0D3C4233D85 /* AnalyzerViewModel.swift */,
+				C7568B5BC9E2EC79D459892F /* AppUIState.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -133,26 +172,13 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXResourcesBuildPhase section */
-		C1D2E3F4A5B60718293A4B5C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B3C4D5E6F708192A3B4C5D6E /* Assets.xcassets in Resources */,
-				B1C2D3E4F5A60718293A4B5C /* oui in Resources */,
-				B1C2D3E4F5A60718293A4B5D /* oui.csv in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 /* Begin PBXNativeTarget section */
 		04E5E99586AEB6F71D935E0F /* WiFA */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A673060836B611803967F1C9 /* Build configuration list for PBXNativeTarget "WiFA" */;
 			buildPhases = (
-				C1D2E3F4A5B60718293A4B5C /* Resources */,
 				F2F2F934D186D793802B7272 /* Sources */,
+				1C1D68DC057CBCC87586C769 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -165,6 +191,23 @@
 			productReference = 2D4575B772C5F5432D0D5051 /* WiFA.app */;
 			productType = "com.apple.product-type.application";
 		};
+		99CC37C56DB4CBA94F936C8E /* WiFATests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6E303B229FD783BFD68EE1E0 /* Build configuration list for PBXNativeTarget "WiFATests" */;
+			buildPhases = (
+				4A27018AC3F0F5C405925605 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WiFATests;
+			packageProductDependencies = (
+			);
+			productName = WiFATests;
+			productReference = E9A5B23BC2E744D726F0EE14 /* WiFATests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -172,43 +215,88 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					04E5E99586AEB6F71D935E0F = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					99CC37C56DB4CBA94F936C8E = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
 			};
 			buildConfigurationList = 05469EC8B8EB19E501B2BC19 /* Build configuration list for PBXProject "WiFA" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
 				en,
+				ru,
 			);
 			mainGroup = 135411DBF13D286337DF5BFC;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 563BFD325C36CD782BE3739A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				04E5E99586AEB6F71D935E0F /* WiFA */,
+				99CC37C56DB4CBA94F936C8E /* WiFATests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		1C1D68DC057CBCC87586C769 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BA7360E2216B5414A9AE27D7 /* Assets.xcassets in Resources */,
+				E135234AC59C9F6D27F3A2FC /* InfoPlist.strings in Resources */,
+				21B8061CF9277C5B722B34FB /* PrivacyInfo.xcprivacy in Resources */,
+				3F33672829B6D1066B2C3D3D /* oui in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		4A27018AC3F0F5C405925605 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D56E34A6AB12B2FFCA155448 /* InformationElementParser.swift in Sources */,
+				849817A9570FF0E85698C08B /* InformationElementParserTests.swift in Sources */,
+				CA0DE6286487B406D3AFD44B /* NetworkAnalyzer.swift in Sources */,
+				BDE5C73AA224C1C9908C34FE /* NetworkAnalyzerTests.swift in Sources */,
+				47ED85A9923483C60A73EEB6 /* NetworkModel.swift in Sources */,
+				22919D0EB83A09CA6731A8DB /* OUIParser.swift in Sources */,
+				176F613137FEA388958A9E94 /* OUIParserTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F2F2F934D186D793802B7272 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				9BFEBFA6E4409FABE343BB59 /* AnalyzerViewModel.swift in Sources */,
+				59156C444DBE586470B2D6F5 /* AppCommands.swift in Sources */,
+				9B2EC60CEF413FD60EA5EAD6 /* AppUIState.swift in Sources */,
+				B93F7182D3B07A593F6B8398 /* InformationElementParser.swift in Sources */,
+				9D186177B1A1B22E6D40BFFF /* InsightsView.swift in Sources */,
 				91518EA9A395F98E1AC24203 /* LocationManager.swift in Sources */,
 				CA093E366A69E5CD193755CC /* MainTableView.swift in Sources */,
-				B2C3D4E5F6A708192A3B4C5D /* RawDataView.swift in Sources */,
-				B4C2D6E8F0A123456789ABCD /* TableCells.swift in Sources */,
-				B2C3D4E5F6A708192A3B4C5E /* SidebarFilterView.swift in Sources */,
-				B8C1D2E3F4A5B6C7D8E9F0A1 /* AppCommands.swift in Sources */,
-				EC1D2E3F4A5B6C7D8E9F0A3B /* AppUIState.swift in Sources */,
+				EF682B1B39A082CC3BB2C2EE /* MenuBarView.swift in Sources */,
+				F8D2D631FA44DFB30CE215D4 /* NetworkAnalyzer.swift in Sources */,
 				C61F66CCCD676D9265B951D0 /* NetworkModel.swift in Sources */,
-				7F1851672EE6B4D500364CBD /* SpectrumView.swift in Sources */,
-				7F1851692EE6B4EF00364CBD /* SignalHistoryView.swift in Sources */,
 				36245084ECA4F4F214948642 /* OUIParser.swift in Sources */,
+				7C7AE9F86B5DF8DDED941FC1 /* RawDataView.swift in Sources */,
+				E2923D2ABEEB1AADD14F01A3 /* SidebarFilterView.swift in Sources */,
+				371B6F546CC19ED86BE9CD04 /* SignalHistoryView.swift in Sources */,
+				E302F4803ECC11D33982DA04 /* SpectrumView.swift in Sources */,
+				012DAD482A4A41B4D1F35382 /* TableCells.swift in Sources */,
 				52CF4CC5AD5E69371F099813 /* WiFiScanner.swift in Sources */,
 				6790B1CD86EEA43B14979366 /* WiFiTableView.swift in Sources */,
 				5FFDD7BB183ACFFF5BF9DC82 /* WifiAnalyzerApp.swift in Sources */,
@@ -217,12 +305,23 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		AF5C38B3ECA559B39D93BCEE /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E0F2808A007DBF1A49BA87D5 /* en */,
+				C348340C8C9B231E2CC447B7 /* ru */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		34D5462BDFE35F36BB922DD9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -252,13 +351,14 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -279,59 +379,44 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
 			};
 			name = Debug;
 		};
+		468D29CF74424DDAD5CC314B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA.Tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		473AD0ABBFA258A57D739479 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				AUTOMATION_APPLE_EVENTS = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
-				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-				ENABLE_RESOURCE_ACCESS_LOCATION = YES;
-				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
-				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readwrite;
+				CURRENT_PROJECT_VERSION = 9;
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
-				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
-				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
-				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
-				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
-				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
 		};
@@ -339,56 +424,41 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				AUTOMATION_APPLE_EVENTS = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
-				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-				ENABLE_RESOURCE_ACCESS_LOCATION = YES;
-				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
-				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readwrite;
+				CURRENT_PROJECT_VERSION = 9;
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
-				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
-				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
-				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
-				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
-				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
+		};
+		C71C7B1644F9334FC0204A07 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA.Tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
 		};
 		E54937BCD8E68A634AD729D2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -418,13 +488,14 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -438,7 +509,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -453,6 +523,15 @@
 			buildConfigurations = (
 				34D5462BDFE35F36BB922DD9 /* Debug */,
 				E54937BCD8E68A634AD729D2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6E303B229FD783BFD68EE1E0 /* Build configuration list for PBXNativeTarget "WiFATests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C71C7B1644F9334FC0204A07 /* Debug */,
+				468D29CF74424DDAD5CC314B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

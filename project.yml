@@ -1,13 +1,21 @@
 name: WiFA
 options:
-  bundleIdPrefix: ru.yourdomain
+  bundleIdPrefix: ru.zheltukheen
+  xcodeVersion: "16.0"
   deploymentTarget:
-    macOS: '13.0'
+    macOS: "13.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
 settings:
   base:
-    MACOSX_DEPLOYMENT_TARGET: 13.0
-    SWIFT_VERSION: 5.9
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    SWIFT_VERSION: "5.9"
     DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: YES
+
 targets:
   WiFA:
     type: application
@@ -19,10 +27,63 @@ targets:
       - ViewModels
       - Views
       - Utils
-    resources:
-      - Resources
-      - Assets.xcassets
+      - path: Resources
+        buildPhase: resources
+      - path: Assets.xcassets
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
+        MARKETING_VERSION: "1.3.0"
+        CURRENT_PROJECT_VERSION: "9"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_FILE: Info.plist
     info:
       path: Info.plist
       properties:
-        NSLocationUsageDescription: "Для отображения информации о BSSID/SSID, требуется доступ к Location Services."
+        CFBundleDisplayName: WiFA
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSApplicationCategoryType: public.app-category.utilities
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
+        NSHumanReadableCopyright: "© 2026 WiFA Contributors"
+        NSLocationUsageDescription: "WiFA uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
+        NSPrincipalClass: NSApplication
+        NSSupportsAutomaticGraphicsSwitching: true
+        NSHighResolutionCapable: true
+
+  WiFATests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests
+      - path: Models/NetworkModel.swift
+      - path: Services/NetworkAnalyzer.swift
+      - path: Services/InformationElementParser.swift
+      - path: Utils/OUIParser.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA.Tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+
+schemes:
+  WiFA:
+    build:
+      targets:
+        WiFA: all
+        WiFATests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - WiFATests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

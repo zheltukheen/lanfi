@@ -30,3 +30,7 @@ DerivedData/
 # Misc
 *.swp
 *.swo
+
+# Coverage / profiling
+*.profraw
+*.profdata

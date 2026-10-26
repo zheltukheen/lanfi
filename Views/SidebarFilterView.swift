@@ -6,6 +6,7 @@ struct SidebarFilterView: View {
 
     private let sortOptions: [ColumnId] = [
         .signal,
+        .quality,
         .networkName,
         .channel,
         .band,
@@ -13,7 +14,7 @@ struct SidebarFilterView: View {
         .vendor,
         .lastSeen,
         .seen,
-        .maxRate
+        .maxRate,
     ]
 
     var body: some View {
@@ -21,10 +22,13 @@ struct SidebarFilterView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 6) {
-                        Picker("Sort By", selection: Binding(
-                            get: { viewModel.currentSortKey ?? ColumnId.signal.rawValue },
-                            set: { viewModel.currentSortKey = $0 }
-                        )) {
+                        Picker(
+                            "Sort By",
+                            selection: Binding(
+                                get: { viewModel.currentSortKey ?? ColumnId.signal.rawValue },
+                                set: { viewModel.currentSortKey = $0 }
+                            )
+                        ) {
                             ForEach(sortOptions, id: \.self) { option in
                                 Text(option.defaultTitle).tag(option.rawValue)
                             }
@@ -58,8 +62,11 @@ struct SidebarFilterView: View {
                             isExpanded: Binding(
                                 get: { expandedSections.contains(category) },
                                 set: { expanded in
-                                    if expanded { expandedSections.insert(category) }
-                                    else { expandedSections.remove(category) }
+                                    if expanded {
+                                        expandedSections.insert(category)
+                                    } else {
+                                        expandedSections.remove(category)
+                                    }
                                 }
                             )
                         )

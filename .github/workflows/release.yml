@@ -5,54 +5,94 @@ on:
     tags:
       - "v*"
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
-  build-and-release:
-    runs-on: macos-latest
-    permissions:
-      contents: write
+  release:
+    name: Build and publish
+    runs-on: macos-15
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build Universal App
-        run: |
-          chmod +x ./build.sh
-          ./build.sh
+      - name: Toolchain
+        run: xcodebuild -version
 
-      - name: Package App
+      - name: Lint
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          APP_PATH="build/WiFA-Universal/WiFA.app"
-          ZIP_PATH="build/WiFA-${VERSION}.zip"
-          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
-          shasum -a 256 "$ZIP_PATH" | awk '{print $1}' > "build/WiFA-${VERSION}.sha256"
-
-      - name: Generate Release Notes from CHANGELOG
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          awk -v ver="$VERSION" '
-            $0 ~ "^##[[:space:]]+"ver"([[:space:]]|$)" { found=1; next }
-            found && /^##[[:space:]]/ { exit }
-            found { print }
-          ' CHANGELOG.md > /tmp/changelog_section.txt
-
-          if [ ! -s /tmp/changelog_section.txt ]; then
-            echo "CHANGELOG section for version ${VERSION} not found."
-            exit 1
+          if ! xcrun --find swift-format >/dev/null 2>&1; then
+            brew install swift-format
           fi
+          FORMAT="xcrun swift-format"
+          if ! xcrun --find swift-format >/dev/null 2>&1; then
+            FORMAT="swift-format"
+          fi
+          $FORMAT lint --recursive --configuration .swift-format --no-color-diagnostics .
 
-          {
-            echo "## WiFA ${VERSION}"
-            echo ""
-            cat /tmp/changelog_section.txt
-          } > release_notes.md
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project WiFA.xcodeproj \
+            -scheme WiFA \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Create GitHub Release
+      - name: Verify version
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          PROJECT_VERSION="$(awk '/^[[:space:]]*MARKETING_VERSION:/ {gsub(/"/, "", $2); print $2; exit}' project.yml)"
+          echo "Tag: ${VERSION}; project.yml: ${PROJECT_VERSION}"
+          test "${VERSION}" = "${PROJECT_VERSION}" || {
+            echo "Tag does not match MARKETING_VERSION in project.yml" >&2
+            exit 1
+          }
+
+      - name: Build universal app
+        run: ./build.sh
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          APP="build/WiFA-Universal/WiFA.app"
+          test -d "$APP"
+          lipo -archs "$APP/Contents/MacOS/WiFA"
+
+          mkdir -p build/dist build/dmg
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "build/dist/WiFA-${VERSION}.zip"
+
+          cp -R "$APP" build/dmg/
+          ln -s /Applications build/dmg/Applications
+          hdiutil create \
+            -volname "WiFA ${VERSION}" \
+            -srcfolder build/dmg \
+            -ov -format UDZO \
+            "build/dist/WiFA-${VERSION}.dmg"
+
+          cd build/dist
+          shasum -a 256 "WiFA-${VERSION}.zip" > "WiFA-${VERSION}.sha256"
+          shasum -a 256 "WiFA-${VERSION}.dmg" >> "WiFA-${VERSION}.sha256"
+          cat "WiFA-${VERSION}.sha256"
+
+      - name: Generate release notes
+        run: python3 scripts/release_notes.py
+
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: false
           body_path: release_notes.md
           files: |
-            build/WiFA-*.zip
-            build/WiFA-*.sha256
+            build/dist/WiFA-*.zip
+            build/dist/WiFA-*.dmg
+            build/dist/WiFA-*.sha256

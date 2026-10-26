@@ -8,32 +8,32 @@ import AppKit
 struct MainTableView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @EnvironmentObject var uiState: AppUIState
-    
+
     // UI State
     @State private var isResizingPanels = false
-    
+
     // Resizable Panels State
     @State private var inspectorBaseWidth: CGFloat = 300
     @State private var inspectorDragOffset: CGFloat = 0
-    
+
     // Высота нижней панели (увеличена по умолчанию)
-    @State private var bottomPanelBaseHeight: CGFloat = 350
+    @State private var bottomPanelBaseHeight: CGFloat = 280
     @State private var bottomPanelDragOffset: CGFloat = 0
-    
+
     // Вычисляемые размеры с ограничениями (min/max)
     var currentInspectorWidth: CGFloat {
         max(250, min(500, inspectorBaseWidth - inspectorDragOffset))
     }
-    
+
     var currentBottomPanelHeight: CGFloat {
         max(150, min(600, bottomPanelBaseHeight - bottomPanelDragOffset))
     }
 
     private let sidebarWidth: CGFloat = 260
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            
+
             // 1. TOOLBAR
             ToolbarView(
                 viewModel: viewModel,
@@ -42,12 +42,12 @@ struct MainTableView: View {
                 customIntervalText: $uiState.customIntervalText,
                 showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert
             )
-            
+
             // 2. CONTENT AREA
             // GeometryReader используется один раз для контекста
             GeometryReader { geo in
                 VStack(spacing: 0) {
-                    
+
                     // A. TOP SECTION: Table + Inspector
                     HStack(spacing: 0) {
                         if uiState.showSidebar {
@@ -55,7 +55,7 @@ struct MainTableView: View {
                                 .frame(width: sidebarWidth)
                                 .background(Material.regularMaterial)
                                 .transition(.move(edge: .leading))
-                            
+
                             Rectangle()
                                 .fill(Color(nsColor: .separatorColor))
                                 .frame(width: 1)
@@ -66,11 +66,23 @@ struct MainTableView: View {
                             if let err = viewModel.errorMessage {
                                 ErrorBanner(message: err, onClose: { viewModel.errorMessage = nil })
                             }
-                            
-                            WiFiTableView(viewModel: viewModel)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                            if viewModel.isLocationAuthorized {
+                                ZStack {
+                                    WiFiTableView(viewModel: viewModel)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                                    if viewModel.networks.isEmpty && viewModel.errorMessage == nil {
+                                        EmptyScanView()
+                                    }
+                                }
+                            } else {
+                                LocationPermissionView(viewModel: viewModel)
+                            }
+
+                            NetworkStatusBar(viewModel: viewModel)
                         }
-                        
+
                         // Inspector Area
                         if uiState.showInspector {
                             // Вертикальный разделитель (Resizer)
@@ -97,16 +109,16 @@ struct MainTableView: View {
                                         }
                                 )
                                 .zIndex(10)
-                            
+
                             NetworkInspectorView(viewModel: viewModel)
                                 .frame(width: currentInspectorWidth)
                                 .background(Color(nsColor: .controlBackgroundColor))
                                 .transition(.move(edge: .trailing))
                         }
                     }
-                    
+
                     // B. BOTTOM SECTION: Tabs + Charts
-                    
+
                     // Горизонтальный разделитель (Resizer)
                     Rectangle()
                         .fill(Color(nsColor: .separatorColor))
@@ -132,25 +144,24 @@ struct MainTableView: View {
                                 }
                         )
                         .zIndex(20)
-                    
+
                     // Bottom Container
                     VStack(spacing: 0) {
-                        
+
                         // Centered tabs (Spectrum / History / Raw Data)
                         BottomPanelTabs(selectedTab: $uiState.selectedBottomTab)
-                        
+
                         Divider()
-                        
+
                         // Контент графиков
                         ZStack {
                             Color(nsColor: .controlBackgroundColor).edgesIgnoringSafeArea(.all)
-                            
-                            if uiState.selectedBottomTab == 0 {
-                                SpectrumView(viewModel: viewModel)
-                            } else if uiState.selectedBottomTab == 1 {
-                                SignalHistoryView(viewModel: viewModel)
-                            } else {
-                                RawDataView(viewModel: viewModel)
+
+                            switch uiState.selectedBottomTab {
+                            case 1: SignalHistoryView(viewModel: viewModel)
+                            case 2: RawDataView(viewModel: viewModel)
+                            case 3: InsightsView(viewModel: viewModel)
+                            default: SpectrumView(viewModel: viewModel)
                             }
                         }
                         .clipped()
@@ -167,7 +178,7 @@ struct MainTableView: View {
                     viewModel.updateRefreshInterval(to: val)
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text("Enter refresh interval in seconds:")
         }
@@ -190,21 +201,21 @@ struct MainTableView: View {
 /// Нижняя панель с вкладками, выровненными по центру
 struct BottomPanelTabs: View {
     @Binding var selectedTab: Int
-    
+
     var body: some View {
         HStack(spacing: 0) {
             // Spacer слева для центрирования
             Spacer()
-            
+
             TabButton(
                 title: "Spectrum",
                 icon: "waveform.path.ecg",
                 isSelected: selectedTab == 0,
                 action: { selectedTab = 0 }
             )
-            
+
             Divider().frame(height: 16)
-            
+
             TabButton(
                 title: "History",
                 icon: "clock.arrow.circlepath",
@@ -220,7 +231,16 @@ struct BottomPanelTabs: View {
                 isSelected: selectedTab == 2,
                 action: { selectedTab = 2 }
             )
-            
+
+            Divider().frame(height: 16)
+
+            TabButton(
+                title: "Insights",
+                icon: "sparkles",
+                isSelected: selectedTab == 3,
+                action: { selectedTab = 3 }
+            )
+
             // Spacer справа для центрирования
             Spacer()
         }
@@ -235,7 +255,7 @@ struct TabButton: View {
     let icon: String
     let isSelected: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -259,10 +279,11 @@ struct ToolbarView: View {
     @Binding var showInspector: Bool
     @Binding var customIntervalText: String
     @Binding var showingCustomIntervalAlert: Bool
-    
+    @FocusState private var isSearchFocused: Bool
+
     var body: some View {
         HStack(spacing: 16) {
-            
+
             // 1. LEFT CONTROLS (Refresh & Settings)
             HStack(spacing: 10) {
                 Button(action: { withAnimation(.spring(response: 0.3)) { showSidebar.toggle() } }) {
@@ -286,15 +307,18 @@ struct ToolbarView: View {
                 .background(Color(nsColor: .controlBackgroundColor))
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
-                
+
                 // B. Меню Настроек (Шестеренка) - унифицированный стиль
                 Menu {
                     // Секция 1: Мониторинг
                     Section {
-                        Picker("Scan Interval:", selection: Binding(
-                            get: { viewModel.refreshInterval },
-                            set: { viewModel.updateRefreshInterval(to: $0) }
-                        )) {
+                        Picker(
+                            "Scan Interval:",
+                            selection: Binding(
+                                get: { viewModel.refreshInterval },
+                                set: { viewModel.updateRefreshInterval(to: $0) }
+                            )
+                        ) {
                             Text("1s").tag(1.0)
                             Text("3s").tag(3.0)
                             Text("5s").tag(5.0)
@@ -305,31 +329,37 @@ struct ToolbarView: View {
                             customIntervalText = String(Int(viewModel.refreshInterval))
                             showingCustomIntervalAlert = true
                         }
-                    } header: { Text("Monitoring") }
-                    
+                    } header: {
+                        Text("Monitoring")
+                    }
+
                     Divider()
-                    
+
                     // Секция 2: Фильтры (слайдер сигнала)
                     Section {
                         Text("Min Signal: \(Int(viewModel.minSignalThreshold)) dBm")
                         Slider(value: $viewModel.minSignalThreshold, in: -100...(-30)) {
                             Text("Threshold")
                         }
-                    } header: { Text("Filters") }
-                    
+                    } header: {
+                        Text("Filters")
+                    }
+
                     Divider()
-                    
+
                     // Секция 3: Отображение
                     Section {
                         Picker("Remove inactive after:", selection: $viewModel.removeAfterInterval) {
                             ForEach(NetworkRemovalInterval.allCases) { Text($0.title).tag($0) }
                         }
-                        
+
                         Picker("Signal Unit:", selection: $viewModel.signalDisplayMode) {
                             ForEach(SignalDisplayMode.allCases) { Text($0.rawValue).tag($0) }
                         }
-                    } header: { Text("Display") }
-                    
+                    } header: {
+                        Text("Display")
+                    }
+
                 } label: {
                     Image(systemName: "gearshape")
                         .font(.system(size: 14))
@@ -342,7 +372,7 @@ struct ToolbarView: View {
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
                 .help("Settings & Monitoring Control")
             }
-            
+
             // 2. Band Filters
             HStack(spacing: 0) {
                 Toggle("2.4", isOn: $viewModel.filterBand24)
@@ -353,31 +383,36 @@ struct ToolbarView: View {
             }
             .toggleStyle(.button)
             .controlSize(.small)
-            
+
             // 3. Search
             HStack {
                 Image(systemName: "magnifyingglass").foregroundColor(.secondary)
                 TextField("Search...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
+                    .focused($isSearchFocused)
                     .frame(minWidth: 100, maxWidth: 200)
             }
             .padding(5)
             .background(Color(nsColor: .controlBackgroundColor))
             .cornerRadius(6)
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
-            
+
             Spacer()
-            
+
             // 4. Right Controls
             HStack(spacing: 16) {
-                
+
                 // Export
-                Button(action: { viewModel.exportCSV() }) {
+                Menu {
+                    Button("Export CSV…") { viewModel.exportCSV() }
+                    Button("Export JSON…") { viewModel.exportJSON() }
+                } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
-                .buttonStyle(.borderless)
-                .help("Export CSV")
-                
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("Export scan results")
+
                 // Inspector Toggle
                 Button(action: { withAnimation(.spring(response: 0.3)) { showInspector.toggle() } }) {
                     Image(systemName: "sidebar.right")
@@ -389,7 +424,7 @@ struct ToolbarView: View {
                 .background(Color(nsColor: .controlBackgroundColor))
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
-                
+
                 // Location Alert
                 if !viewModel.isLocationAuthorized {
                     Button(action: {
@@ -406,7 +441,14 @@ struct ToolbarView: View {
         .padding(10)
         .background(Material.bar)
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .bottom)
+        .onReceive(NotificationCenter.default.publisher(for: .wifaFocusSearch)) { _ in
+            isSearchFocused = true
+        }
     }
+}
+
+extension Notification.Name {
+    static let wifaFocusSearch = Notification.Name("WiFA.focusSearch")
 }
 
 // MARK: - Subviews
@@ -432,7 +474,7 @@ struct ErrorBanner: View {
 
 struct NetworkInspectorView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -441,21 +483,23 @@ struct NetworkInspectorView: View {
             }
             .padding()
             .background(Material.bar)
-            
+
             Divider()
-            
+
             ScrollView {
                 if let network = viewModel.selectedNetwork {
                     VStack(alignment: .leading, spacing: 12) {
-                        
+
                         // Header
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(network.displaySSID)
                                     .font(.title2).bold()
-                                    .foregroundColor(network.bssid == viewModel.currentConnectedBSSID ? .accentColor : .primary)
+                                    .foregroundColor(
+                                        network.bssid == viewModel.currentConnectedBSSID ? .accentColor : .primary
+                                    )
                                     .lineLimit(2)
-                                
+
                                 HStack {
                                     Text(network.bssid.isEmpty ? "-" : network.bssid)
                                         .font(.caption).monospaced()
@@ -463,7 +507,7 @@ struct NetworkInspectorView: View {
                                         .background(Color.gray.opacity(0.1))
                                         .cornerRadius(4)
                                         .textSelection(.enabled)
-                                    
+
                                     if network.bssid == viewModel.currentConnectedBSSID {
                                         Image(systemName: "checkmark.circle.fill")
                                             .foregroundColor(.green)
@@ -478,17 +522,32 @@ struct NetworkInspectorView: View {
                                 unit: viewModel.signalDisplayMode == .dbm ? "dBm" : ""
                             )
                         }
-                        
+
                         Divider()
-                        
+
+                        // Quality & channel health
+                        if let metrics = viewModel.metrics(for: network) {
+                            QualityInspectorSection(
+                                metrics: metrics,
+                                recommendation: viewModel.analysis.bestChannel(for: network.band)
+                            )
+                        }
+
                         // Specs
                         GroupBox("Technical Specs") {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 12) {
+                            LazyVGrid(
+                                columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading,
+                                spacing: 12
+                            ) {
                                 DetailRow(label: "Channel", value: "\(network.channel)")
                                 DetailRow(label: "Band", value: network.bandLabel)
-                                DetailRow(label: "Width", value: network.channelWidthLabel == "-" ? "-" : "\(network.channelWidthLabel) MHz")
+                                DetailRow(
+                                    label: "Width",
+                                    value: network.channelWidthLabel == "-" ? "-" : "\(network.channelWidthLabel) MHz")
                                 DetailRow(label: "Generation", value: network.generationLabel)
-                                DetailRow(label: "Max Rate", value: network.maxRateLabel == "-" ? "-" : "\(network.maxRateLabel) Mbps")
+                                DetailRow(
+                                    label: "Max Rate",
+                                    value: network.maxRateLabel == "-" ? "-" : "\(network.maxRateLabel) Mbps")
                                 DetailRow(label: "Vendor", value: network.vendor)
                                 DetailRow(label: "Mode", value: network.mode)
                                 if let noise = network.noise {
@@ -497,21 +556,26 @@ struct NetworkInspectorView: View {
                                 if let snr = network.snr {
                                     DetailRow(label: "SNR", value: "\(snr) dB")
                                 }
-                                
+
                                 // Безопасное разворачивание
                                 DetailRow(label: "Streams", value: network.streams.map { "\($0)" } ?? "-")
                             }
                             .padding(.vertical, 8)
                             .padding(.horizontal, 10)
                         }
-                        
+
                         // Security
                         GroupBox("Security & Advanced") {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 12) {
+                            LazyVGrid(
+                                columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading,
+                                spacing: 12
+                            ) {
                                 DetailRow(label: "Protocol", value: network.security)
                                 DetailRow(label: "Protection Mode", value: network.protectionMode ?? "Unknown")
                                 DetailRow(label: "WPS", value: network.wps ?? "N/A")
-                                DetailRow(label: "Fast Transition (802.11r)", value: network.fastTransition == true ? "Yes" : "No")
+                                DetailRow(
+                                    label: "Fast Transition (802.11r)",
+                                    value: network.fastTransition == true ? "Yes" : "No")
                                 if let beacon = network.beaconInterval {
                                     DetailRow(label: "Beacon Interval", value: "\(beacon) ms")
                                 }
@@ -523,10 +587,13 @@ struct NetworkInspectorView: View {
                             .padding(.vertical, 8)
                             .padding(.horizontal, 10)
                         }
-                        
+
                         // Timestamps
                         GroupBox("Activity") {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 12) {
+                            LazyVGrid(
+                                columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading,
+                                spacing: 12
+                            ) {
                                 DetailRow(label: "First Seen", value: formatDate(network.firstSeen))
                                 DetailRow(label: "Last Seen", value: formatDate(network.lastSeen))
                                 DetailRow(label: "Seen Ago", value: "\(network.seen) sec")
@@ -534,7 +601,7 @@ struct NetworkInspectorView: View {
                             .padding(.vertical, 8)
                             .padding(.horizontal, 10)
                         }
-                        
+
                     }
                     .padding()
                 } else {
@@ -553,7 +620,7 @@ struct NetworkInspectorView: View {
             }
         }
     }
-    
+
     private func formatDate(_ date: Date?) -> String {
         guard let date = date else { return "-" }
         let formatter = DateFormatter()
@@ -563,17 +630,161 @@ struct NetworkInspectorView: View {
     }
 }
 
+struct EmptyScanView: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "wifi.router")
+                .font(.system(size: 44))
+                .foregroundColor(.secondary.opacity(0.3))
+            Text("No networks found")
+                .font(.headline)
+            Text("Move closer to access points or refresh the scan.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .allowsHitTesting(false)
+    }
+}
+
+struct LocationPermissionView: View {
+    @ObservedObject var viewModel: AnalyzerViewModel
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "location.circle.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.accentColor)
+            Text("Location access is required")
+                .font(.title3.bold())
+            Text(
+                "macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services enabled. WiFA uses this permission solely for scanning and never stores or transmits your location."
+            )
+            .font(.callout)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 480)
+
+            HStack(spacing: 10) {
+                Button("Allow Access") {
+                    viewModel.requestLocationAuthorization()
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Open System Settings") {
+                    viewModel.openSystemLocationSettings()
+                }
+                .buttonStyle(.bordered)
+
+                Button("Check Again") {
+                    viewModel.checkLocationAuthorization()
+                }
+                .buttonStyle(.borderless)
+            }
+        }
+        .padding(30)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+}
+
+struct NetworkStatusBar: View {
+    @ObservedObject var viewModel: AnalyzerViewModel
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Label("\(viewModel.networks.count) networks", systemImage: "wifi")
+            Divider().frame(height: 10)
+            Label("Avg quality \(viewModel.analysis.averageQuality)", systemImage: "gauge.with.dots.needle.50percent")
+            if viewModel.analysis.criticalFindingCount > 0 {
+                Divider().frame(height: 10)
+                Label("\(viewModel.analysis.criticalFindingCount) critical", systemImage: "exclamationmark.shield.fill")
+                    .foregroundColor(.red)
+            }
+            Spacer()
+            if let lastScan = viewModel.lastScanDate {
+                Text("Updated \(lastScan, style: .relative)")
+                    .fixedSize()
+            } else {
+                Text("Waiting for first scan…")
+            }
+        }
+        .font(.caption2)
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 10)
+        .frame(height: 24)
+        .background(Material.bar)
+        .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .top)
+    }
+}
+
+struct QualityInspectorSection: View {
+    let metrics: NetworkMetrics
+    let recommendation: ChannelRecommendation?
+
+    var body: some View {
+        GroupBox("Quality") {
+            VStack(alignment: .leading, spacing: 10) {
+                QualityScoreView(score: metrics.qualityScore)
+                ScoreRow(label: "Signal", score: metrics.signalScore)
+                if let snr = metrics.snrScore {
+                    ScoreRow(label: "SNR", score: snr)
+                }
+                ScoreRow(label: "Channel congestion", score: metrics.congestionScore)
+                ScoreRow(label: "Security", score: metrics.securityScore)
+                HStack {
+                    Label("\(metrics.overlappingCount) overlapping", systemImage: "dot.radiowaves.left.and.right")
+                    Spacer()
+                    Label("\(metrics.coChannelCount) co-channel", systemImage: "antenna.radiowaves.left.and.right")
+                }
+                .font(.caption2)
+                .foregroundColor(.secondary)
+
+                if let recommendation {
+                    Divider()
+                    HStack(alignment: .firstTextBaseline) {
+                        Image(systemName: "wand.and.stars").foregroundColor(.accentColor)
+                        Text(
+                            "Best \(recommendation.band.label): channel \(recommendation.channel) · \(recommendation.widthMHz) MHz"
+                        )
+                        .font(.caption)
+                        Spacer()
+                        Text("\(recommendation.score)")
+                            .font(.caption.bold())
+                            .foregroundColor(.green)
+                    }
+                }
+
+                if let issue = metrics.issues.first {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(
+                            systemName: issue.severity == .critical
+                                ? "xmark.octagon.fill" : "exclamationmark.triangle.fill"
+                        )
+                        .foregroundColor(issue.severity == .critical ? .red : .orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(issue.title).font(.caption.bold())
+                            Text(issue.detail).font(.caption2).foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 8)
+        }
+    }
+}
+
 struct SignalBadge: View {
     let rssi: Int
     let label: String
     let unit: String
-    
+
     var color: Color {
-        if rssi > -50 { return .green }
-        else if rssi > -70 { return .yellow }
-        else { return .red }
+        if rssi > -50 { return .green } else if rssi > -70 { return .yellow } else { return .red }
     }
-    
+
     var body: some View {
         VStack {
             Text(label)
@@ -594,7 +805,7 @@ struct SignalBadge: View {
 struct DetailRow: View {
     let label: String
     let value: String
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
@@ -603,6 +814,7 @@ struct DetailRow: View {
             Text(value)
                 .font(.subheadline)
                 .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
         }
     }
 }

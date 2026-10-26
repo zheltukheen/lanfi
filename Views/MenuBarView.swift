@@ -1,0 +1,84 @@
+import SwiftUI
+import AppKit
+
+struct MenuBarView: View {
+    @ObservedObject var viewModel: AnalyzerViewModel
+    @Environment(\.openWindow) private var openWindow
+
+    private var connected: NetworkModel? {
+        guard let bssid = viewModel.currentConnectedBSSID else { return nil }
+        return viewModel.networks.first { $0.bssid == bssid }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("WiFA")
+                    .font(.headline)
+                Spacer()
+                Text("\(viewModel.networks.count) networks")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            if let connected {
+                HStack(spacing: 8) {
+                    Image(systemName: "wifi")
+                        .foregroundColor(.accentColor)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(connected.displaySSID)
+                            .font(.caption.bold())
+                            .lineLimit(1)
+                        Text("\(connected.signal) dBm · Ch \(connected.channel) · \(connected.bandLabel)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text("\(viewModel.metrics(for: connected)?.qualityScore ?? 0)")
+                        .font(.caption.bold())
+                        .foregroundColor(.green)
+                }
+                .padding(8)
+                .background(Color.secondary.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                Text("Not connected to a Wi-Fi network")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            if let best = viewModel.analysis.bestChannel(for: .band5) {
+                Text("Recommended 5 GHz: channel \(best.channel) · \(best.widthMHz) MHz")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Divider()
+
+            Button {
+                viewModel.refresh()
+            } label: {
+                Label("Refresh Now", systemImage: "arrow.clockwise")
+            }
+            .keyboardShortcut("r")
+
+            Button {
+                openWindow(id: "main")
+                NSApp.activate(ignoringOtherApps: true)
+            } label: {
+                Label("Open WiFA", systemImage: "macwindow")
+            }
+
+            Divider()
+
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Label("Quit WiFA", systemImage: "power")
+            }
+            .keyboardShortcut("q")
+        }
+        .padding(12)
+        .frame(width: 300)
+    }
+}

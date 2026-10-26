@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in WiFA is broken or behaves unexpectedly.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve WiFA. Please do not report security issues here; see SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: WiFA version
+      description: Shown in WiFA → About WiFA.
+      placeholder: "1.3.0 (9)"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: "macOS 15.4, MacBook Pro M3"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open WiFA
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs
+      description: Drag in images or paste relevant Console output. Remove SSIDs/BSSIDs if they are sensitive.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked that Location Services is enabled for WiFA.
+          required: true
+        - label: I searched existing issues before opening this one.
+          required: true

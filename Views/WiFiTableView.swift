@@ -11,52 +11,55 @@ extension NSUserInterfaceItemIdentifier {
 
 struct WiFiTableView: NSViewRepresentable {
     @ObservedObject var viewModel: AnalyzerViewModel
-    
+
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
         let tableView = NSTableView()
-        
+
         scrollView.scrollerStyle = .overlay
         scrollView.autohidesScrollers = true
-        
+
         tableView.delegate = context.coordinator
         tableView.dataSource = context.coordinator
-        
+
         // 3. УБИРАЕМ РАЗДЕЛИТЕЛИ
         tableView.columnAutoresizingStyle = .noColumnAutoresizing
         tableView.allowsColumnReordering = true
         tableView.allowsColumnResizing = true
-        
+
         // Включаем чередование цветов
         tableView.usesAlternatingRowBackgroundColors = true
-        
+
         // Убираем сетку (вертикальные и горизонтальные линии)
         tableView.gridStyleMask = []
-        
+
         // Убираем межклеточные отступы для сплошного вида
         tableView.intercellSpacing = NSSize(width: 0, height: 0)
-        
+
         tableView.headerView = NSTableHeaderView()
-        
+
         // Контекстные меню
         let headerMenu = NSMenu()
         headerMenu.delegate = context.coordinator
         tableView.headerView?.menu = headerMenu
-        
+
         tableView.allowsEmptySelection = true
         tableView.allowsMultipleSelection = false
-        
+        tableView.setAccessibilityLabel("Wi-Fi networks")
+
         let rowMenu = NSMenu()
-        rowMenu.addItem(NSMenuItem(title: "Копировать SSID", action: #selector(Coordinator.copySSID), keyEquivalent: "c"))
-        rowMenu.addItem(NSMenuItem(title: "Копировать BSSID", action: #selector(Coordinator.copyBSSID), keyEquivalent: ""))
+        rowMenu.addItem(
+            NSMenuItem(title: "Копировать SSID", action: #selector(Coordinator.copySSID), keyEquivalent: "c"))
+        rowMenu.addItem(
+            NSMenuItem(title: "Копировать BSSID", action: #selector(Coordinator.copyBSSID), keyEquivalent: ""))
         tableView.menu = rowMenu
-        
+
         scrollView.documentView = tableView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = true
-        
+
         context.coordinator.tableView = tableView
-        
+
         NotificationCenter.default.addObserver(
             context.coordinator,
             selector: #selector(Coordinator.columnDidMove(_:)),
@@ -69,24 +72,24 @@ struct WiFiTableView: NSViewRepresentable {
             name: NSTableView.columnDidResizeNotification,
             object: tableView
         )
-        
+
         return scrollView
     }
-    
+
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let tableView = nsView.documentView as? NSTableView else { return }
-        
+
         let targetDefinitions = viewModel.columnDefinitions.sorted {
             if $0.isPinned != $1.isPinned { return $0.isPinned && !$1.isPinned }
             return $0.order < $1.order
         }
         let targetVisibleDefinitions = targetDefinitions.filter { $0.isVisible }
-        
+
         context.coordinator.isProgrammaticUpdate = true
-        
+
         let currentColumnIdentifiers = Set(tableView.tableColumns.map { $0.identifier.rawValue })
         let targetIdentifiers = Set(targetVisibleDefinitions.map { $0.id })
-        
+
         // Remove
         let toRemove = currentColumnIdentifiers.subtracting(targetIdentifiers)
         for id in toRemove {
@@ -94,12 +97,12 @@ struct WiFiTableView: NSViewRepresentable {
                 tableView.removeTableColumn(col)
             }
         }
-        
+
         // Add/Update
         for def in targetVisibleDefinitions {
             let id = NSUserInterfaceItemIdentifier(def.id)
             let column: NSTableColumn
-            
+
             if let existing = tableView.tableColumn(withIdentifier: id) {
                 column = existing
             } else {
@@ -107,12 +110,14 @@ struct WiFiTableView: NSViewRepresentable {
                 column.minWidth = 50
                 tableView.addTableColumn(column)
             }
-            
+
             if column.title != def.displayTitle { column.title = def.displayTitle }
             if abs(column.width - def.width) > 1.0 { column.width = def.width }
             if let headerCell = column.headerCell as? PaddedHeaderCell {
                 if headerCell.stringValue != def.displayTitle { headerCell.stringValue = def.displayTitle }
-                if headerCell.alignment != def.alignment.nsTextAlignment { headerCell.alignment = def.alignment.nsTextAlignment }
+                if headerCell.alignment != def.alignment.nsTextAlignment {
+                    headerCell.alignment = def.alignment.nsTextAlignment
+                }
                 headerCell.lineBreakMode = .byTruncatingTail
             } else {
                 let headerCell = PaddedHeaderCell(textCell: def.displayTitle)
@@ -120,12 +125,12 @@ struct WiFiTableView: NSViewRepresentable {
                 headerCell.lineBreakMode = .byTruncatingTail
                 column.headerCell = headerCell
             }
-            
+
             if column.sortDescriptorPrototype?.key != def.id {
                 column.sortDescriptorPrototype = NSSortDescriptor(key: def.id, ascending: true)
             }
         }
-        
+
         // Reorder
         for (targetIndex, def) in targetVisibleDefinitions.enumerated() {
             let id = NSUserInterfaceItemIdentifier(def.id)
@@ -135,20 +140,20 @@ struct WiFiTableView: NSViewRepresentable {
                 }
             }
         }
-        
+
         context.coordinator.isProgrammaticUpdate = false
-        
+
         if let sortKey = viewModel.currentSortKey {
             let descriptor = NSSortDescriptor(key: sortKey, ascending: viewModel.isSortAscending)
             if tableView.sortDescriptors.first != descriptor {
                 tableView.sortDescriptors = [descriptor]
             }
         }
-        
+
         tableView.reloadData()
         restoreSelection(in: tableView, coordinator: context.coordinator)
     }
-    
+
     private func restoreSelection(in tableView: NSTableView, coordinator: Coordinator) {
         guard let selectedId = viewModel.selectedNetworkId else {
             if tableView.selectedRow >= 0 {
@@ -158,7 +163,7 @@ struct WiFiTableView: NSViewRepresentable {
             }
             return
         }
-        
+
         if let index = viewModel.networks.firstIndex(where: { $0.id == selectedId }) {
             if tableView.selectedRow != index {
                 coordinator.isUpdatingSelection = true
@@ -174,50 +179,53 @@ struct WiFiTableView: NSViewRepresentable {
             }
         }
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-    
+
     @MainActor
     class Coordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate {
         var parent: WiFiTableView
         weak var tableView: NSTableView?
-        
+
         var isProgrammaticUpdate = false
         var isUpdatingSelection = false
-        
+
         private static let dateFormatter: DateFormatter = {
             let f = DateFormatter(); f.dateStyle = .short; f.timeStyle = .medium; return f
         }()
-        
+
         init(_ parent: WiFiTableView) {
             self.parent = parent
         }
-        
+
         func numberOfRows(in tableView: NSTableView) -> Int {
             parent.viewModel.networks.count
         }
-        
+
         func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
             guard let column = tableColumn,
-                  row >= 0,
-                  row < parent.viewModel.networks.count else { return nil }
-            
+                row >= 0,
+                row < parent.viewModel.networks.count
+            else { return nil }
+
             let network = parent.viewModel.networks[row]
             let colId = column.identifier.rawValue
-            
-            var cellView = tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView
-            
+
+            var cellView =
+                tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView
+
             if cellView == nil {
                 cellView = WiFiTableCellView()
                 cellView?.identifier = WiFiTableCellView.identifier
             }
-            
+
             let text = parent.viewModel.textForColumn(id: colId, net: network)
             let isConnected = (network.bssid == parent.viewModel.currentConnectedBSSID)
-            let alignment = parent.viewModel.columnDefinitions.first(where: { $0.id == colId })?.alignment.nsTextAlignment ?? .left
-            
+            let alignment =
+                parent.viewModel.columnDefinitions.first(where: { $0.id == colId })?.alignment.nsTextAlignment ?? .left
+
             cellView?.configure(
                 text: text,
                 isConnected: isConnected,
@@ -226,11 +234,11 @@ struct WiFiTableView: NSViewRepresentable {
             )
             return cellView
         }
-        
+
         func tableViewSelectionDidChange(_ notification: Notification) {
             guard !isUpdatingSelection, let tableView = notification.object as? NSTableView else { return }
             let row = tableView.selectedRow
-            
+
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if row >= 0, row < self.parent.viewModel.networks.count {
@@ -245,12 +253,12 @@ struct WiFiTableView: NSViewRepresentable {
                 }
             }
         }
-        
+
         func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
             guard let sd = tableView.sortDescriptors.first, let key = sd.key else { return }
             parent.viewModel.sort(by: key, ascending: sd.ascending)
         }
-        
+
         @objc func columnDidMove(_ notification: Notification) {
             guard !isProgrammaticUpdate, let tableView = notification.object as? NSTableView else { return }
             let newOrderMap = tableView.tableColumns.enumerated().map { (offset, col) in
@@ -266,9 +274,11 @@ struct WiFiTableView: NSViewRepresentable {
                 self.parent.viewModel.saveColumnSettings()
             }
         }
-        
+
         @objc func columnDidResize(_ notification: Notification) {
-            guard !isProgrammaticUpdate, let col = notification.userInfo?["NSTableColumn"] as? NSTableColumn else { return }
+            guard !isProgrammaticUpdate, let col = notification.userInfo?["NSTableColumn"] as? NSTableColumn else {
+                return
+            }
             let id = col.identifier.rawValue
             let width = col.width
             DispatchQueue.main.async { [weak self] in
@@ -279,7 +289,7 @@ struct WiFiTableView: NSViewRepresentable {
                 }
             }
         }
-        
+
         func menuNeedsUpdate(_ menu: NSMenu) {
             menu.removeAllItems()
             let clickedId = currentClickedColumnId()
@@ -287,22 +297,26 @@ struct WiFiTableView: NSViewRepresentable {
                 parent.viewModel.columnDefinitions.first(where: { $0.id == id })
             }
 
-            let autoSizeItem = NSMenuItem(title: "Auto Size Column", action: #selector(autoSizeColumn(_:)), keyEquivalent: "")
+            let autoSizeItem = NSMenuItem(
+                title: "Auto Size Column", action: #selector(autoSizeColumn(_:)), keyEquivalent: "")
             autoSizeItem.target = self
             autoSizeItem.isEnabled = clickedId != nil
             autoSizeItem.representedObject = clickedId
             menu.addItem(autoSizeItem)
 
-            let autoSizeAllItem = NSMenuItem(title: "Auto Size All Columns", action: #selector(autoSizeAllColumns(_:)), keyEquivalent: "")
+            let autoSizeAllItem = NSMenuItem(
+                title: "Auto Size All Columns", action: #selector(autoSizeAllColumns(_:)), keyEquivalent: "")
             autoSizeAllItem.target = self
             menu.addItem(autoSizeAllItem)
 
             menu.addItem(NSMenuItem.separator())
 
-            let textOnlyItem = NSMenuItem(title: "Show Text Only All Columns", action: #selector(toggleTextOnly(_:)), keyEquivalent: "")
-            textOnlyItem.target = self
-            textOnlyItem.state = parent.viewModel.highlightConnectedNetworks ? .off : .on
-            menu.addItem(textOnlyItem)
+            let highlightItem = NSMenuItem(
+                title: "Highlight Connected Network", action: #selector(toggleHighlightConnected(_:)), keyEquivalent: ""
+            )
+            highlightItem.target = self
+            highlightItem.state = parent.viewModel.highlightConnectedNetworks ? .on : .off
+            menu.addItem(highlightItem)
 
             let alignMenu = NSMenuItem(title: "Align Text", action: nil, keyEquivalent: "")
             let alignSubmenu = NSMenu()
@@ -310,7 +324,7 @@ struct WiFiTableView: NSViewRepresentable {
             for (title, alignment) in alignments {
                 let item = NSMenuItem(title: title, action: #selector(setAllColumnsAlignment(_:)), keyEquivalent: "")
                 item.target = self
-                item.representedObject = ["alignment": alignment.rawValue] as [String: Any]
+                item.representedObject = alignment.rawValue
                 let allAlignments = parent.viewModel.columnDefinitions.map { $0.alignment }
                 let uniqueAlignments = Set(allAlignments)
                 if uniqueAlignments.count == 1, uniqueAlignments.first == alignment {
@@ -356,7 +370,8 @@ struct WiFiTableView: NSViewRepresentable {
 
             let definitions = parent.viewModel.columnDefinitions.sorted { $0.displayTitle < $1.displayTitle }
             for def in definitions {
-                let item = NSMenuItem(title: def.displayTitle, action: #selector(toggleColumnFromMenu(_:)), keyEquivalent: "")
+                let item = NSMenuItem(
+                    title: def.displayTitle, action: #selector(toggleColumnFromMenu(_:)), keyEquivalent: "")
                 item.target = self
                 item.representedObject = def.id
                 item.state = def.isVisible ? .on : .off
@@ -367,12 +382,12 @@ struct WiFiTableView: NSViewRepresentable {
             resetItem.target = self
             menu.addItem(resetItem)
         }
-        
+
         @objc func toggleColumnFromMenu(_ sender: NSMenuItem) {
             guard let colId = sender.representedObject as? String else { return }
             parent.viewModel.toggleColumn(colId)
         }
-        
+
         @objc func resetColumns() {
             parent.viewModel.resetColumnsToDefault()
         }
@@ -392,7 +407,9 @@ struct WiFiTableView: NSViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 for id in ids {
-                    guard let column = tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(id)) else { continue }
+                    guard let column = tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(id)) else {
+                        continue
+                    }
                     let width = self.calculateBestWidth(for: id, header: column.title)
                     column.width = width
                     if let idx = self.parent.viewModel.columnDefinitions.firstIndex(where: { $0.id == id }) {
@@ -416,14 +433,14 @@ struct WiFiTableView: NSViewRepresentable {
             return min(maxWidth + 16, 500)
         }
 
-        @objc func toggleTextOnly(_ sender: NSMenuItem) {
+        @objc func toggleHighlightConnected(_ sender: NSMenuItem) {
             parent.viewModel.highlightConnectedNetworks.toggle()
+            sender.state = parent.viewModel.highlightConnectedNetworks ? .on : .off
         }
 
         @objc func setAllColumnsAlignment(_ sender: NSMenuItem) {
             guard
-                let payload = sender.representedObject as? [String: Any],
-                let rawAlignment = payload["alignment"] as? Int,
+                let rawAlignment = sender.representedObject as? Int,
                 let alignment = ColumnAlignment(rawValue: rawAlignment)
             else { return }
 
@@ -454,11 +471,13 @@ struct WiFiTableView: NSViewRepresentable {
         }
 
         @objc func renameColumn(_ sender: NSMenuItem) {
-            guard let id = sender.representedObject as? String else { return }
-            guard let idx = parent.viewModel.columnDefinitions.firstIndex(where: { $0.id == id }) else { return }
-            let current = parent.viewModel.columnDefinitions[idx].customTitle ?? parent.viewModel.columnDefinitions[idx].title
+            guard let id = sender.representedObject as? String,
+                let initial = parent.viewModel.columnDefinitions.first(where: { $0.id == id })
+            else { return }
+            let current = initial.customTitle ?? initial.title
 
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 let alert = NSAlert()
                 alert.messageText = "Rename Column"
                 alert.informativeText = "Enter a new column name:"
@@ -470,7 +489,10 @@ struct WiFiTableView: NSViewRepresentable {
 
                 if alert.runModal() == .alertFirstButtonReturn {
                     let text = input.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-                    self.parent.viewModel.columnDefinitions[idx].customTitle = text.isEmpty ? nil : text
+                    guard let index = self.parent.viewModel.columnDefinitions.firstIndex(where: { $0.id == id }) else {
+                        return
+                    }
+                    self.parent.viewModel.columnDefinitions[index].customTitle = text.isEmpty ? nil : text
                     self.parent.viewModel.saveColumnSettings()
                     self.parent.viewModel.objectWillChange.send()
                 }
@@ -487,10 +509,10 @@ struct WiFiTableView: NSViewRepresentable {
             guard index >= 0, index < tableView.tableColumns.count else { return nil }
             return tableView.tableColumns[index].identifier.rawValue
         }
-        
+
         @objc func copySSID() { copyToClipboard(keyPath: \.ssid) }
         @objc func copyBSSID() { copyToClipboard(keyPath: \.bssid) }
-        
+
         private func copyToClipboard(keyPath: KeyPath<NetworkModel, String>) {
             guard let row = tableView?.clickedRow, row >= 0 else { return }
             let net = parent.viewModel.networks[row]
@@ -498,6 +520,6 @@ struct WiFiTableView: NSViewRepresentable {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(string, forType: .string)
         }
-        
+
     }
 }

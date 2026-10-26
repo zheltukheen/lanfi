@@ -1,0 +1,21 @@
+{
+  "indentation": {
+    "spaces": 4
+  },
+  "lineLength": 120,
+  "maximumBlankLines": 1,
+  "respectsExistingLineBreaks": true,
+  "multiElementCollectionTrailingCommas": true,
+  "rules": {
+    "AllPublicDeclarationsHaveDocumentation": false,
+    "AlwaysUseLiteralForEmptyCollectionInit": false,
+    "NeverForceUnwrap": false,
+    "NeverUseForceTry": false,
+    "NeverUseImplicitlyUnwrappedOptionals": false,
+    "NoBlockComments": false,
+    "OmitExplicitReturns": false,
+    "UseEarlyExits": false,
+    "UseSingleLinePropertyGetter": false,
+    "ValidateDocumentationComments": false
+  }
+}

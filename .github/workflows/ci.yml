@@ -2,24 +2,74 @@ name: CI
 
 on:
   push:
-    branches:
-      - "**"
+    branches: [main]
   pull_request:
-    branches:
-      - "**"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
+  test:
+    name: Test and lint
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          xcrun swift-format --version
+
+      - name: Lint Swift
+        continue-on-error: true
+        run: |
+          if ! xcrun --find swift-format >/dev/null 2>&1; then
+            brew install swift-format
+          fi
+          FORMAT="xcrun swift-format"
+          if ! xcrun --find swift-format >/dev/null 2>&1; then
+            FORMAT="swift-format"
+          fi
+          $FORMAT lint --recursive --configuration .swift-format --no-color-diagnostics .
+
+      - name: Run tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project WiFA.xcodeproj \
+            -scheme WiFA \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+
   build:
-    runs-on: macos-latest
+    name: Build universal app
+    runs-on: macos-15
+    needs: test
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build
-        run: |
-          xcodebuild build \
-            -scheme WiFA \
-            -configuration Debug \
-            -destination "platform=macOS" \
-            -quiet
+        run: ./build.sh
+
+      - name: Verify architectures
+        run: lipo -archs build/WiFA-Universal/WiFA.app/Contents/MacOS/WiFA
+
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: WiFA.app
+          path: build/WiFA-Universal/WiFA.app
+          if-no-files-found: error
+          retention-days: 14

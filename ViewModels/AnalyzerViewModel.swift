@@ -6,6 +6,7 @@ import CoreWLAN
 import AppKit
 import SwiftUI
 import CoreLocation
+import UniformTypeIdentifiers
 
 // MARK: - Enums & Settings
 
@@ -20,9 +21,9 @@ enum NetworkRemovalInterval: TimeInterval, CaseIterable, Identifiable {
     case twoMinutes = 120
     case fiveMinutes = 300
     case tenMinutes = 600
-    
+
     var id: TimeInterval { rawValue }
-    
+
     var title: String {
         switch self {
         case .oneMinute: return "1 min"
@@ -51,6 +52,7 @@ enum ColumnId: String, CaseIterable, Codable {
     case channelUtilization
     case channelWidth
     case clients
+    case congestion
     case count
     case countryCode
     case fastTransition
@@ -67,6 +69,7 @@ enum ColumnId: String, CaseIterable, Codable {
     case networkName
     case noise
     case protectionMode
+    case quality
     case snr
     case security
     case seen
@@ -93,8 +96,9 @@ enum ColumnId: String, CaseIterable, Codable {
         case .centerFrequency: return "Center Frequency"
         case .channel: return "Channel"
         case .channelUtilization: return "Channel Utilization"
-        case .channelWidth: return "Channel Width"
+        case .channelWidth: return "Width"
         case .clients: return "Clients"
+        case .congestion: return "Congestion"
         case .count: return "Count"
         case .countryCode: return "Country Code"
         case .fastTransition: return "Fast Transition"
@@ -111,6 +115,7 @@ enum ColumnId: String, CaseIterable, Codable {
         case .networkName: return "Network Name"
         case .noise: return "Noise"
         case .protectionMode: return "Protection Mode"
+        case .quality: return "Quality"
         case .snr: return "SNR"
         case .security: return "Security"
         case .seen: return "Seen"
@@ -126,18 +131,34 @@ enum ColumnId: String, CaseIterable, Codable {
 
     var defaultWidth: CGFloat {
         switch self {
-        case .signal, .channel, .count, .seen, .clients, .stations, .streams, .noise, .snr, .wideChannel:
+        case .signal, .quality:
+            return 80
+        case .channel, .congestion:
             return 70
-        case .band, .generation, .mode, .type, .security:
+        case .count, .seen, .clients, .stations, .streams, .noise, .snr, .wideChannel:
+            return 70
+        case .band:
+            return 75
+        case .generation, .mode:
+            return 85
+        case .type:
             return 90
+        case .security:
+            return 100
         case .channelWidth, .maxRate, .minRate, .maxBasicRate, .minBasicRate, .beaconInterval, .beaconRate:
-            return 90
+            return 75
         case .centerFrequency, .countryCode, .fastTransition, .beaconMode, .beaconAirtime, .channelUtilization:
             return 110
         case .firstSeen, .lastSeen, .uptime:
             return 130
-        case .basicRates, .annotations, .apName, .vendor, .networkName, .bssid:
-            return 160
+        case .networkName:
+            return 150
+        case .bssid:
+            return 140
+        case .vendor:
+            return 130
+        case .basicRates, .annotations, .apName:
+            return 150
         case .amendments, .ieCount, .ieTotalLength:
             return 120
         case .protectionMode:
@@ -147,7 +168,9 @@ enum ColumnId: String, CaseIterable, Codable {
 
     var defaultAlignment: ColumnAlignment {
         switch self {
-        case .signal, .channel, .channelWidth, .count, .seen, .clients, .stations, .streams, .noise, .snr, .centerFrequency, .channelUtilization, .beaconInterval, .beaconRate, .beaconAirtime, .maxRate, .minRate, .maxBasicRate, .minBasicRate, .ieCount, .ieTotalLength, .uptime:
+        case .signal, .channel, .channelWidth, .count, .seen, .clients, .stations, .streams, .noise, .snr,
+            .centerFrequency, .channelUtilization, .beaconInterval, .beaconRate, .beaconAirtime, .maxRate, .minRate,
+            .maxBasicRate, .minBasicRate, .ieCount, .ieTotalLength, .uptime, .quality, .congestion:
             return .right
         case .wideChannel, .fastTransition:
             return .center
@@ -158,12 +181,26 @@ enum ColumnId: String, CaseIterable, Codable {
 
     var defaultVisibility: Bool {
         switch self {
-        case .networkName, .bssid, .channel, .band, .channelWidth, .signal, .noise, .snr, .security, .vendor, .maxRate, .mode, .seen:
+        case .networkName, .signal, .quality, .band, .channel, .channelWidth,
+            .security, .vendor, .bssid, .maxRate, .mode:
             return true
         default:
             return false
         }
     }
+
+    /// Sensible out-of-the-box column order: identity, signal, interpretation,
+    /// radio details, then the long tail of 802.11 fields.
+    static let displayOrder: [ColumnId] = [
+        .networkName, .signal, .quality, .band, .channel, .channelWidth,
+        .security, .vendor, .bssid, .generation, .maxRate, .mode, .snr, .noise,
+        .seen, .lastSeen, .firstSeen, .uptime, .congestion, .channelUtilization,
+        .clients, .stations, .streams, .countryCode, .fastTransition,
+        .protectionMode, .beaconInterval, .beaconRate, .beaconAirtime, .wideChannel,
+        .centerFrequency, .basicRates, .minRate, .minBasicRate,
+        .maxBasicRate, .amendments, .annotations, .apName, .count, .ieCount,
+        .ieTotalLength, .type, .beaconMode,
+    ]
 }
 
 enum ColumnAlignment: Int, Codable {
@@ -200,7 +237,7 @@ struct ColumnDefinition: Identifiable, Codable {
     }
 
     static let defaults: [ColumnDefinition] = {
-        ColumnId.allCases.enumerated().map { index, column in
+        ColumnId.displayOrder.enumerated().map { index, column in
             ColumnDefinition(
                 id: column.rawValue,
                 title: column.defaultTitle,
@@ -227,7 +264,7 @@ enum SidebarCategory: CaseIterable {
         case .networkName: return "Network Name"
         case .mode: return "Mode"
         case .channel: return "Channel"
-        case .channelWidth: return "Channel Width"
+        case .channelWidth: return "Width"
         case .security: return "Security"
         case .accessPoint: return "Access Point"
         case .vendor: return "Vendor"
@@ -241,9 +278,9 @@ enum SidebarCategory: CaseIterable {
 // Это решает проблему "Publishing changes from within view updates".
 @MainActor
 class AnalyzerViewModel: ObservableObject {
-    
+
     // MARK: - Dependencies
-    private let scanner = WiFiScanner() // Actor
+    private let scanner = WiFiScanner()  // Actor
     private let locationManager = LocationManager()
     private let refreshIntervalKey = "RefreshIntervalSeconds"
     private let historyWindowSeconds: TimeInterval = 180
@@ -253,9 +290,9 @@ class AnalyzerViewModel: ObservableObject {
     private var timer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var isScanning = false
-    
+
     // MARK: - Color Logic
-    
+
     /// Глобальный генератор цвета для сети, чтобы во всех графах он был одинаковым
     func colorFor(networkId: String) -> Color {
         let hash = stableHash(networkId)
@@ -273,9 +310,9 @@ class AnalyzerViewModel: ObservableObject {
         }
         return hash
     }
-    
+
     // MARK: - Helpers
-    
+
     /// Конвертация dBm в проценты (0% = -100dBm, 100% = -50dBm)
     func convertToPercent(_ dbm: Int) -> Double {
         let val = Double(dbm)
@@ -283,28 +320,31 @@ class AnalyzerViewModel: ObservableObject {
         if val >= -50 { return 100 }
         return (val + 100) * 2
     }
-    
+
     // MARK: - Published Properties (UI Binding)
     @Published var networks: [NetworkModel] = []
     @Published var baseFilteredNetworks: [NetworkModel] = []
     @Published var currentConnectedBSSID: String? = nil
     @Published var signalHistory: [String: [Int]] = [:]
+    @Published private(set) var analysis: AnalysisReport = .empty
     @Published var selectedNetworkId: String? = nil
-    @Published var highlightConnectedNetworks: Bool = true
-    
+    @Published var highlightConnectedNetworks: Bool = true { didSet { savePreferences() } }
+
     // Settings & Filters
-    @Published var filterBand24 = true { didSet { requestFilterUpdate() } }
-    @Published var filterBand5 = true { didSet { requestFilterUpdate() } }
-    @Published var filterBand6 = true { didSet { requestFilterUpdate() } }
-    @Published var minSignalThreshold: Double = -100 { didSet { requestFilterUpdate() } }
-    @Published var searchText: String = "" // Обрабатывается через debounce в init
-    
-    @Published var removeAfterInterval: NetworkRemovalInterval = .twoMinutes { didSet { requestFilterUpdate() } }
-    @Published var signalDisplayMode: SignalDisplayMode = .dbm
-    
+    @Published var filterBand24 = true { didSet { requestFilterUpdate(); savePreferences() } }
+    @Published var filterBand5 = true { didSet { requestFilterUpdate(); savePreferences() } }
+    @Published var filterBand6 = true { didSet { requestFilterUpdate(); savePreferences() } }
+    @Published var minSignalThreshold: Double = -100 { didSet { requestFilterUpdate(); savePreferences() } }
+    @Published var searchText: String = ""  // Обрабатывается через debounce в init
+
+    @Published var removeAfterInterval: NetworkRemovalInterval = .twoMinutes {
+        didSet { requestFilterUpdate(); savePreferences() }
+    }
+    @Published var signalDisplayMode: SignalDisplayMode = .dbm { didSet { savePreferences() } }
+
     @Published var refreshInterval: Double = 3.0
-    @Published var isSortAscending: Bool = true { didSet { applyFilters() } }
-    @Published var currentSortKey: String? = ColumnId.signal.rawValue { didSet { applyFilters() } }
+    @Published var isSortAscending: Bool = false { didSet { applyFilters(); savePreferences() } }
+    @Published var currentSortKey: String? = ColumnId.signal.rawValue { didSet { applyFilters(); savePreferences() } }
     @Published var columnDefinitions: [ColumnDefinition] = ColumnDefinition.defaults
 
     // Quick filters (sidebar)
@@ -315,10 +355,11 @@ class AnalyzerViewModel: ObservableObject {
     @Published var quickFilterSecurity: String? { didSet { requestFilterUpdate() } }
     @Published var quickFilterAccessPoint: String? { didSet { requestFilterUpdate() } }
     @Published var quickFilterVendor: String? { didSet { requestFilterUpdate() } }
-    
+
     @Published var isLocationAuthorized = false
     @Published var errorMessage: String?
-    
+    @Published private(set) var lastScanDate: Date?
+
     // MARK: - Initialization
     init() {
         setupBindings()
@@ -327,7 +368,7 @@ class AnalyzerViewModel: ObservableObject {
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
         startScanningLoop()
     }
-    
+
     private func setupBindings() {
         // Location Status Binding
         locationManager.$authorizationStatus
@@ -341,7 +382,7 @@ class AnalyzerViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
-        
+
         // Search Debounce (Optimization)
         // Чтобы не пересчитывать список на каждую букву при быстром вводе
         $searchText
@@ -350,9 +391,9 @@ class AnalyzerViewModel: ObservableObject {
             .sink { [weak self] _ in self?.applyFilters() }
             .store(in: &cancellables)
     }
-    
+
     // MARK: - Scanning Loop
-    
+
     func startScanningLoop() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
@@ -362,34 +403,35 @@ class AnalyzerViewModel: ObservableObject {
         }
         timer?.tolerance = max(0.2, refreshInterval * 0.1)
     }
-    
+
     func updateRefreshInterval(to newValue: Double) {
         refreshInterval = newValue
         UserDefaults.standard.set(newValue, forKey: refreshIntervalKey)
         startScanningLoop()
     }
-    
+
     // MARK: - Refresh Logic (Async/Await)
-    
+
     func refresh() {
         guard !isScanning else { return }
         isScanning = true
-        
+
         let currentBSSID = CWWiFiClient.shared().interface()?.bssid()?.uppercased()
-        
+
         // Используем Task для вызова метода Actor-а
         Task {
             defer { isScanning = false }
-            
+
             do {
                 // Асинхронный вызов к WiFiScanner (не блокирует Main Thread)
                 let scannedList = try await scanner.scan()
-                
+
                 // Следующий код выполняется автоматически на MainActor, т.к. класс помечен им
                 self.errorMessage = nil
                 self.currentConnectedBSSID = currentBSSID
+                self.lastScanDate = Date()
                 self.mergeNetworks(scannedList)
-                
+
             } catch let error as WiFiError {
                 // Обработка типизированных ошибок
                 if case .interfaceNotFound = error {
@@ -404,12 +446,12 @@ class AnalyzerViewModel: ObservableObject {
             }
         }
     }
-    
+
     // MARK: - Data Processing
-    
+
     private func mergeNetworks(_ newScan: [NetworkModel]) {
         let now = Date()
-        
+
         // 1. Update Existing
         for net in newScan {
             let existing = persistentNetworks[net.id]
@@ -417,16 +459,19 @@ class AnalyzerViewModel: ObservableObject {
             persistentNetworks[net.id] = updated
             updateSignalHistory(for: updated)
         }
-        
+
         // 2. Cleanup Old
         let threshold = now.addingTimeInterval(-removeAfterInterval.rawValue)
-        let keysToRemove = persistentNetworks.filter { $0.value.lastSeen ?? Date.distantPast < threshold }.map { $0.key }
-        
+        let keysToRemove = persistentNetworks.filter { $0.value.lastSeen ?? Date.distantPast < threshold }.map {
+            $0.key
+        }
+
         for key in keysToRemove {
             persistentNetworks.removeValue(forKey: key)
             signalHistory.removeValue(forKey: key)
         }
-        
+
+        analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))
         applyFilters()
     }
 
@@ -467,6 +512,8 @@ class AnalyzerViewModel: ObservableObject {
             streams: net.streams,
             type: net.type,
             wps: net.wps,
+            wpsEnabled: net.wpsEnabled,
+            pmfRequired: net.pmfRequired,
             ieCount: net.ieCount,
             ieTotalLength: net.ieTotalLength,
             ratesEstimated: net.ratesEstimated,
@@ -476,7 +523,7 @@ class AnalyzerViewModel: ObservableObject {
             lastSeen: now
         )
     }
-    
+
     private func updateSignalHistory(for net: NetworkModel) {
         let maxPoints = maxHistoryPoints()
         var history = signalHistory[net.id] ?? []
@@ -486,30 +533,30 @@ class AnalyzerViewModel: ObservableObject {
         }
         signalHistory[net.id] = history
     }
-    
+
     // MARK: - Filtering & Sorting
-    
+
     private func requestFilterUpdate() {
         // Простой debounce не нужен здесь, так как toggles нажимаются редко.
         // Выполняем сразу.
         applyFilters()
     }
-    
+
     private func applyFilters() {
         let allItems = Array(persistentNetworks.values)
         let query = searchText.lowercased()
-        
+
         // 1. Filter
         var baseFiltered = allItems.filter { net in
             if !filterBand24 && net.band == .band24 { return false }
             if !filterBand5 && net.band == .band5 { return false }
             if !filterBand6 && net.band == .band6 { return false }
             if Double(net.signal) < minSignalThreshold { return false }
-            
+
             if !query.isEmpty {
-                let matches = net.ssid.lowercased().contains(query) ||
-                              net.bssid.lowercased().contains(query) ||
-                              net.vendor.lowercased().contains(query)
+                let matches =
+                    net.ssid.lowercased().contains(query) || net.bssid.lowercased().contains(query)
+                    || net.vendor.lowercased().contains(query)
                 if !matches { return false }
             }
             return true
@@ -546,25 +593,27 @@ class AnalyzerViewModel: ObservableObject {
         // 3. Sort
         if let keyString = currentSortKey, let key = ColumnId(rawValue: keyString) {
             filtered.sort { p1, p2 in
-                let result = compare(p1, p2, by: key)
-                return isSortAscending ? result : !result
+                let forward = compare(p1, p2, by: key)
+                let backward = compare(p2, p1, by: key)
+                if !forward && !backward { return p1.id < p2.id }
+                return isSortAscending ? forward : backward
             }
         }
-        
+
         self.networks = filtered
         if let selectedId = selectedNetworkId, !filtered.contains(where: { $0.id == selectedId }) {
             selectedNetworkId = nil
         }
     }
-    
+
     // MARK: - Public Methods
-    
+
     func sort(by key: String, ascending: Bool) {
         currentSortKey = key
         isSortAscending = ascending
         // applyFilters вызовется автоматически через didSet
     }
-    
+
     func formatSignal(_ dbm: Int) -> String {
         switch signalDisplayMode {
         case .dbm: return "\(dbm)"
@@ -593,6 +642,7 @@ class AnalyzerViewModel: ObservableObject {
         case .channelUtilization: return formatOptionalInt(net.channelUtilization)
         case .channelWidth: return net.channelWidthLabel
         case .clients: return formatOptionalInt(net.clients)
+        case .congestion: return metrics(for: net)?.congestionScore.description ?? "-"
         case .count: return "\(net.count)"
         case .countryCode: return net.countryCode ?? "-"
         case .fastTransition: return formatOptionalBool(net.fastTransition)
@@ -609,6 +659,7 @@ class AnalyzerViewModel: ObservableObject {
         case .networkName: return net.displaySSID
         case .noise: return net.noiseLabel
         case .protectionMode: return net.protectionMode ?? "-"
+        case .quality: return metrics(for: net)?.qualityScore.description ?? "-"
         case .snr: return net.snrLabel
         case .security: return net.security
         case .seen: return "\(net.seen)"
@@ -636,6 +687,11 @@ class AnalyzerViewModel: ObservableObject {
         if let current = currentConnectedBSSID, !current.isEmpty, net.bssid == current {
             parts.append("Connected")
         }
+        if let metric = metrics(for: net) {
+            if metric.grade == .poor { parts.append("Poor quality") }
+            if metric.interferenceLoad >= 0.5 { parts.append("Congested") }
+        }
+        if net.security.lowercased().contains("open") { parts.append("Open") }
         return parts.isEmpty ? "-" : parts.joined(separator: ", ")
     }
 
@@ -656,6 +712,7 @@ class AnalyzerViewModel: ObservableObject {
         case .channelUtilization: return (a.channelUtilization ?? 0) < (b.channelUtilization ?? 0)
         case .channelWidth: return a.channelWidthMHz < b.channelWidthMHz
         case .clients: return (a.clients ?? 0) < (b.clients ?? 0)
+        case .congestion: return (metrics(for: a)?.congestionScore ?? 0) < (metrics(for: b)?.congestionScore ?? 0)
         case .count: return a.count < b.count
         case .countryCode: return compareText(a.countryCode ?? "", b.countryCode ?? "")
         case .fastTransition: return boolToInt(a.fastTransition) < boolToInt(b.fastTransition)
@@ -672,6 +729,7 @@ class AnalyzerViewModel: ObservableObject {
         case .networkName: return compareText(a.displaySSID, b.displaySSID)
         case .noise: return (a.noise ?? 0) < (b.noise ?? 0)
         case .protectionMode: return compareText(a.protectionMode ?? "", b.protectionMode ?? "")
+        case .quality: return (metrics(for: a)?.qualityScore ?? 0) < (metrics(for: b)?.qualityScore ?? 0)
         case .snr: return (a.snr ?? 0) < (b.snr ?? 0)
         case .security: return compareText(a.security, b.security)
         case .seen: return a.seen < b.seen
@@ -728,7 +786,11 @@ class AnalyzerViewModel: ObservableObject {
         }
         return "\(secs)s"
     }
-    
+
+    func metrics(for network: NetworkModel) -> NetworkMetrics? {
+        analysis.metrics(for: network.id)
+    }
+
     // 1. Вычисляемое свойство для выбранной сети (нужно для Инспектора)
     var selectedNetwork: NetworkModel? {
         guard let selectedNetworkId else { return nil }
@@ -785,19 +847,19 @@ class AnalyzerViewModel: ObservableObject {
         columnDefinitions = ColumnDefinition.defaults
         saveColumnSettings()
     }
-    
+
     // 3. Публичные методы для геолокации (нужны для кнопок в UI)
     // Чтобы не обращаться к приватному locationManager из View
     func requestLocationAuthorization() {
         locationManager.requestAuthorization()
     }
-    
+
     func openSystemLocationSettings() {
         locationManager.openSystemSettings()
     }
-    
+
     // MARK: - Public System Hooks
-    
+
     /// Вызывается из App при переходе в активное состояние,
     /// чтобы проверить, не изменил ли пользователь права доступа в Настройках
     func checkLocationAuthorization() {
@@ -806,45 +868,146 @@ class AnalyzerViewModel: ObservableObject {
         // но если это ваша обертка — вызываем её метод.
         locationManager.refreshAuthorizationStatus()
     }
-    
+
     // MARK: - Export (Improved CSV)
-    
+
     func exportCSV() {
-        guard let window = NSApp.keyWindow else { return }
-        
         let visibleColumns = columnDefinitions.sorted { $0.order < $1.order }.filter { $0.isVisible }
         let headers = visibleColumns.map { "\"\($0.displayTitle)\"" }.joined(separator: ",")
-        
+
         var rows: [String] = []
         for net in networks {
             let fields = visibleColumns.map { col -> String in
-                let val = textForColumn(id: col.id, net: net)
-                // Экранирование кавычек для CSV
-                let escaped = val.replacingOccurrences(of: "\"", with: "\"\"")
+                let value = textForColumn(id: col.id, net: net)
+                let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
                 return "\"\(escaped)\""
             }
             rows.append(fields.joined(separator: ","))
         }
-        
-        let csvContent = "\(headers)\n\(rows.joined(separator: "\n"))"
-        
+
+        // UTF-8 BOM keeps non-ASCII SSIDs intact in Excel; CRLF follows RFC 4180.
+        let csvContent = "\u{FEFF}" + ([headers] + rows).joined(separator: "\r\n") + "\r\n"
+        presentSavePanel(
+            defaultName: "WiFA-Scan-\(Self.fileTimestamp()).csv",
+            contentType: .commaSeparatedText,
+            content: csvContent
+        )
+    }
+
+    func exportJSON() {
+        let payload: [String: Any] = [
+            "generator": "WiFA",
+            "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
+            "exportedAt": ISO8601DateFormatter().string(from: Date()),
+            "summary": [
+                "networks": networks.count,
+                "averageQuality": analysis.averageQuality,
+                "criticalSecurityFindings": analysis.criticalFindingCount,
+            ],
+            "networks": networks.map { networkJSON($0) },
+            "recommendations": WiFiBand.allCases.compactMap { band -> [String: Any]? in
+                guard let best = analysis.bestChannel(for: band) else { return nil }
+                return [
+                    "band": band.label,
+                    "channel": best.channel,
+                    "widthMHz": best.widthMHz,
+                    "score": best.score,
+                    "overlappingNetworks": best.overlappingCount,
+                    "coChannelNetworks": best.coChannelCount,
+                    "dfs": best.isDFS,
+                    "rationale": best.rationale,
+                ]
+            },
+        ]
+
+        guard JSONSerialization.isValidJSONObject(payload),
+            let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
+            let string = String(data: data, encoding: .utf8)
+        else {
+            presentError("Could not encode scan results as JSON.")
+            return
+        }
+
+        presentSavePanel(
+            defaultName: "WiFA-Scan-\(Self.fileTimestamp()).json",
+            contentType: .json,
+            content: string
+        )
+    }
+
+    private func networkJSON(_ network: NetworkModel) -> [String: Any] {
+        var object: [String: Any] = [
+            "id": network.id,
+            "ssid": network.ssid,
+            "bssid": network.bssid,
+            "vendor": network.vendor,
+            "band": network.band.label,
+            "channel": network.channel,
+            "widthMHz": network.channelWidthMHz,
+            "generation": network.generation.label,
+            "security": network.security,
+            "signalDbm": network.signal,
+            "noiseDbm": network.noise.map { $0 as Any } ?? NSNull(),
+            "snrDb": network.snr.map { $0 as Any } ?? NSNull(),
+            "channelUtilizationPercent": network.channelUtilization.map { $0 as Any } ?? NSNull(),
+            "countryCode": network.countryCode.map { $0 as Any } ?? NSNull(),
+            "wpsEnabled": network.wpsEnabled.map { $0 as Any } ?? NSNull(),
+            "pmfRequired": network.pmfRequired.map { $0 as Any } ?? NSNull(),
+            "firstSeen": network.firstSeen.map { ISO8601DateFormatter().string(from: $0) as Any } ?? NSNull(),
+            "lastSeen": network.lastSeen.map { ISO8601DateFormatter().string(from: $0) as Any } ?? NSNull(),
+            "informationElements": network.informationElements.map { element in
+                [
+                    "id": element.elementId,
+                    "name": element.name,
+                    "length": element.length,
+                    "summary": element.summary,
+                ]
+            },
+        ]
+        if let metrics = analysis.metrics(for: network.id) {
+            object["qualityScore"] = metrics.qualityScore
+            object["congestionScore"] = metrics.congestionScore
+            object["securityScore"] = metrics.securityScore
+            object["overlappingNetworks"] = metrics.overlappingCount
+            object["issues"] = metrics.issues.map {
+                ["severity": $0.severity.label, "title": $0.title, "detail": $0.detail]
+            }
+        }
+        return object
+    }
+
+    private func presentSavePanel(defaultName: String, contentType: UTType, content: String) {
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
         let savePanel = NSSavePanel()
-        savePanel.allowedContentTypes = [.commaSeparatedText]
-        savePanel.nameFieldStringValue = "WiFi_Scan_\(Int(Date().timeIntervalSince1970)).csv"
-        
-        savePanel.beginSheetModal(for: window) { response in
-            if response == .OK, let url = savePanel.url {
-                try? csvContent.write(to: url, atomically: true, encoding: .utf8)
+        savePanel.allowedContentTypes = [contentType]
+        savePanel.canCreateDirectories = true
+        savePanel.nameFieldStringValue = defaultName
+        savePanel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = savePanel.url else { return }
+            do {
+                try content.write(to: url, atomically: true, encoding: .utf8)
+            } catch {
+                self?.presentError("Could not save the file: \(error.localizedDescription)")
             }
         }
     }
-    
-    private func getTextForExport(id: String, net: NetworkModel) -> String {
-        textForColumn(id: id, net: net)
+
+    private func presentError(_ message: String) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Export failed"
+        alert.informativeText = message
+        alert.runModal()
     }
-    
+
+    private static func fileTimestamp() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        return formatter.string(from: Date())
+    }
+
     // MARK: - Persistence
-    
+
     func toggleColumn(_ id: String) {
         if let idx = columnDefinitions.firstIndex(where: { $0.id == id }) {
             columnDefinitions[idx].isVisible.toggle()
@@ -853,16 +1016,17 @@ class AnalyzerViewModel: ObservableObject {
             objectWillChange.send()
         }
     }
-    
+
     func saveColumnSettings() {
         if let data = try? JSONEncoder().encode(columnDefinitions) {
-            UserDefaults.standard.set(data, forKey: "WifiColumns_v3")
+            UserDefaults.standard.set(data, forKey: "WifiColumns_v4")
         }
     }
-    
+
     private func loadColumnSettings() {
-        if let data = UserDefaults.standard.data(forKey: "WifiColumns_v3"),
-           let saved = try? JSONDecoder().decode([ColumnDefinition].self, from: data) {
+        if let data = UserDefaults.standard.data(forKey: "WifiColumns_v4"),
+            let saved = try? JSONDecoder().decode([ColumnDefinition].self, from: data)
+        {
             columnDefinitions = normalizeColumnDefinitions(saved)
         }
     }
@@ -893,8 +1057,58 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     private func loadPreferences() {
-        let saved = UserDefaults.standard.double(forKey: refreshIntervalKey)
-        if saved > 0 { refreshInterval = saved }
+        let defaults = UserDefaults.standard
+
+        let savedInterval = defaults.double(forKey: refreshIntervalKey)
+        if savedInterval >= 0.5 { refreshInterval = savedInterval }
+
+        if defaults.object(forKey: "Wifa.filterBand24") != nil {
+            filterBand24 = defaults.bool(forKey: "Wifa.filterBand24")
+        }
+        if defaults.object(forKey: "Wifa.filterBand5") != nil {
+            filterBand5 = defaults.bool(forKey: "Wifa.filterBand5")
+        }
+        if defaults.object(forKey: "Wifa.filterBand6") != nil {
+            filterBand6 = defaults.bool(forKey: "Wifa.filterBand6")
+        }
+        if defaults.object(forKey: "Wifa.minSignal") != nil {
+            minSignalThreshold = defaults.double(forKey: "Wifa.minSignal")
+        }
+        if let rawRemove = defaults.object(forKey: "Wifa.removeAfter") as? Double,
+            let interval = NetworkRemovalInterval(rawValue: rawRemove)
+        {
+            removeAfterInterval = interval
+        }
+        if let rawUnit = defaults.string(forKey: "Wifa.signalUnit"),
+            let mode = SignalDisplayMode(rawValue: rawUnit)
+        {
+            signalDisplayMode = mode
+        }
+        if defaults.object(forKey: "Wifa.highlightConnected") != nil {
+            highlightConnectedNetworks = defaults.bool(forKey: "Wifa.highlightConnected")
+        }
+        if let sortKey = defaults.string(forKey: "Wifa.sortKey"), ColumnId(rawValue: sortKey) != nil {
+            currentSortKey = sortKey
+        }
+        if defaults.object(forKey: "Wifa.sortAscending") != nil {
+            isSortAscending = defaults.bool(forKey: "Wifa.sortAscending")
+        }
+    }
+
+    private func savePreferences() {
+        let defaults = UserDefaults.standard
+        defaults.set(refreshInterval, forKey: refreshIntervalKey)
+        defaults.set(filterBand24, forKey: "Wifa.filterBand24")
+        defaults.set(filterBand5, forKey: "Wifa.filterBand5")
+        defaults.set(filterBand6, forKey: "Wifa.filterBand6")
+        defaults.set(minSignalThreshold, forKey: "Wifa.minSignal")
+        defaults.set(removeAfterInterval.rawValue, forKey: "Wifa.removeAfter")
+        defaults.set(signalDisplayMode.rawValue, forKey: "Wifa.signalUnit")
+        defaults.set(highlightConnectedNetworks, forKey: "Wifa.highlightConnected")
+        if let currentSortKey {
+            defaults.set(currentSortKey, forKey: "Wifa.sortKey")
+        }
+        defaults.set(isSortAscending, forKey: "Wifa.sortAscending")
     }
 
     private func maxHistoryPoints() -> Int {

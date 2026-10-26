@@ -20,10 +20,13 @@ struct WiFACommands: Commands {
 
             Divider()
 
-            Picker("Scan Interval", selection: Binding(
-                get: { viewModel.refreshInterval },
-                set: { viewModel.updateRefreshInterval(to: $0) }
-            )) {
+            Picker(
+                "Scan Interval",
+                selection: Binding(
+                    get: { viewModel.refreshInterval },
+                    set: { viewModel.updateRefreshInterval(to: $0) }
+                )
+            ) {
                 Text("1s").tag(1.0)
                 Text("3s").tag(3.0)
                 Text("5s").tag(5.0)
@@ -57,6 +60,13 @@ struct WiFACommands: Commands {
             Button("Clear Quick Filters") {
                 viewModel.clearQuickFilters()
             }
+
+            Divider()
+
+            Button("Search Networks…") {
+                NotificationCenter.default.post(name: .wifaFocusSearch, object: nil)
+            }
+            .keyboardShortcut("f")
         }
 
         CommandMenu("Display") {
@@ -72,6 +82,7 @@ struct WiFACommands: Commands {
         CommandMenu("Panels") {
             Toggle("Show Filters Sidebar", isOn: $uiState.showSidebar)
             Toggle("Show Inspector", isOn: $uiState.showInspector)
+                .keyboardShortcut("i", modifiers: [.command, .option])
 
             Divider()
 
@@ -79,12 +90,29 @@ struct WiFACommands: Commands {
                 Text("Spectrum").tag(0)
                 Text("History").tag(1)
                 Text("Raw Data").tag(2)
+                Text("Insights").tag(3)
             }
+
+            Divider()
+
+            Button("Show Spectrum") { uiState.selectedBottomTab = 0 }
+                .keyboardShortcut("1", modifiers: [.command])
+            Button("Show History") { uiState.selectedBottomTab = 1 }
+                .keyboardShortcut("2", modifiers: [.command])
+            Button("Show Raw Data") { uiState.selectedBottomTab = 2 }
+                .keyboardShortcut("3", modifiers: [.command])
+            Button("Show Insights") { uiState.selectedBottomTab = 3 }
+                .keyboardShortcut("4", modifiers: [.command])
         }
 
         CommandMenu("Data") {
-            Button("Export CSV") {
+            Button("Export CSV…") {
                 viewModel.exportCSV()
+            }
+            .keyboardShortcut("e", modifiers: [.command, .shift])
+
+            Button("Export JSON…") {
+                viewModel.exportJSON()
             }
         }
     }
@@ -92,12 +120,13 @@ struct WiFACommands: Commands {
     private func showAboutPanel() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
-        let credits = NSAttributedString(string: "Native macOS Wi‑Fi Analyzer\n© 2026 WiFA Contributors\nAuthor: zheltukheen")
+        let credits = NSAttributedString(
+            string: "Native macOS Wi‑Fi Analyzer\n© 2026 WiFA Contributors\nAuthor: zheltukheen")
 
         NSApp.orderFrontStandardAboutPanel(options: [
             NSApplication.AboutPanelOptionKey.applicationName: "WiFA",
             NSApplication.AboutPanelOptionKey.applicationVersion: "Version \(version) (\(build))",
-            NSApplication.AboutPanelOptionKey.credits: credits
+            NSApplication.AboutPanelOptionKey.credits: credits,
         ])
     }
 }

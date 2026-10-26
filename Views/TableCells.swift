@@ -35,7 +35,7 @@ final class WiFiTableCellView: NSTableCellView {
         NSLayoutConstraint.activate([
             textFieldLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
             textFieldLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
-            textFieldLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6)
+            textFieldLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
         ])
     }
 
@@ -111,7 +111,7 @@ final class DisclosureTableCellView: NSTableCellView {
             disclosureButton.heightAnchor.constraint(equalToConstant: 14),
             textFieldLabel.leadingAnchor.constraint(equalTo: disclosureButton.trailingAnchor, constant: 6),
             textFieldLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            textFieldLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6)
+            textFieldLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
         ])
     }
 

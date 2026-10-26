@@ -1,41 +1,55 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
 
 APP_NAME="WiFA"
 SCHEME="$APP_NAME"
-ARCHS="arm64 x86_64"
+PROJECT="$APP_NAME.xcodeproj"
 OUT_DIR="build"
 ARCHIVE_PATH="$OUT_DIR/${APP_NAME}.xcarchive"
 PRODUCT_PATH="$OUT_DIR/${APP_NAME}-Universal"
-CLEAN_ARCHIVE=${CLEAN_ARCHIVE:-1}
+CLEAN_ARCHIVE="${CLEAN_ARCHIVE:-1}"
 
-if [ ! -d ".xcodeproj" ] && ! ls *.xcodeproj 1> /dev/null 2>&1; then
-  echo "Ошибка: Сначала создайте Xcode-проект через Xcode или xcodebuild!"
-  exit 1
+if [ ! -d "$PROJECT" ]; then
+    echo "Error: $PROJECT not found. Run 'xcodegen generate' first." >&2
+    exit 1
 fi
 
-echo "==> Очистка предыдущих сборок (только Release артефакты)"
+echo "==> Cleaning previous Release artifacts"
 rm -rf "$ARCHIVE_PATH" "$PRODUCT_PATH"
 mkdir -p "$OUT_DIR"
 
-echo "==> Сборка xcarchive для обеих архитектур..."
+echo "==> Archiving universal macOS app (arm64 + x86_64)"
 xcodebuild archive \
-  -scheme "$SCHEME" \
-  -destination "generic/platform=macOS" \
-  -archivePath "$ARCHIVE_PATH" \
-  -configuration Release \
-  ONLY_ACTIVE_ARCH=NO \
-  SUPPORTED_ARCHS="$ARCHS"
+    -project "$PROJECT" \
+    -scheme "$SCHEME" \
+    -destination "generic/platform=macOS" \
+    -archivePath "$ARCHIVE_PATH" \
+    -derivedDataPath "$OUT_DIR/DerivedData" \
+    -configuration Release \
+    ONLY_ACTIVE_ARCH=NO \
+    ARCHS="arm64 x86_64" \
+    CODE_SIGNING_ALLOWED=NO \
+    CODE_SIGNING_REQUIRED=NO \
+    SKIP_INSTALL=NO
 
 mkdir -p "$PRODUCT_PATH"
-
-echo "==> Копирование приложения"
 cp -R "$ARCHIVE_PATH/Products/Applications/${APP_NAME}.app" "$PRODUCT_PATH/"
 
+APP="$PRODUCT_PATH/${APP_NAME}.app"
+# The Release workflow publishes an ad-hoc signed build. Replace "-" with a
+# Developer ID identity (and notarize) for distribution outside GitHub.
+codesign --force --deep --sign - "$APP"
+codesign --verify --deep --strict --verbose=2 "$APP"
+
 if [ "$CLEAN_ARCHIVE" = "1" ]; then
-  echo "==> Удаление .xcarchive (оставляем только $PRODUCT_PATH)"
-  rm -rf "$ARCHIVE_PATH"
+    rm -rf "$ARCHIVE_PATH"
 fi
 
-echo "==> Готово. Universal Binary находится в $PRODUCT_PATH"
+VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
+BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Contents/Info.plist")"
+echo "==> Built WiFA ${VERSION} (${BUILD})"
+lipo -archs "$APP/Contents/MacOS/${APP_NAME}"
+echo "==> App: $APP"

@@ -1,6 +1,6 @@
 import Foundation
 
-enum WiFiBand: Int, Codable {
+enum WiFiBand: Int, Codable, Hashable, CaseIterable {
     case unknown = 0
     case band24 = 1
     case band5 = 2
@@ -18,7 +18,7 @@ enum WiFiBand: Int, Codable {
     var sortOrder: Int { rawValue }
 }
 
-enum WiFiStandard: Int, Codable {
+enum WiFiStandard: Int, Codable, Hashable, CaseIterable {
     case unknown = 0
     case mode11b = 1
     case mode11a = 2
@@ -26,6 +26,7 @@ enum WiFiStandard: Int, Codable {
     case mode11n = 4
     case mode11ac = 5
     case mode11ax = 6
+    case mode11be = 7
 
     var label: String {
         switch self {
@@ -35,6 +36,7 @@ enum WiFiStandard: Int, Codable {
         case .mode11n: return "11n"
         case .mode11ac: return "11ac"
         case .mode11ax: return "11ax"
+        case .mode11be: return "11be"
         case .unknown: return "-"
         }
     }
@@ -91,6 +93,8 @@ struct NetworkModel: Identifiable, Equatable {
     let streams: Int?
     let type: String?
     let wps: String?
+    let wpsEnabled: Bool?
+    let pmfRequired: Bool?
     let ieCount: Int?
     let ieTotalLength: Int?
     let ratesEstimated: Bool
@@ -164,6 +168,23 @@ struct NetworkModel: Identifiable, Equatable {
 
     var wideChannelLabel: String {
         channelWidthMHz >= 80 ? "Yes" : "No"
+    }
+
+    /// 5 GHz channels that require DFS/CAC in most regulatory domains.
+    var isDFSChannel: Bool {
+        band == .band5 && (52...144).contains(channel)
+    }
+
+    /// Primary channel centre frequency in MHz, derived from the channel plan.
+    var frequencyMHz: Int? {
+        if let centerFrequency { return centerFrequency }
+        guard channel > 0 else { return nil }
+        switch band {
+        case .band24: return channel == 14 ? 2484 : 2407 + channel * 5
+        case .band5: return 5000 + channel * 5
+        case .band6: return 5950 + channel * 5
+        case .unknown: return nil
+        }
     }
 
     var displaySSID: String {

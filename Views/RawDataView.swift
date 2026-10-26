@@ -115,28 +115,35 @@ struct RawDataTableView: NSViewRepresentable {
 
         func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
             guard let column = tableColumn,
-                  row >= 0,
-                  row < rowItems().count else { return nil }
+                row >= 0,
+                row < rowItems().count
+            else { return nil }
 
             let item = rowItems()[row]
             let id = column.identifier.rawValue
 
             switch id {
             case "id":
-                let cell = tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView ?? {
-                    let view = WiFiTableCellView()
-                    view.identifier = WiFiTableCellView.identifier
-                    return view
-                }()
+                let cell =
+                    tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView
+                    ?? {
+                        let view = WiFiTableCellView()
+                        view.identifier = WiFiTableCellView.identifier
+                        return view
+                    }()
                 let text = item.isDetail ? "" : item.element.displayId
-                cell.configure(text: text, isConnected: false, alignment: .left, highlightConnected: false, style: item.isDetail ? .secondary : .standard)
+                cell.configure(
+                    text: text, isConnected: false, alignment: .left, highlightConnected: false,
+                    style: item.isDetail ? .secondary : .standard)
                 return cell
             case "length":
-                let cell = tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView ?? {
-                    let view = WiFiTableCellView()
-                    view.identifier = WiFiTableCellView.identifier
-                    return view
-                }()
+                let cell =
+                    tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView
+                    ?? {
+                        let view = WiFiTableCellView()
+                        view.identifier = WiFiTableCellView.identifier
+                        return view
+                    }()
                 let text: String
                 if item.isDetail {
                     text = ""
@@ -144,24 +151,33 @@ struct RawDataTableView: NSViewRepresentable {
                     let suffix = item.element.length == 1 ? "byte" : "bytes"
                     text = "\(item.element.length) \(suffix)"
                 }
-                cell.configure(text: text, isConnected: false, alignment: .right, highlightConnected: false, style: item.isDetail ? .secondary : .standard)
+                cell.configure(
+                    text: text, isConnected: false, alignment: .right, highlightConnected: false,
+                    style: item.isDetail ? .secondary : .standard)
                 return cell
             case "element":
                 if item.isDetail {
-                    let cell = tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView ?? {
-                        let view = WiFiTableCellView()
-                        view.identifier = WiFiTableCellView.identifier
-                        return view
-                    }()
+                    let cell =
+                        tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self)
+                        as? WiFiTableCellView
+                        ?? {
+                            let view = WiFiTableCellView()
+                            view.identifier = WiFiTableCellView.identifier
+                            return view
+                        }()
                     let text = "   \(item.detailLabel ?? "")"
-                    cell.configure(text: text, isConnected: false, alignment: .left, highlightConnected: false, style: .secondary)
+                    cell.configure(
+                        text: text, isConnected: false, alignment: .left, highlightConnected: false, style: .secondary)
                     return cell
                 } else {
-                    let cell = tableView.makeView(withIdentifier: DisclosureTableCellView.identifier, owner: self) as? DisclosureTableCellView ?? {
-                        let view = DisclosureTableCellView()
-                        view.identifier = DisclosureTableCellView.identifier
-                        return view
-                    }()
+                    let cell =
+                        tableView.makeView(withIdentifier: DisclosureTableCellView.identifier, owner: self)
+                        as? DisclosureTableCellView
+                        ?? {
+                            let view = DisclosureTableCellView()
+                            view.identifier = DisclosureTableCellView.identifier
+                            return view
+                        }()
                     let isExpanded = parent.expandedIds.contains(item.element.id)
                     cell.configure(title: item.element.name, isExpanded: isExpanded) { [weak self] in
                         self?.toggleRow(row)
@@ -169,13 +185,17 @@ struct RawDataTableView: NSViewRepresentable {
                     return cell
                 }
             case "details":
-                let cell = tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView ?? {
-                    let view = WiFiTableCellView()
-                    view.identifier = WiFiTableCellView.identifier
-                    return view
-                }()
+                let cell =
+                    tableView.makeView(withIdentifier: WiFiTableCellView.identifier, owner: self) as? WiFiTableCellView
+                    ?? {
+                        let view = WiFiTableCellView()
+                        view.identifier = WiFiTableCellView.identifier
+                        return view
+                    }()
                 let text = item.isDetail ? (item.detailValue ?? "") : item.element.summary
-                cell.configure(text: text, isConnected: false, alignment: .left, highlightConnected: false, style: item.isDetail ? .secondary : .standard)
+                cell.configure(
+                    text: text, isConnected: false, alignment: .left, highlightConnected: false,
+                    style: item.isDetail ? .secondary : .standard)
                 return cell
             default:
                 return nil
@@ -212,15 +232,19 @@ struct RawDataTableView: NSViewRepresentable {
             for element in parent.elements {
                 rows.append(RowItem(element: element, detailLabel: nil, detailValue: nil))
                 if parent.expandedIds.contains(element.id) {
-                    rows.append(RowItem(element: element, detailLabel: "Element ID", detailValue: "\(element.elementId)"))
+                    rows.append(
+                        RowItem(element: element, detailLabel: "Element ID", detailValue: "\(element.elementId)"))
                     let suffix = element.length == 1 ? "byte" : "bytes"
-                    rows.append(RowItem(element: element, detailLabel: "Length", detailValue: "\(element.length) \(suffix)"))
+                    rows.append(
+                        RowItem(element: element, detailLabel: "Length", detailValue: "\(element.length) \(suffix)"))
                     for line in element.detailLines {
                         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
                         if trimmed.isEmpty { continue }
                         if let range = trimmed.range(of: ":") {
-                            let label = String(trimmed[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-                            let value = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                            let label = String(trimmed[..<range.lowerBound]).trimmingCharacters(
+                                in: .whitespacesAndNewlines)
+                            let value = String(trimmed[range.upperBound...]).trimmingCharacters(
+                                in: .whitespacesAndNewlines)
                             rows.append(RowItem(element: element, detailLabel: label, detailValue: value))
                         } else {
                             rows.append(RowItem(element: element, detailLabel: "Detail", detailValue: trimmed))
