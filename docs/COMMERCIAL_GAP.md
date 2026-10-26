@@ -53,6 +53,11 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - In-app vendor database updates, crash diagnostics and release VM smoke tests.
 - CLI/JSON automation and filter/profile import-export.
 
+## Delivered in 2.1
+
+- Multi-Link extension element decoding (Basic / Probe / Reconfiguration).
+- 2.1 release assets: app, CLI, DMG, checksums, signed appcast.
+
 ## Delivered in 2.0
 
 - Offline pcap/pcapng analysis and PCAPNG export.
@@ -159,8 +164,8 @@ A credible commercial competitor in 2026 needs all of the following:
 - [x] CSV/JSON export, copy, search, filters, configurable columns
 - [x] Signed auto-updating distribution (Sparkle); notarization still pending
 - [x] Grouping, annotations, saved sessions and column profiles
-- [~] PCAP export (synthetic beacons + live capture; no PCAPNG/offline analysis)
-- [~] AP names and explicit EHT/MLO block (true link-set/320 MHz decoding pending)
+- [x] PCAP/PCAPNG export and offline capture analysis
+- [~] AP names, EHT/320 MHz and Multi-Link element decoding (per-link sets pending)
 - [~] Russian UI + VoiceOver chart descriptors (dynamic detail localization pending)
 - [x] IDW survey heatmap with walls and SSH remote sensors
 
