@@ -10,6 +10,7 @@ struct OfflineCaptureView: View {
     @State private var isParsing = false
     @State private var clients: [CapturedClient] = []
     @State private var showingClients = false
+    @State private var selectedBeaconId: String?
 
     init(initialURL: URL? = nil) {
         self.initialURL = initialURL
@@ -75,7 +76,7 @@ struct OfflineCaptureView: View {
                             .controlSize(.small)
                     }
                     .padding(10)
-                    Table(beacons) {
+                    Table(beacons, selection: $selectedBeaconId) {
                         TableColumn("SSID", value: \.ssid)
                         TableColumn("BSSID", value: \.bssid)
                         TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(40)
@@ -86,6 +87,43 @@ struct OfflineCaptureView: View {
                         TableColumn("EHT") { Text($0.isEHT ? "Yes" : "—") }.width(40)
                     }
                     .tableStyle(.inset)
+                    .frame(minHeight: 150, maxHeight: .infinity)
+
+                    if let selectedBeacon {
+                        Divider()
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Information elements · \(selectedBeacon.informationElements.count)")
+                                    .font(.caption.bold())
+                                Spacer()
+                                Button("Copy IEs") { copyIEs(selectedBeacon) }
+                                    .controlSize(.mini)
+                            }
+                            ScrollView {
+                                LazyVStack(alignment: .leading, spacing: 3) {
+                                    ForEach(selectedBeacon.informationElements) { element in
+                                        HStack(alignment: .top, spacing: 6) {
+                                            Text("\(element.elementId)")
+                                                .font(.caption2.monospaced())
+                                                .foregroundColor(.secondary)
+                                                .frame(width: 26, alignment: .trailing)
+                                            VStack(alignment: .leading, spacing: 1) {
+                                                Text(element.name).font(.caption2.bold())
+                                                Text(element.summary)
+                                                    .font(.caption2)
+                                                    .foregroundColor(.secondary)
+                                                    .lineLimit(1)
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(4)
+                            }
+                            .frame(height: 105)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 8)
+                    }
                 }
             }
         }
@@ -152,6 +190,18 @@ struct OfflineCaptureView: View {
                 }
             }
         }
+    }
+
+    private var selectedBeacon: CapturedBeacon? {
+        beacons.first { $0.id == selectedBeaconId }
+    }
+
+    private func copyIEs(_ beacon: CapturedBeacon) {
+        let text = beacon.informationElements.map { element in
+            "\(element.name) (\(element.elementId)): \(element.summary)\n\(element.detailLines.joined(separator: "\n"))"
+        }.joined(separator: "\n\n")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 
     private func exportCSV() {

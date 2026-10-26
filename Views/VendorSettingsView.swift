@@ -22,6 +22,8 @@ struct SettingsView: View {
                 .tabItem { Label("Columns", systemImage: "tablecells") }
             DiagnosticsSettingsView()
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
+            HardwareSettingsView()
+                .tabItem { Label("Hardware", systemImage: "cable.connector") }
         }
         .frame(width: 620, height: 520)
     }

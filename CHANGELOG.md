@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.9.0 — 2026-10-26
+
+### Added
+- Offline IE detail panel with copy; client MAC discovery from pcap/pcapng.
+- Predictive survey AP placement and coverage model; predictive APs in PDF.
+- USB hardware inventory (spectrum analyzers, WLAN Pi, SDR, 802.15.4) in Settings.
+- 6 GHz/DFS/regulatory and Zigbee/Thread availability inspectors.
+- Custom expression columns, generic scan importer, capture profiles with BPF,
+  IE copy and hide-empty-graphs setting.
+- Expanded Russian localization for the new workflows.
+
+### Changed
+- Version 2.9.0 (build 31).
+
+
 ## 2.8.1 — 2026-10-26
 
 ### Added
