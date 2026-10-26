@@ -11,6 +11,7 @@ struct SurveyView: View {
     @State private var walkMode = false
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
+    @State private var predictiveMode = false
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -100,6 +101,22 @@ struct SurveyView: View {
             .tint(wallMode ? .orange : nil)
 
             Button {
+                predictiveMode.toggle()
+                survey.statusMessage =
+                    predictiveMode
+                    ? "Predictive mode: click the plan to place an AP."
+                    : "Predictive mode off."
+            } label: {
+                Label(
+                    "Predictive",
+                    systemImage: predictiveMode
+                        ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
+            }
+            .controlSize(.small)
+            .buttonStyle(.bordered)
+            .tint(predictiveMode ? .purple : nil)
+
+            Button {
                 walkMode.toggle()
                 survey.statusMessage =
                     walkMode
@@ -130,6 +147,10 @@ struct SurveyView: View {
                     roomPoints = []
                 }
                 .disabled(survey.obstacles.isEmpty)
+                Button("Clear Predictive APs", role: .destructive) {
+                    survey.clearAccessPoints()
+                }
+                .disabled(survey.accessPoints.isEmpty)
                 Divider()
                 Button("Clear Walls", role: .destructive) {
                     survey.clearWalls()
@@ -230,6 +251,7 @@ struct SurveyView: View {
                         }
                         drawWalls(context: context, rect: rect)
                         drawRooms(context: context, rect: rect)
+                        drawAccessPoints(context: context, rect: rect)
                     }
                     .allowsHitTesting(false)
                     .accessibilityLabel("Floor plan heatmap")
@@ -270,6 +292,15 @@ struct SurveyView: View {
                     guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
                     let x = Double((location.x - rect.minX) / rect.width)
                     let y = Double((location.y - rect.minY) / rect.height)
+                    if predictiveMode {
+                        let network = captureNetwork
+                        survey.addAccessPoint(
+                            x: x, y: y,
+                            band: network?.band.label ?? "5GHz",
+                            channel: network?.channel ?? 36
+                        )
+                        return
+                    }
                     if roomMode {
                         roomPoints.append(SurveyPoint(x: x, y: y))
                         survey.statusMessage = "Room vertices: \(roomPoints.count). Finish Room when ready."
@@ -313,6 +344,49 @@ struct SurveyView: View {
         roomMode = false
     }
 
+    private func drawPredictiveHeat(context: GraphicsContext, rect: CGRect) {
+        let cell: CGFloat = 6
+        let width = survey.project.planWidthMeters ?? 30
+        var y = rect.minY
+        while y < rect.maxY {
+            var x = rect.minX
+            while x < rect.maxX {
+                let nx = Double((x - rect.minX) / rect.width)
+                let ny = Double((y - rect.minY) / rect.height)
+                if let rssi = SurveyPredictor.estimate(
+                    x: nx, y: ny, accessPoints: survey.accessPoints,
+                    walls: survey.walls, obstacles: survey.obstacles, planWidthMeters: width
+                ) {
+                    context.fill(
+                        Path(CGRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5)),
+                        with: .color(heatColor(rssi).opacity(0.42))
+                    )
+                }
+                x += cell
+            }
+            y += cell
+        }
+    }
+
+    private func drawAccessPoints(context: GraphicsContext, rect: CGRect) {
+        for ap in survey.accessPoints {
+            let point = CGPoint(x: rect.minX + ap.x * rect.width, y: rect.minY + ap.y * rect.height)
+            context.fill(
+                Path(ellipseIn: CGRect(x: point.x - 6, y: point.y - 6, width: 12, height: 12)),
+                with: .color(.purple)
+            )
+            context.stroke(
+                Path(ellipseIn: CGRect(x: point.x - 6, y: point.y - 6, width: 12, height: 12)),
+                with: .color(.white.opacity(0.9)),
+                lineWidth: 1.5
+            )
+            context.draw(
+                Text("AP").font(.system(size: 8, weight: .bold)).foregroundColor(.white),
+                at: CGPoint(x: point.x, y: point.y - 14)
+            )
+        }
+    }
+
     private func drawRooms(context: GraphicsContext, rect: CGRect) {
         for obstacle in survey.obstacles where obstacle.points.count >= 3 {
             var path = Path()
@@ -347,6 +421,7 @@ struct SurveyView: View {
                 .clipShape(Capsule())
             Text("-40 dBm").font(.caption2).foregroundColor(.secondary)
             Text("· walls/rooms -8 dB").font(.caption2).foregroundColor(.secondary)
+            if predictiveMode { Text("· predictive").font(.caption2).foregroundColor(.purple) }
         }
         .padding(7)
         .background(.regularMaterial)
@@ -364,6 +439,10 @@ struct SurveyView: View {
     }
 
     private func drawInterpolatedHeat(context: GraphicsContext, rect: CGRect) {
+        if predictiveMode && !survey.accessPoints.isEmpty {
+            drawPredictiveHeat(context: context, rect: rect)
+            return
+        }
         guard !displayedSamples.isEmpty else { return }
         let cell: CGFloat = 6
         var y = rect.minY

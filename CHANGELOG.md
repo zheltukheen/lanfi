@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.8.0 — 2026-10-26
+
+### Added
+- Predictive survey: place virtual APs on the floor plan and render a
+  log-distance/wall-aware coverage heatmap; APs and predictions appear in PDF.
+- 6 GHz/DFS/regulatory inspector and an explicit Zigbee/Thread availability
+  section.
+- Custom expression columns, generic JSON/CSV scan import, BPF capture profiles,
+  PCAP IE/client counts, IE copy and hide-empty-graphs settings.
+
+### Changed
+- Version 2.8.0 (build 29).
+
+
 ## 2.7.0 — 2026-10-26
 
 ### Added

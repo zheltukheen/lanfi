@@ -69,9 +69,14 @@ private final class SurveyReportView: NSView {
         if let image {
             let fitted = aspectFit(image.size, in: planRect)
             image.draw(in: fitted, from: .zero, operation: .copy, fraction: 1, respectFlipped: true, hints: nil)
-            drawHeatmap(in: fitted)
+            if project.accessPoints.isEmpty {
+                drawHeatmap(in: fitted)
+            } else {
+                drawPredictiveHeatmap(in: fitted)
+            }
             drawWalls(in: fitted)
             drawObstacles(in: fitted)
+            drawAccessPoints(in: fitted)
         } else {
             NSColor(calibratedWhite: 0.95, alpha: 1).setFill()
             planRect.fill()
@@ -139,6 +144,40 @@ private final class SurveyReportView: NSView {
                 ))
             path.lineWidth = 2
             path.stroke()
+        }
+    }
+
+    private func drawPredictiveHeatmap(in rect: NSRect) {
+        let cell: CGFloat = 8
+        let width = project.planWidthMeters ?? 30
+        var y = rect.minY
+        while y < rect.maxY {
+            var x = rect.minX
+            while x < rect.maxX {
+                let nx = Double((x - rect.minX) / rect.width)
+                let ny = Double((y - rect.minY) / rect.height)
+                if let rssi = SurveyPredictor.estimate(
+                    x: nx, y: ny, accessPoints: project.accessPoints,
+                    walls: project.walls, obstacles: project.obstacles, planWidthMeters: width
+                ) {
+                    color(for: rssi).withAlphaComponent(0.45).setFill()
+                    NSRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5).fill()
+                }
+                x += cell
+            }
+            y += cell
+        }
+    }
+
+    private func drawAccessPoints(in rect: NSRect) {
+        for ap in project.accessPoints {
+            let p = NSPoint(x: rect.minX + ap.x * rect.width, y: rect.minY + (1 - ap.y) * rect.height)
+            NSColor.systemPurple.setFill()
+            NSBezierPath(ovalIn: NSRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)).fill()
+            NSColor.white.setStroke()
+            let border = NSBezierPath(ovalIn: NSRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
+            border.lineWidth = 1
+            border.stroke()
         }
     }
 

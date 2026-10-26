@@ -31,6 +31,7 @@ final class SurveyViewModel: ObservableObject {
     var samples: [SurveySample] { project.samples }
     var walls: [SurveyWall] { project.walls }
     var obstacles: [SurveyObstacle] { project.obstacles }
+    var accessPoints: [SurveyAccessPoint] { project.accessPoints }
 
     func samples(for network: NetworkModel?) -> [SurveySample] {
         guard let network else { return project.samples }
@@ -94,6 +95,22 @@ final class SurveyViewModel: ObservableObject {
         project.updatedAt = Date()
         scheduleSave()
         statusMessage = "Room added · \(project.obstacles.count) rooms."
+    }
+
+    func addAccessPoint(x: Double, y: Double, band: String, channel: Int) {
+        project.accessPoints.append(
+            .new(x: min(max(x, 0), 1), y: min(max(y, 0), 1), band: band, channel: channel)
+        )
+        project.updatedAt = Date()
+        scheduleSave()
+        statusMessage = "Predictive AP added · \(project.accessPoints.count) APs."
+    }
+
+    func clearAccessPoints() {
+        project.accessPoints.removeAll()
+        project.updatedAt = Date()
+        store.save(project, imageData: nil)
+        statusMessage = "Predictive APs cleared."
     }
 
     func clearObstacles() {
