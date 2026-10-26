@@ -8,6 +8,8 @@ struct OfflineCaptureView: View {
     @State private var fileName = ""
     @State private var errorMessage: String?
     @State private var isParsing = false
+    @State private var clients: [CapturedClient] = []
+    @State private var showingClients = false
 
     init(initialURL: URL? = nil) {
         self.initialURL = initialURL
@@ -63,8 +65,12 @@ struct OfflineCaptureView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
                         Text(fileName).font(.caption.bold())
-                        Text("· \(beacons.count) BSSIDs").font(.caption).foregroundColor(.secondary)
+                        Text("· \(beacons.count) BSSIDs · \(clients.count) clients").font(.caption).foregroundColor(
+                            .secondary)
                         Spacer()
+                        Button("Clients…") { showingClients = true }
+                            .controlSize(.small)
+                            .disabled(clients.isEmpty)
                         Button("Export CSV…") { exportCSV() }
                             .controlSize(.small)
                     }
@@ -87,6 +93,22 @@ struct OfflineCaptureView: View {
         .task {
             if let initialURL { load(initialURL) }
         }
+        .sheet(isPresented: $showingClients) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Clients").font(.headline)
+                    Spacer()
+                    Button("Close") { showingClients = false }
+                }
+                Table(clients) {
+                    TableColumn("MAC", value: \.mac)
+                    TableColumn("BSSID", value: \.bssid)
+                    TableColumn("Frames") { Text("\($0.frameCount)") }.width(60)
+                }
+            }
+            .padding(14)
+            .frame(width: 560, height: 380)
+        }
     }
 
     private func open() {
@@ -106,16 +128,21 @@ struct OfflineCaptureView: View {
         isParsing = true
         errorMessage = nil
         beacons = []
+        clients = []
         Task {
             do {
                 let data = try Data(contentsOf: url)
                 let parsed = try await Task.detached(priority: .userInitiated) {
                     try PcapAnalyzer.parse(data: data)
                 }.value
+                let parsedClients = try await Task.detached(priority: .userInitiated) {
+                    try PcapAnalyzer.clients(data: data)
+                }.value
                 await MainActor.run {
                     isParsing = false
                     fileName = url.lastPathComponent
                     beacons = parsed
+                    clients = parsedClients
                     if parsed.isEmpty { errorMessage = "No beacons or probe responses found." }
                 }
             } catch {

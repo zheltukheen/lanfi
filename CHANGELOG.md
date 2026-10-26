@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.8.1 — 2026-10-26
+
+### Added
+- Offline PCAP client discovery: unique client MACs, associated BSSID and frame
+  counts from monitor captures, with a dedicated Clients sheet.
+- Zigbee/Thread and 6 GHz regulatory/DFS inspector sections.
+
+### Changed
+- Version 2.8.1 (build 30).
+
+
 ## 2.8.0 — 2026-10-26
 
 ### Added
