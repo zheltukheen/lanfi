@@ -950,6 +950,8 @@ struct NetworkStatusBar: View {
 
 struct MultiSelectionInspector: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    @State private var bulkAlias = ""
+    @State private var bulkNotes = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -982,6 +984,50 @@ struct MultiSelectionInspector: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(nsColor: .controlBackgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Comparison").font(.caption.bold())
+                ScrollView(.horizontal, showsIndicators: true) {
+                    Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 3) {
+                        GridRow {
+                            Text("Network").font(.caption2.bold())
+                            Text("dBm").font(.caption2.bold())
+                            Text("Ch").font(.caption2.bold())
+                            Text("Quality").font(.caption2.bold())
+                        }
+                        ForEach(selected.prefix(12)) { network in
+                            GridRow {
+                                Text(network.displaySSID)
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                                    .frame(minWidth: 110, alignment: .leading)
+                                Text("\(network.signal)").font(.caption2)
+                                Text("\(network.channel)").font(.caption2)
+                                Text("\(viewModel.metrics(for: network)?.qualityScore ?? 0)")
+                                    .font(.caption2)
+                            }
+                        }
+                    }
+                    .padding(6)
+                }
+                .background(Color(nsColor: .controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Bulk annotation").font(.caption.bold())
+                TextField("Alias for all selected", text: $bulkAlias)
+                    .textFieldStyle(.roundedBorder)
+                TextField("Notes for all selected", text: $bulkNotes)
+                    .textFieldStyle(.roundedBorder)
+                Button("Apply to \(selected.count) selected") {
+                    viewModel.applyBulkAnnotation(
+                        alias: bulkAlias, notes: bulkNotes, to: viewModel.selectedNetworkIds
+                    )
+                }
+                .controlSize(.small)
+                .disabled(selected.isEmpty)
+            }
 
             HStack {
                 Button {
