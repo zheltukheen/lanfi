@@ -12,6 +12,7 @@ final class LiveCaptureTests: XCTestCase {
         XCTAssertTrue(command.contains("-I -y IEEE802_11_RADIO"))
         XCTAssertTrue(command.contains("/tmp/LanFi test.pcap"))
         XCTAssertTrue(command.contains("sleep 15"))
+        XCTAssertTrue(command.contains("kill -TERM $PID"))
         XCTAssertFalse(command.contains("\n"))
         XCTAssertFalse(command.contains("&;"))
     }
