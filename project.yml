@@ -41,8 +41,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
-        MARKETING_VERSION: "2.8.1"
-        CURRENT_PROJECT_VERSION: "30"
+        MARKETING_VERSION: "2.9.0"
+        CURRENT_PROJECT_VERSION: "31"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -113,6 +113,7 @@ targets:
       - path: Services/PcapExporter.swift
       - path: Services/PcapAnalyzer.swift
       - path: Services/GenericScanImporter.swift
+      - path: Services/HardwareInventory.swift
       - path: Services/SystemInterfaceScanner.swift
       - path: Services/APNameDetector.swift
       - path: Services/NetworkColumnFormatter.swift
