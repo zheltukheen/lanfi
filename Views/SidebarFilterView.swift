@@ -3,6 +3,7 @@ import SwiftUI
 struct SidebarFilterView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var expandedSections: Set<SidebarCategory> = []
+    @State private var showSortPopover = false
 
     private let sortOptions: [ColumnId] = [
         .signal, .quality, .networkName, .channel, .band, .security,
@@ -80,20 +81,41 @@ struct SidebarFilterView: View {
             }
 
             HStack(spacing: 6) {
-                Picker(
-                    "Sort By",
-                    selection: Binding(
-                        get: { viewModel.currentSortKey ?? ColumnId.signal.rawValue },
-                        set: { viewModel.currentSortKey = $0 }
-                    )
-                ) {
-                    ForEach(sortOptions, id: \.self) { option in
-                        Text(option.defaultTitle).tag(option.rawValue)
+                Button {
+                    showSortPopover = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(
+                            sortOptions.first { $0.rawValue == viewModel.currentSortKey }?.defaultTitle
+                                ?? ColumnId.signal.defaultTitle
+                        )
+                        .font(.caption)
+                        .lineLimit(1)
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundColor(.secondary)
                     }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color(nsColor: .windowBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                    )
                 }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+                .popover(isPresented: $showSortPopover, arrowEdge: .bottom) {
+                    SortPopover(
+                        options: sortOptions,
+                        selection: Binding(
+                            get: { viewModel.currentSortKey ?? ColumnId.signal.rawValue },
+                            set: { viewModel.currentSortKey = $0 }
+                        )
+                    )
+                }
 
                 Button {
                     viewModel.isSortAscending.toggle()
@@ -155,45 +177,63 @@ struct SidebarSection: View {
     @Binding var isExpanded: Bool
 
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
-            VStack(spacing: 1) {
-                SidebarOptionRow(label: "All", count: totalCount, isSelected: selection == nil) {
-                    selection = nil
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.16)) {
+                    isExpanded.toggle()
                 }
-                ForEach(options, id: \.value) { option in
-                    SidebarOptionRow(label: option.value, count: option.count, isSelected: selection == option.value) {
-                        selection = option.value
+            } label: {
+                HStack(spacing: 9) {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 10)
+                    Image(systemName: systemImage)
+                        .font(.caption.bold())
+                        .foregroundColor(selection == nil ? .secondary : .accentColor)
+                        .frame(width: 16)
+                    Text(title)
+                        .font(.subheadline.weight(.medium))
+                    Spacer()
+                    Text("\(totalCount)")
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.secondary.opacity(0.10)))
+                    if selection != nil {
+                        Circle()
+                            .fill(Color.accentColor)
+                            .frame(width: 6, height: 6)
                     }
                 }
+                .padding(.vertical, 7)
+                .padding(.horizontal, 9)
+                .contentShape(Rectangle())
+                .background(Color(nsColor: .controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
-            .padding(.top, 4)
-        } label: {
-            HStack(spacing: 9) {
-                Image(systemName: systemImage)
-                    .font(.caption.bold())
-                    .foregroundColor(selection == nil ? .secondary : .accentColor)
-                    .frame(width: 16)
-                Text(title)
-                    .font(.subheadline.weight(.medium))
-                Spacer()
-                Text("\(totalCount)")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.secondary.opacity(0.10)))
-                if selection != nil {
-                    Circle()
-                        .fill(Color.accentColor)
-                        .frame(width: 6, height: 6)
+            .buttonStyle(.plain)
+            .accessibilityLabel(title)
+            .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+
+            if isExpanded {
+                VStack(spacing: 1) {
+                    SidebarOptionRow(label: "All", count: totalCount, isSelected: selection == nil) {
+                        selection = nil
+                    }
+                    ForEach(options, id: \.value) { option in
+                        SidebarOptionRow(
+                            label: option.value, count: option.count, isSelected: selection == option.value
+                        ) {
+                            selection = option.value
+                        }
+                    }
                 }
+                .padding(.top, 4)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
-            .padding(.vertical, 7)
-            .padding(.horizontal, 9)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .disclosureGroupStyle(.automatic)
     }
 }
 
@@ -229,6 +269,66 @@ struct SidebarOptionRow: View {
                         isSelected
                             ? Color.accentColor.opacity(0.12) : (hovering ? Color.secondary.opacity(0.07) : Color.clear)
                     )
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+    }
+}
+
+private struct SortPopover: View {
+    let options: [ColumnId]
+    @Binding var selection: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Sort networks by")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.bottom, 3)
+            ForEach(options, id: \.self) { option in
+                SortOptionRow(
+                    title: option.defaultTitle,
+                    isSelected: option.rawValue == selection
+                ) {
+                    selection = option.rawValue
+                    dismiss()
+                }
+            }
+        }
+        .padding(7)
+        .frame(width: 230)
+    }
+}
+
+private struct SortOptionRow: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 7) {
+                Image(systemName: isSelected ? "checkmark" : "")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.accentColor)
+                    .frame(width: 12)
+                Text(title)
+                    .font(.system(size: 12.5))
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(
+                        isSelected
+                            ? Color.accentColor.opacity(0.12) : (hovering ? Color.secondary.opacity(0.08) : .clear))
             )
             .contentShape(Rectangle())
         }

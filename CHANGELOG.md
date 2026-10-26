@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.5.2 — 2026-10-26
+
+### Changed
+- Sidebar section headers now toggle by clicking the entire row, not only the
+  disclosure arrow.
+- Sort picker replaced by a larger custom popover with hover states and
+  checkmarks.
+- Band filters are capsule chips with distinct colors; added the Wi-Fi 7
+  (802.11be) chip alongside 2.4/5/6 GHz.
+- Wi-Fi 7 filter persists in preferences and filter profiles.
+
+
 ## 2.5.1 — 2026-10-26
 
 ### Fixed
