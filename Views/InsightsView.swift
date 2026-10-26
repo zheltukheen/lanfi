@@ -178,6 +178,7 @@ struct RecommendationCard: View {
 struct InsightsView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var occupancyBand: WiFiBand = .band24
+    @AppStorage("Wifa.hideEmptyGraphs") private var hideEmptyGraphs = false
 
     private var report: AnalysisReport { viewModel.analysis }
 
@@ -223,8 +224,12 @@ struct InsightsView: View {
                 HStack(alignment: .top, spacing: 14) {
                     securitySection
                         .frame(maxWidth: .infinity, alignment: .topLeading)
-                    occupancySection
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    Group {
+                        if !hideEmptyGraphs || !report.occupancy.isEmpty {
+                            occupancySection
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
             .padding(14)

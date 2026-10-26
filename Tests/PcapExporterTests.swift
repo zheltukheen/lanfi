@@ -58,6 +58,7 @@ final class PcapAnalyzerTests: XCTestCase {
         XCTAssertEqual(beacon.bssid, "00:11:22:33:44:55")
         XCTAssertEqual(beacon.channel, 36)
         XCTAssertEqual(beacon.source, "pcap")
+        XCTAssertFalse(beacon.informationElements.isEmpty)
     }
 
     func testParsesPcapngBeacon() throws {

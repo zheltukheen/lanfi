@@ -6,6 +6,11 @@ struct SurveyView: View {
     @ObservedObject var survey: SurveyViewModel
     @State private var wallMode = false
     @State private var pendingWallStart: CGPoint?
+    @State private var roomMode = false
+    @State private var roomPoints: [SurveyPoint] = []
+    @State private var walkMode = false
+    @State private var lastWalkSample = Date.distantPast
+    @State private var showReportSettings = false
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -28,6 +33,9 @@ struct SurveyView: View {
         }
         .frame(minWidth: 900, minHeight: 650)
         .background(Color(nsColor: .windowBackgroundColor))
+        .sheet(isPresented: $showReportSettings) {
+            SurveyReportSettingsView(survey: survey)
+        }
     }
 
     private var toolbar: some View {
@@ -46,10 +54,24 @@ struct SurveyView: View {
             }
             .controlSize(.small)
 
-            Button {
-                survey.exportPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+            Menu {
+                Button("This floor") {
+                    survey.exportPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                }
+                Button("All floors") {
+                    survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                }
             } label: {
                 Label("PDF", systemImage: "doc.richtext")
+            }
+            .menuStyle(.borderlessButton)
+            .frame(width: 58)
+            .controlSize(.small)
+
+            Button {
+                showReportSettings = true
+            } label: {
+                Label("Report", systemImage: "doc.badge.gearshape")
             }
             .controlSize(.small)
 
@@ -77,14 +99,49 @@ struct SurveyView: View {
             .buttonStyle(.bordered)
             .tint(wallMode ? .orange : nil)
 
-            Button(role: .destructive) {
-                survey.clearWalls()
-                pendingWallStart = nil
+            Button {
+                walkMode.toggle()
+                survey.statusMessage =
+                    walkMode
+                    ? "Walk mode: move the pointer over the plan to sample automatically."
+                    : "Walk mode off."
             } label: {
-                Label("Clear Walls", systemImage: "rectangle.portrait.slash")
+                Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
             }
             .controlSize(.small)
-            .disabled(survey.walls.isEmpty)
+            .buttonStyle(.bordered)
+            .tint(walkMode ? .green : nil)
+
+            Menu {
+                Button {
+                    roomMode.toggle()
+                    roomPoints = []
+                    survey.statusMessage =
+                        roomMode
+                        ? "Room mode: click vertices, then Finish Room."
+                        : "Room mode off."
+                } label: {
+                    Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
+                }
+                Button("Finish Room") { finishRoom() }
+                    .disabled(roomPoints.count < 3)
+                Button("Clear Rooms", role: .destructive) {
+                    survey.clearObstacles()
+                    roomPoints = []
+                }
+                .disabled(survey.obstacles.isEmpty)
+                Divider()
+                Button("Clear Walls", role: .destructive) {
+                    survey.clearWalls()
+                    pendingWallStart = nil
+                }
+                .disabled(survey.walls.isEmpty)
+            } label: {
+                Label("Structure", systemImage: "square.on.square")
+            }
+            .menuStyle(.borderlessButton)
+            .frame(width: 76)
+            .controlSize(.small)
 
             Divider().frame(height: 20)
 
@@ -172,6 +229,7 @@ struct SurveyView: View {
                             drawSample(context: context, at: point, rssi: sample.rssi)
                         }
                         drawWalls(context: context, rect: rect)
+                        drawRooms(context: context, rect: rect)
                     }
                     .allowsHitTesting(false)
                     .accessibilityLabel("Floor plan heatmap")
@@ -182,9 +240,11 @@ struct SurveyView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(selectedNetwork?.displaySSID ?? "All networks")
                             .font(.caption.bold())
-                        Text("\(displayedSamples.count) points · \(survey.walls.count) walls")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                        Text(
+                            "\(displayedSamples.count) points · \(survey.walls.count) walls · \(survey.obstacles.count) rooms"
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                         Text(survey.statusMessage)
                             .font(.caption2)
                             .foregroundColor(.secondary)
@@ -210,6 +270,11 @@ struct SurveyView: View {
                     guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
                     let x = Double((location.x - rect.minX) / rect.width)
                     let y = Double((location.y - rect.minY) / rect.height)
+                    if roomMode {
+                        roomPoints.append(SurveyPoint(x: x, y: y))
+                        survey.statusMessage = "Room vertices: \(roomPoints.count). Finish Room when ready."
+                        return
+                    }
                     if wallMode {
                         if let start = pendingWallStart {
                             survey.addWall(x1: Double(start.x), y1: Double(start.y), x2: x, y2: y)
@@ -223,6 +288,53 @@ struct SurveyView: View {
                     guard let network = captureNetwork else { return }
                     survey.addSample(x: x, y: y, network: network)
                 }
+                .onContinuousHover { phase in
+                    guard walkMode, !roomMode, !wallMode, phase != .ended else { return }
+                    guard case .active(let location) = phase else { return }
+                    guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
+                    let now = Date()
+                    guard now.timeIntervalSince(lastWalkSample) >= 0.8 else { return }
+                    guard let network = captureNetwork else { return }
+                    lastWalkSample = now
+                    survey.addSample(
+                        x: Double((location.x - rect.minX) / rect.width),
+                        y: Double((location.y - rect.minY) / rect.height),
+                        network: network
+                    )
+                }
+            }
+        }
+    }
+
+    private func finishRoom() {
+        guard roomPoints.count >= 3 else { return }
+        survey.addObstacle(points: roomPoints)
+        roomPoints = []
+        roomMode = false
+    }
+
+    private func drawRooms(context: GraphicsContext, rect: CGRect) {
+        for obstacle in survey.obstacles where obstacle.points.count >= 3 {
+            var path = Path()
+            for (index, point) in obstacle.points.enumerated() {
+                let p = CGPoint(x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                if index == 0 { path.move(to: p) } else { path.addLine(to: p) }
+            }
+            path.closeSubpath()
+            context.fill(path, with: .color(.orange.opacity(0.16)))
+            context.stroke(path, with: .color(.orange.opacity(0.75)), lineWidth: 1.5)
+        }
+        if roomPoints.count > 0 {
+            var path = Path()
+            for (index, point) in roomPoints.enumerated() {
+                let p = CGPoint(x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                if index == 0 { path.move(to: p) } else { path.addLine(to: p) }
+            }
+            context.stroke(path, with: .color(.orange), lineWidth: 2)
+            for point in roomPoints {
+                let p = CGPoint(x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                context.fill(
+                    Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6)), with: .color(.orange))
             }
         }
     }
@@ -234,7 +346,7 @@ struct SurveyView: View {
                 .frame(width: 110, height: 7)
                 .clipShape(Capsule())
             Text("-40 dBm").font(.caption2).foregroundColor(.secondary)
-            Text("· walls -8 dB").font(.caption2).foregroundColor(.secondary)
+            Text("· walls/rooms -8 dB").font(.caption2).foregroundColor(.secondary)
         }
         .padding(7)
         .background(.regularMaterial)
@@ -261,7 +373,8 @@ struct SurveyView: View {
                 let nx = Double((x - rect.minX) / rect.width)
                 let ny = Double((y - rect.minY) / rect.height)
                 if let rssi = SurveyInterpolator.estimate(
-                    x: nx, y: ny, samples: displayedSamples, walls: survey.walls
+                    x: nx, y: ny, samples: displayedSamples, walls: survey.walls,
+                    obstacles: survey.obstacles
                 ) {
                     let color = heatColor(rssi)
                     context.fill(

@@ -8,6 +8,8 @@ struct CapturedBeacon: Identifiable, Equatable {
     let rssi: Int?
     let security: String
     let isEHT: Bool
+    let informationElements: [InformationElement]
+    let clientCount: Int?
     let timestamp: Date
     let source: String
 }
@@ -196,6 +198,7 @@ enum PcapAnalyzer {
         var channel: Int?
         var security = "Open"
         var isEHT = false
+        let parsedIE = InformationElementParser.parse(ies)
         var index = 0
         while index + 2 <= ies.count {
             let id = ies[index]
@@ -223,7 +226,8 @@ enum PcapAnalyzer {
             id: "\(bssid)-\(ssid)",
             bssid: bssid, ssid: ssid.isEmpty ? "Hidden" : ssid,
             channel: channel, rssi: rssi, security: security,
-            isEHT: isEHT, timestamp: timestamp, source: source
+            isEHT: isEHT, informationElements: parsedIE.elements,
+            clientCount: parsedIE.clients, timestamp: timestamp, source: source
         )
     }
 

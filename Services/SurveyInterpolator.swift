@@ -8,6 +8,7 @@ enum SurveyInterpolator {
         y: Double,
         samples: [SurveySample],
         walls: [SurveyWall],
+        obstacles: [SurveyObstacle] = [],
         power: Double = 2.0
     ) -> Int? {
         guard !samples.isEmpty else { return nil }
@@ -18,13 +19,19 @@ enum SurveyInterpolator {
             let dy = sample.y - y
             let distance = max(0.0001, sqrt(dx * dx + dy * dy))
             if distance > 0.9 { continue }
-            let attenuation = walls.reduce(0.0) { total, wall in
+            let wallAttenuation = walls.reduce(0.0) { total, wall in
                 let wallHit = segmentsIntersect(
                     x1: sample.x, y1: sample.y, x2: x, y2: y,
                     x3: wall.x1, y3: wall.y1, x4: wall.x2, y4: wall.y2
                 )
                 return total + (wallHit ? wall.attenuationDb : 0)
             }
+            let obstacleAttenuation = obstacles.reduce(0.0) { total, obstacle in
+                guard let boundary = polygonCrossed(obstacle.points, sx: sample.x, sy: sample.y, ex: x, ey: y)
+                else { return total }
+                return total + (boundary ? obstacle.attenuationDb : 0)
+            }
+            let attenuation = wallAttenuation + obstacleAttenuation
             let value = Double(sample.rssi) - attenuation
             let weight = 1.0 / pow(distance, power)
             weighted += value * weight
@@ -32,6 +39,23 @@ enum SurveyInterpolator {
         }
         guard totalWeight > 0 else { return nil }
         return Int((weighted / totalWeight).rounded())
+    }
+
+    private static func polygonCrossed(
+        _ points: [SurveyPoint], sx: Double, sy: Double, ex: Double, ey: Double
+    ) -> Bool? {
+        guard points.count >= 3 else { return nil }
+        var crossings = 0
+        for index in points.indices {
+            let next = points[(index + 1) % points.count]
+            if segmentsIntersect(
+                x1: sx, y1: sy, x2: ex, y2: ey,
+                x3: points[index].x, y3: points[index].y, x4: next.x, y4: next.y
+            ) {
+                crossings += 1
+            }
+        }
+        return crossings > 0
     }
 
     static func wallAttenuation(for wall: SurveyWall) -> Double {

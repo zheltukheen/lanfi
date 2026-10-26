@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import PDFKit
 
 enum SurveyReportExporter {
     static func makePDF(project: SurveyProject, image: NSImage?, networkName: String) -> Data {
@@ -11,6 +12,23 @@ enum SurveyReportExporter {
             networkName: networkName
         )
         return view.dataWithPDF(inside: view.bounds)
+    }
+
+    static func makePortfolioPDF(
+        projects: [SurveyProject], images: [UUID: NSImage?], networkName: String
+    ) -> Data {
+        let document = PDFDocument()
+        for project in projects {
+            let data = makePDF(project: project, image: images[project.id] ?? nil, networkName: networkName)
+            if let pageDocument = PDFDocument(data: data) {
+                for index in 0..<pageDocument.pageCount {
+                    if let page = pageDocument.page(at: index) {
+                        document.insert(page, at: document.pageCount)
+                    }
+                }
+            }
+        }
+        return document.dataRepresentation() ?? Data()
     }
 }
 
@@ -32,7 +50,7 @@ private final class SurveyReportView: NSView {
         NSColor.white.setFill()
         bounds.fill()
 
-        let title = "LanFi Site Survey — \(project.name)"
+        let title = "LanFi Site Survey — \(project.reportTitle ?? project.name)"
         title.draw(
             at: NSPoint(x: 28, y: bounds.height - 42),
             withAttributes: [
@@ -53,6 +71,7 @@ private final class SurveyReportView: NSView {
             image.draw(in: fitted, from: .zero, operation: .copy, fraction: 1, respectFlipped: true, hints: nil)
             drawHeatmap(in: fitted)
             drawWalls(in: fitted)
+            drawObstacles(in: fitted)
         } else {
             NSColor(calibratedWhite: 0.95, alpha: 1).setFill()
             planRect.fill()
@@ -62,7 +81,13 @@ private final class SurveyReportView: NSView {
             )
         }
 
-        let legend = "RSSI:  -90 dBm (red)  →  -40 dBm (green)     walls: -8 dB each"
+        if let notes = project.reportNotes, !notes.isEmpty {
+            notes.draw(
+                at: NSPoint(x: 28, y: 54),
+                withAttributes: [.font: NSFont.systemFont(ofSize: 8), .foregroundColor: NSColor.darkGray]
+            )
+        }
+        let legend = "RSSI:  -90 dBm (red)  →  -40 dBm (green)     walls/rooms: -8 dB each"
         legend.draw(
             at: NSPoint(x: 28, y: 42),
             withAttributes: [.font: NSFont.systemFont(ofSize: 9), .foregroundColor: NSColor.darkGray]
@@ -113,6 +138,25 @@ private final class SurveyReportView: NSView {
                     y: rect.minY + (1 - wall.y2) * rect.height
                 ))
             path.lineWidth = 2
+            path.stroke()
+        }
+    }
+
+    private func drawObstacles(in rect: NSRect) {
+        for obstacle in project.obstacles where obstacle.points.count >= 3 {
+            let path = NSBezierPath()
+            for (index, point) in obstacle.points.enumerated() {
+                let p = NSPoint(
+                    x: rect.minX + point.x * rect.width,
+                    y: rect.minY + (1 - point.y) * rect.height
+                )
+                if index == 0 { path.move(to: p) } else { path.line(to: p) }
+            }
+            path.close()
+            NSColor.orange.withAlphaComponent(0.16).setFill()
+            path.fill()
+            NSColor.orange.withAlphaComponent(0.7).setStroke()
+            path.lineWidth = 1.5
             path.stroke()
         }
     }

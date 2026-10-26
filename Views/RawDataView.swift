@@ -11,10 +11,19 @@ struct RawDataView: View {
                 .edgesIgnoringSafeArea(.all)
 
             if let network = viewModel.selectedNetwork {
-                RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
-                    .onChange(of: viewModel.selectedNetworkId) { _ in
-                        expandedRows.removeAll()
+                ZStack(alignment: .topTrailing) {
+                    RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
+                        .onChange(of: viewModel.selectedNetworkId) { _ in
+                            expandedRows.removeAll()
+                        }
+                    Button {
+                        copyAll(network.informationElements)
+                    } label: {
+                        Label("Copy All IEs", systemImage: "doc.on.doc")
                     }
+                    .controlSize(.small)
+                    .padding(8)
+                }
             } else {
                 VStack(spacing: 16) {
                     Image(systemName: "list.bullet.rectangle")
@@ -88,6 +97,15 @@ struct RawDataTableView: NSViewRepresentable {
         scrollView.hasHorizontalScroller = true
 
         context.coordinator.tableView = tableView
+        let menu = NSMenu()
+        menu.addItem(
+            NSMenuItem(
+                title: "Copy information element",
+                action: #selector(Coordinator.copySelectedIE), keyEquivalent: ""
+            )
+        )
+        menu.items.first?.target = context.coordinator
+        tableView.menu = menu
         return scrollView
     }
 
@@ -206,6 +224,15 @@ struct RawDataTableView: NSViewRepresentable {
             tableView.rowHeight
         }
 
+        @objc func copySelectedIE() {
+            guard let tableView else { return }
+            let items = rowItems()
+            let row = tableView.clickedRow >= 0 ? tableView.clickedRow : tableView.selectedRow
+            guard row >= 0, row < items.count else { return }
+            let element = items[row].element
+            copyAll([element])
+        }
+
         private func toggleRow(_ row: Int) {
             let items = rowItems()
             guard row >= 0, row < items.count else { return }
@@ -255,4 +282,15 @@ struct RawDataTableView: NSViewRepresentable {
             return rows
         }
     }
+}
+
+private func copyAll(_ elements: [InformationElement]) {
+    let text = elements.map { element in
+        var lines = ["\(element.name) (ID \(element.elementId), \(element.length) bytes)"]
+        lines.append(contentsOf: element.detailLines)
+        if !element.rawHex.isEmpty { lines.append("Raw: \(element.rawHex)") }
+        return lines.joined(separator: "\n")
+    }.joined(separator: "\n\n")
+    NSPasteboard.general.clearContents()
+    NSPasteboard.general.setString(text, forType: .string)
 }
