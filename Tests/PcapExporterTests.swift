@@ -78,3 +78,18 @@ final class PcapAnalyzerTests: XCTestCase {
         XCTAssertThrowsError(try PcapAnalyzer.parse(data: Data("not a capture".utf8)))
     }
 }
+
+final class PcapLinkTypeTests: XCTestCase {
+    func testRejectsRawIPCaptureForWiFiAnalysis() {
+        var data = PcapExporter.makeCapture(networks: [makeNetwork(ssid: "X", channel: 36)])
+        // Classic pcap link type field is at byte 20.
+        data[20] = 101
+        data[21] = 0
+        data[22] = 0
+        data[23] = 0
+        XCTAssertThrowsError(try PcapAnalyzer.parse(data: data)) { error in
+            XCTAssertTrue(
+                error.localizedDescription.contains("raw IP") || error.localizedDescription.contains("802.11"))
+        }
+    }
+}

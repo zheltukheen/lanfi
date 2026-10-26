@@ -45,6 +45,12 @@ enum PcapAnalyzer {
     private static func parsePcap(_ data: Data, littleEndian: Bool, nanoseconds: Bool) throws -> [CapturedBeacon] {
         guard data.count >= 24 else { throw PcapAnalyzerError.unsupported("Truncated pcap header.") }
         let linkType = data.uint32(at: 20, littleEndian: littleEndian)
+        guard linkType == 127 || linkType == 105 else {
+            throw PcapAnalyzerError.unsupported(
+                "This capture uses \(linkTypeName(linkType)), not 802.11 monitor/radiotap. "
+                    + "Choose the Wi-Fi monitor interface, not utun/en0 raw IP."
+            )
+        }
         var offset = 24
         var beacons: [CapturedBeacon] = []
         while offset + 16 <= data.count {
@@ -145,7 +151,25 @@ enum PcapAnalyzer {
             }
             offset += length
         }
+        if beacons.isEmpty, !linkTypes.contains(where: { $0 == 127 || $0 == 105 }),
+            let first = linkTypes.first
+        {
+            throw PcapAnalyzerError.unsupported(
+                "This capture uses \(linkTypeName(first)), not 802.11 monitor/radiotap. "
+                    + "Choose the Wi-Fi monitor interface."
+            )
+        }
         return merge(beacons)
+    }
+
+    private static func linkTypeName(_ type: UInt32) -> String {
+        switch type {
+        case 1: return "Ethernet (EN10MB)"
+        case 101: return "raw IP (RAW)"
+        case 105: return "802.11"
+        case 127: return "802.11 + radiotap"
+        default: return "link type \(type)"
+        }
     }
 
     // MARK: - Frame parsing

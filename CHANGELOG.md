@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.5.1 — 2026-10-26
+
+### Fixed
+- Wi-Fi monitor captures that produce only a 24-byte header now fail with a
+  clear explanation instead of surfacing tcpdump’s “listening” log as an error.
+- Non-802.11 pcap/pcapng files (RAW IP/Ethernet) are rejected with the detected
+  link type and a hint to select a monitor interface.
+- Sidebar filter/sort controls redesigned into cards with hover states, count
+  badges, checkmarks and a dedicated sort direction control.
+- Duplicate View menu removed by renaming the custom menu to Display.
+
+
 ## 2.5.0 — 2026-10-26
 
 ### Added
