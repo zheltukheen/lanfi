@@ -75,7 +75,6 @@ jobs:
           ln -s /Applications build/dmg/Applications
           hdiutil create \
             -volname "LanFi ${VERSION}" \
-            -volicon "$APP/Contents/Resources/AppIcon.icns" \
             -srcfolder build/dmg \
             -ov -format UDZO \
             "build/dist/LanFi-${VERSION}.dmg"
