@@ -206,5 +206,4 @@ jobs:
             build/dist/LanFi-*.zip
             build/dist/LanFi-*.dmg
             build/dist/LanFi-*.sha256
-            build/dist/LanFi-CLI-*.zip
             build/dist/appcast.xml
