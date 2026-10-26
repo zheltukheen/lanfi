@@ -43,14 +43,22 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
   universal build, tests/CI.
 
 **Behind paid tools**
-- Notarized builds + reliable auto-updates (Sparkle) and Homebrew distribution.
-- SSID/AP grouping, column profiles, multi-select and saved sessions.
-- PCAP/PCAPNG export and offline pcap analysis.
-- Wi-Fi 7 MLO link details, 320 MHz/EHT decoding, 802.11-2024 regulatory info.
-- AP-name detection from vendor IEs (Aruba, Ubiquiti, Mist, Ruckus, …).
-- Remote sensors, external adapters, heatmaps/site surveys, spectrum hardware.
-- Full localization, VoiceOver coverage, Windows parity (out of scope for now).
-- In-app vendor database updates and crash diagnostics.
+- Notarized builds (tooling is ready; Developer ID credentials are not configured).
+- Multi-select comparison and bulk annotation.
+- PCAPNG export and offline pcap analysis.
+- True Wi-Fi 7 MLO link-set and 320 MHz decoding (CoreWLAN does not expose it;
+  LanFi shows EHT IE presence and reports the limitation).
+- External USB adapters and hardware spectrum analyzers.
+- Full localization of dynamic diagnostic/protocol detail strings.
+- In-app vendor database updates, crash diagnostics and release VM smoke tests.
+- CLI/JSON automation and filter/profile import-export.
+
+## Delivered in 1.9
+
+- Persisted diagnostics history (last 12 reports) with restore/clear.
+- AXChartDescriptor VoiceOver audio graphs for signal history and channel occupancy.
+- Combined accessibility cards for protocol blocks and interfaces.
+- Expanded Russian localization for remaining static UI.
 
 ## Delivered in 1.8
 
@@ -140,11 +148,11 @@ A credible commercial competitor in 2026 needs all of the following:
 - [x] Quality/interference/channel guidance and security posture
 - [x] CSV/JSON export, copy, search, filters, configurable columns
 - [x] Signed auto-updating distribution (Sparkle); notarization still pending
-- [x] Grouping, annotations and saved sessions (column profiles pending)
-- [~] PCAP export (synthetic beacons; live capture pending)
-- [~] AP names/annotations; MLO/EHT details pending
-- [~] Russian primary UI + VoiceOver summaries (full localization pending)
-- [~] Survey-lite heatmap (remote sensors and interpolation pending)
+- [x] Grouping, annotations, saved sessions and column profiles
+- [~] PCAP export (synthetic beacons + live capture; no PCAPNG/offline analysis)
+- [~] AP names and explicit EHT/MLO block (true link-set/320 MHz decoding pending)
+- [~] Russian UI + VoiceOver chart descriptors (dynamic detail localization pending)
+- [x] IDW survey heatmap with walls and SSH remote sensors
 
 LanFi covers the first three. The roadmap above closes the rest in value order;
 1.4 and 1.5 are the minimum for “commercial parity minus surveys”.
