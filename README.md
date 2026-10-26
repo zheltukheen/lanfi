@@ -83,7 +83,7 @@ right-click the app → **Open**, or allow it in
 Or install via Homebrew:
 
 ```bash
-brew tap zheltukheen/lanfi
+brew tap zheltukheen/lanfi https://github.com/zheltukheen/wifa
 brew trust zheltukheen/lanfi
 brew install --cask lanfi
 ```
@@ -194,7 +194,7 @@ ViewModels/                  Analyzer, diagnostics and survey state
 Views/                       SwiftUI + AppKit table, charts, protocols, diagnostics, survey
 Utils/                       Location permission, OUI vendor lookup
 Resources/                   OUI database, privacy manifest, Russian localization
-Casks/lanfi.rb                Homebrew cask (also mirrored in zheltukheen/homebrew-lanfi)
+Casks/lanfi.rb                Homebrew cask (tap: zheltukheen/lanfi)
 Tests/                       XCTest coverage for pure logic and parsing
 scripts/autopush.sh          Commit/push automation
 ```
