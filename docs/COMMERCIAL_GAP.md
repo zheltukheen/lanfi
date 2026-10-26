@@ -52,6 +52,10 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Full localization, VoiceOver coverage, Windows parity (out of scope for now).
 - In-app vendor database updates and crash diagnostics.
 
+## Delivered in 1.8
+
+- SSH-based **remote sensors** with saved hosts and a results table.
+
 ## Delivered in 1.7
 
 - First-class **Interfaces** analysis for every BSD interface.

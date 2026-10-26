@@ -197,6 +197,10 @@ struct LanFiCommands: Commands {
                 NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
             }
             .keyboardShortcut("p", modifiers: [.command, .shift])
+
+            Button("Remote Sensors…") {
+                NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
+            }
         }
     }
 
