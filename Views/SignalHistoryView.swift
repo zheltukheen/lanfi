@@ -25,8 +25,19 @@ struct SignalHistoryView: View {
         // Добавляем 15% справа для подписей
         let xDomainMax = max(1, Int(Double(maxDataPoints) * 1.15))
 
-        let minDomain = isPercent ? 0.0 : minDbm
-        let maxDomain = isPercent ? 100.0 : maxDbm
+        let observed = viewModel.networks.flatMap { viewModel.signalHistory[$0.id] ?? [] }
+        let observedMin = observed.min() ?? Int(minDbm)
+        let observedMax = observed.max() ?? Int(maxDbm)
+        let span = max(12, observedMax - observedMin)
+        let padding = max(4, Int(Double(span) * 0.12))
+        let minDomain =
+            isPercent
+            ? 0.0
+            : max(-100.0, min(Double(observedMin - padding), -40))
+        let maxDomain =
+            isPercent
+            ? 100.0
+            : min(0.0, max(Double(observedMax + padding), minDomain + 20))
 
         Chart {
             // ---------------------------
@@ -96,12 +107,12 @@ struct SignalHistoryView: View {
                     }
                 }
             } else {
-                AxisMarks(position: .leading, values: [0, -20, -40, -60, -80, -100]) { value in
+                AxisMarks(position: .leading, values: .automatic(desiredCount: 6)) { value in
                     AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4, 4])).foregroundStyle(
                         Color.gray.opacity(0.3))
                     AxisValueLabel {
-                        if let intValue = value.as(Int.self) {
-                            Text("\(intValue) dBm").font(.caption2).foregroundColor(.secondary)
+                        if let doubleValue = value.as(Double.self) {
+                            Text("\(Int(doubleValue)) dBm").font(.caption2).foregroundColor(.secondary)
                         }
                     }
                 }
@@ -155,7 +166,9 @@ struct SignalHistoryView: View {
                     )
                 },
                 isPercent: isPercent,
-                maxPoints: maxDataPoints
+                maxPoints: maxDataPoints,
+                minDomain: minDomain,
+                maxDomain: maxDomain
             )
         )
         .accessibilityLabel("Signal history for \(viewModel.networks.count) networks")
@@ -316,6 +329,8 @@ private struct SignalHistoryDescriptor: AXChartDescriptorRepresentable {
     let series: [SignalSeries]
     let isPercent: Bool
     let maxPoints: Int
+    let minDomain: Double
+    let maxDomain: Double
 
     func makeChartDescriptor() -> AXChartDescriptor {
         let xAxis = AXNumericDataAxisDescriptor(
@@ -325,8 +340,8 @@ private struct SignalHistoryDescriptor: AXChartDescriptorRepresentable {
         ) { value in "Sample \(Int(value))" }
         let yAxis = AXNumericDataAxisDescriptor(
             title: isPercent ? "Signal quality" : "RSSI",
-            range: isPercent ? 0...100 : -100...0,
-            gridlinePositions: isPercent ? [0, 25, 50, 75, 100] : [-100, -80, -60, -40, -20, 0]
+            range: minDomain...maxDomain,
+            gridlinePositions: []
         ) { value in
             isPercent ? "\(Int(value)) percent" : "\(Int(value)) dBm"
         }

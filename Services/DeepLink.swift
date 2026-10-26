@@ -15,11 +15,11 @@ enum DeepLink: Equatable {
             guard let name = path.first?.lowercased() else { return nil }
             switch name {
             case "insights": return .tab(0)
-            case "spectrum": return .tab(1)
-            case "history": return .tab(2)
-            case "protocols": return .tab(3)
+            case "spectrum": return .tab(4)
+            case "history": return .tab(5)
+            case "protocols", "profile": return .tab(1)
             case "interfaces": return .interfaces
-            case "raw": return .tab(5)
+            case "raw": return .tab(3)
             case "diagnostics": return .tab(6)
             default: return nil
             }

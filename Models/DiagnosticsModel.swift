@@ -65,6 +65,7 @@ struct DiagnosticCheck: Identifiable, Equatable, Codable {
     let value: String
     let detail: String
     let durationMilliseconds: Int?
+    var recommendation: String? = nil
 }
 
 struct DiagnosticsReport: Identifiable, Equatable, Codable {
@@ -85,6 +86,20 @@ struct DiagnosticsReport: Identifiable, Equatable, Codable {
     var warningCount: Int { checks.filter { $0.status == .warning }.count }
     var passedCount: Int { checks.filter { $0.status == .pass }.count }
     var duration: TimeInterval { finishedAt.timeIntervalSince(startedAt) }
+
+    var healthScore: Int {
+        let scored = checks.filter { $0.status != .skipped && $0.status != .pending }
+        guard !scored.isEmpty else { return 0 }
+        let points = scored.reduce(0) { total, check in
+            switch check.status {
+            case .pass: return total + 100
+            case .warning: return total + 55
+            case .fail: return total
+            default: return total + 50
+            }
+        }
+        return points / scored.count
+    }
 
     var summary: String {
         if checks.isEmpty { return "No diagnostics run" }

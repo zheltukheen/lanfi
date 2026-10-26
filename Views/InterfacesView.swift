@@ -2,6 +2,17 @@ import SwiftUI
 
 struct InterfacesView: View {
     @ObservedObject var interfaces: InterfacesViewModel
+    @State private var showInactive = false
+
+    private var activeInterfaces: [SystemInterface] {
+        interfaces.report.interfaces.filter { item in
+            item.isUp && (item.isPrimary || !item.ipv4.isEmpty || !item.ipv6.isEmpty || item.kind == .wifi)
+        }
+    }
+
+    private var inactiveInterfaces: [SystemInterface] {
+        interfaces.report.interfaces.filter { !activeInterfaces.contains($0) }
+    }
 
     var body: some View {
         ScrollView {
@@ -11,22 +22,30 @@ struct InterfacesView: View {
                     emptyState
                 } else {
                     summary
-                    ForEach(interfaces.report.grouped, id: \.0) { category, items in
-                        VStack(alignment: .leading, spacing: 7) {
-                            Text(category)
-                                .font(.caption.bold())
-                                .foregroundColor(.secondary)
-                                .textCase(.uppercase)
-                            LazyVGrid(
-                                columns: [GridItem(.adaptive(minimum: 310), spacing: 10)],
-                                alignment: .leading,
-                                spacing: 10
-                            ) {
-                                ForEach(items) { interface in
-                                    InterfaceCard(interface: interface)
+                    ForEach(grouped(activeInterfaces), id: \.0) { category, items in
+                        interfaceSection(category, items: items)
+                    }
+
+                    if !inactiveInterfaces.isEmpty {
+                        DisclosureGroup(isExpanded: $showInactive) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                ForEach(grouped(inactiveInterfaces), id: \.0) { category, items in
+                                    interfaceSection(category, items: items)
                                 }
                             }
+                            .padding(.top, 8)
+                        } label: {
+                            HStack {
+                                Image(systemName: "eye.slash")
+                                Text("Inactive interfaces (\(inactiveInterfaces.count))")
+                                    .font(.caption.bold())
+                                Spacer()
+                            }
+                            .foregroundColor(.secondary)
                         }
+                        .padding(10)
+                        .background(Color.secondary.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                 }
             }
@@ -44,6 +63,33 @@ struct InterfacesView: View {
                 try? await Task.sleep(nanoseconds: 8_000_000_000)
             }
         }
+    }
+
+    private func interfaceSection(_ category: String, items: [SystemInterface]) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text(category)
+                .font(.caption.bold())
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 310), spacing: 10)],
+                alignment: .leading,
+                spacing: 10
+            ) {
+                ForEach(items) { interface in
+                    InterfaceCard(interface: interface)
+                }
+            }
+        }
+    }
+
+    private func grouped(_ items: [SystemInterface]) -> [(String, [SystemInterface])] {
+        let groups = Dictionary(grouping: items) { $0.kind.category }
+        return groups.keys.sorted { lhs, rhs in
+            let left = groups[lhs]?.map(\.kind.sortOrder).min() ?? 99
+            let right = groups[rhs]?.map(\.kind.sortOrder).min() ?? 99
+            return left < right
+        }.map { ($0, groups[$0]?.sorted { $0.kind.sortOrder < $1.kind.sortOrder } ?? []) }
     }
 
     private var header: some View {

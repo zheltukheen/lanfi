@@ -174,11 +174,11 @@ struct MainTableView: View {
                             Color(nsColor: .controlBackgroundColor).edgesIgnoringSafeArea(.all)
 
                             switch uiState.selectedBottomTab {
-                            case 1: SpectrumView(viewModel: viewModel)
-                            case 2: SignalHistoryView(viewModel: viewModel)
-                            case 3: ProtocolsView(viewModel: viewModel)
-                            case 4: InterfacesView(interfaces: interfaces)
-                            case 5: RawDataView(viewModel: viewModel)
+                            case 1: ProtocolsView(viewModel: viewModel)
+                            case 2: InterfacesView(interfaces: interfaces)
+                            case 3: RawDataView(viewModel: viewModel)
+                            case 4: SpectrumView(viewModel: viewModel)
+                            case 5: SignalHistoryView(viewModel: viewModel)
                             case 6: DiagnosticsView(diagnostics: diagnostics)
                             default: InsightsView(viewModel: viewModel)
                             }
@@ -245,10 +245,35 @@ struct BottomPanelTabs: View {
 
             TabGroup("OVERVIEW") {
                 TabButton(
-                    title: "Insights",
+                    title: "Overview",
                     icon: "sparkles",
                     isSelected: selectedTab == 0,
                     action: { selectedTab = 0 }
+                )
+            }
+
+            groupDivider
+
+            TabGroup("NETWORK") {
+                TabButton(
+                    title: "Profile",
+                    icon: "square.stack.3d.up",
+                    isSelected: selectedTab == 1,
+                    action: { selectedTab = 1 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "Interfaces",
+                    icon: "network",
+                    isSelected: selectedTab == 2,
+                    action: { selectedTab = 2 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "Raw Data",
+                    icon: "list.bullet.rectangle",
+                    isSelected: selectedTab == 3,
+                    action: { selectedTab = 3 }
                 )
             }
 
@@ -258,38 +283,13 @@ struct BottomPanelTabs: View {
                 TabButton(
                     title: "Spectrum",
                     icon: "waveform.path.ecg",
-                    isSelected: selectedTab == 1,
-                    action: { selectedTab = 1 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "History",
-                    icon: "clock.arrow.circlepath",
-                    isSelected: selectedTab == 2,
-                    action: { selectedTab = 2 }
-                )
-            }
-
-            groupDivider
-
-            TabGroup("NETWORK") {
-                TabButton(
-                    title: "Protocols",
-                    icon: "square.stack.3d.up",
-                    isSelected: selectedTab == 3,
-                    action: { selectedTab = 3 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "Interfaces",
-                    icon: "network",
                     isSelected: selectedTab == 4,
                     action: { selectedTab = 4 }
                 )
                 Divider().frame(height: 18)
                 TabButton(
-                    title: "Raw Data",
-                    icon: "list.bullet.rectangle",
+                    title: "History",
+                    icon: "clock.arrow.circlepath",
                     isSelected: selectedTab == 5,
                     action: { selectedTab = 5 }
                 )

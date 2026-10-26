@@ -435,3 +435,8 @@
 "Wi-Fi link, gateway, DNS, HTTPS and latency" = "Wi-Fi, шлюз, DNS, HTTPS и задержка";
 "Full link set requires offline capture analysis" = "Для полного link set нужен офлайн-анализ захвата";
 "CoreWLAN width:" = "Ширина CoreWLAN:";
+
+"Overview" = "Общее";
+"Profile" = "Профиль";
+"Show Overview" = "Показать общее";
+"Show Profile" = "Показать профиль";

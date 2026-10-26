@@ -42,20 +42,16 @@ struct LanFiCommands: Commands {
                 Text("10s").tag(10.0)
                 Text("30s").tag(30.0)
             }
-
             Button("Custom Interval…") {
                 uiState.customIntervalText = String(Int(viewModel.refreshInterval))
                 uiState.showingCustomIntervalAlert = true
             }
-        }
-
-        CommandMenu("Filters") {
-            Toggle("2.4 GHz", isOn: $viewModel.filterBand24)
-            Toggle("5 GHz", isOn: $viewModel.filterBand5)
-            Toggle("6 GHz", isOn: $viewModel.filterBand6)
 
             Divider()
 
+            Toggle("2.4 GHz", isOn: $viewModel.filterBand24)
+            Toggle("5 GHz", isOn: $viewModel.filterBand5)
+            Toggle("6 GHz", isOn: $viewModel.filterBand6)
             Picker("Min Signal", selection: $viewModel.minSignalThreshold) {
                 Text("-90 dBm").tag(-90.0)
                 Text("-80 dBm").tag(-80.0)
@@ -63,37 +59,33 @@ struct LanFiCommands: Commands {
                 Text("-60 dBm").tag(-60.0)
                 Text("-50 dBm").tag(-50.0)
             }
-
-            Divider()
-
             Button("Clear Quick Filters") {
                 viewModel.clearQuickFilters()
             }
-
-            Divider()
-
             Button("Search Networks…") {
                 NotificationCenter.default.post(name: .wifaFocusSearch, object: nil)
             }
             .keyboardShortcut("f")
         }
 
-        CommandMenu("Display") {
+        CommandMenu("View") {
             Picker("Group By", selection: $viewModel.groupMode) {
                 ForEach(NetworkGroupMode.allCases) { mode in
                     Text(mode.title).tag(mode)
                 }
             }
-
             Picker("Signal Unit", selection: $viewModel.signalDisplayMode) {
                 ForEach(SignalDisplayMode.allCases) { mode in
                     Text(mode.rawValue).tag(mode)
                 }
             }
-
             Toggle("Highlight Connected Network", isOn: $viewModel.highlightConnectedNetworks)
 
             Divider()
+
+            Toggle("Show Filters Sidebar", isOn: $uiState.showSidebar)
+            Toggle("Show Inspector", isOn: $uiState.showInspector)
+                .keyboardShortcut("i", modifiers: [.command, .option])
 
             Menu("Column Profiles") {
                 ForEach(viewModel.columnProfiles) { profile in
@@ -103,75 +95,69 @@ struct LanFiCommands: Commands {
                 Button("Save Current Profile…") { viewModel.promptSaveColumnProfile() }
                 Button("Reset Columns") { viewModel.resetColumnsToDefault() }
             }
-        }
-
-        CommandMenu("Panels") {
-            Toggle("Show Filters Sidebar", isOn: $uiState.showSidebar)
-            Toggle("Show Inspector", isOn: $uiState.showInspector)
-                .keyboardShortcut("i", modifiers: [.command, .option])
 
             Divider()
 
             Picker("Bottom Panel", selection: $uiState.selectedBottomTab) {
-                Text("Insights").tag(0)
-                Text("Spectrum").tag(1)
-                Text("History").tag(2)
-                Text("Protocols").tag(3)
-                Text("Interfaces").tag(4)
-                Text("Raw Data").tag(5)
+                Text("Overview").tag(0)
+                Text("Profile").tag(1)
+                Text("Interfaces").tag(2)
+                Text("Raw Data").tag(3)
+                Text("Spectrum").tag(4)
+                Text("History").tag(5)
                 Text("Diagnostics").tag(6)
             }
 
-            Divider()
-
-            Button("Show Insights") { uiState.selectedBottomTab = 0 }
+            Button("Show Overview") { uiState.selectedBottomTab = 0 }
                 .keyboardShortcut("1", modifiers: [.command])
-            Button("Show Spectrum") { uiState.selectedBottomTab = 1 }
+            Button("Show Profile") { uiState.selectedBottomTab = 1 }
                 .keyboardShortcut("2", modifiers: [.command])
-            Button("Show History") { uiState.selectedBottomTab = 2 }
+            Button("Show Interfaces") { uiState.selectedBottomTab = 2 }
                 .keyboardShortcut("3", modifiers: [.command])
-            Button("Show Protocols") { uiState.selectedBottomTab = 3 }
+            Button("Show Raw Data") { uiState.selectedBottomTab = 3 }
                 .keyboardShortcut("4", modifiers: [.command])
-            Button("Show Interfaces") { uiState.selectedBottomTab = 4 }
+            Button("Show Spectrum") { uiState.selectedBottomTab = 4 }
                 .keyboardShortcut("5", modifiers: [.command])
-            Button("Show Raw Data") { uiState.selectedBottomTab = 5 }
+            Button("Show History") { uiState.selectedBottomTab = 5 }
                 .keyboardShortcut("6", modifiers: [.command])
             Button("Show Diagnostics") { uiState.selectedBottomTab = 6 }
                 .keyboardShortcut("7", modifiers: [.command])
         }
 
-        CommandMenu("Survey") {
+        CommandMenu("Tools") {
+            Button("Live Capture (PCAP)…") {
+                NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
+            }
+            .keyboardShortcut("p", modifiers: [.command, .shift])
+
+            Button("Analyze Packet Capture…") {
+                NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
+            }
+            Button("Remote Sensors…") {
+                NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
+            }
+
+            Divider()
+
+            Button("Run Network Diagnostics") {
+                Task { await diagnostics.run() }
+            }
+            .keyboardShortcut("d", modifiers: [.command, .shift])
+            Toggle("Monitor Diagnostics Every 60 s", isOn: $diagnostics.autoMonitor)
+
             Button("Open Site Survey") {
                 openWindow(id: "survey")
             }
             .keyboardShortcut("m", modifiers: [.command, .shift])
         }
 
-        CommandMenu("Diagnostics") {
-            Button("Run Network Diagnostics") {
-                Task { await diagnostics.run() }
-            }
-            .keyboardShortcut("d", modifiers: [.command, .shift])
-
-            Toggle("Monitor Every 60 Seconds", isOn: $diagnostics.autoMonitor)
-
-            Divider()
-
-            Button("Show Diagnostics") {
-                uiState.selectedBottomTab = 6
-            }
-            .keyboardShortcut("7", modifiers: [.command])
-        }
-
         CommandMenu("Data") {
             Button("Save Session…") {
                 viewModel.promptSaveSession()
             }
-
             Button("Open Session…") {
                 viewModel.promptOpenSession()
             }
-
             if viewModel.isSessionMode {
                 Button("Resume Live Scan") {
                     viewModel.resumeLiveScan()
@@ -184,21 +170,14 @@ struct LanFiCommands: Commands {
                 viewModel.exportCSV()
             }
             .keyboardShortcut("e", modifiers: [.command, .shift])
-
             Button("Export JSON…") {
                 viewModel.exportJSON()
             }
-
             Button("Export PCAP (Synthetic Beacons)…") {
                 viewModel.exportPCAP()
             }
-
             Button("Export PCAPNG (Synthetic Beacons)…") {
                 viewModel.exportPCAPNG()
-            }
-
-            Button("Analyze Packet Capture…") {
-                NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
             }
 
             Divider()
@@ -208,15 +187,6 @@ struct LanFiCommands: Commands {
             }
             Button("Import Filter Profile…") {
                 viewModel.importFilterProfile()
-            }
-
-            Button("Live Capture (PCAP)…") {
-                NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
-            }
-            .keyboardShortcut("p", modifiers: [.command, .shift])
-
-            Button("Remote Sensors…") {
-                NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
             }
         }
     }

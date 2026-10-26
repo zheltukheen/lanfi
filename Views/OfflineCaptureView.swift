@@ -3,10 +3,15 @@ import UniformTypeIdentifiers
 
 struct OfflineCaptureView: View {
     @Environment(\.dismiss) private var dismiss
+    private let initialURL: URL?
     @State private var beacons: [CapturedBeacon] = []
     @State private var fileName = ""
     @State private var errorMessage: String?
     @State private var isParsing = false
+
+    init(initialURL: URL? = nil) {
+        self.initialURL = initialURL
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -77,6 +82,9 @@ struct OfflineCaptureView: View {
             }
         }
         .frame(width: 840, height: 520)
+        .task {
+            if let initialURL { load(initialURL) }
+        }
     }
 
     private func open() {
@@ -89,6 +97,10 @@ struct OfflineCaptureView: View {
         ]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        load(url)
+    }
+
+    private func load(_ url: URL) {
         isParsing = true
         errorMessage = nil
         beacons = []
