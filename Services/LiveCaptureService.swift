@@ -40,10 +40,12 @@ enum LiveCaptureService {
         let duration = min(max(options.duration, 5), 120)
         let output = shellQuote(options.outputURL.path)
         let errorPath = shellQuote(options.outputURL.path + ".tcpdump.log")
+        let pidPath = shellQuote(options.outputURL.path + ".pid")
         var args = [
             "/usr/sbin/tcpdump",
             "-i", shellQuote(options.interfaceName),
             "-s", "0",
+            "-U",
             "-n",
             "-w", output,
         ]
@@ -54,11 +56,10 @@ enum LiveCaptureService {
         let command = args.joined(separator: " ")
         return [
             "\(command) & PID=$!",
+            "echo $PID > \(pidPath); chmod 644 \(pidPath) 2>/dev/null || true",
             "sleep \(duration)",
-            "kill -INT $PID 2>/dev/null || true",
-            "for i in 1 2 3 4 5 6 7 8 9 10; do kill -0 $PID 2>/dev/null || break; sleep 0.2; done",
             "kill -TERM $PID 2>/dev/null || true",
-            "sleep 0.3",
+            "for i in 1 2 3 4 5 6 7 8 9 10; do kill -0 $PID 2>/dev/null || break; sleep 0.2; done",
             "kill -KILL $PID 2>/dev/null || true",
             "wait $PID 2>/dev/null || true",
             "chown \(getuid()):\(getgid()) \(output) 2>/dev/null || true",

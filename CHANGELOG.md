@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.1 — 2026-10-26
+
+### Fixed
+- Live capture now records the tcpdump PID, sends SIGTERM, waits with a
+  bounded loop, then SIGKILL, and only then reaps the process. This replaces
+  the SIGINT-only path that could leave a root tcpdump writing for hours.
+- Unique output/error paths and the capture lock remain in place.
+
+
 ## 2.4.0 — 2026-10-26
 
 ### Fixed
