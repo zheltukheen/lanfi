@@ -7,13 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0077A4650CD2B467EC115AF5 /* LiveCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AB4E05EC2FC66B20C543DF6 /* LiveCaptureView.swift */; };
+		00A003B407B27340A9A83B26 /* InterfacesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC63E28A660C8C0A8B2B2D28 /* InterfacesViewModel.swift */; };
 		02F564797A4737ABA1C62CD4 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C668C45805BE620587A4C21 /* AppCommands.swift */; };
 		096C32C22F17A43A7964FD40 /* NetworkColumnFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */; };
+		0FD917A1C6F9B064A4DD4A53 /* ColumnProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBCB97B25338A19AF78881E /* ColumnProfile.swift */; };
 		1553D68492677966F2C1DDBF /* ProtocolProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */; };
 		15C122DF91B199970BEC161B /* oui in Resources */ = {isa = PBXBuildFile; fileRef = 6F2AFA70627054823768D660 /* oui */; };
 		16D02A332CA9E208F31CB1A8 /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
 		18B1511F8FC314D12791E073 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A182714C038138461289B /* MenuBarView.swift */; };
 		19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23E9DF192173EEBD466621A /* ColumnCatalog.swift */; };
+		1C3C02C396F0120F287E7634 /* SystemInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20608B23AE2BDC4528717865 /* SystemInterface.swift */; };
 		270CFF52C9C727A9ACB7E6DC /* MainTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34AD44DBB07BC1BB913826E /* MainTableView.swift */; };
 		27B946813F3D2B8C4632914B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D368881E2DEB581D710828AE /* PrivacyInfo.xcprivacy */; };
 		30F8A7623A9EC47D36E35653 /* RawDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91900D72A9CC042601EC0C7C /* RawDataView.swift */; };
@@ -25,7 +29,9 @@
 		4ADB4161FC54C42691A05E26 /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1335A7BFB3791419C177D1B /* SessionTests.swift */; };
 		4C0808FF17864193C9DAFEF7 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */; };
 		53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
+		590D50DA6E2DA166F4C8554C /* SurveyInterpolator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76D0661115093391A9191CE /* SurveyInterpolator.swift */; };
 		59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
+		5BCB4A9A391022705968072E /* APNameDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657C986D019A224FDFEE348D /* APNameDetectorTests.swift */; };
 		5CAF3FE4F11BCD65CA2004F1 /* NetworkAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */; };
 		5EE7172570E8A9EFB461DCB6 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */; };
 		5EFE518555377023C5EF85AE /* NetworkGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */; };
@@ -36,18 +42,27 @@
 		64F07FC9BAEDF6CF3A04BB61 /* NetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */; };
 		6500C6EDE50D8FE6ED2DA7CB /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB0A732B64417000F67233E /* OUIParser.swift */; };
 		6C53527A6CFCCB7C1F5A51E3 /* SpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F250B2C1D615077EC1A92B0E /* SpectrumView.swift */; };
+		6D75B2F3E4FF6B9D91B48E76 /* SystemInterfaceScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */; };
 		6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */; };
 		6EC14A40FFD09C70E2496B45 /* NetworkGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */; };
 		6F1E84A4F606560CDBE5019F /* DiagnosticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */; };
+		78604E7198404854FAFAAC04 /* LiveCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */; };
+		7A99F757611D6FF4702810D9 /* APNameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */; };
+		7FEA36D79B28E565B476861A /* ColumnProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBCB97B25338A19AF78881E /* ColumnProfile.swift */; };
 		8098AE614F87EFD37D52A707 /* AnnotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */; };
+		89A731F9486D46F8011CE7C6 /* InterfacesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1737A246EEC913B9E871C08F /* InterfacesView.swift */; };
 		8A566DC0965253A4A677EF9C /* SurveyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */; };
+		8B0F8B4FB2B47AD30395BC27 /* SurveyInterpolatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45627167C818FDD5684C1E /* SurveyInterpolatorTests.swift */; };
 		8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54545FDFE743E9E0AD7B4553 /* DiagnosticsView.swift */; };
 		8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F284D3055FA72E1197279C47 /* AppUIState.swift */; };
 		8F33E69C2D666B37F261CEE1 /* NetworkAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */; };
 		955F735ACDFBAFD541C469C9 /* TableCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F5CE72100DE88434ACFFF7 /* TableCells.swift */; };
+		95C1C49FAC126274235CB027 /* SurveyInterpolator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76D0661115093391A9191CE /* SurveyInterpolator.swift */; };
 		997C983A4012AEF957383CEF /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
 		9A65FCCCBAA960A7C663A87E /* LanFiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9751E1A8C39ED7C2C526084 /* LanFiApp.swift */; };
 		9E163D0F01C427902FC8A9FA /* WiFiScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4E536F1E321D433C834C41 /* WiFiScanner.swift */; };
+		9EACC9A9F5C00542B19AA281 /* SystemInterfaceScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */; };
+		9FDCDF1ED5506EF6DF7FC451 /* LiveCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */; };
 		A1E3C52CFFB4B7BE766E01D2 /* NetworkColumnFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */; };
 		A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687874D5350B989C31061197 /* DiagnosticsTests.swift */; };
 		A71453AA5540760662F17737 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 54D6771B7C5FC5CC8C9B887A /* Localizable.strings */; };
@@ -55,15 +70,19 @@
 		A862642AA20FB3C72F423930 /* DiagnosticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */; };
 		AE63074E60A93D7CF851D661 /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
 		AE71876A0AF8AE300753BEF6 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D738C591A8707E4A7316C0 /* UpdaterController.swift */; };
+		B4D6F48E2D0F1F0E56844497 /* LiveCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */; };
 		B5FB900DC70AB04096915C6F /* InformationElementParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */; };
 		B83C4C6309BB2B9A0F4A5179 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 544BCF73F96E99C5CFCA5728 /* Sparkle */; };
+		BDEBC62FEE192FF66E0ABDF9 /* APNameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */; };
 		BFFC6CE6F7691DE2140BCC72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A523B096357134ADAD3A2442 /* Assets.xcassets */; };
 		C2BA409446C06082FD4B574C /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB0A732B64417000F67233E /* OUIParser.swift */; };
 		C31F9BE12C97FC55EB78488F /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1002A4F0143646CB9EF6A42 /* ScanSession.swift */; };
 		C78DE2401AD4AFD73A13B62F /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0745B6A062696C94CF715558 /* InsightsView.swift */; };
 		C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D486B1748C166298A6029AF /* ProtocolsView.swift */; };
+		CC433033E5281E7434455AEE /* SystemInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20608B23AE2BDC4528717865 /* SystemInterface.swift */; };
 		D029C59767AE2D08643E4B72 /* SidebarFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */; };
 		D5537C10DA8C95E91D911916 /* PcapExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */; };
+		D6E8563A3C6351B002E24466 /* ColumnProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */; };
 		D77AB7A3C4DBF43E63FAFE44 /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
 		D7C7ADF67713E3586A83AF2A /* OUIParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0199BFE1A054037863D28285 /* OUIParserTests.swift */; };
 		DB2AC9503743CA5E1E17CF6C /* ProtocolAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */; };
@@ -73,6 +92,7 @@
 		E72C15A389C39001C6B92E4A /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
 		E74FA2996C24893BB9A680C2 /* DiagnosticsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */; };
 		E82F82092EFD25CD3FEC4142 /* NetworkAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */; };
+		E9991D8982D889943B4BDC3E /* SystemInterfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */; };
 		EEFE937D6AB642E5E8C9B79F /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
 		F10DC9BE92DD6E2326F6288E /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
 		F6F5BA6DE53C47BD40D2F569 /* WiFiTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5429E87C67B2ED203E194F1A /* WiFiTableView.swift */; };
@@ -86,11 +106,15 @@
 		0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolAnalyzerTests.swift; sourceTree = "<group>"; };
 		10F5CE72100DE88434ACFFF7 /* TableCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCells.swift; sourceTree = "<group>"; };
 		171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkGroupingTests.swift; sourceTree = "<group>"; };
+		1737A246EEC913B9E871C08F /* InterfacesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfacesView.swift; sourceTree = "<group>"; };
 		175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkGrouping.swift; sourceTree = "<group>"; };
+		18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInterfaceScanner.swift; sourceTree = "<group>"; };
 		191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsModel.swift; sourceTree = "<group>"; };
 		1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolProfile.swift; sourceTree = "<group>"; };
+		20608B23AE2BDC4528717865 /* SystemInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInterface.swift; sourceTree = "<group>"; };
 		2C668C45805BE620587A4C21 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
 		36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
+		3AB4E05EC2FC66B20C543DF6 /* LiveCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCaptureView.swift; sourceTree = "<group>"; };
 		43889DE9E5A131FBE2527D7A /* LanFi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LanFi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnalyzer.swift; sourceTree = "<group>"; };
 		5429E87C67B2ED203E194F1A /* WiFiTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiTableView.swift; sourceTree = "<group>"; };
@@ -98,10 +122,14 @@
 		54D6771B7C5FC5CC8C9B887A /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		55EECC86AC4031596CE3DFC3 /* SurveyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyTests.swift; sourceTree = "<group>"; };
 		5D4A182714C038138461289B /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCaptureService.swift; sourceTree = "<group>"; };
+		617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInterfaceTests.swift; sourceTree = "<group>"; };
 		648FEFFCCE62F69288760DDB /* PcapExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcapExporter.swift; sourceTree = "<group>"; };
+		657C986D019A224FDFEE348D /* APNameDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNameDetectorTests.swift; sourceTree = "<group>"; };
 		687874D5350B989C31061197 /* DiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsTests.swift; sourceTree = "<group>"; };
 		6F2AFA70627054823768D660 /* oui */ = {isa = PBXFileReference; path = oui; sourceTree = "<group>"; };
 		7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParserTests.swift; sourceTree = "<group>"; };
+		7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnProfileTests.swift; sourceTree = "<group>"; };
 		7D486B1748C166298A6029AF /* ProtocolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolsView.swift; sourceTree = "<group>"; };
 		8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkColumnFormatter.swift; sourceTree = "<group>"; };
 		91900D72A9CC042601EC0C7C /* RawDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataView.swift; sourceTree = "<group>"; };
@@ -109,6 +137,7 @@
 		A523B096357134ADAD3A2442 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnnotation.swift; sourceTree = "<group>"; };
 		AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHistoryView.swift; sourceTree = "<group>"; };
+		AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNameDetector.swift; sourceTree = "<group>"; };
 		B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnCatalogTests.swift; sourceTree = "<group>"; };
 		B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsViewModel.swift; sourceTree = "<group>"; };
 		B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationTests.swift; sourceTree = "<group>"; };
@@ -117,16 +146,19 @@
 		BF3B253B251CEBF891065826 /* LanFiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LanFiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C23E9DF192173EEBD466621A /* ColumnCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnCatalog.swift; sourceTree = "<group>"; };
 		C93F615B00753F1F4577B061 /* InformationElementParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParser.swift; sourceTree = "<group>"; };
+		CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCaptureTests.swift; sourceTree = "<group>"; };
 		CC59D32F77002751B3EBB790 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsEngine.swift; sourceTree = "<group>"; };
 		D368881E2DEB581D710828AE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D434AE2398E571E7D0231BB3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D4C531AD9B5EB82679A4AE71 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyViewModel.swift; sourceTree = "<group>"; };
+		DE45627167C818FDD5684C1E /* SurveyInterpolatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyInterpolatorTests.swift; sourceTree = "<group>"; };
 		E1335A7BFB3791419C177D1B /* SessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
 		E34AD44DBB07BC1BB913826E /* MainTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableView.swift; sourceTree = "<group>"; };
 		E3560EFA84AE4D6AC3614B54 /* SurveyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyView.swift; sourceTree = "<group>"; };
 		E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalDisplayMode.swift; sourceTree = "<group>"; };
+		E76D0661115093391A9191CE /* SurveyInterpolator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyInterpolator.swift; sourceTree = "<group>"; };
 		E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolAnalyzer.swift; sourceTree = "<group>"; };
 		F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkModel.swift; sourceTree = "<group>"; };
 		F1002A4F0143646CB9EF6A42 /* ScanSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanSession.swift; sourceTree = "<group>"; };
@@ -136,6 +168,8 @@
 		F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcapExporterTests.swift; sourceTree = "<group>"; };
 		F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnalyzerTests.swift; sourceTree = "<group>"; };
 		FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFilterView.swift; sourceTree = "<group>"; };
+		FBBCB97B25338A19AF78881E /* ColumnProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnProfile.swift; sourceTree = "<group>"; };
+		FC63E28A660C8C0A8B2B2D28 /* InterfacesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfacesViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,16 +188,21 @@
 			isa = PBXGroup;
 			children = (
 				B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */,
+				657C986D019A224FDFEE348D /* APNameDetectorTests.swift */,
 				B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */,
+				7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */,
 				687874D5350B989C31061197 /* DiagnosticsTests.swift */,
 				7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */,
+				CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */,
 				F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */,
 				171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */,
 				0199BFE1A054037863D28285 /* OUIParserTests.swift */,
 				F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */,
 				0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */,
 				E1335A7BFB3791419C177D1B /* SessionTests.swift */,
+				DE45627167C818FDD5684C1E /* SurveyInterpolatorTests.swift */,
 				55EECC86AC4031596CE3DFC3 /* SurveyTests.swift */,
+				617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -174,6 +213,7 @@
 				36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */,
 				F284D3055FA72E1197279C47 /* AppUIState.swift */,
 				B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */,
+				FC63E28A660C8C0A8B2B2D28 /* InterfacesViewModel.swift */,
 				DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */,
 			);
 			path = ViewModels;
@@ -191,12 +231,16 @@
 		875A6E42C37E9E98CCD9C545 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */,
 				CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */,
 				C93F615B00753F1F4577B061 /* InformationElementParser.swift */,
+				5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */,
 				53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */,
 				8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */,
 				648FEFFCCE62F69288760DDB /* PcapExporter.swift */,
 				E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */,
+				E76D0661115093391A9191CE /* SurveyInterpolator.swift */,
+				18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */,
 				F4D738C591A8707E4A7316C0 /* UpdaterController.swift */,
 				BE4E536F1E321D433C834C41 /* WiFiScanner.swift */,
 			);
@@ -209,6 +253,8 @@
 				2C668C45805BE620587A4C21 /* AppCommands.swift */,
 				54545FDFE743E9E0AD7B4553 /* DiagnosticsView.swift */,
 				0745B6A062696C94CF715558 /* InsightsView.swift */,
+				1737A246EEC913B9E871C08F /* InterfacesView.swift */,
+				3AB4E05EC2FC66B20C543DF6 /* LiveCaptureView.swift */,
 				E34AD44DBB07BC1BB913826E /* MainTableView.swift */,
 				5D4A182714C038138461289B /* MenuBarView.swift */,
 				7D486B1748C166298A6029AF /* ProtocolsView.swift */,
@@ -243,6 +289,7 @@
 			isa = PBXGroup;
 			children = (
 				C23E9DF192173EEBD466621A /* ColumnCatalog.swift */,
+				FBBCB97B25338A19AF78881E /* ColumnProfile.swift */,
 				191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */,
 				AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */,
 				175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */,
@@ -251,6 +298,7 @@
 				F1002A4F0143646CB9EF6A42 /* ScanSession.swift */,
 				E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */,
 				957F50461891605F6C31319B /* Survey.swift */,
+				20608B23AE2BDC4528717865 /* SystemInterface.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -378,14 +426,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A99F757611D6FF4702810D9 /* APNameDetector.swift in Sources */,
+				5BCB4A9A391022705968072E /* APNameDetectorTests.swift in Sources */,
 				8098AE614F87EFD37D52A707 /* AnnotationTests.swift in Sources */,
 				5F2033806533879194D749C7 /* ColumnCatalog.swift in Sources */,
 				E28BF0B44751A1C4B7BBEE58 /* ColumnCatalogTests.swift in Sources */,
+				7FEA36D79B28E565B476861A /* ColumnProfile.swift in Sources */,
+				D6E8563A3C6351B002E24466 /* ColumnProfileTests.swift in Sources */,
 				6F1E84A4F606560CDBE5019F /* DiagnosticsEngine.swift in Sources */,
 				E74FA2996C24893BB9A680C2 /* DiagnosticsModel.swift in Sources */,
 				A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */,
 				3C4129BF2791C83851FE20B6 /* InformationElementParser.swift in Sources */,
 				B5FB900DC70AB04096915C6F /* InformationElementParserTests.swift in Sources */,
+				78604E7198404854FAFAAC04 /* LiveCaptureService.swift in Sources */,
+				B4D6F48E2D0F1F0E56844497 /* LiveCaptureTests.swift in Sources */,
 				4C0808FF17864193C9DAFEF7 /* NetworkAnalyzer.swift in Sources */,
 				5CAF3FE4F11BCD65CA2004F1 /* NetworkAnalyzerTests.swift in Sources */,
 				8F33E69C2D666B37F261CEE1 /* NetworkAnnotation.swift in Sources */,
@@ -404,7 +458,12 @@
 				4ADB4161FC54C42691A05E26 /* SessionTests.swift in Sources */,
 				D77AB7A3C4DBF43E63FAFE44 /* SignalDisplayMode.swift in Sources */,
 				AE63074E60A93D7CF851D661 /* Survey.swift in Sources */,
+				590D50DA6E2DA166F4C8554C /* SurveyInterpolator.swift in Sources */,
+				8B0F8B4FB2B47AD30395BC27 /* SurveyInterpolatorTests.swift in Sources */,
 				3A990E992BA05E58A3660FBD /* SurveyTests.swift in Sources */,
+				1C3C02C396F0120F287E7634 /* SystemInterface.swift in Sources */,
+				9EACC9A9F5C00542B19AA281 /* SystemInterfaceScanner.swift in Sources */,
+				E9991D8982D889943B4BDC3E /* SystemInterfaceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,17 +471,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BDEBC62FEE192FF66E0ABDF9 /* APNameDetector.swift in Sources */,
 				5EE7172570E8A9EFB461DCB6 /* AnalyzerViewModel.swift in Sources */,
 				02F564797A4737ABA1C62CD4 /* AppCommands.swift in Sources */,
 				8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */,
 				19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */,
+				0FD917A1C6F9B064A4DD4A53 /* ColumnProfile.swift in Sources */,
 				A862642AA20FB3C72F423930 /* DiagnosticsEngine.swift in Sources */,
 				3AEA3FCF4941A7AFDD261FCC /* DiagnosticsModel.swift in Sources */,
 				8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */,
 				6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */,
 				F10DC9BE92DD6E2326F6288E /* InformationElementParser.swift in Sources */,
 				C78DE2401AD4AFD73A13B62F /* InsightsView.swift in Sources */,
+				89A731F9486D46F8011CE7C6 /* InterfacesView.swift in Sources */,
+				00A003B407B27340A9A83B26 /* InterfacesViewModel.swift in Sources */,
 				9A65FCCCBAA960A7C663A87E /* LanFiApp.swift in Sources */,
+				9FDCDF1ED5506EF6DF7FC451 /* LiveCaptureService.swift in Sources */,
+				0077A4650CD2B467EC115AF5 /* LiveCaptureView.swift in Sources */,
 				3E683683B0D3F663C66234DB /* LocationManager.swift in Sources */,
 				270CFF52C9C727A9ACB7E6DC /* MainTableView.swift in Sources */,
 				18B1511F8FC314D12791E073 /* MenuBarView.swift in Sources */,
@@ -443,8 +508,11 @@
 				E5A9CB7DE26E07DD53CE0578 /* SignalHistoryView.swift in Sources */,
 				6C53527A6CFCCB7C1F5A51E3 /* SpectrumView.swift in Sources */,
 				53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */,
+				95C1C49FAC126274235CB027 /* SurveyInterpolator.swift in Sources */,
 				F6F8AF3652EA31397B4DE0B4 /* SurveyView.swift in Sources */,
 				8A566DC0965253A4A677EF9C /* SurveyViewModel.swift in Sources */,
+				CC433033E5281E7434455AEE /* SystemInterface.swift in Sources */,
+				6D75B2F3E4FF6B9D91B48E76 /* SystemInterfaceScanner.swift in Sources */,
 				955F735ACDFBAFD541C469C9 /* TableCells.swift in Sources */,
 				AE71876A0AF8AE300753BEF6 /* UpdaterController.swift in Sources */,
 				9E163D0F01C427902FC8A9FA /* WiFiScanner.swift in Sources */,
@@ -550,13 +618,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
@@ -634,13 +702,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};

@@ -184,6 +184,7 @@ struct NetworkColumnFormatter {
 
     private func apName(for network: NetworkModel) -> String {
         if let alias = annotation(for: network)?.displayAlias { return alias }
+        if let name = network.apName, !name.isEmpty { return name }
         return network.vendor != "-" ? network.vendor : network.displaySSID
     }
 

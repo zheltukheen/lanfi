@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.7.0 — 2026-10-26
+
+### Added
+- **Interfaces analysis for every BSD network interface on the Mac.** Physical,
+  virtual, VPN, bridge, AWDL, cellular and loopback interfaces are enumerated
+  with addresses, MTU, link speed, MAC, traffic counters, primary route, DNS
+  and Wi-Fi association details. Live auto-refresh and copy-to-clipboard.
+- **Live PCAP capture** via macOS `tcpdump`/BPF, with interface, duration,
+  monitor-mode/radiotap option and a one-off administrator authorization.
+  Synthetic beacon export remains available.
+- **Survey interpolation and walls.** Inverse-distance-weighted heatmap replaces
+  radial blobs; two-click wall drawing attenuates samples that cross a wall.
+  Walls persist with the survey project and old projects decode unchanged.
+- **Column profiles.** Save, apply, reset and persist named column layouts.
+- **AP name detection** from printable vendor-specific IE payloads, shown in the
+  AP Name column and protocol vendor block.
+- **Wi-Fi 7 / MLO protocol block** with EHT IE count, 320 MHz visibility and an
+  explicit note where CoreWLAN does not expose MLO link sets.
+- **Developer ID / notarization tooling** (`scripts/notarize.sh`,
+  `docs/DISTRIBUTION.md`) and `CODESIGN_IDENTITY` support in `build.sh`.
+- Russian localizations for the new interface, capture, survey and protocol
+  labels.
+
+### Changed
+- Bottom panel NETWORK category now contains Protocols, Interfaces and Raw Data.
+- Tab layout migrates the 1.6 order to the new seven-tab order.
+- Protocol analysis now has seven ordered blocks.
+- The survey status moved into the map overlay so the toolbar fits at 900 pt.
+
+
 ## 1.6.0 — 2026-10-26
 
 ### Changed

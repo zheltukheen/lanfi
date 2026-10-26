@@ -62,6 +62,7 @@ class AnalyzerViewModel: ObservableObject {
     private let locationManager = LocationManager()
     private let annotationStore = AnnotationStore()
     private let sessionStore = SessionStore()
+    private let columnProfileStore = ColumnProfileStore()
     private let refreshIntervalKey = "RefreshIntervalSeconds"
     private let historyWindowSeconds: TimeInterval = 180
 
@@ -109,6 +110,7 @@ class AnalyzerViewModel: ObservableObject {
     @Published private(set) var analysis: AnalysisReport = .empty
     @Published private(set) var annotations: [String: NetworkAnnotation] = [:]
     @Published private(set) var sessions: [ScanSession] = []
+    @Published private(set) var columnProfiles: [ColumnProfile] = []
     @Published private(set) var loadedSession: ScanSession?
     @Published var sessionMessage: String?
     @Published var selectedNetworkId: String? = nil
@@ -151,6 +153,7 @@ class AnalyzerViewModel: ObservableObject {
         setupBindings()
         annotations = annotationStore.annotations
         sessions = sessionStore.sessions()
+        columnProfiles = columnProfileStore.profiles()
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
@@ -279,6 +282,7 @@ class AnalyzerViewModel: ObservableObject {
             generation: net.generation,
             security: net.security,
             vendor: net.vendor,
+            apName: net.apName,
             mode: net.mode,
             signal: net.signal,
             noise: net.noise,
@@ -624,6 +628,42 @@ class AnalyzerViewModel: ObservableObject {
     func resetColumnsToDefault() {
         columnDefinitions = ColumnDefinition.defaults
         saveColumnSettings()
+    }
+
+    func applyColumnProfile(_ profile: ColumnProfile) {
+        columnDefinitions = normalizeColumnDefinitions(profile.columns)
+        saveColumnSettings()
+        objectWillChange.send()
+    }
+
+    func saveCurrentColumnsAsProfile(named name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if let index = columnProfiles.firstIndex(where: { $0.name.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+            columnProfiles[index].columns = columnDefinitions
+        } else {
+            columnProfiles.append(.new(name: trimmed, columns: columnDefinitions))
+        }
+        columnProfileStore.save(columnProfiles)
+    }
+
+    func deleteColumnProfile(_ profile: ColumnProfile) {
+        columnProfiles.removeAll { $0.id == profile.id }
+        columnProfileStore.save(columnProfiles)
+    }
+
+    func promptSaveColumnProfile() {
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 22))
+        field.stringValue = "My layout"
+        let alert = NSAlert()
+        alert.messageText = "Save column profile"
+        alert.informativeText = "Store the current column order, widths and visibility."
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn {
+            saveCurrentColumnsAsProfile(named: field.stringValue)
+        }
     }
 
     // 3. Публичные методы для геолокации (нужны для кнопок в UI)

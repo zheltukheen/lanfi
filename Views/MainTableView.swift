@@ -9,9 +9,11 @@ struct MainTableView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @EnvironmentObject var uiState: AppUIState
     @EnvironmentObject var diagnostics: DiagnosticsViewModel
+    @EnvironmentObject var interfaces: InterfacesViewModel
 
     // UI State
     @State private var isResizingPanels = false
+    @State private var showingLiveCapture = false
 
     // Resizable Panels State
     @State private var inspectorBaseWidth: CGFloat = 300
@@ -41,7 +43,8 @@ struct MainTableView: View {
                 showSidebar: $uiState.showSidebar,
                 showInspector: $uiState.showInspector,
                 customIntervalText: $uiState.customIntervalText,
-                showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert
+                showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert,
+                showingLiveCapture: $showingLiveCapture
             )
 
             // 2. CONTENT AREA
@@ -171,8 +174,9 @@ struct MainTableView: View {
                             case 1: SpectrumView(viewModel: viewModel)
                             case 2: SignalHistoryView(viewModel: viewModel)
                             case 3: ProtocolsView(viewModel: viewModel)
-                            case 4: RawDataView(viewModel: viewModel)
-                            case 5: DiagnosticsView(diagnostics: diagnostics)
+                            case 4: InterfacesView(interfaces: interfaces)
+                            case 5: RawDataView(viewModel: viewModel)
+                            case 6: DiagnosticsView(diagnostics: diagnostics)
                             default: InsightsView(viewModel: viewModel)
                             }
                         }
@@ -200,6 +204,9 @@ struct MainTableView: View {
             }
         }
         // Запрос прав при появлении
+        .sheet(isPresented: $showingLiveCapture) {
+            LiveCaptureView()
+        }
         .onAppear {
             if !viewModel.isLocationAuthorized {
                 viewModel.requestLocationAuthorization()
@@ -256,10 +263,17 @@ struct BottomPanelTabs: View {
                 )
                 Divider().frame(height: 18)
                 TabButton(
-                    title: "Raw Data",
-                    icon: "list.bullet.rectangle",
+                    title: "Interfaces",
+                    icon: "network",
                     isSelected: selectedTab == 4,
                     action: { selectedTab = 4 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "Raw Data",
+                    icon: "list.bullet.rectangle",
+                    isSelected: selectedTab == 5,
+                    action: { selectedTab = 5 }
                 )
             }
 
@@ -269,8 +283,8 @@ struct BottomPanelTabs: View {
                 TabButton(
                     title: "Diagnostics",
                     icon: "stethoscope",
-                    isSelected: selectedTab == 5,
-                    action: { selectedTab = 5 }
+                    isSelected: selectedTab == 6,
+                    action: { selectedTab = 6 }
                 )
             }
 
@@ -339,6 +353,7 @@ struct ToolbarView: View {
     @Binding var showInspector: Bool
     @Binding var customIntervalText: String
     @Binding var showingCustomIntervalAlert: Bool
+    @Binding var showingLiveCapture: Bool
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
@@ -466,6 +481,8 @@ struct ToolbarView: View {
                 Menu {
                     Button("Export CSV…") { viewModel.exportCSV() }
                     Button("Export JSON…") { viewModel.exportJSON() }
+                    Divider()
+                    Button("Live Capture (PCAP)…") { showingLiveCapture = true }
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
@@ -501,6 +518,9 @@ struct ToolbarView: View {
         .padding(10)
         .background(Material.bar)
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .bottom)
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowLiveCapture)) { _ in
+            showingLiveCapture = true
+        }
         .onReceive(NotificationCenter.default.publisher(for: .wifaFocusSearch)) { _ in
             isSearchFocused = true
         }
@@ -509,6 +529,7 @@ struct ToolbarView: View {
 
 extension Notification.Name {
     static let wifaFocusSearch = Notification.Name("LanFi.focusSearch")
+    static let lanfiShowLiveCapture = Notification.Name("LanFi.showLiveCapture")
 }
 
 // MARK: - Subviews

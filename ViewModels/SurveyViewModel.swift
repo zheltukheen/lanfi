@@ -27,6 +27,7 @@ final class SurveyViewModel: ObservableObject {
     }
 
     var samples: [SurveySample] { project.samples }
+    var walls: [SurveyWall] { project.walls }
 
     func samples(for network: NetworkModel?) -> [SurveySample] {
         guard let network else { return project.samples }
@@ -67,6 +68,25 @@ final class SurveyViewModel: ObservableObject {
         project.updatedAt = Date()
         scheduleSave()
         statusMessage = "Recorded \(network.signal) dBm for \(network.displaySSID)."
+    }
+
+    func addWall(x1: Double, y1: Double, x2: Double, y2: Double) {
+        project.walls.append(
+            .new(
+                x1: min(max(x1, 0), 1), y1: min(max(y1, 0), 1),
+                x2: min(max(x2, 0), 1), y2: min(max(y2, 0), 1)
+            )
+        )
+        project.updatedAt = Date()
+        scheduleSave()
+        statusMessage = "Wall added · \(Int(project.walls.last?.attenuationDb ?? 8)) dB attenuation."
+    }
+
+    func clearWalls() {
+        project.walls.removeAll()
+        project.updatedAt = Date()
+        store.save(project, imageData: nil)
+        statusMessage = "Walls cleared."
     }
 
     func clearSamples() {

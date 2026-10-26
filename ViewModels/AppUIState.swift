@@ -7,7 +7,7 @@ final class AppUIState: ObservableObject {
     @Published var customIntervalText: String = ""
     @Published var showingCustomIntervalAlert: Bool = false
 
-    private static let tabLayoutVersion = 2
+    private static let tabLayoutVersion = 3
 
     init() {
         let defaults = UserDefaults.standard

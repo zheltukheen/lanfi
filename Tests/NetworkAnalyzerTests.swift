@@ -193,6 +193,7 @@ func makeNetwork(
         generation: generation,
         security: security,
         vendor: vendor,
+        apName: nil,
         mode: "Infrastructure",
         signal: signal,
         noise: noise,

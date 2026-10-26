@@ -10,15 +10,61 @@ struct SurveySample: Codable, Identifiable, Equatable {
     let recordedAt: Date
 }
 
+struct SurveyWall: Codable, Identifiable, Equatable {
+    let id: UUID
+    var x1: Double
+    var y1: Double
+    var x2: Double
+    var y2: Double
+    var attenuationDb: Double
+
+    static func new(x1: Double, y1: Double, x2: Double, y2: Double) -> SurveyWall {
+        SurveyWall(id: UUID(), x1: x1, y1: y1, x2: x2, y2: y2, attenuationDb: 8)
+    }
+}
+
 struct SurveyProject: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var imageFileName: String?
     var samples: [SurveySample]
+    var walls: [SurveyWall]
     var updatedAt: Date
 
     static func new(name: String = "Untitled survey") -> SurveyProject {
-        SurveyProject(id: UUID(), name: name, imageFileName: nil, samples: [], updatedAt: Date())
+        SurveyProject(
+            id: UUID(), name: name, imageFileName: nil, samples: [], walls: [], updatedAt: Date()
+        )
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, imageFileName, samples, walls, updatedAt
+    }
+
+    init(
+        id: UUID,
+        name: String,
+        imageFileName: String?,
+        samples: [SurveySample],
+        walls: [SurveyWall] = [],
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.name = name
+        self.imageFileName = imageFileName
+        self.samples = samples
+        self.walls = walls
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        imageFileName = try container.decodeIfPresent(String.self, forKey: .imageFileName)
+        samples = try container.decodeIfPresent([SurveySample].self, forKey: .samples) ?? []
+        walls = try container.decodeIfPresent([SurveyWall].self, forKey: .walls) ?? []
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
     }
 }
 

@@ -124,7 +124,7 @@ struct ProtocolsView: View {
                     Text("Protocols overview")
                         .font(.headline)
                     Text(
-                        "All \(coverage.networkCount) visible networks are summarised here. Select a row to inspect one network in six protocol blocks."
+                        "All \(coverage.networkCount) visible networks are summarised here. Select a row to inspect one network in seven protocol blocks."
                     )
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -261,7 +261,7 @@ private struct ProtocolBlockCard: View {
                 Image(systemName: block.systemImage)
                     .foregroundColor(statusColor)
                     .frame(width: 18)
-                Text(block.title)
+                Text(LocalizedStringKey(block.title))
                     .font(.caption.bold())
                 Spacer()
                 Circle()
@@ -269,7 +269,7 @@ private struct ProtocolBlockCard: View {
                     .frame(width: 7, height: 7)
             }
 
-            Text(block.subtitle)
+            Text(LocalizedStringKey(block.subtitle))
                 .font(.caption2)
                 .foregroundColor(.secondary)
                 .lineLimit(2)
@@ -284,10 +284,10 @@ private struct ProtocolBlockCard: View {
                             .frame(width: 5, height: 5)
                             .padding(.top, 5)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(fact.label)
+                            Text(LocalizedStringKey(fact.label))
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
-                            Text(fact.value)
+                            Text(LocalizedStringKey(fact.value))
                                 .font(.caption)
                                 .lineLimit(2)
                             if let detail = fact.detail, !detail.isEmpty {

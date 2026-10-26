@@ -7,6 +7,7 @@ struct LanFiCommands: Commands {
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var uiState: AppUIState
     @ObservedObject var diagnostics: DiagnosticsViewModel
+    @ObservedObject var interfaces: InterfacesViewModel
     @ObservedObject var updater: UpdaterController
 
     var body: some Commands {
@@ -91,6 +92,17 @@ struct LanFiCommands: Commands {
             }
 
             Toggle("Highlight Connected Network", isOn: $viewModel.highlightConnectedNetworks)
+
+            Divider()
+
+            Menu("Column Profiles") {
+                ForEach(viewModel.columnProfiles) { profile in
+                    Button(profile.name) { viewModel.applyColumnProfile(profile) }
+                }
+                if !viewModel.columnProfiles.isEmpty { Divider() }
+                Button("Save Current Profile…") { viewModel.promptSaveColumnProfile() }
+                Button("Reset Columns") { viewModel.resetColumnsToDefault() }
+            }
         }
 
         CommandMenu("Panels") {
@@ -105,8 +117,9 @@ struct LanFiCommands: Commands {
                 Text("Spectrum").tag(1)
                 Text("History").tag(2)
                 Text("Protocols").tag(3)
-                Text("Raw Data").tag(4)
-                Text("Diagnostics").tag(5)
+                Text("Interfaces").tag(4)
+                Text("Raw Data").tag(5)
+                Text("Diagnostics").tag(6)
             }
 
             Divider()
@@ -119,10 +132,12 @@ struct LanFiCommands: Commands {
                 .keyboardShortcut("3", modifiers: [.command])
             Button("Show Protocols") { uiState.selectedBottomTab = 3 }
                 .keyboardShortcut("4", modifiers: [.command])
-            Button("Show Raw Data") { uiState.selectedBottomTab = 4 }
+            Button("Show Interfaces") { uiState.selectedBottomTab = 4 }
                 .keyboardShortcut("5", modifiers: [.command])
-            Button("Show Diagnostics") { uiState.selectedBottomTab = 5 }
+            Button("Show Raw Data") { uiState.selectedBottomTab = 5 }
                 .keyboardShortcut("6", modifiers: [.command])
+            Button("Show Diagnostics") { uiState.selectedBottomTab = 6 }
+                .keyboardShortcut("7", modifiers: [.command])
         }
 
         CommandMenu("Survey") {
@@ -143,9 +158,9 @@ struct LanFiCommands: Commands {
             Divider()
 
             Button("Show Diagnostics") {
-                uiState.selectedBottomTab = 5
+                uiState.selectedBottomTab = 6
             }
-            .keyboardShortcut("6", modifiers: [.command])
+            .keyboardShortcut("7", modifiers: [.command])
         }
 
         CommandMenu("Data") {
@@ -177,6 +192,11 @@ struct LanFiCommands: Commands {
             Button("Export PCAP (Synthetic Beacons)…") {
                 viewModel.exportPCAP()
             }
+
+            Button("Live Capture (PCAP)…") {
+                NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
+            }
+            .keyboardShortcut("p", modifiers: [.command, .shift])
         }
     }
 

@@ -24,8 +24,8 @@ final class ProtocolAnalyzerTests: XCTestCase {
         let metrics = NetworkAnalyzer.metricsFor(network, among: [network])
         let profile = ProtocolAnalyzer.profile(for: network, metrics: metrics)
 
-        XCTAssertEqual(profile.blocks.count, 6)
-        XCTAssertEqual(Set(profile.blocks.map(\.id)).count, 6)
+        XCTAssertEqual(profile.blocks.count, 7)
+        XCTAssertEqual(Set(profile.blocks.map(\.id)).count, 7)
         XCTAssertEqual(profile.formatLine, "6GHz · 11be · 160 MHz · WPA3 Enterprise")
         XCTAssertEqual(profile.band, .band6)
         XCTAssertTrue(profile.blocks.allSatisfy { !$0.facts.isEmpty })

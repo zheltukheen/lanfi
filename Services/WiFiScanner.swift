@@ -88,6 +88,7 @@ actor WiFiScanner {
             generation: generation,
             security: security,
             vendor: vendor,
+            apName: APNameDetector.name(for: parsedIE.elements, ssid: ssid, vendor: vendor),
             mode: mode,
             signal: rssi,
             noise: noise,
