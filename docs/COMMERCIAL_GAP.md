@@ -52,6 +52,14 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Full localization, VoiceOver coverage, Windows parity (out of scope for now).
 - In-app vendor database updates and crash diagnostics.
 
+## Delivered in 1.7
+
+- First-class **Interfaces** analysis for every BSD interface.
+- **Live PCAP** capture through tcpdump/BPF with administrator authorization.
+- **IDW survey interpolation** and wall attenuation with a wall editor.
+- **Column profiles**, AP-name detection and a Wi-Fi 7/EHT/MLO block.
+- Notarization tooling and distribution documentation.
+
 ## Delivered in 1.6
 
 - Renamed the product to **LanFi** (bundle id retained for update continuity).

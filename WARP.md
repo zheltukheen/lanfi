@@ -109,8 +109,8 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Wifa.signalUnit`, `Wifa.highlightConnected` — display options.
 - `Wifa.sortKey`, `Wifa.sortAscending` — table sort.
 - `Wifa.showSidebar`, `Wifa.showInspector`, `Wifa.bottomTab` — layout
-  (`0` Insights, `1` Spectrum, `2` History, `3` Protocols, `4` Raw Data,
-  `5` Diagnostics).
+  (`0` Insights, `1` Spectrum, `2` History, `3` Protocols, `4` Interfaces,
+  `5` Raw Data, `6` Diagnostics).
 - `Wifa.groupMode` — none/SSID/band/vendor/security grouping.
 - Session, annotation and survey files live under
   `~/Library/Application Support/LanFi/{Sessions,annotations.json,Surveys}`.

@@ -9,6 +9,7 @@ struct LanFiApp: App {
     @StateObject private var diagnostics = DiagnosticsViewModel()
     @StateObject private var updater = UpdaterController()
     @StateObject private var survey = SurveyViewModel()
+    @StateObject private var interfaces = InterfacesViewModel()
 
     // Свойство для отслеживания состояния приложения (активно/фон)
     @Environment(\.scenePhase) var scenePhase
@@ -19,6 +20,7 @@ struct LanFiApp: App {
                 .frame(minWidth: 900, minHeight: 600)
                 .environmentObject(uiState)
                 .environmentObject(diagnostics)
+                .environmentObject(interfaces)
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {
                         // ИСПРАВЛЕНО: Вызываем публичный метод ViewModel
@@ -32,7 +34,13 @@ struct LanFiApp: App {
                 }
         }
         .commands {
-            LanFiCommands(viewModel: viewModel, uiState: uiState, diagnostics: diagnostics, updater: updater)
+            LanFiCommands(
+                viewModel: viewModel,
+                uiState: uiState,
+                diagnostics: diagnostics,
+                interfaces: interfaces,
+                updater: updater
+            )
         }
 
         Window("Site Survey", id: "survey") {

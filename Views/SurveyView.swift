@@ -4,6 +4,8 @@ import AppKit
 struct SurveyView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
     @ObservedObject var survey: SurveyViewModel
+    @State private var wallMode = false
+    @State private var pendingWallStart: CGPoint?
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -54,6 +56,31 @@ struct SurveyView: View {
 
             Divider().frame(height: 20)
 
+            Button {
+                wallMode.toggle()
+                pendingWallStart = nil
+                survey.statusMessage =
+                    wallMode
+                    ? "Wall mode: click two points to draw a wall."
+                    : "Wall mode off."
+            } label: {
+                Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
+            }
+            .controlSize(.small)
+            .buttonStyle(.bordered)
+            .tint(wallMode ? .orange : nil)
+
+            Button(role: .destructive) {
+                survey.clearWalls()
+                pendingWallStart = nil
+            } label: {
+                Label("Clear Walls", systemImage: "rectangle.portrait.slash")
+            }
+            .controlSize(.small)
+            .disabled(survey.walls.isEmpty)
+
+            Divider().frame(height: 20)
+
             Picker("Network", selection: $survey.selectedNetworkId) {
                 Text("All networks").tag(String?.none)
                 ForEach(analyzer.networks.sorted { $0.signal > $1.signal }) { network in
@@ -70,11 +97,6 @@ struct SurveyView: View {
             }
 
             Spacer()
-
-            Text(survey.statusMessage)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
         }
         .padding(10)
         .background(Material.bar)
@@ -113,25 +135,33 @@ struct SurveyView: View {
                             .position(x: rect.midX, y: rect.midY)
                     }
                     Canvas { context, _ in
+                        drawInterpolatedHeat(context: context, rect: rect)
                         for sample in displayedSamples {
                             let point = CGPoint(
                                 x: rect.minX + sample.x * rect.width,
                                 y: rect.minY + sample.y * rect.height
                             )
-                            drawHeat(context: context, at: point, rssi: sample.rssi)
+                            drawSample(context: context, at: point, rssi: sample.rssi)
                         }
+                        drawWalls(context: context, rect: rect)
                     }
                     .allowsHitTesting(false)
                     .accessibilityLabel("Floor plan heatmap")
                     .accessibilityValue(
-                        "\(displayedSamples.count) samples, \(selectedNetwork?.displaySSID ?? "all networks")")
+                        "\(displayedSamples.count) samples, \(survey.walls.count) walls, "
+                            + "\(selectedNetwork?.displaySSID ?? "all networks")")
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(selectedNetwork?.displaySSID ?? "All networks")
                             .font(.caption.bold())
-                        Text("\(displayedSamples.count) points")
+                        Text("\(displayedSamples.count) points · \(survey.walls.count) walls")
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                        Text(survey.statusMessage)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                            .frame(maxWidth: 260, alignment: .leading)
                     }
                     .padding(8)
                     .background(.regularMaterial)
@@ -149,12 +179,21 @@ struct SurveyView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture { location in
-                    guard let network = captureNetwork, rect.contains(location), rect.width > 0, rect.height > 0 else {
+                    guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
+                    let x = Double((location.x - rect.minX) / rect.width)
+                    let y = Double((location.y - rect.minY) / rect.height)
+                    if wallMode {
+                        if let start = pendingWallStart {
+                            survey.addWall(x1: Double(start.x), y1: Double(start.y), x2: x, y2: y)
+                            pendingWallStart = nil
+                        } else {
+                            pendingWallStart = CGPoint(x: x, y: y)
+                            survey.statusMessage = "Wall start set. Click the second point."
+                        }
                         return
                     }
-                    let x = (location.x - rect.minX) / rect.width
-                    let y = (location.y - rect.minY) / rect.height
-                    survey.addSample(x: Double(x), y: Double(y), network: network)
+                    guard let network = captureNetwork else { return }
+                    survey.addSample(x: x, y: y, network: network)
                 }
             }
         }
@@ -167,6 +206,7 @@ struct SurveyView: View {
                 .frame(width: 110, height: 7)
                 .clipShape(Capsule())
             Text("-40 dBm").font(.caption2).foregroundColor(.secondary)
+            Text("· walls -8 dB").font(.caption2).foregroundColor(.secondary)
         }
         .padding(7)
         .background(.regularMaterial)
@@ -183,24 +223,64 @@ struct SurveyView: View {
         return CGRect(x: (size.width - width) / 2, y: (size.height - height) / 2, width: width, height: height)
     }
 
-    private func drawHeat(context: GraphicsContext, at point: CGPoint, rssi: Int) {
+    private func drawInterpolatedHeat(context: GraphicsContext, rect: CGRect) {
+        guard !displayedSamples.isEmpty else { return }
+        let cell: CGFloat = 6
+        var y = rect.minY
+        while y < rect.maxY {
+            var x = rect.minX
+            while x < rect.maxX {
+                let nx = Double((x - rect.minX) / rect.width)
+                let ny = Double((y - rect.minY) / rect.height)
+                if let rssi = SurveyInterpolator.estimate(
+                    x: nx, y: ny, samples: displayedSamples, walls: survey.walls
+                ) {
+                    let color = heatColor(rssi)
+                    context.fill(
+                        Path(CGRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5)),
+                        with: .color(color.opacity(0.46))
+                    )
+                }
+                x += cell
+            }
+            y += cell
+        }
+    }
+
+    private func drawSample(context: GraphicsContext, at point: CGPoint, rssi: Int) {
         let color = heatColor(rssi)
-        let radius: CGFloat = 38
-        let rect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
-        let gradient = Gradient(colors: [color.opacity(0.55), color.opacity(0.0)])
-        context.fill(
-            Path(ellipseIn: rect),
-            with: .radialGradient(gradient, center: point, startRadius: 0, endRadius: radius)
-        )
         context.fill(
             Path(ellipseIn: CGRect(x: point.x - 3, y: point.y - 3, width: 6, height: 6)),
             with: .color(color)
         )
         context.stroke(
             Path(ellipseIn: CGRect(x: point.x - 3, y: point.y - 3, width: 6, height: 6)),
-            with: .color(.white.opacity(0.7)),
+            with: .color(.white.opacity(0.8)),
             lineWidth: 1
         )
+    }
+
+    private func drawWalls(context: GraphicsContext, rect: CGRect) {
+        for wall in survey.walls {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.minX + wall.x1 * rect.width, y: rect.minY + wall.y1 * rect.height))
+            path.addLine(
+                to: CGPoint(x: rect.minX + wall.x2 * rect.width, y: rect.minY + wall.y2 * rect.height)
+            )
+            context.stroke(path, with: .color(.orange.opacity(0.9)), lineWidth: 2.5)
+        }
+        if let start = pendingWallStart {
+            context.stroke(
+                Path(
+                    ellipseIn: CGRect(
+                        x: rect.minX + start.x * rect.width - 5,
+                        y: rect.minY + start.y * rect.height - 5,
+                        width: 10, height: 10
+                    )),
+                with: .color(.orange),
+                lineWidth: 2
+            )
+        }
     }
 
     private func heatColor(_ rssi: Int) -> Color {

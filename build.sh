@@ -39,9 +39,14 @@ mkdir -p "$PRODUCT_PATH"
 cp -R "$ARCHIVE_PATH/Products/Applications/${APP_NAME}.app" "$PRODUCT_PATH/"
 
 APP="$PRODUCT_PATH/${APP_NAME}.app"
-# The Release workflow publishes an ad-hoc signed build. Replace "-" with a
-# Developer ID identity (and notarize) for distribution outside GitHub.
-codesign --force --deep --sign - "$APP"
+# Set CODESIGN_IDENTITY to a Developer ID Application identity for distribution
+# outside GitHub; the default ad-hoc signature is fine for local builds.
+IDENTITY="${CODESIGN_IDENTITY:--}"
+if [ "$IDENTITY" = "-" ]; then
+    codesign --force --deep --sign - "$APP"
+else
+    codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" "$APP"
+fi
 codesign --verify --deep --strict --verbose=2 "$APP"
 
 if [ "$CLEAN_ARCHIVE" = "1" ]; then

@@ -68,6 +68,7 @@ struct NetworkModel: Identifiable, Equatable, Codable {
     let generation: WiFiStandard
     let security: String
     let vendor: String
+    let apName: String?
     let mode: String
     let signal: Int
     let noise: Int?

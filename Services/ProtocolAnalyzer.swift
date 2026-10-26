@@ -7,13 +7,14 @@ enum ProtocolAnalyzer {
 
     static func profile(for network: NetworkModel, metrics: NetworkMetrics?) -> ProtocolProfile {
         let radio = radioBlock(network)
+        let eht = ehtBlock(network)
         let security = securityBlock(network)
         let mobility = mobilityBlock(network)
         let spectrum = spectrumBlock(network, metrics: metrics)
         let format = formatBlock(network)
         let vendor = vendorBlock(network)
 
-        let blocks = [radio, security, spectrum, mobility, format, vendor]
+        let blocks = [radio, eht, security, spectrum, mobility, format, vendor]
         let warnings = blocks.flatMap { block in
             block.facts
                 .filter { $0.status == .critical || $0.status == .warning }
@@ -145,6 +146,68 @@ enum ProtocolAnalyzer {
             systemImage: "antenna.radiowaves.left.and.right",
             facts: facts,
             status: network.channel > 0 ? .good : .unknown
+        )
+    }
+
+    private static func ehtBlock(_ network: NetworkModel) -> ProtocolBlock {
+        let ehtElements = network.informationElements.filter { element in
+            let name = element.name.lowercased()
+            return name.contains("eht") || name.contains("multi-link") || name.contains("mlo")
+                || name.contains("320")
+        }
+        let isWiFi7 = network.generation == .mode11be
+        let hasEHT = isWiFi7 || !ehtElements.isEmpty
+        let mloElement = ehtElements.contains { $0.name.lowercased().contains("multi-link") }
+        var facts: [ProtocolFact] = [
+            ProtocolFact(
+                id: "wifi7",
+                label: "Wi-Fi 7 / EHT",
+                value: hasEHT ? "Advertised" : "Not advertised",
+                detail: isWiFi7 ? "11be PHY reported by CoreWLAN" : nil,
+                status: hasEHT ? .good : .unknown
+            ),
+            ProtocolFact(
+                id: "eht-ie",
+                label: "EHT information elements",
+                value: ehtElements.isEmpty ? "None decoded" : "\(ehtElements.count) decoded",
+                detail: ehtElements.map(\.name).prefix(3).joined(separator: ", "),
+                status: ehtElements.isEmpty ? .unknown : .info
+            ),
+            ProtocolFact(
+                id: "mlo",
+                label: "Multi-link operation",
+                value: mloElement ? "ML IE decoded" : "Not exposed by CoreWLAN",
+                detail: mloElement
+                    ? "Multi-link element present; link set requires a dedicated monitor capture"
+                    : "macOS scan APIs do not report MLO link sets; monitor-mode capture is required",
+                status: mloElement ? .info : .unknown
+            ),
+            ProtocolFact(
+                id: "width320",
+                label: "320 MHz",
+                value: network.channelWidthMHz >= 320 ? "Reported" : "Not reported",
+                detail: "CoreWLAN width: \(network.channelWidthLabel) MHz",
+                status: network.channelWidthMHz >= 320 ? .good : .unknown
+            ),
+        ]
+        if network.band == .band6 {
+            facts.append(
+                ProtocolFact(
+                    id: "six",
+                    label: "6 GHz operation",
+                    value: "Yes",
+                    detail: "Preferred scanning channels and AFC may apply",
+                    status: .good
+                )
+            )
+        }
+        return ProtocolBlock(
+            id: "eht",
+            title: "Wi-Fi 7 & MLO",
+            subtitle: "EHT capabilities, 320 MHz and multi-link visibility",
+            systemImage: "wifi.router",
+            facts: facts,
+            status: hasEHT ? .good : .unknown
         )
     }
 
