@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.9.3 — 2026-10-26
+
+### Added
+- Per-link MLO BSSID extraction from Multi-Link per-STA profiles; link BSSIDs
+  are shown in the IE details.
+- Additional accessibility labels on survey and capture controls.
+
+### Changed
+- Version 2.9.3 (build 34).
+
+
 ## 2.9.2 — 2026-10-26
 
 ### Added
