@@ -5,7 +5,7 @@
 ### Changed
 - **Renamed the app from WiFA to LanFi.** The product, executable, Xcode project, scheme, cask, DMG/ZIP names, menus, About panel, appcast and documentation now use the LanFi brand. The internal bundle identifier remains `ru.zheltukheen.WiFA` so existing preferences, Location permission and Sparkle updates continue to work.
 - **New bold app icon** (radar/Wi-Fi mark with an L monogram) across Dock, Finder, About panel and release bundles.
-- **Bottom panel is taller** (400 pt by default) and tabs are grouped into Overview, RF, Network and Troubleshoot categories.
+- **Bottom panel is taller** (460 pt by default, capped to 60% of the window) and tabs are grouped into Overview, RF, Network and Troubleshoot categories.
 - **Insights scope is explicit**: a banner states that insights cover all visible networks and shows the currently connected network.
 - **Protocols is explicitly scoped to the selected network**, with a six-block order (radio, security, spectrum, roaming, format, vendor), numbered cards and a fixed card height so blocks no longer jump in size.
 - Localized bottom-panel categories and new scope labels; migrated annotations, sessions and surveys from the old `WiFA` Application Support directory.
