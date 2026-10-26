@@ -20,6 +20,7 @@ struct LanFiApp: App {
     @StateObject private var updater = UpdaterController()
     @StateObject private var survey = SurveyViewModel()
     @StateObject private var interfaces = InterfacesViewModel()
+    @AppStorage("Wifa.highContrast") private var highContrast = false
 
     // Свойство для отслеживания состояния приложения (активно/фон)
     @Environment(\.scenePhase) var scenePhase
@@ -31,6 +32,7 @@ struct LanFiApp: App {
                 .environmentObject(uiState)
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
+                .environment(\.lanFiHighContrast, highContrast)
                 .onOpenURL { url in
                     guard let link = DeepLink.parse(url) else { return }
                     switch link {
@@ -70,6 +72,7 @@ struct LanFiApp: App {
 
         Window("Site Survey", id: "survey") {
             SurveyView(analyzer: viewModel, survey: survey)
+                .environment(\.lanFiHighContrast, highContrast)
         }
 
         Window("About LanFi", id: "about") {
@@ -87,6 +90,7 @@ struct LanFiApp: App {
                 .environmentObject(updater)
                 .environmentObject(diagnostics)
                 .environmentObject(viewModel)
+                .environment(\.lanFiHighContrast, highContrast)
         }
 
         MenuBarExtra {

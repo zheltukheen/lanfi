@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.9.1 — 2026-10-26
+
+### Added
+- High contrast mode (Settings → General), stronger row tint and accessibility
+  labels on table cells.
+- Capture start delay as a simple trigger primitive (0/5/10/30 seconds).
+
+### Changed
+- Version 2.9.1 (build 32).
+
+
 ## 2.9.0 — 2026-10-26
 
 ### Added

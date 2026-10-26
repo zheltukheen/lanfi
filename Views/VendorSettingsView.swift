@@ -68,6 +68,14 @@ private struct GeneralSettingsView: View {
 
             Section("Display") {
                 Toggle(
+                    "High contrast mode",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "Wifa.highContrast") },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.highContrast") }
+                    )
+                )
+                .help("Increases contrast and border weight for low-vision use.")
+                Toggle(
                     "Hide empty graphs",
                     isOn: Binding(
                         get: { UserDefaults.standard.bool(forKey: "Wifa.hideEmptyGraphs") },

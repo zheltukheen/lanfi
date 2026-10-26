@@ -7,6 +7,7 @@ struct LiveCaptureOptions: Equatable {
     let outputURL: URL
     let monitorMode: Bool
     var filter: String = ""
+    var startDelay: Int = 0
 
     var isWiFi: Bool { interfaceName == "en0" || monitorMode }
 }
@@ -39,6 +40,7 @@ enum LiveCaptureService {
 
     static func shellCommand(for options: LiveCaptureOptions) -> String {
         let duration = min(max(options.duration, 5), 120)
+        let startDelay = min(max(options.startDelay, 0), 120)
         let output = shellQuote(options.outputURL.path)
         let errorPath = shellQuote(options.outputURL.path + ".tcpdump.log")
         let pidPath = shellQuote(options.outputURL.path + ".pid")
@@ -59,6 +61,7 @@ enum LiveCaptureService {
         args.append(contentsOf: ["2>", errorPath])
         let command = args.joined(separator: " ")
         return [
+            "sleep \(startDelay)",
             "\(command) & PID=$!",
             "echo $PID > \(pidPath); chmod 644 \(pidPath) 2>/dev/null || true",
             "sleep \(duration)",

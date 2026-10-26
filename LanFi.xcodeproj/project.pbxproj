@@ -79,6 +79,7 @@
 		6C53527A6CFCCB7C1F5A51E3 /* SpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F250B2C1D615077EC1A92B0E /* SpectrumView.swift */; };
 		6D75B2F3E4FF6B9D91B48E76 /* SystemInterfaceScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */; };
 		6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */; };
+		6E8915B84D28E150A00DD801 /* EnvironmentKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C1A59FFF46D58F99DCB13 /* EnvironmentKeys.swift */; };
 		6EB75AF9A5BE78540D317127 /* ProximityBeacon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777D1B2C625AE474F831F8DD /* ProximityBeacon.swift */; };
 		6EC14A40FFD09C70E2496B45 /* NetworkGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */; };
 		6F1E84A4F606560CDBE5019F /* DiagnosticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */; };
@@ -293,6 +294,7 @@
 		E76D0661115093391A9191CE /* SurveyInterpolator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyInterpolator.swift; sourceTree = "<group>"; };
 		E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolAnalyzer.swift; sourceTree = "<group>"; };
 		E962425BD1FAD5D1CD1C8626 /* DiagnosticsBundleExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsBundleExporter.swift; sourceTree = "<group>"; };
+		E97C1A59FFF46D58F99DCB13 /* EnvironmentKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentKeys.swift; sourceTree = "<group>"; };
 		ED3EBB0A99807D399E66153C /* ColoringRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColoringRule.swift; sourceTree = "<group>"; };
 		F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkModel.swift; sourceTree = "<group>"; };
 		F1002A4F0143646CB9EF6A42 /* ScanSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanSession.swift; sourceTree = "<group>"; };
@@ -518,6 +520,7 @@
 		D132CC87C270B6840277E9AB /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				E97C1A59FFF46D58F99DCB13 /* EnvironmentKeys.swift */,
 				CC59D32F77002751B3EBB790 /* LocationManager.swift */,
 				0AB0A732B64417000F67233E /* OUIParser.swift */,
 			);
@@ -769,6 +772,7 @@
 				3AEA3FCF4941A7AFDD261FCC /* DiagnosticsModel.swift in Sources */,
 				8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */,
 				6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */,
+				6E8915B84D28E150A00DD801 /* EnvironmentKeys.swift in Sources */,
 				9E6F679805E89816DB2E07B4 /* ExpressionColumn.swift in Sources */,
 				F6F4BF78701E643589784EC2 /* ExpressionColumnsSettingsView.swift in Sources */,
 				B21558D0EC2B4ECD334E4A76 /* FilterProfile.swift in Sources */,
@@ -931,13 +935,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 31;
+				CURRENT_PROJECT_VERSION = 32;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.9.0;
+				MARKETING_VERSION = 2.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
@@ -1047,13 +1051,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 31;
+				CURRENT_PROJECT_VERSION = 32;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.9.0;
+				MARKETING_VERSION = 2.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};

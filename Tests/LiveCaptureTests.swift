@@ -5,7 +5,8 @@ final class LiveCaptureTests: XCTestCase {
         let url = URL(fileURLWithPath: "/tmp/LanFi test.pcap")
         let options = LiveCaptureOptions(
             interfaceName: "en0", duration: 15, outputURL: url, monitorMode: true,
-            filter: "type mgt"
+            filter: "type mgt",
+            startDelay: 5
         )
         try LiveCaptureService.validate(options)
         let command = LiveCaptureService.shellCommand(for: options)
@@ -15,6 +16,7 @@ final class LiveCaptureTests: XCTestCase {
         XCTAssertTrue(command.contains("sleep 15"))
         XCTAssertTrue(command.contains("kill -TERM $PID"))
         XCTAssertTrue(command.contains("type mgt"))
+        XCTAssertTrue(command.contains("sleep 5"))
         XCTAssertFalse(command.contains("\n"))
         XCTAssertFalse(command.contains("&;"))
     }
