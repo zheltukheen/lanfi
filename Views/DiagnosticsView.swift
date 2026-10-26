@@ -160,10 +160,10 @@ struct DiagnosticsView: View {
                         .font(.caption2.bold())
                         .foregroundColor(statusColor(check.status))
                 }
-                Text(LocalizedStringKey(check.value))
+                Text(TechnicalLocalizer.localize(check.value))
                     .font(.caption)
                     .lineLimit(1)
-                Text(LocalizedStringKey(check.detail))
+                Text(TechnicalLocalizer.localize(check.detail))
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .lineLimit(2)

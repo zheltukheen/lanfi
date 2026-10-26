@@ -288,7 +288,7 @@ private struct ProtocolBlockCard: View {
                             Text(LocalizedStringKey(fact.label))
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
-                            Text(LocalizedStringKey(fact.value))
+                            Text(TechnicalLocalizer.localize(fact.value))
                                 .font(.caption)
                                 .lineLimit(2)
                             if let detail = fact.detail, !detail.isEmpty {

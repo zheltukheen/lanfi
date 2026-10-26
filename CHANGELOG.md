@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.0 — 2026-10-26
+
+### Added
+- Dynamic technical localization for generated protocol/diagnostic/interface
+  values using an SSID-safe phrase catalog.
+- Additional VoiceOver labels on icon-only controls.
+
+### Changed
+- Version 2.3.0 (build 19); 108 tests.
+
+
 ## 2.2.0 — 2026-10-26
 
 ### Added
