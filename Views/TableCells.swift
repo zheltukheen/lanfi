@@ -145,3 +145,59 @@ final class PaddedHeaderCell: NSTableHeaderCell {
         super.drawInterior(withFrame: titleRect(forBounds: cellFrame), in: controlView)
     }
 }
+
+final class GroupTableCellView: NSTableCellView {
+    static let identifier = NSUserInterfaceItemIdentifier("GroupCell")
+
+    private let titleLabel: NSTextField = {
+        let label = NSTextField()
+        label.isEditable = false
+        label.isBordered = false
+        label.drawsBackground = false
+        label.font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
+        label.textColor = NSColor.secondaryLabelColor
+        label.lineBreakMode = .byTruncatingTail
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let countLabel: NSTextField = {
+        let label = NSTextField()
+        label.isEditable = false
+        label.isBordered = false
+        label.drawsBackground = false
+        label.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .regular)
+        label.textColor = NSColor.tertiaryLabelColor
+        label.alignment = .right
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    private func setup() {
+        addSubview(titleLabel)
+        addSubview(countLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            countLabel.leadingAnchor.constraint(greaterThanOrEqualTo: titleLabel.trailingAnchor, constant: 8),
+            countLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            countLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+    }
+
+    func configure(group: NetworkGroup) {
+        titleLabel.stringValue = "\(group.title.uppercased())   \(group.subtitle)"
+        countLabel.stringValue = "\(group.networkCount)"
+        toolTip = "\(group.title) — \(group.subtitle)"
+    }
+}

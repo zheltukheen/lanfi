@@ -8,8 +8,8 @@
 WiFA is a free, open-source Wi‑Fi analyzer for macOS built on Apple's public
 CoreWLAN framework. It scans nearby networks, decodes 802.11 information
 elements, and turns the raw radio data into **quality scores, ranked channel
-recommendations and a security audit** — the interpretation layer most free
-scanners leave out.
+recommendations and a security audit** — then proves the path end-to-end with
+protocol blocks, a local network diagnostics engine and monitoring.
 
 ![WiFA with the Insights dashboard](docs/images/wifa-main.webp)
 
@@ -42,11 +42,20 @@ surfaced with severity and remediation hints.
 | Charts | Per-band spectrum view and 3-minute signal history with hover/click selection |
 | Raw data | 802.11 information-element table with expandable decoded fields (RSN, WPS, HT/VHT/HE, country, BSS Load…) |
 | Workflow | Search, band/signal filters, sidebar facets, Insights dashboard, menu bar extra |
+| Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
+| Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
+| Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
+| Survey | Floor-plan import, click-to-sample RSSI and a heatmap overlay (survey-lite) |
 | Vendors | 58k-prefix offline OUI database from IEEE and Wireshark, with 24/28/36-bit longest-prefix matching ([sources](docs/VENDOR_DATA.md)) |
-| Export | CSV (visible columns, RFC 4180) and JSON (networks, metrics, issues, recommendations) |
-| Privacy | No analytics, no network requests, no location stored; see [PRIVACY.md](PRIVACY.md) |
+| Export | CSV, JSON and synthetic 802.11 beacon PCAP for offline inspection |
+| Updates | Sparkle 2 signed appcast, Homebrew cask, universal builds |
+| Privacy | No analytics/accounts/telemetry; only update and optional diagnostic requests; see [PRIVACY.md](PRIVACY.md) |
 
-![WiFA per-band spectrum](docs/images/wifa-spectrum.webp)
+![WiFA protocol blocks](docs/images/wifa-protocols.webp)
+
+![WiFA network diagnostics](docs/images/wifa-diagnostics.webp)
+
+![WiFA site survey heatmap](docs/images/wifa-survey.webp)
 
 ## Requirements
 
@@ -65,9 +74,18 @@ right-click the app → **Open**, or allow it in
 **System Settings → Privacy & Security**. Builds are universal (`arm64` +
 `x86_64`) and include SHA-256 checksums.
 
+Or install the cask from this repository:
+
+```bash
+brew install --cask ./Casks/wifa.rb
+```
+
 On first launch, allow Location Services when macOS asks. If the prompt was
 dismissed, enable it in
 **System Settings → Privacy & Security → Location Services → WiFA**.
+
+WiFA 1.5+ includes Sparkle auto-updates. Update checks fetch a signed appcast
+from GitHub Releases; no account or analytics data is sent.
 
 ## Build from source
 
@@ -123,8 +141,12 @@ As of October 2026, against common macOS tools:
 | CSV + JSON export | ✅ | CSV/PCAP | CSV/PDF | — |
 | Raw information elements | ✅ | ✅ (Pro) | — | — |
 | Menu bar extra | ✅ | — | — | — |
-| Site survey / heatmap | Roadmap | — | ✅ | — |
-| Notarized / auto-update | Ad-hoc, roadmap | ✅ | ✅ | ✅ |
+| Site survey / heatmap | Survey-lite | — | ✅ | — |
+| Protocol blocks + diagnostics | ✅ | Partial | Partial | Partial |
+| Grouping, saved sessions, annotations | ✅ | ✅ (Pro) | Partial | — |
+| PCAP export | Synthetic beacons | ✅ | — | ✅ |
+| Auto-update | Sparkle signed appcast | ✅ | ✅ | ✅ |
+| Notarized | Roadmap | ✅ | ✅ | ✅ |
 
 Competitor capabilities change frequently; corrections via issues are welcome.
 WiFA deliberately focuses on analysis and privacy rather than heatmaps or
@@ -137,9 +159,11 @@ The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-Next up: notarized builds + Sparkle auto-updates, grouping/column profiles,
-saved sessions, PCAP export, AP-name detection, MLO/EHT details, then remote
-sensors and survey-lite heatmaps.
+Delivered in 1.5: protocol blocks, diagnostics + monitoring, annotations,
+grouping, saved sessions, synthetic PCAP, survey-lite heatmap, Sparkle,
+Homebrew cask and VoiceOver summaries. Next up: Developer ID notarization,
+column profiles, AP-name detection, MLO/EHT details, live PCAP capture,
+remote sensors, full localization and richer survey interpolation.
 
 ## Project structure
 
@@ -150,10 +174,15 @@ Services/
   WiFiScanner.swift          CoreWLAN scan + model construction
   InformationElementParser   Pure 802.11 IE decoding
   NetworkAnalyzer.swift      Quality, overlap, recommendations, security
-ViewModels/                  @MainActor app state and preferences
-Views/                       SwiftUI + AppKit table, charts, inspector, Insights
+  ProtocolAnalyzer.swift     Block-oriented protocol profile
+  DiagnosticsEngine.swift    Link, gateway, DNS, internet and latency checks
+  PcapExporter.swift         Synthetic beacon pcap export
+  NetworkColumnFormatter.swift  Pure table formatting/sorting
+ViewModels/                  Analyzer, diagnostics and survey state
+Views/                       SwiftUI + AppKit table, charts, protocols, diagnostics, survey
 Utils/                       Location permission, OUI vendor lookup
-Resources/                   OUI database, privacy manifest
+Resources/                   OUI database, privacy manifest, Russian localization
+Casks/wifa.rb                Homebrew cask
 Tests/                       XCTest coverage for pure logic and parsing
 scripts/autopush.sh          Commit/push automation
 ```
@@ -183,7 +212,8 @@ installed post-commit hook skips itself while the watcher is operating.
 3. The script bumps `project.yml`, regenerates the project, commits, pushes
    `main`, and pushes tag `vX.Y.Z`.
 4. GitHub Actions runs tests, builds a universal app, packages ZIP + DMG +
-   SHA-256, and publishes the release using the changelog section.
+   SHA-256, signs and attaches `appcast.xml`, updates the Homebrew cask and
+   publishes the release using the changelog section.
 
 ## Contributing
 

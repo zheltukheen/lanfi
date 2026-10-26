@@ -44,7 +44,7 @@ enum WiFiStandard: Int, Codable, Hashable, CaseIterable {
     var sortOrder: Int { rawValue }
 }
 
-struct InformationElement: Identifiable, Equatable {
+struct InformationElement: Identifiable, Equatable, Codable {
     let id: String
     let elementId: Int
     let length: Int
@@ -56,7 +56,7 @@ struct InformationElement: Identifiable, Equatable {
     var displayId: String { "\(elementId)" }
 }
 
-struct NetworkModel: Identifiable, Equatable {
+struct NetworkModel: Identifiable, Equatable, Codable {
     let id: String
 
     // Основные поля

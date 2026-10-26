@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.5.0 — 2026-10-26
+
+### Added
+- **Protocols tab** with six block-oriented views per network: radio/PHY, security, roaming, spectrum, network format and vendor capabilities, plus an all-network coverage summary.
+- **Network diagnostics** engine and tab: Wi-Fi radio/link, signal, security, IPv4/IPv6, gateway ICMP, DNS resolution, captive-portal/HTTPS check and public latency, with automatic 60-second monitoring and report copying.
+- **Editable annotations** per BSSID: alias, comma-separated tags and free-form notes, persisted locally and reflected in the network name/annotations columns.
+- **Grouping** by SSID, band, vendor or security, with group summaries and preservation of the current sort order.
+- **Saved scan sessions**: save locally, reopen without scanning, pause live refresh and resume when ready.
+- **Synthetic PCAP export** of rewritten 802.11 beacon frames for offline inspection (clearly labelled as synthetic; live frame capture is still on the roadmap).
+- **Site Survey window** with floor-plan import, click-to-record RSSI samples and a heatmap overlay.
+- **Sparkle 2 auto-updates** with a signed appcast, plus a Homebrew cask and cask update automation.
+- Russian localization for the primary navigation, columns, Insights, Protocols and Diagnostics surfaces.
+- VoiceOver summaries for signal history, spectrum, channel occupancy and survey heatmaps.
+
+### Changed
+- Bottom tabs are now Insights, Spectrum, History, Raw Data, Protocols, Diagnostics.
+- The command bar includes Data → Save/Open Session and Export PCAP, Survey → Open Site Survey, and Diagnostics → Run/Monitor.
+- Network details now include editable label and notes.
+- Build actions were updated to checkout@v7, upload-artifact@v7 and action-gh-release@v3 after review.
+
+### Fixed
+- Group rows now render their headers and keep network selection/row indexing correct.
+- Annotation edits immediately refresh the table and persist with a debounce.
+- Survey projects store floor plans in per-project directories and reload the latest project.
+- Session timestamps retain millisecond precision so recent sessions sort correctly.
+
+### Engineering
+- New pure models/services: `ProtocolProfile`, `ProtocolAnalyzer`, `DiagnosticsModel`, `DiagnosticsEngine`, `NetworkGrouping`, `NetworkAnnotation`, `ScanSession`, `PcapExporter`, `Survey`.
+- Expanded test suite to 63 tests covering protocol blocks, diagnostics scoring/parsing, grouping, annotations, sessions, survey persistence and PCAP headers.
+- Sparkle private key is stored as a GitHub Actions secret; release builds generate and attach `appcast.xml`.
+
+
 ## 1.4.0 — 2026-10-26
 
 ### Added

@@ -69,6 +69,10 @@ struct SpectrumView: View {
                 }
                 .animation(.easeInOut(duration: 0.5), value: viewModel.networks)
                 .accessibilityLabel("Spectrum for \(effectiveBand.label), \(networks.count) networks")
+                .accessibilityValue(
+                    networks.prefix(8).map { "\($0.displaySSID) channel \($0.channel), \($0.signal) dBm" }
+                        .joined(separator: "; ")
+                )
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onEnded { value in

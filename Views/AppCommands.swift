@@ -2,14 +2,22 @@ import SwiftUI
 import AppKit
 
 struct WiFACommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var uiState: AppUIState
+    @ObservedObject var diagnostics: DiagnosticsViewModel
+    @ObservedObject var updater: UpdaterController
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About WiFA") {
                 showAboutPanel()
             }
+            Button("Check for Updates…") {
+                updater.checkForUpdates()
+            }
+            .disabled(!updater.canCheckForUpdates)
         }
 
         CommandMenu("Scan") {
@@ -70,6 +78,12 @@ struct WiFACommands: Commands {
         }
 
         CommandMenu("Display") {
+            Picker("Group By", selection: $viewModel.groupMode) {
+                ForEach(NetworkGroupMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+
             Picker("Signal Unit", selection: $viewModel.signalDisplayMode) {
                 ForEach(SignalDisplayMode.allCases) { mode in
                     Text(mode.rawValue).tag(mode)
@@ -91,6 +105,8 @@ struct WiFACommands: Commands {
                 Text("Spectrum").tag(1)
                 Text("History").tag(2)
                 Text("Raw Data").tag(3)
+                Text("Protocols").tag(4)
+                Text("Diagnostics").tag(5)
             }
 
             Divider()
@@ -103,9 +119,52 @@ struct WiFACommands: Commands {
                 .keyboardShortcut("3", modifiers: [.command])
             Button("Show Raw Data") { uiState.selectedBottomTab = 3 }
                 .keyboardShortcut("4", modifiers: [.command])
+            Button("Show Protocols") { uiState.selectedBottomTab = 4 }
+                .keyboardShortcut("5", modifiers: [.command])
+            Button("Show Diagnostics") { uiState.selectedBottomTab = 5 }
+                .keyboardShortcut("6", modifiers: [.command])
+        }
+
+        CommandMenu("Survey") {
+            Button("Open Site Survey") {
+                openWindow(id: "survey")
+            }
+            .keyboardShortcut("m", modifiers: [.command, .shift])
+        }
+
+        CommandMenu("Diagnostics") {
+            Button("Run Network Diagnostics") {
+                Task { await diagnostics.run() }
+            }
+            .keyboardShortcut("d", modifiers: [.command, .shift])
+
+            Toggle("Monitor Every 60 Seconds", isOn: $diagnostics.autoMonitor)
+
+            Divider()
+
+            Button("Show Diagnostics") {
+                uiState.selectedBottomTab = 5
+            }
+            .keyboardShortcut("6", modifiers: [.command])
         }
 
         CommandMenu("Data") {
+            Button("Save Session…") {
+                viewModel.promptSaveSession()
+            }
+
+            Button("Open Session…") {
+                viewModel.promptOpenSession()
+            }
+
+            if viewModel.isSessionMode {
+                Button("Resume Live Scan") {
+                    viewModel.resumeLiveScan()
+                }
+            }
+
+            Divider()
+
             Button("Export CSV…") {
                 viewModel.exportCSV()
             }
@@ -113,6 +172,10 @@ struct WiFACommands: Commands {
 
             Button("Export JSON…") {
                 viewModel.exportJSON()
+            }
+
+            Button("Export PCAP (Synthetic Beacons)…") {
+                viewModel.exportPCAP()
             }
         }
     }

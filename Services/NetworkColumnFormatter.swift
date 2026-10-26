@@ -7,6 +7,19 @@ struct NetworkColumnFormatter {
     let signalDisplayMode: SignalDisplayMode
     let connectedBSSID: String?
     let metricsByNetworkId: [String: NetworkMetrics]
+    let annotationsByNetworkId: [String: NetworkAnnotation]
+
+    init(
+        signalDisplayMode: SignalDisplayMode,
+        connectedBSSID: String?,
+        metricsByNetworkId: [String: NetworkMetrics],
+        annotationsByNetworkId: [String: NetworkAnnotation] = [:]
+    ) {
+        self.signalDisplayMode = signalDisplayMode
+        self.connectedBSSID = connectedBSSID
+        self.metricsByNetworkId = metricsByNetworkId
+        self.annotationsByNetworkId = annotationsByNetworkId
+    }
 
     // MARK: - Cell values
 
@@ -41,7 +54,7 @@ struct NetworkColumnFormatter {
         case .minBasicRate: return network.minBasicRateLabel
         case .minRate: return network.minRateLabel
         case .mode: return network.mode
-        case .networkName: return network.displaySSID
+        case .networkName: return annotation(for: network)?.displayAlias ?? network.displaySSID
         case .noise: return network.noiseLabel
         case .protectionMode: return network.protectionMode ?? "-"
         case .quality: return metrics(for: network)?.qualityScore.description ?? "-"
@@ -170,7 +183,12 @@ struct NetworkColumnFormatter {
     }
 
     private func apName(for network: NetworkModel) -> String {
-        network.vendor != "-" ? network.vendor : network.displaySSID
+        if let alias = annotation(for: network)?.displayAlias { return alias }
+        return network.vendor != "-" ? network.vendor : network.displaySSID
+    }
+
+    private func annotation(for network: NetworkModel) -> NetworkAnnotation? {
+        annotationsByNetworkId[network.id]
     }
 
     private func annotations(for network: NetworkModel) -> String {
@@ -185,6 +203,12 @@ struct NetworkColumnFormatter {
             if metric.interferenceLoad >= 0.5 { parts.append("Congested") }
         }
         if network.security.lowercased().contains("open") { parts.append("Open") }
+        if let annotation = annotation(for: network) {
+            if !annotation.tags.isEmpty { parts.append(annotation.tags.joined(separator: " / ")) }
+            if !annotation.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                parts.append("Note")
+            }
+        }
         return parts.isEmpty ? "-" : parts.joined(separator: ", ")
     }
 

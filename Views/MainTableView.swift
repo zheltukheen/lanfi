@@ -8,6 +8,7 @@ import AppKit
 struct MainTableView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @EnvironmentObject var uiState: AppUIState
+    @EnvironmentObject var diagnostics: DiagnosticsViewModel
 
     // UI State
     @State private var isResizingPanels = false
@@ -165,6 +166,8 @@ struct MainTableView: View {
                             case 1: SpectrumView(viewModel: viewModel)
                             case 2: SignalHistoryView(viewModel: viewModel)
                             case 3: RawDataView(viewModel: viewModel)
+                            case 4: ProtocolsView(viewModel: viewModel)
+                            case 5: DiagnosticsView(diagnostics: diagnostics)
                             default: InsightsView(viewModel: viewModel)
                             }
                         }
@@ -245,6 +248,24 @@ struct BottomPanelTabs: View {
                 action: { selectedTab = 3 }
             )
 
+            Divider().frame(height: 16)
+
+            TabButton(
+                title: "Protocols",
+                icon: "square.stack.3d.up",
+                isSelected: selectedTab == 4,
+                action: { selectedTab = 4 }
+            )
+
+            Divider().frame(height: 16)
+
+            TabButton(
+                title: "Diagnostics",
+                icon: "stethoscope",
+                isSelected: selectedTab == 5,
+                action: { selectedTab = 5 }
+            )
+
             // Spacer справа для центрирования
             Spacer()
         }
@@ -255,7 +276,7 @@ struct BottomPanelTabs: View {
 }
 
 struct TabButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let isSelected: Bool
     let action: () -> Void
@@ -497,7 +518,7 @@ struct NetworkInspectorView: View {
                         // Header
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text(network.displaySSID)
+                                Text(viewModel.displayName(for: network))
                                     .font(.title2).bold()
                                     .foregroundColor(
                                         network.bssid == viewModel.currentConnectedBSSID ? .accentColor : .primary
@@ -535,6 +556,62 @@ struct NetworkInspectorView: View {
                                 metrics: metrics,
                                 recommendation: viewModel.analysis.bestChannel(for: network.band)
                             )
+                        }
+
+                        GroupBox("Label & Notes") {
+                            VStack(alignment: .leading, spacing: 8) {
+                                TextField(
+                                    "Alias",
+                                    text: Binding(
+                                        get: { viewModel.annotation(for: network).alias },
+                                        set: { value in
+                                            var annotation = viewModel.annotation(for: network)
+                                            annotation.alias = value
+                                            viewModel.updateAnnotation(annotation, for: network)
+                                        }
+                                    )
+                                )
+                                .textFieldStyle(.roundedBorder)
+
+                                TextField(
+                                    "Tags (comma separated)",
+                                    text: Binding(
+                                        get: { viewModel.annotation(for: network).tags.joined(separator: ", ") },
+                                        set: { value in
+                                            var annotation = viewModel.annotation(for: network)
+                                            annotation.tags =
+                                                value
+                                                .split(separator: ",")
+                                                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                                                .filter { !$0.isEmpty }
+                                            viewModel.updateAnnotation(annotation, for: network)
+                                        }
+                                    )
+                                )
+                                .textFieldStyle(.roundedBorder)
+
+                                TextEditor(
+                                    text: Binding(
+                                        get: { viewModel.annotation(for: network).notes },
+                                        set: { value in
+                                            var annotation = viewModel.annotation(for: network)
+                                            annotation.notes = value
+                                            viewModel.updateAnnotation(annotation, for: network)
+                                        }
+                                    )
+                                )
+                                .font(.caption)
+                                .frame(minHeight: 44, maxHeight: 70)
+                                .scrollContentBackground(.hidden)
+                                .background(Color.secondary.opacity(0.06))
+                                .clipShape(RoundedRectangle(cornerRadius: 5))
+
+                                Text("Saved locally on this Mac")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 8)
                         }
 
                         // Specs
@@ -714,12 +791,25 @@ struct NetworkStatusBar: View {
     var body: some View {
         HStack(spacing: 12) {
             Label("\(viewModel.networks.count) networks", systemImage: "wifi")
+            if viewModel.groupMode != .none {
+                Divider().frame(height: 10)
+                Label("Grouped by \(viewModel.groupMode.title)", systemImage: "square.grid.2x2")
+                    .foregroundColor(.accentColor)
+            }
             Divider().frame(height: 10)
             Label("Avg quality \(viewModel.analysis.averageQuality)", systemImage: "gauge.with.dots.needle.50percent")
             if viewModel.analysis.criticalFindingCount > 0 {
                 Divider().frame(height: 10)
                 Label("\(viewModel.analysis.criticalFindingCount) critical", systemImage: "exclamationmark.shield.fill")
                     .foregroundColor(.red)
+            }
+            if let session = viewModel.loadedSession {
+                Divider().frame(height: 10)
+                Label("Session: \(session.displayName)", systemImage: "clock.arrow.circlepath")
+                    .foregroundColor(.orange)
+                Button("Resume Live") { viewModel.resumeLiveScan() }
+                    .buttonStyle(.link)
+                    .foregroundColor(.accentColor)
             }
             Spacer()
             if let lastScan = viewModel.lastScanDate {

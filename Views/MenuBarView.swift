@@ -3,7 +3,17 @@ import AppKit
 
 struct MenuBarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    @ObservedObject var diagnostics: DiagnosticsViewModel
     @Environment(\.openWindow) private var openWindow
+
+    private var statusColor: Color {
+        switch diagnostics.overall {
+        case .pass: return .green
+        case .warning: return .orange
+        case .fail: return .red
+        default: return .gray
+        }
+    }
 
     private var connected: NetworkModel? {
         guard let bssid = viewModel.currentConnectedBSSID else { return nil }
@@ -45,6 +55,21 @@ struct MenuBarView: View {
                 Text("Not connected to a Wi-Fi network")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 7, height: 7)
+                Text("Diagnostics: \(diagnostics.overall.label)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button("Run") {
+                    Task { await diagnostics.run() }
+                }
+                .controlSize(.mini)
+                .disabled(diagnostics.isRunning)
             }
 
             if let best = viewModel.analysis.bestChannel(for: .band5) {

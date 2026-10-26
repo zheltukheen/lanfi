@@ -46,6 +46,17 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   import CoreWLAN/SwiftUI so tests can compile it directly.
 - `Models/ColumnCatalog.swift` — column ids, default titles/widths/order and
   visibility. `Models/SignalDisplayMode.swift` — dBm/percent setting.
+- `Models/ProtocolProfile.swift` / `Services/ProtocolAnalyzer.swift` — six block
+  profiles (radio, security, roaming, spectrum, format, vendor) and coverage.
+- `Models/DiagnosticsModel.swift` / `Services/DiagnosticsEngine.swift` — link,
+  IPv4, gateway, DNS, captive-portal and latency checks with injectable transport.
+- `Models/NetworkGrouping.swift` — SSID/band/vendor/security grouping.
+- `Models/NetworkAnnotation.swift` — local alias/tags/notes and store.
+- `Models/ScanSession.swift` — saved sessions (Codable network snapshots).
+- `Services/PcapExporter.swift` — synthetic beacon pcap export.
+- `Models/Survey.swift` / `ViewModels/SurveyViewModel.swift` — floor-plan survey
+  and heatmap samples.
+- `Services/UpdaterController.swift` — Sparkle 2 update controller.
 - `Services/NetworkColumnFormatter.swift` — pure cell text and sort comparison
   for every column, so the whole catalog can be tested without a UI.
 - `Services/NetworkAnalyzer.swift` — pure scoring/analysis:
@@ -64,6 +75,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   onboarding, status bar, bottom-panel tabs.
 - `Views/InsightsView.swift` — summary cards, channel recommendations, grouped
   security findings, occupancy chart.
+- `Views/ProtocolsView.swift` — block cards and all-network protocol coverage.
+- `Views/DiagnosticsView.swift` — diagnostics status, check grid and history.
+- `Views/SurveyView.swift` — floor-plan import, sample placement and heatmap.
+- `ViewModels/DiagnosticsViewModel.swift` — diagnostics run/monitor state.
+- `ViewModels/SurveyViewModel.swift` — survey project and floor-plan state.
 - `Views/SpectrumView.swift` — per-band Canvas spectrum with hit testing.
 - `Views/SignalHistoryView.swift` — Swift Charts signal history with cursor.
 - `Views/RawDataView.swift` — expandable IE table.
@@ -93,7 +109,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Wifa.signalUnit`, `Wifa.highlightConnected` — display options.
 - `Wifa.sortKey`, `Wifa.sortAscending` — table sort.
 - `Wifa.showSidebar`, `Wifa.showInspector`, `Wifa.bottomTab` — layout
-  (`0` Insights, `1` Spectrum, `2` History, `3` Raw Data).
+  (`0` Insights, `1` Spectrum, `2` History, `3` Raw Data, `4` Protocols,
+  `5` Diagnostics).
+- `Wifa.groupMode` — none/SSID/band/vendor/security grouping.
+- Session, annotation and survey files live under
+  `~/Library/Application Support/WiFA/{Sessions,annotations.json,Surveys}`.
 - Window frame is managed by SwiftUI/AppKit.
 
 ## Adding a column
@@ -107,6 +127,17 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 3. No change is needed in `WiFiTableView`; it renders via `textForColumn`.
 4. Add the field to JSON export (`networkJSON`) if it is user-relevant.
 5. Bump the `WifiColumns_*` key only for breaking column migrations.
+
+## Diagnostics, sessions and survey
+
+- Diagnostics run on demand and optionally every 60 seconds. The engine accepts
+  an injected `DiagnosticsTransport`, so tests never touch the network.
+- Sessions pause live scanning; `Resume Live Scan` clears the session and
+  restarts the timer.
+- Annotations are stored per network id (BSSID when available) and saved with a
+  0.5 s debounce.
+- Surveys copy the floor plan into a per-project directory and store normalized
+  sample coordinates, so window resizing does not move points.
 
 ## Vendor database
 
@@ -131,6 +162,11 @@ permission.
 - `scripts/autopush.sh` commits/pushes meaningful changes; `--install-hook`
   installs a `post-commit` hook. It refuses credentials/oversized files and
   rebases on non-fast-forward pushes.
+- Sparkle 2 update checks use `SUFeedURL` →
+  `https://github.com/zheltukheen/wifa/releases/latest/download/appcast.xml`.
+  The release workflow signs the ZIP with the `SPARKLE_PRIVATE_KEY` secret and
+  attaches `appcast.xml`.
+- `Casks/wifa.rb` is updated automatically on release.
 - CI (`.github/workflows/ci.yml`) runs swift-format lint, XCTest and a universal
   Release build on macOS 15.
 - Release (`.github/workflows/release.yml`) is triggered by `v*` tags: verifies
