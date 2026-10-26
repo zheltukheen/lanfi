@@ -1,6 +1,6 @@
 cask "wifa" do
-  version "1.4.0"
-  sha256 "533b38686c7be7c3710cf570a90ad336ea67870de020b9d8f7c272bf91b2623b"
+  version "1.5.0"
+  sha256 "b18e75e1ef9f42826a0b1137614e12d1f00e5d9fc11328f797c2fd7d1f21e48d"
 
   url "https://github.com/zheltukheen/wifa/releases/download/v#{version}/WiFA-#{version}.dmg"
   name "WiFA"
