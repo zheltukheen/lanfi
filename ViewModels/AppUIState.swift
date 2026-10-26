@@ -7,6 +7,8 @@ final class AppUIState: ObservableObject {
     @Published var customIntervalText: String = ""
     @Published var showingCustomIntervalAlert: Bool = false
 
+    private static let tabLayoutVersion = 1
+
     init() {
         let defaults = UserDefaults.standard
         if defaults.object(forKey: "Wifa.showSidebar") != nil {
@@ -15,7 +17,14 @@ final class AppUIState: ObservableObject {
         if defaults.object(forKey: "Wifa.showInspector") != nil {
             showInspector = defaults.bool(forKey: "Wifa.showInspector")
         }
-        if defaults.object(forKey: "Wifa.bottomTab") != nil {
+
+        // Tab indices changed in 1.4: Insights is now the first and default tab.
+        // Migrate old layouts once instead of showing the wrong panel.
+        let layoutVersion = defaults.integer(forKey: "Wifa.tabLayoutVersion")
+        if layoutVersion < Self.tabLayoutVersion {
+            selectedBottomTab = 0
+            defaults.set(Self.tabLayoutVersion, forKey: "Wifa.tabLayoutVersion")
+        } else if defaults.object(forKey: "Wifa.bottomTab") != nil {
             selectedBottomTab = defaults.integer(forKey: "Wifa.bottomTab")
         }
     }

@@ -73,7 +73,11 @@ struct MainTableView: View {
                                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                                     if viewModel.networks.isEmpty && viewModel.errorMessage == nil {
-                                        EmptyScanView()
+                                        EmptyScanView(
+                                            hasNetworks: viewModel.totalNetworkCount > 0,
+                                            hasActiveFilters: viewModel.hasActiveFilters,
+                                            onClearFilters: { viewModel.clearAllFilters() }
+                                        )
                                     }
                                 }
                             } else {
@@ -148,7 +152,7 @@ struct MainTableView: View {
                     // Bottom Container
                     VStack(spacing: 0) {
 
-                        // Centered tabs (Spectrum / History / Raw Data)
+                        // Centered tabs (Insights / Spectrum / History / Raw Data)
                         BottomPanelTabs(selectedTab: $uiState.selectedBottomTab)
 
                         Divider()
@@ -158,10 +162,10 @@ struct MainTableView: View {
                             Color(nsColor: .controlBackgroundColor).edgesIgnoringSafeArea(.all)
 
                             switch uiState.selectedBottomTab {
-                            case 1: SignalHistoryView(viewModel: viewModel)
-                            case 2: RawDataView(viewModel: viewModel)
-                            case 3: InsightsView(viewModel: viewModel)
-                            default: SpectrumView(viewModel: viewModel)
+                            case 1: SpectrumView(viewModel: viewModel)
+                            case 2: SignalHistoryView(viewModel: viewModel)
+                            case 3: RawDataView(viewModel: viewModel)
+                            default: InsightsView(viewModel: viewModel)
                             }
                         }
                         .clipped()
@@ -208,8 +212,8 @@ struct BottomPanelTabs: View {
             Spacer()
 
             TabButton(
-                title: "Spectrum",
-                icon: "waveform.path.ecg",
+                title: "Insights",
+                icon: "sparkles",
                 isSelected: selectedTab == 0,
                 action: { selectedTab = 0 }
             )
@@ -217,8 +221,8 @@ struct BottomPanelTabs: View {
             Divider().frame(height: 16)
 
             TabButton(
-                title: "History",
-                icon: "clock.arrow.circlepath",
+                title: "Spectrum",
+                icon: "waveform.path.ecg",
                 isSelected: selectedTab == 1,
                 action: { selectedTab = 1 }
             )
@@ -226,8 +230,8 @@ struct BottomPanelTabs: View {
             Divider().frame(height: 16)
 
             TabButton(
-                title: "Raw Data",
-                icon: "list.bullet.rectangle",
+                title: "History",
+                icon: "clock.arrow.circlepath",
                 isSelected: selectedTab == 2,
                 action: { selectedTab = 2 }
             )
@@ -235,8 +239,8 @@ struct BottomPanelTabs: View {
             Divider().frame(height: 16)
 
             TabButton(
-                title: "Insights",
-                icon: "sparkles",
+                title: "Raw Data",
+                icon: "list.bullet.rectangle",
                 isSelected: selectedTab == 3,
                 action: { selectedTab = 3 }
             )
@@ -631,20 +635,35 @@ struct NetworkInspectorView: View {
 }
 
 struct EmptyScanView: View {
+    var hasNetworks: Bool = false
+    var hasActiveFilters: Bool = false
+    var onClearFilters: (() -> Void)? = nil
+
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: "wifi.router")
+            Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle" : "wifi.router")
                 .font(.system(size: 44))
                 .foregroundColor(.secondary.opacity(0.3))
-            Text("No networks found")
+            Text(hasActiveFilters ? "No matching networks" : "No networks found")
                 .font(.headline)
-            Text("Move closer to access points or refresh the scan.")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Text(
+                hasActiveFilters
+                    ? "Clear the search or filters to see all nearby networks."
+                    : "Move closer to access points or refresh the scan."
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
+
+            if hasActiveFilters, let onClearFilters {
+                Button("Clear Filters", action: onClearFilters)
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
-        .allowsHitTesting(false)
+        .allowsHitTesting(hasActiveFilters)
     }
 }
 

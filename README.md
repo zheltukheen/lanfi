@@ -11,7 +11,7 @@ elements, and turns the raw radio data into **quality scores, ranked channel
 recommendations and a security audit** — the interpretation layer most free
 scanners leave out.
 
-![WiFA main window](docs/images/wifa-main.webp)
+![WiFA with the Insights dashboard](docs/images/wifa-main.webp)
 
 ## Why WiFA
 
@@ -42,10 +42,11 @@ surfaced with severity and remediation hints.
 | Charts | Per-band spectrum view and 3-minute signal history with hover/click selection |
 | Raw data | 802.11 information-element table with expandable decoded fields (RSN, WPS, HT/VHT/HE, country, BSS Load…) |
 | Workflow | Search, band/signal filters, sidebar facets, Insights dashboard, menu bar extra |
+| Vendors | 58k-prefix offline OUI database from IEEE and Wireshark, with 24/28/36-bit longest-prefix matching ([sources](docs/VENDOR_DATA.md)) |
 | Export | CSV (visible columns, RFC 4180) and JSON (networks, metrics, issues, recommendations) |
 | Privacy | No analytics, no network requests, no location stored; see [PRIVACY.md](PRIVACY.md) |
 
-![WiFA Insights panel](docs/images/wifa-insights.webp)
+![WiFA per-band spectrum](docs/images/wifa-spectrum.webp)
 
 ## Requirements
 
@@ -85,7 +86,7 @@ Run the checks locally:
 xcodebuild test -project WiFA.xcodeproj -scheme WiFA \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 
-xcrun swift-format lint --recursive --configuration .swift-format .
+./scripts/lint.sh
 ```
 
 ## How the quality score works
@@ -131,16 +132,14 @@ hardware spectrum capture.
 
 ## Roadmap
 
-Near-term, in rough priority order:
+WiFA already leads on interpretation (quality, channel advice, security audit).
+The remaining gap to paid analyzers is distribution, workflow and survey
+features. The prioritised plan — with sources and acceptance criteria — lives in
+[`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-- Notarized Developer ID builds, Sparkle 2 auto-updates and a Homebrew cask.
-- SSID/access-point grouping and saved scan sessions.
-- PCAP/PCAPNG export for offline analysis.
-- Russian and additional localizations, VoiceOver improvements for charts.
-- Survey-lite heatmaps with floor-plan import.
-- Optional menu bar alerts for weak signal, open networks or channel changes.
-
-See [open issues](https://github.com/zheltukheen/wifa/issues) for the live list.
+Next up: notarized builds + Sparkle auto-updates, grouping/column profiles,
+saved sessions, PCAP export, AP-name detection, MLO/EHT details, then remote
+sensors and survey-lite heatmaps.
 
 ## Project structure
 

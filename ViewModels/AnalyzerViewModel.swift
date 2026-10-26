@@ -10,12 +10,6 @@ import UniformTypeIdentifiers
 
 // MARK: - Enums & Settings
 
-enum SignalDisplayMode: String, CaseIterable, Identifiable {
-    case dbm = "dBm"
-    case percent = "%"
-    var id: String { rawValue }
-}
-
 enum NetworkRemovalInterval: TimeInterval, CaseIterable, Identifiable {
     case oneMinute = 60
     case twoMinutes = 120
@@ -32,222 +26,6 @@ enum NetworkRemovalInterval: TimeInterval, CaseIterable, Identifiable {
         case .tenMinutes: return "10 min"
         }
     }
-}
-
-// MARK: - Column Definitions
-
-enum ColumnId: String, CaseIterable, Codable {
-    case apName
-    case amendments
-    case annotations
-    case bssid
-    case band
-    case basicRates
-    case beaconAirtime
-    case beaconInterval
-    case beaconMode
-    case beaconRate
-    case centerFrequency
-    case channel
-    case channelUtilization
-    case channelWidth
-    case clients
-    case congestion
-    case count
-    case countryCode
-    case fastTransition
-    case firstSeen
-    case generation
-    case ieCount
-    case ieTotalLength
-    case lastSeen
-    case maxBasicRate
-    case maxRate
-    case minBasicRate
-    case minRate
-    case mode
-    case networkName
-    case noise
-    case protectionMode
-    case quality
-    case snr
-    case security
-    case seen
-    case signal
-    case stations
-    case streams
-    case type
-    case uptime
-    case vendor
-    case wideChannel
-
-    var defaultTitle: String {
-        switch self {
-        case .apName: return "AP Name"
-        case .amendments: return "Amendments"
-        case .annotations: return "Annotations"
-        case .bssid: return "BSSID"
-        case .band: return "Band"
-        case .basicRates: return "Basic Rates"
-        case .beaconAirtime: return "Beacon Airtime"
-        case .beaconInterval: return "Beacon Interval"
-        case .beaconMode: return "Beacon Mode"
-        case .beaconRate: return "Beacon Rate"
-        case .centerFrequency: return "Center Frequency"
-        case .channel: return "Channel"
-        case .channelUtilization: return "Channel Utilization"
-        case .channelWidth: return "Width"
-        case .clients: return "Clients"
-        case .congestion: return "Congestion"
-        case .count: return "Count"
-        case .countryCode: return "Country Code"
-        case .fastTransition: return "Fast Transition"
-        case .firstSeen: return "First Seen"
-        case .generation: return "Generation"
-        case .ieCount: return "IE Count"
-        case .ieTotalLength: return "IE Total Length"
-        case .lastSeen: return "Last Seen"
-        case .maxBasicRate: return "Max Basic Rate"
-        case .maxRate: return "Max Rate"
-        case .minBasicRate: return "Min Basic Rate"
-        case .minRate: return "Min Rate"
-        case .mode: return "Mode"
-        case .networkName: return "Network Name"
-        case .noise: return "Noise"
-        case .protectionMode: return "Protection Mode"
-        case .quality: return "Quality"
-        case .snr: return "SNR"
-        case .security: return "Security"
-        case .seen: return "Seen"
-        case .signal: return "Signal"
-        case .stations: return "Stations"
-        case .streams: return "Streams"
-        case .type: return "Type"
-        case .uptime: return "Uptime"
-        case .vendor: return "Vendor"
-        case .wideChannel: return "Wide Channel"
-        }
-    }
-
-    var defaultWidth: CGFloat {
-        switch self {
-        case .signal, .quality:
-            return 80
-        case .channel, .congestion:
-            return 70
-        case .count, .seen, .clients, .stations, .streams, .noise, .snr, .wideChannel:
-            return 70
-        case .band:
-            return 75
-        case .generation, .mode:
-            return 85
-        case .type:
-            return 90
-        case .security:
-            return 100
-        case .channelWidth, .maxRate, .minRate, .maxBasicRate, .minBasicRate, .beaconInterval, .beaconRate:
-            return 75
-        case .centerFrequency, .countryCode, .fastTransition, .beaconMode, .beaconAirtime, .channelUtilization:
-            return 110
-        case .firstSeen, .lastSeen, .uptime:
-            return 130
-        case .networkName:
-            return 150
-        case .bssid:
-            return 140
-        case .vendor:
-            return 130
-        case .basicRates, .annotations, .apName:
-            return 150
-        case .amendments, .ieCount, .ieTotalLength:
-            return 120
-        case .protectionMode:
-            return 160
-        }
-    }
-
-    var defaultAlignment: ColumnAlignment {
-        switch self {
-        case .signal, .channel, .channelWidth, .count, .seen, .clients, .stations, .streams, .noise, .snr,
-            .centerFrequency, .channelUtilization, .beaconInterval, .beaconRate, .beaconAirtime, .maxRate, .minRate,
-            .maxBasicRate, .minBasicRate, .ieCount, .ieTotalLength, .uptime, .quality, .congestion:
-            return .right
-        case .wideChannel, .fastTransition:
-            return .center
-        default:
-            return .left
-        }
-    }
-
-    var defaultVisibility: Bool {
-        switch self {
-        case .networkName, .signal, .quality, .band, .channel, .channelWidth,
-            .security, .vendor, .bssid, .maxRate, .mode:
-            return true
-        default:
-            return false
-        }
-    }
-
-    /// Sensible out-of-the-box column order: identity, signal, interpretation,
-    /// radio details, then the long tail of 802.11 fields.
-    static let displayOrder: [ColumnId] = [
-        .networkName, .signal, .quality, .band, .channel, .channelWidth,
-        .security, .vendor, .bssid, .generation, .maxRate, .mode, .snr, .noise,
-        .seen, .lastSeen, .firstSeen, .uptime, .congestion, .channelUtilization,
-        .clients, .stations, .streams, .countryCode, .fastTransition,
-        .protectionMode, .beaconInterval, .beaconRate, .beaconAirtime, .wideChannel,
-        .centerFrequency, .basicRates, .minRate, .minBasicRate,
-        .maxBasicRate, .amendments, .annotations, .apName, .count, .ieCount,
-        .ieTotalLength, .type, .beaconMode,
-    ]
-}
-
-enum ColumnAlignment: Int, Codable {
-    case left = 0
-    case center = 1
-    case right = 2
-
-    var nsTextAlignment: NSTextAlignment {
-        switch self {
-        case .left: return .left
-        case .center: return .center
-        case .right: return .right
-        }
-    }
-}
-
-// MARK: - Models
-
-struct ColumnDefinition: Identifiable, Codable {
-    var id: String
-    var title: String
-    var width: CGFloat
-    var isVisible: Bool
-    var order: Int
-    var alignment: ColumnAlignment = .left
-    var isPinned: Bool = false
-    var customTitle: String? = nil
-
-    var displayTitle: String {
-        if let customTitle, !customTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return customTitle
-        }
-        return title
-    }
-
-    static let defaults: [ColumnDefinition] = {
-        ColumnId.displayOrder.enumerated().map { index, column in
-            ColumnDefinition(
-                id: column.rawValue,
-                title: column.defaultTitle,
-                width: column.defaultWidth,
-                isVisible: column.defaultVisibility,
-                order: index,
-                alignment: column.defaultAlignment
-            )
-        }
-    }()
 }
 
 enum SidebarCategory: CaseIterable {
@@ -593,8 +371,9 @@ class AnalyzerViewModel: ObservableObject {
         // 3. Sort
         if let keyString = currentSortKey, let key = ColumnId(rawValue: keyString) {
             filtered.sort { p1, p2 in
-                let forward = compare(p1, p2, by: key)
-                let backward = compare(p2, p1, by: key)
+                let formatter = columnFormatter
+                let forward = formatter.compare(p1, p2, by: key)
+                let backward = formatter.compare(p2, p1, by: key)
                 if !forward && !backward { return p1.id < p2.id }
                 return isSortAscending ? forward : backward
             }
@@ -615,176 +394,20 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func formatSignal(_ dbm: Int) -> String {
-        switch signalDisplayMode {
-        case .dbm: return "\(dbm)"
-        case .percent:
-            // Аппроксимация: -100dBm = 0%, -50dBm = 100%
-            let quality = max(0, min(100, (dbm + 100) * 2))
-            return "\(quality)%"
-        }
+        NetworkColumnFormatter.formatSignal(dbm, mode: signalDisplayMode)
     }
 
     func textForColumn(id: String, net: NetworkModel) -> String {
         guard let column = ColumnId(rawValue: id) else { return "-" }
-        switch column {
-        case .apName: return apName(for: net)
-        case .amendments: return net.generationLabel
-        case .annotations: return annotations(for: net)
-        case .bssid: return net.bssid.isEmpty ? "-" : net.bssid
-        case .band: return net.bandLabel
-        case .basicRates: return net.basicRatesLabel
-        case .beaconAirtime: return formatOptionalDouble(net.beaconAirtime)
-        case .beaconInterval: return formatOptionalInt(net.beaconInterval)
-        case .beaconMode: return net.beaconMode ?? net.mode
-        case .beaconRate: return formatOptionalDouble(net.beaconRate)
-        case .centerFrequency: return net.centerFrequencyLabel
-        case .channel: return "\(net.channel)"
-        case .channelUtilization: return formatOptionalInt(net.channelUtilization)
-        case .channelWidth: return net.channelWidthLabel
-        case .clients: return formatOptionalInt(net.clients)
-        case .congestion: return metrics(for: net)?.congestionScore.description ?? "-"
-        case .count: return "\(net.count)"
-        case .countryCode: return net.countryCode ?? "-"
-        case .fastTransition: return formatOptionalBool(net.fastTransition)
-        case .firstSeen: return formatDate(net.firstSeen)
-        case .generation: return net.generationLabel
-        case .ieCount: return formatOptionalInt(net.ieCount)
-        case .ieTotalLength: return formatOptionalInt(net.ieTotalLength)
-        case .lastSeen: return formatDate(net.lastSeen)
-        case .maxBasicRate: return net.maxBasicRateLabel
-        case .maxRate: return net.maxRateLabel
-        case .minBasicRate: return net.minBasicRateLabel
-        case .minRate: return net.minRateLabel
-        case .mode: return net.mode
-        case .networkName: return net.displaySSID
-        case .noise: return net.noiseLabel
-        case .protectionMode: return net.protectionMode ?? "-"
-        case .quality: return metrics(for: net)?.qualityScore.description ?? "-"
-        case .snr: return net.snrLabel
-        case .security: return net.security
-        case .seen: return "\(net.seen)"
-        case .signal: return formatSignal(net.signal)
-        case .stations: return formatOptionalInt(net.stations)
-        case .streams: return formatOptionalInt(net.streams)
-        case .type: return net.type ?? "-"
-        case .uptime:
-            if let uptime = net.uptimeSeconds { return formatDuration(seconds: uptime) }
-            return "-"
-        case .vendor: return net.vendor
-        case .wideChannel: return net.wideChannelLabel
-        }
+        return columnFormatter.text(for: column, network: net)
     }
 
-    private func apName(for net: NetworkModel) -> String {
-        if net.vendor != "-" { return net.vendor }
-        return net.displaySSID
-    }
-
-    private func annotations(for net: NetworkModel) -> String {
-        var parts: [String] = []
-        if net.ssid.isEmpty { parts.append("Hidden SSID") }
-        if net.ratesEstimated { parts.append("Est. rates") }
-        if let current = currentConnectedBSSID, !current.isEmpty, net.bssid == current {
-            parts.append("Connected")
-        }
-        if let metric = metrics(for: net) {
-            if metric.grade == .poor { parts.append("Poor quality") }
-            if metric.interferenceLoad >= 0.5 { parts.append("Congested") }
-        }
-        if net.security.lowercased().contains("open") { parts.append("Open") }
-        return parts.isEmpty ? "-" : parts.joined(separator: ", ")
-    }
-
-    private func compare(_ a: NetworkModel, _ b: NetworkModel, by key: ColumnId) -> Bool {
-        switch key {
-        case .apName: return compareText(apName(for: a), apName(for: b))
-        case .amendments: return a.generation.sortOrder < b.generation.sortOrder
-        case .annotations: return compareText(annotations(for: a), annotations(for: b))
-        case .bssid: return compareText(a.bssid, b.bssid)
-        case .band: return a.band.sortOrder < b.band.sortOrder
-        case .basicRates: return (a.maxBasicRate ?? 0) < (b.maxBasicRate ?? 0)
-        case .beaconAirtime: return (a.beaconAirtime ?? 0) < (b.beaconAirtime ?? 0)
-        case .beaconInterval: return (a.beaconInterval ?? 0) < (b.beaconInterval ?? 0)
-        case .beaconMode: return compareText(a.beaconMode ?? a.mode, b.beaconMode ?? b.mode)
-        case .beaconRate: return (a.beaconRate ?? 0) < (b.beaconRate ?? 0)
-        case .centerFrequency: return (a.centerFrequency ?? 0) < (b.centerFrequency ?? 0)
-        case .channel: return a.channel < b.channel
-        case .channelUtilization: return (a.channelUtilization ?? 0) < (b.channelUtilization ?? 0)
-        case .channelWidth: return a.channelWidthMHz < b.channelWidthMHz
-        case .clients: return (a.clients ?? 0) < (b.clients ?? 0)
-        case .congestion: return (metrics(for: a)?.congestionScore ?? 0) < (metrics(for: b)?.congestionScore ?? 0)
-        case .count: return a.count < b.count
-        case .countryCode: return compareText(a.countryCode ?? "", b.countryCode ?? "")
-        case .fastTransition: return boolToInt(a.fastTransition) < boolToInt(b.fastTransition)
-        case .firstSeen: return (a.firstSeen ?? Date.distantPast) < (b.firstSeen ?? Date.distantPast)
-        case .generation: return a.generation.sortOrder < b.generation.sortOrder
-        case .ieCount: return (a.ieCount ?? 0) < (b.ieCount ?? 0)
-        case .ieTotalLength: return (a.ieTotalLength ?? 0) < (b.ieTotalLength ?? 0)
-        case .lastSeen: return (a.lastSeen ?? Date.distantPast) < (b.lastSeen ?? Date.distantPast)
-        case .maxBasicRate: return (a.maxBasicRate ?? 0) < (b.maxBasicRate ?? 0)
-        case .maxRate: return (a.maxRate ?? 0) < (b.maxRate ?? 0)
-        case .minBasicRate: return (a.minBasicRate ?? 0) < (b.minBasicRate ?? 0)
-        case .minRate: return (a.minRate ?? 0) < (b.minRate ?? 0)
-        case .mode: return compareText(a.mode, b.mode)
-        case .networkName: return compareText(a.displaySSID, b.displaySSID)
-        case .noise: return (a.noise ?? 0) < (b.noise ?? 0)
-        case .protectionMode: return compareText(a.protectionMode ?? "", b.protectionMode ?? "")
-        case .quality: return (metrics(for: a)?.qualityScore ?? 0) < (metrics(for: b)?.qualityScore ?? 0)
-        case .snr: return (a.snr ?? 0) < (b.snr ?? 0)
-        case .security: return compareText(a.security, b.security)
-        case .seen: return a.seen < b.seen
-        case .signal: return a.signal < b.signal
-        case .stations: return (a.stations ?? 0) < (b.stations ?? 0)
-        case .streams: return (a.streams ?? 0) < (b.streams ?? 0)
-        case .type: return compareText(a.type ?? "", b.type ?? "")
-        case .uptime: return (a.uptimeSeconds ?? 0) < (b.uptimeSeconds ?? 0)
-        case .vendor: return compareText(a.vendor, b.vendor)
-        case .wideChannel: return (a.channelWidthMHz >= 80 ? 1 : 0) < (b.channelWidthMHz >= 80 ? 1 : 0)
-        }
-    }
-
-    private func compareText(_ a: String, _ b: String) -> Bool {
-        a.localizedCaseInsensitiveCompare(b) == .orderedAscending
-    }
-
-    private func boolToInt(_ value: Bool?) -> Int {
-        value == true ? 1 : 0
-    }
-
-    private func formatOptionalInt(_ value: Int?) -> String {
-        guard let value else { return "-" }
-        return "\(value)"
-    }
-
-    private func formatOptionalDouble(_ value: Double?) -> String {
-        guard let value, value > 0 else { return "-" }
-        return String(format: "%.0f", value)
-    }
-
-    private func formatOptionalBool(_ value: Bool?) -> String {
-        guard let value else { return "-" }
-        return value ? "Yes" : "No"
-    }
-
-    private func formatDate(_ date: Date?) -> String {
-        guard let date else { return "-" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .medium
-        return formatter.string(from: date)
-    }
-
-    private func formatDuration(seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        let secs = seconds % 60
-        if hours > 0 {
-            return String(format: "%02dh %02dm %02ds", hours, minutes, secs)
-        }
-        if minutes > 0 {
-            return String(format: "%02dm %02ds", minutes, secs)
-        }
-        return "\(secs)s"
+    private var columnFormatter: NetworkColumnFormatter {
+        NetworkColumnFormatter(
+            signalDisplayMode: signalDisplayMode,
+            connectedBSSID: currentConnectedBSSID,
+            metricsByNetworkId: analysis.metricsByNetworkId
+        )
     }
 
     func metrics(for network: NetworkModel) -> NetworkMetrics? {
@@ -830,6 +453,30 @@ class AnalyzerViewModel: ObservableObject {
                 return lhs.localizedCaseInsensitiveCompare(rhs) == .orderedAscending
             }
             .map { (value: $0, count: counts[$0, default: 0]) }
+    }
+
+    var totalNetworkCount: Int { persistentNetworks.count }
+
+    var hasActiveFilters: Bool {
+        !searchText.isEmpty
+            || !filterBand24 || !filterBand5 || !filterBand6
+            || minSignalThreshold > -100
+            || quickFilterNetworkName != nil
+            || quickFilterMode != nil
+            || quickFilterChannel != nil
+            || quickFilterChannelWidth != nil
+            || quickFilterSecurity != nil
+            || quickFilterAccessPoint != nil
+            || quickFilterVendor != nil
+    }
+
+    func clearAllFilters() {
+        searchText = ""
+        filterBand24 = true
+        filterBand5 = true
+        filterBand6 = true
+        minSignalThreshold = -100
+        clearQuickFilters()
     }
 
     func clearQuickFilters() {

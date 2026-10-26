@@ -28,7 +28,7 @@ xcodebuild test \
   -scheme WiFA \
   -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO
-xcrun swift-format lint --recursive --configuration .swift-format .
+./scripts/lint.sh
 ```
 
 ## Code guidelines

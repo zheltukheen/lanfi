@@ -1,70 +1,85 @@
 import Foundation
 
 struct OUIParser {
-    // Базовый вшитый словарь на случай отсутствия внешней базы (ключи: AABBCC без разделителей)
+    // Minimal fallback used only if the bundled database is missing.
     static let builtIn: [String: String] = [
-        "001A2B": "Apple",
-        "001B63": "Cisco",
-        "001DD8": "ASUS",
-        "000C29": "VMware",
-        "3C5AB4": "Samsung",
-        "44650D": "Netgear",
-        "00095B": "TP-Link",
-        "F4F5D8": "Huawei",
-        "001E65": "Hewlett-Packard",
-        "001310": "Sony",
-        "FCFBFB": "Xiaomi",
-        "D850E6": "LG Electronics",
-        "C0EEFB": "D-Link",
-        "F82793": "Hon Hai Precision (Foxconn)",
-        "00259C": "Dell",
-        "002369": "AzureWave",
+        "000C29": "VMware, Inc.",
+        "001B63": "Apple, Inc.",
+        "001A2B": "Ayecom Technology Co., Ltd.",
+        "001DD8": "Microsoft Corporation",
+        "3C5AB4": "Google, Inc.",
+        "44650D": "Amazon Technologies Inc.",
+        "00095B": "NETGEAR",
+        "F4F5D8": "Google, Inc.",
+        "001E65": "Intel Corporate",
+        "001310": "Cisco-Linksys, LLC",
+        "FCFBFB": "Cisco Systems, Inc.",
+        "D850E6": "ASUSTek COMPUTER INC.",
+        "C0EEFB": "OnePlus Tech (Shenzhen) Ltd",
+        "F82793": "Apple, Inc.",
+        "00259C": "Cisco-Linksys, LLC",
+        "002369": "Cisco-Linksys, LLC",
         "B827EB": "Raspberry Pi Foundation",
-        "283737": "Intel",
-        "3C0754": "Amazon Technologies",
-        "207693": "Realtek Semiconductor",
+        "283737": "Apple, Inc.",
+        "3C0754": "Apple, Inc.",
+        "207693": "Lenovo (Beijing) Limited.",
     ]
 
-    private static var cached: [String: String]? = nil
+    private static var cached: [String: String]?
 
-    /// Ленивая подгрузка базы OUI из bundle. Поддерживаем форматы:
-    /// - "oui" или "oui.txt": строки вида "0023CE<TAB/SPACE>VENDOR NAME"
-    /// - "oui.csv": строки вида "OUI,Vendor"
+    /// Returns the best vendor name for a MAC address. The database contains
+    /// 24-, 28- and 36-bit prefixes; the longest matching prefix wins.
+    static func vendor(for bssid: String) -> String {
+        let key = normalizedMAC(bssid)
+        guard key.count >= 6 else { return "-" }
+
+        if let firstByte = UInt8(key.prefix(2), radix: 16), firstByte & 0x02 != 0 {
+            return "Randomized MAC"
+        }
+
+        return lookup(mac: key, in: db()) ?? "-"
+    }
+
+    /// Longest-prefix lookup over a database of 6, 7, 8 or 9 hex characters.
+    static func lookup(mac: String, in database: [String: String]) -> String? {
+        let key = normalizedMAC(mac)
+        guard key.count >= 6 else { return nil }
+        for length in stride(from: min(9, key.count), through: 6, by: -1) {
+            let prefix = String(key.prefix(length))
+            if let vendor = database[prefix], !vendor.isEmpty {
+                return vendor
+            }
+        }
+        return nil
+    }
+
+    /// Parses the tab-separated database format: `<hex prefix>\t<vendor>`.
+    /// Lines with malformed or too-short keys are ignored.
+    static func parseDatabase(_ text: String) -> [String: String] {
+        var map: [String: String] = [:]
+        for raw in text.split(whereSeparator: \.isNewline) {
+            let line = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !line.isEmpty, !line.hasPrefix("#") else { continue }
+            let parts = line.split(separator: "\t", maxSplits: 1)
+            guard parts.count == 2 else { continue }
+            let key = normalizedMAC(String(parts[0]))
+            let vendor = String(parts[1]).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard (6...9).contains(key.count), !vendor.isEmpty else { continue }
+            map[key] = vendor
+        }
+        return map
+    }
+
     private static func db() -> [String: String] {
-        if let c = cached { return c }
-        let candidates: [(name: String, ext: String?)] = [("oui", nil), ("oui", "txt"), ("oui", "csv")]
-        for cand in candidates {
-            if let url = Bundle.main.url(forResource: cand.name, withExtension: cand.ext),
+        if let cached { return cached }
+
+        let candidates: [(name: String, ext: String?)] = [("oui", nil), ("oui", "txt"), ("OUI", nil)]
+        for candidate in candidates {
+            if let url = Bundle.main.url(forResource: candidate.name, withExtension: candidate.ext),
                 let text = try? String(contentsOf: url, encoding: .utf8)
             {
-                var map: [String: String] = [:]
-                let isCSV = (cand.ext?.lowercased() == "csv")
-                for raw in text.split(separator: "\n") {
-                    let line = String(raw).trimmingCharacters(in: .whitespacesAndNewlines)
-                    if line.isEmpty { continue }
-                    if line.hasPrefix("#") || line.hasPrefix("//") { continue }
-                    if isCSV {
-                        // CSV: OUI,Vendor; OUI может быть с двоеточиями или без
-                        let parts = line.split(separator: ",", maxSplits: 1).map {
-                            String($0).trimmingCharacters(in: .whitespacesAndNewlines)
-                        }
-                        if parts.count == 2 {
-                            let key = normalizeOui(parts[0])
-                            if key.count == 6 {
-                                map[key] = parts[1].trimmingCharacters(in: CharacterSet(charactersIn: "\""))
-                            }
-                        }
-                    } else {
-                        // Whitespace-separated: first token OUI (AABBCC), rest is vendor name
-                        if let r = line.rangeOfCharacter(from: .whitespacesAndNewlines) {
-                            let lhs = String(line[..<r.lowerBound])
-                            let rhs = String(line[r.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-                            let key = normalizeOui(lhs)
-                            if !rhs.isEmpty, key.count == 6 { map[key] = rhs }
-                        }
-                    }
-                }
-                cached = map.isEmpty ? builtIn : map
+                let parsed = parseDatabase(text)
+                cached = parsed.isEmpty ? builtIn : parsed
                 return cached!
             }
         }
@@ -72,25 +87,16 @@ struct OUIParser {
         return cached!
     }
 
-    /// Нормализует строку с OUI ("AA:BB:CC" или "AABBCC" → "AABBCC").
-    private static func normalizeOui(_ s: String) -> String {
-        let up = s.uppercased()
-        let cleaned =
-            up
+    /// Normalizes MAC/OUI input to uppercase hex without separators. It does
+    /// not truncate, so 28- and 36-bit prefixes remain usable.
+    static func normalizedMAC(_ value: String) -> String {
+        let stripped = value.uppercased()
             .replacingOccurrences(of: ":", with: "")
             .replacingOccurrences(of: "-", with: "")
             .replacingOccurrences(of: ".", with: "")
-        return String(cleaned.prefix(6))
-    }
-
-    static func vendor(for bssid: String) -> String {
-        let trimmed = bssid.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return "-" }
-        let key = normalizeOui(trimmed)
-        guard key.count == 6 else { return "-" }
-        if let firstByte = UInt8(key.prefix(2), radix: 16), firstByte & 0x02 != 0 {
-            return "Randomized MAC"
-        }
-        return db()[key] ?? "-"
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard stripped.count >= 6, stripped.allSatisfy({ $0.isHexDigit }) else { return "" }
+        return String(stripped.prefix(12))
     }
 }

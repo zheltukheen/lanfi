@@ -33,8 +33,9 @@ struct WiFiTableView: NSViewRepresentable {
         // Убираем сетку (вертикальные и горизонтальные линии)
         tableView.gridStyleMask = []
 
-        // Убираем межклеточные отступы для сплошного вида
-        tableView.intercellSpacing = NSSize(width: 0, height: 0)
+        // A little more breathing room per row; keeps the table compact but readable.
+        tableView.rowHeight = 30
+        tableView.intercellSpacing = NSSize(width: 0, height: 2)
 
         tableView.headerView = NSTableHeaderView()
 
@@ -112,7 +113,12 @@ struct WiFiTableView: NSViewRepresentable {
             }
 
             if column.title != def.displayTitle { column.title = def.displayTitle }
-            if abs(column.width - def.width) > 1.0 { column.width = def.width }
+            // Never fight the user while a header divider is being dragged.
+            if !context.coordinator.isUserResizingColumn,
+                abs(column.width - def.width) > 1.0
+            {
+                column.width = def.width
+            }
             if let headerCell = column.headerCell as? PaddedHeaderCell {
                 if headerCell.stringValue != def.displayTitle { headerCell.stringValue = def.displayTitle }
                 if headerCell.alignment != def.alignment.nsTextAlignment {
@@ -191,6 +197,11 @@ struct WiFiTableView: NSViewRepresentable {
 
         var isProgrammaticUpdate = false
         var isUpdatingSelection = false
+        var isUserResizingColumn = false
+        var isAutoSizingColumns = false
+
+        private var pendingColumnWidths: [String: CGFloat] = [:]
+        private var widthPersistWorkItem: DispatchWorkItem?
 
         private static let dateFormatter: DateFormatter = {
             let f = DateFormatter(); f.dateStyle = .short; f.timeStyle = .medium; return f
@@ -276,18 +287,45 @@ struct WiFiTableView: NSViewRepresentable {
         }
 
         @objc func columnDidResize(_ notification: Notification) {
-            guard !isProgrammaticUpdate, let col = notification.userInfo?["NSTableColumn"] as? NSTableColumn else {
-                return
-            }
+            guard !isProgrammaticUpdate,
+                !isAutoSizingColumns,
+                let col = notification.userInfo?["NSTableColumn"] as? NSTableColumn
+            else { return }
+
             let id = col.identifier.rawValue
             let width = col.width
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                if let idx = self.parent.viewModel.columnDefinitions.firstIndex(where: { $0.id == id }) {
-                    self.parent.viewModel.columnDefinitions[idx].width = width
-                    self.parent.viewModel.saveColumnSettings()
+
+            // Ignore the echo of a programmatic width assignment.
+            if let current = parent.viewModel.columnDefinitions.first(where: { $0.id == id }),
+                abs(current.width - width) < 0.5
+            {
+                return
+            }
+
+            isUserResizingColumn = true
+            pendingColumnWidths[id] = width
+            widthPersistWorkItem?.cancel()
+
+            let work = DispatchWorkItem { [weak self] in
+                self?.commitPendingColumnWidths()
+            }
+            widthPersistWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
+        }
+
+        private func commitPendingColumnWidths() {
+            defer {
+                pendingColumnWidths.removeAll()
+                isUserResizingColumn = false
+            }
+            guard !pendingColumnWidths.isEmpty else { return }
+
+            for (id, width) in pendingColumnWidths {
+                if let index = parent.viewModel.columnDefinitions.firstIndex(where: { $0.id == id }) {
+                    parent.viewModel.columnDefinitions[index].width = width
                 }
             }
+            parent.viewModel.saveColumnSettings()
         }
 
         func menuNeedsUpdate(_ menu: NSMenu) {
@@ -406,6 +444,7 @@ struct WiFiTableView: NSViewRepresentable {
             guard let tableView = tableView else { return }
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
+                self.isAutoSizingColumns = true
                 for id in ids {
                     guard let column = tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(id)) else {
                         continue
@@ -416,6 +455,7 @@ struct WiFiTableView: NSViewRepresentable {
                         self.parent.viewModel.columnDefinitions[idx].width = width
                     }
                 }
+                self.isAutoSizingColumns = false
                 self.parent.viewModel.saveColumnSettings()
                 self.parent.viewModel.objectWillChange.send()
             }

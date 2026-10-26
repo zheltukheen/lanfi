@@ -34,7 +34,7 @@ jobs:
           if ! xcrun --find swift-format >/dev/null 2>&1; then
             FORMAT="swift-format"
           fi
-          $FORMAT lint --recursive --configuration .swift-format --no-color-diagnostics .
+          ./scripts/lint.sh
 
       - name: Test
         run: |

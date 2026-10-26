@@ -22,8 +22,8 @@ xcodebuild test \
   -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO
 
-xcrun swift-format lint --recursive --configuration .swift-format .
-xcrun swift-format format --recursive --in-place --configuration .swift-format .
+./scripts/lint.sh
+./scripts/format.sh
 ```
 
 Outputs:
@@ -44,13 +44,19 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   rates, channel utilization, parsed IE fields).
 - `Services/InformationElementParser.swift` — pure 802.11 IE decoder. Must not
   import CoreWLAN/SwiftUI so tests can compile it directly.
+- `Models/ColumnCatalog.swift` — column ids, default titles/widths/order and
+  visibility. `Models/SignalDisplayMode.swift` — dBm/percent setting.
+- `Services/NetworkColumnFormatter.swift` — pure cell text and sort comparison
+  for every column, so the whole catalog can be tested without a UI.
 - `Services/NetworkAnalyzer.swift` — pure scoring/analysis:
   - 0–100 quality score from signal, SNR, congestion, utilization, security;
   - spectral-overlap fractions from primary channel + width;
   - ranked channel recommendations for 2.4/5/6 GHz (20/80 MHz candidates, DFS);
   - security findings (open/WEP/legacy WPA/WPS/PMF) and performance issues.
 - `ViewModels/AnalyzerViewModel.swift` — `@MainActor` state: scan timer, merge
-  and expiry, filtering/sorting, column catalog, preferences, CSV/JSON export.
+  and expiry, filtering/sorting, preferences, CSV/JSON export. Column metadata
+  lives in `Models/ColumnCatalog.swift`; formatting is delegated to
+  `NetworkColumnFormatter`.
 - `ViewModels/AppUIState.swift` — sidebar/inspector/bottom-tab state.
 - `Views/WiFiTableView.swift` — `NSViewRepresentable` around `NSTableView`,
   column diff/reorder/resize persistence, context menus, selection sync.
@@ -80,12 +86,14 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 ## Persistence keys
 
 - `WifiColumns_v4` — JSON `[ColumnDefinition]` (order/width/visibility/title).
+- `Wifa.tabLayoutVersion` — one-time migration to the Insights-first tab layout.
 - `RefreshIntervalSeconds` — scan interval.
 - `Wifa.filterBand24|filterBand5|filterBand6` — band filters.
 - `Wifa.minSignal`, `Wifa.removeAfter` — signal threshold and expiry.
 - `Wifa.signalUnit`, `Wifa.highlightConnected` — display options.
 - `Wifa.sortKey`, `Wifa.sortAscending` — table sort.
-- `Wifa.showSidebar`, `Wifa.showInspector`, `Wifa.bottomTab` — layout.
+- `Wifa.showSidebar`, `Wifa.showInspector`, `Wifa.bottomTab` — layout
+  (`0` Insights, `1` Spectrum, `2` History, `3` Raw Data).
 - Window frame is managed by SwiftUI/AppKit.
 
 ## Adding a column
@@ -99,6 +107,16 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 3. No change is needed in `WiFiTableView`; it renders via `textForColumn`.
 4. Add the field to JSON export (`networkJSON`) if it is user-relevant.
 5. Bump the `WifiColumns_*` key only for breaking column migrations.
+
+## Vendor database
+
+`Resources/oui` is generated from the IEEE MA-L/MA-M/MA-S registries and the
+Wireshark `manuf` file. Prefixes are 6, 7 or 9 hex characters and the lookup
+uses the longest match. Refresh it with:
+
+```bash
+python3 scripts/update_oui.py
+```
 
 ## Testing
 

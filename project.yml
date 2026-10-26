@@ -34,8 +34,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
-        MARKETING_VERSION: "1.3.0"
-        CURRENT_PROJECT_VERSION: "9"
+        MARKETING_VERSION: "1.4.0"
+        CURRENT_PROJECT_VERSION: "10"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -59,7 +59,10 @@ targets:
     sources:
       - path: Tests
       - path: Models/NetworkModel.swift
+      - path: Models/ColumnCatalog.swift
+      - path: Models/SignalDisplayMode.swift
       - path: Services/NetworkAnalyzer.swift
+      - path: Services/NetworkColumnFormatter.swift
       - path: Services/InformationElementParser.swift
       - path: Utils/OUIParser.swift
     settings:

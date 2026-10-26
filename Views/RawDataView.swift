@@ -52,7 +52,7 @@ struct RawDataTableView: NSViewRepresentable {
         tableView.gridStyleMask = []
         tableView.intercellSpacing = NSSize(width: 0, height: 0)
         tableView.headerView = NSTableHeaderView()
-        tableView.rowHeight = 22
+        tableView.rowHeight = 28
 
         let idColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("id"))
         idColumn.title = "ID"

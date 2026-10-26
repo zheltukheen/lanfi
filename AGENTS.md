@@ -7,7 +7,7 @@ Quick checks before handing off:
 
 ```bash
 xcodegen generate
-xcrun swift-format lint --recursive --configuration .swift-format .
+./scripts/lint.sh
 xcodebuild test -project WiFA.xcodeproj -scheme WiFA \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 ./build.sh

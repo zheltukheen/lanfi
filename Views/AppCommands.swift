@@ -87,21 +87,21 @@ struct WiFACommands: Commands {
             Divider()
 
             Picker("Bottom Panel", selection: $uiState.selectedBottomTab) {
-                Text("Spectrum").tag(0)
-                Text("History").tag(1)
-                Text("Raw Data").tag(2)
-                Text("Insights").tag(3)
+                Text("Insights").tag(0)
+                Text("Spectrum").tag(1)
+                Text("History").tag(2)
+                Text("Raw Data").tag(3)
             }
 
             Divider()
 
-            Button("Show Spectrum") { uiState.selectedBottomTab = 0 }
+            Button("Show Insights") { uiState.selectedBottomTab = 0 }
                 .keyboardShortcut("1", modifiers: [.command])
-            Button("Show History") { uiState.selectedBottomTab = 1 }
+            Button("Show Spectrum") { uiState.selectedBottomTab = 1 }
                 .keyboardShortcut("2", modifiers: [.command])
-            Button("Show Raw Data") { uiState.selectedBottomTab = 2 }
+            Button("Show History") { uiState.selectedBottomTab = 2 }
                 .keyboardShortcut("3", modifiers: [.command])
-            Button("Show Insights") { uiState.selectedBottomTab = 3 }
+            Button("Show Raw Data") { uiState.selectedBottomTab = 3 }
                 .keyboardShortcut("4", modifiers: [.command])
         }
 

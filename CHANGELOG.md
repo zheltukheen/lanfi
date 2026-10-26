@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.4.0 — 2026-10-26
+
+### Added
+- **Insights is now the first and default tab**, with a one-time migration for existing layouts.
+- **Commercial gap analysis and prioritised roadmap** in `docs/COMMERCIAL_GAP.md`, based on current WiFi Explorer Pro, NetSpot, inSSIDer, Acrylic and survey tools.
+- **Full column coverage tests** for every declared column, including minimal/unknown networks and sort comparators.
+- **Vendor database expanded to 58,407 prefixes** from IEEE MA-L, MA-M, MA-S and the Wireshark manufacturer registry, with longest-prefix lookup for 24/28/36-bit assignments.
+- **Filtered empty state** explaining that filters hide results, with a Clear Filters action.
+- All table columns now go through a pure, testable `NetworkColumnFormatter`; column metadata lives in `Models/ColumnCatalog.swift`.
+
+### Changed
+- Table rows are taller (30 pt) and raw-data rows use 28 pt.
+- Vendor fallback list now contains verified IEEE names and no fabricated mappings.
+- Vendor update script can ingest multiple IEEE/Wireshark sources and reports prefix coverage.
+- Tab shortcuts and menu order are now Insights, Spectrum, History, Raw Data (⌘1–⌘4).
+
+### Fixed
+- Column resizing no longer fights SwiftUI updates: widths are committed after a short debounce and ignored while a divider is dragged.
+- “No networks found” is replaced by “No matching networks” when only filters/search hide the results.
+- Invalid MAC-like strings no longer produce bogus hex prefixes in vendor lookup.
+- App builds with Xcode 16.4 / the macOS 15 SDK while still detecting Wi-Fi 7 at runtime (raw `CWPHYMode` value).
+
+### Engineering
+- Added tests for the longest-prefix vendor lookup, column metadata, all 43 column renderers and all column comparators.
+- CI remains green on macOS 15; the Dependabot actions branch was rebased and now passes.
+
+
 ## 1.3.0 — 2026-10-26
 
 ### Added
