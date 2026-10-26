@@ -197,7 +197,7 @@ private enum HelpContent {
                     "Filters & sorting",
                     [
                         "Open the Filters sidebar from the toolbar or Display → Show Filters Sidebar.",
-                        "Click a section title to expand it. The sort popover controls sorting; the arrow button changes direction.",
+                        "Click a section title to expand it. Click several values to combine them; All clears that category. The sort popover controls sorting; the arrow button changes direction.",
                         "Grouping, signal units and column profiles live in Display.",
                     ]),
             ]
@@ -383,7 +383,7 @@ private enum HelpContent {
                     "Фильтры и сортировка",
                     [
                         "Сайдбар Filters открывается из toolbar или Display → Show Filters Sidebar.",
-                        "Клик по заголовку секции раскрывает её. Поповер Sort by задаёт поле; стрелка — направление.",
+                        "Клик по заголовку секции раскрывает её. Несколько значений в категории объединяются; All сбрасывает категорию. Поповер Sort by задаёт поле; стрелка — направление.",
                         "Группировка, единицы сигнала и профили колонок — в меню Display.",
                     ]),
             ]

@@ -151,13 +151,13 @@ class AnalyzerViewModel: ObservableObject {
     @Published var columnDefinitions: [ColumnDefinition] = ColumnDefinition.defaults
 
     // Quick filters (sidebar)
-    @Published var quickFilterNetworkName: String? { didSet { requestFilterUpdate() } }
-    @Published var quickFilterMode: String? { didSet { requestFilterUpdate() } }
-    @Published var quickFilterChannel: String? { didSet { requestFilterUpdate() } }
-    @Published var quickFilterChannelWidth: String? { didSet { requestFilterUpdate() } }
-    @Published var quickFilterSecurity: String? { didSet { requestFilterUpdate() } }
-    @Published var quickFilterAccessPoint: String? { didSet { requestFilterUpdate() } }
-    @Published var quickFilterVendor: String? { didSet { requestFilterUpdate() } }
+    @Published var quickFilterNetworkName: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published var quickFilterMode: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published var quickFilterChannel: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published var quickFilterChannelWidth: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published var quickFilterSecurity: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published var quickFilterAccessPoint: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published var quickFilterVendor: Set<String> = [] { didSet { requestFilterUpdate() } }
 
     @Published var isLocationAuthorized = false
     @Published var errorMessage: String?
@@ -376,27 +376,28 @@ class AnalyzerViewModel: ObservableObject {
         baseFilteredNetworks = baseFiltered
 
         // 2. Quick Filters (Sidebar)
-        if let value = quickFilterNetworkName {
-            baseFiltered = baseFiltered.filter { $0.displaySSID == value }
+        if !quickFilterNetworkName.isEmpty {
+            baseFiltered = baseFiltered.filter { quickFilterNetworkName.contains($0.displaySSID) }
         }
-        if let value = quickFilterMode {
-            baseFiltered = baseFiltered.filter { $0.mode == value }
+        if !quickFilterMode.isEmpty {
+            baseFiltered = baseFiltered.filter { quickFilterMode.contains($0.mode) }
         }
-        if let value = quickFilterChannel {
-            baseFiltered = baseFiltered.filter { String($0.channel) == value }
+        if !quickFilterChannel.isEmpty {
+            baseFiltered = baseFiltered.filter { quickFilterChannel.contains(String($0.channel)) }
         }
-        if let value = quickFilterChannelWidth {
-            baseFiltered = baseFiltered.filter { $0.channelWidthLabel == value }
+        if !quickFilterChannelWidth.isEmpty {
+            baseFiltered = baseFiltered.filter { quickFilterChannelWidth.contains($0.channelWidthLabel) }
         }
-        if let value = quickFilterSecurity {
-            baseFiltered = baseFiltered.filter { $0.security == value }
+        if !quickFilterSecurity.isEmpty {
+            baseFiltered = baseFiltered.filter { quickFilterSecurity.contains($0.security) }
         }
-        if let value = quickFilterAccessPoint {
-            let target = value == "<Hidden>" ? "" : value
-            baseFiltered = baseFiltered.filter { $0.bssid == target }
+        if !quickFilterAccessPoint.isEmpty {
+            baseFiltered = baseFiltered.filter {
+                quickFilterAccessPoint.contains($0.bssid.isEmpty ? "<Hidden>" : $0.bssid)
+            }
         }
-        if let value = quickFilterVendor {
-            baseFiltered = baseFiltered.filter { $0.vendor == value }
+        if !quickFilterVendor.isEmpty {
+            baseFiltered = baseFiltered.filter { quickFilterVendor.contains($0.vendor) }
         }
 
         var filtered = baseFiltered
@@ -624,13 +625,13 @@ class AnalyzerViewModel: ObservableObject {
         !searchText.isEmpty
             || !filterBand24 || !filterBand5 || !filterBand6 || !filterWiFi7
             || minSignalThreshold > -100
-            || quickFilterNetworkName != nil
-            || quickFilterMode != nil
-            || quickFilterChannel != nil
-            || quickFilterChannelWidth != nil
-            || quickFilterSecurity != nil
-            || quickFilterAccessPoint != nil
-            || quickFilterVendor != nil
+            || !quickFilterNetworkName.isEmpty
+            || !quickFilterMode.isEmpty
+            || !quickFilterChannel.isEmpty
+            || !quickFilterChannelWidth.isEmpty
+            || !quickFilterSecurity.isEmpty
+            || !quickFilterAccessPoint.isEmpty
+            || !quickFilterVendor.isEmpty
     }
 
     func clearAllFilters() {
@@ -644,13 +645,13 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func clearQuickFilters() {
-        quickFilterNetworkName = nil
-        quickFilterMode = nil
-        quickFilterChannel = nil
-        quickFilterChannelWidth = nil
-        quickFilterSecurity = nil
-        quickFilterAccessPoint = nil
-        quickFilterVendor = nil
+        quickFilterNetworkName.removeAll()
+        quickFilterMode.removeAll()
+        quickFilterChannel.removeAll()
+        quickFilterChannelWidth.removeAll()
+        quickFilterSecurity.removeAll()
+        quickFilterAccessPoint.removeAll()
+        quickFilterVendor.removeAll()
     }
 
     // 2. Методы управления столбцами (нужны для ColumnSettingsView)

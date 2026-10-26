@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.5.4 — 2026-10-26
+
+### Added
+- Multi-select values inside every sidebar filter category (network, mode,
+  channel, width, security, access point, vendor). Values within a category
+  are ORed; categories are ANDed. All clears one category.
+- Larger filter rows and a clearer selected state.
+
+### Changed
+- About/Help windows included in the shipped build.
+- Layout menu avoids collision with the localized system View menu.
+
+
 ## 2.5.3 — 2026-10-26
 
 ### Added

@@ -155,7 +155,7 @@ struct SidebarFilterView: View {
         }
     }
 
-    private func binding(for category: SidebarCategory) -> Binding<String?> {
+    private func binding(for category: SidebarCategory) -> Binding<Set<String>> {
         switch category {
         case .networkName: return $viewModel.quickFilterNetworkName
         case .mode: return $viewModel.quickFilterMode
@@ -173,7 +173,7 @@ struct SidebarSection: View {
     let systemImage: String
     let options: [(value: String, count: Int)]
     let totalCount: Int
-    @Binding var selection: String?
+    @Binding var selection: Set<String>
     @Binding var isExpanded: Bool
 
     var body: some View {
@@ -190,7 +190,7 @@ struct SidebarSection: View {
                         .frame(width: 10)
                     Image(systemName: systemImage)
                         .font(.caption.bold())
-                        .foregroundColor(selection == nil ? .secondary : .accentColor)
+                        .foregroundColor(selection.isEmpty ? .secondary : .accentColor)
                         .frame(width: 16)
                     Text(title)
                         .font(.subheadline.weight(.medium))
@@ -201,7 +201,7 @@ struct SidebarSection: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(Color.secondary.opacity(0.10)))
-                    if selection != nil {
+                    if !selection.isEmpty {
                         Circle()
                             .fill(Color.accentColor)
                             .frame(width: 6, height: 6)
@@ -219,14 +219,19 @@ struct SidebarSection: View {
 
             if isExpanded {
                 VStack(spacing: 1) {
-                    SidebarOptionRow(label: "All", count: totalCount, isSelected: selection == nil) {
-                        selection = nil
+                    SidebarOptionRow(label: "All", count: totalCount, isSelected: selection.isEmpty) {
+                        selection.removeAll()
                     }
                     ForEach(options, id: \.value) { option in
                         SidebarOptionRow(
-                            label: option.value, count: option.count, isSelected: selection == option.value
+                            label: option.value, count: option.count,
+                            isSelected: selection.contains(option.value)
                         ) {
-                            selection = option.value
+                            if selection.contains(option.value) {
+                                selection.remove(option.value)
+                            } else {
+                                selection.insert(option.value)
+                            }
                         }
                     }
                 }
@@ -253,15 +258,15 @@ struct SidebarOptionRow: View {
                     .foregroundColor(isSelected ? .accentColor : .secondary.opacity(0.35))
                     .frame(width: 12)
                 Text(label)
-                    .font(.caption)
+                    .font(.callout)
                     .lineLimit(1)
                 Spacer()
                 Text("\(count)")
-                    .font(.caption2.monospacedDigit())
+                    .font(.caption.monospacedDigit())
                     .foregroundColor(isSelected ? .accentColor : .secondary)
             }
-            .padding(.vertical, 4)
-            .padding(.horizontal, 7)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 9)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 5)
