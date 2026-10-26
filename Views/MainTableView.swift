@@ -684,6 +684,8 @@ struct NetworkInspectorView: View {
                             UtilizationInspectorSection(network: network, viewModel: viewModel)
                             ProximityBeaconInspectorSection(network: network)
                             ClientsInspectorSection(network: network)
+                            RegulatoryInspectorSection(network: network)
+                            OtherRadiosInspectorSection()
                         }
 
                         GroupBox("Label & Notes") {

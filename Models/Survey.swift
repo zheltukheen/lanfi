@@ -45,6 +45,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var samples: [SurveySample]
     var walls: [SurveyWall]
     var obstacles: [SurveyObstacle]
+    var accessPoints: [SurveyAccessPoint]
     var planWidthMeters: Double?
     var reportTitle: String?
     var clientName: String?
@@ -54,12 +55,12 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     static func new(name: String = "Untitled survey") -> SurveyProject {
         SurveyProject(
             id: UUID(), name: name, imageFileName: nil, samples: [], walls: [],
-            obstacles: [], updatedAt: Date()
+            obstacles: [], accessPoints: [], updatedAt: Date()
         )
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, imageFileName, samples, walls, obstacles, planWidthMeters
+        case id, name, imageFileName, samples, walls, obstacles, accessPoints, planWidthMeters
         case reportTitle, clientName, reportNotes, updatedAt
     }
 
@@ -70,6 +71,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         samples: [SurveySample],
         walls: [SurveyWall] = [],
         obstacles: [SurveyObstacle] = [],
+        accessPoints: [SurveyAccessPoint] = [],
         planWidthMeters: Double? = nil,
         reportTitle: String? = nil,
         clientName: String? = nil,
@@ -82,6 +84,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         self.samples = samples
         self.walls = walls
         self.obstacles = obstacles
+        self.accessPoints = accessPoints
         self.planWidthMeters = planWidthMeters
         self.reportTitle = reportTitle
         self.clientName = clientName
@@ -97,6 +100,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         samples = try container.decodeIfPresent([SurveySample].self, forKey: .samples) ?? []
         walls = try container.decodeIfPresent([SurveyWall].self, forKey: .walls) ?? []
         obstacles = try container.decodeIfPresent([SurveyObstacle].self, forKey: .obstacles) ?? []
+        accessPoints = try container.decodeIfPresent([SurveyAccessPoint].self, forKey: .accessPoints) ?? []
         planWidthMeters = try container.decodeIfPresent(Double.self, forKey: .planWidthMeters)
         reportTitle = try container.decodeIfPresent(String.self, forKey: .reportTitle)
         clientName = try container.decodeIfPresent(String.self, forKey: .clientName)
