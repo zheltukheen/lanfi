@@ -98,6 +98,7 @@
 		92B9A07247F99B7B2D6F003C /* VendorSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30088737EFBE639B958CD4D /* VendorSettingsView.swift */; };
 		955F735ACDFBAFD541C469C9 /* TableCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F5CE72100DE88434ACFFF7 /* TableCells.swift */; };
 		95C1C49FAC126274235CB027 /* SurveyInterpolator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76D0661115093391A9191CE /* SurveyInterpolator.swift */; };
+		979D903E64666C7BFA7EBA82 /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB0A732B64417000F67233E /* OUIParser.swift */; };
 		992E60935D5DACDEC32E2782 /* CustomFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C020D2AE565D957F374974CC /* CustomFilter.swift */; };
 		997C983A4012AEF957383CEF /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
 		9A65FCCCBAA960A7C663A87E /* LanFiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9751E1A8C39ED7C2C526084 /* LanFiApp.swift */; };
@@ -141,6 +142,7 @@
 		C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D486B1748C166298A6029AF /* ProtocolsView.swift */; };
 		CC433033E5281E7434455AEE /* SystemInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20608B23AE2BDC4528717865 /* SystemInterface.swift */; };
 		D029C59767AE2D08643E4B72 /* SidebarFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */; };
+		D235C5022147C44A42D9B1AD /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
 		D246F826EE82A96F508E2564 /* PcapAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AFF4059383E0D040E679A4 /* PcapAnalyzer.swift */; };
 		D52A4BFA4A6546C49A83356D /* TechnicalLocalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280C40BB390B3A307179E512 /* TechnicalLocalizerTests.swift */; };
 		D5537C10DA8C95E91D911916 /* PcapExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */; };
@@ -630,9 +632,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D235C5022147C44A42D9B1AD /* InformationElementParser.swift in Sources */,
 				D8DCBACCDAEF7BCA96BAF29A /* LanFiCLI.swift in Sources */,
 				DAFD3C961A424BEE3A7EB974 /* NetworkAnalyzer.swift in Sources */,
 				FC2AE35B4589B815662299A6 /* NetworkModel.swift in Sources */,
+				979D903E64666C7BFA7EBA82 /* OUIParser.swift in Sources */,
 				B60F6FE86786273CD8983865 /* PcapAnalyzer.swift in Sources */,
 				BFA03CF58B367BBBE7823AD7 /* ProtocolAnalyzer.swift in Sources */,
 				B08DEE6B41ACD75CDCB386DC /* ProtocolProfile.swift in Sources */,
