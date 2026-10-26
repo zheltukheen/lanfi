@@ -238,5 +238,12 @@ public issue tracker.
 
 [MIT](LICENSE) © 2025–2026 zheltukheen and LanFi contributors.
 
+Signed/notarized distribution is documented in [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
+
 Wi-Fi, WPA2 and WPA3 are trademarks of their respective owners. LanFi is not
 affiliated with Apple or the Wi-Fi Alliance.
+
+## Remote sensors
+
+Open **Data → Remote Sensors…**, add a Mac with Remote Login enabled and an
+authorized SSH key, then run a scan. Password prompts are not supported.
