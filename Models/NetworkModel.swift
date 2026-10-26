@@ -198,3 +198,34 @@ struct NetworkModel: Identifiable, Equatable, Codable {
         return "<Hidden>"
     }
 }
+
+extension NetworkModel {
+    /// Convenience initializer for offline imports, CLI and fixtures.
+    init(
+        summaryID: String,
+        bssid: String,
+        ssid: String,
+        band: WiFiBand,
+        channel: Int,
+        widthMHz: Int = 0,
+        generation: WiFiStandard = .unknown,
+        security: String,
+        signal: Int,
+        noise: Int? = nil,
+        vendor: String = "-"
+    ) {
+        self.init(
+            id: summaryID, bssid: bssid, ssid: ssid, band: band, channel: channel,
+            channelWidthMHz: widthMHz, generation: generation, security: security,
+            vendor: vendor, apName: nil, mode: "Infrastructure", signal: signal,
+            noise: noise, snr: nil, basicRates: nil, minBasicRate: nil,
+            maxBasicRate: nil, minRate: nil, maxRate: nil, centerFrequency: nil,
+            channelUtilization: nil, beaconInterval: nil, beaconRate: nil,
+            beaconAirtime: nil, beaconMode: nil, countryCode: nil,
+            fastTransition: nil, protectionMode: nil, stations: nil, clients: nil,
+            streams: nil, type: nil, wps: nil, wpsEnabled: nil, pmfRequired: nil,
+            ieCount: nil, ieTotalLength: nil, ratesEstimated: false,
+            informationElements: [], count: 1, firstSeen: Date(), lastSeen: Date()
+        )
+    }
+}

@@ -53,6 +53,16 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - In-app vendor database updates, crash diagnostics and release VM smoke tests.
 - CLI/JSON automation and filter/profile import-export.
 
+## Delivered in 2.0
+
+- Offline pcap/pcapng analysis and PCAPNG export.
+- Multi-select and bulk export, menu-bar alerts, filter profile import/export.
+- CLI (`lanfi-cli`), deep links and URL scheme.
+- Vendor database updater and custom OUI overrides.
+- Survey floor projects and PDF reports; throughput test.
+- Remote-sensor polling, diagnostics bundles and local crash logs.
+- Conditional Developer ID/notarization release pipeline and smoke tests.
+
 ## Delivered in 1.9
 
 - Persisted diagnostics history (last 12 reports) with restore/clear.

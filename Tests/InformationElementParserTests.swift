@@ -99,3 +99,23 @@ final class InformationElementParserTests: XCTestCase {
         [UInt8(type >> 8), UInt8(type & 0xFF), 0x00, UInt8(value.count)] + value
     }
 }
+
+final class EHTInformationElementTests: XCTestCase {
+    func testEhtOperationReports320MHz() throws {
+        // Element 255, extension 106, params, 4-byte MCS, control width=4.
+        let payload: [UInt8] = [106, 0x01, 0, 0, 0, 0, 0x04, 0x2A, 0x2A]
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name.contains("EHT Operation") })
+        XCTAssertTrue(element.summary.contains("320 MHz"))
+    }
+
+    func testEhtCapabilitiesIsDecoded() throws {
+        let payload: [UInt8] = [108] + Array(repeating: 0, count: 11)
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        XCTAssertTrue(parsed.elements.contains { $0.name.contains("EHT Capabilities") })
+    }
+}

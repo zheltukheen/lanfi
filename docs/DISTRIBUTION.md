@@ -43,9 +43,10 @@ Add these repository secrets when creating the first notarized release:
 | `APPLE_TEAM_ID` | Developer Team ID |
 | `APPLE_APP_PASSWORD` | App-specific password for notarytool |
 
-Import the certificate into a temporary keychain in the release job, then pass
-`CODESIGN_IDENTITY="$DEVELOPER_ID_IDENTITY"` to `./build.sh` and run
-`./scripts/notarize.sh` for the app and DMG before uploading assets.
+The release workflow now imports the `.p12` into a temporary keychain, builds
+with `CODESIGN_IDENTITY`, runs the headless smoke test, notarizes the app before
+packaging, notarizes the DMG after packaging, then writes checksums. If any of
+the required secrets are missing the release remains ad-hoc but still ships.
 
 ## Verification
 

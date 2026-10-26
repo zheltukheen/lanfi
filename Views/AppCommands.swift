@@ -193,6 +193,23 @@ struct LanFiCommands: Commands {
                 viewModel.exportPCAP()
             }
 
+            Button("Export PCAPNG (Synthetic Beacons)…") {
+                viewModel.exportPCAPNG()
+            }
+
+            Button("Analyze Packet Capture…") {
+                NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
+            }
+
+            Divider()
+
+            Button("Export Filter Profile…") {
+                viewModel.exportFilterProfile()
+            }
+            Button("Import Filter Profile…") {
+                viewModel.importFilterProfile()
+            }
+
             Button("Live Capture (PCAP)…") {
                 NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
             }

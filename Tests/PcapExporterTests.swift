@@ -45,3 +45,36 @@ final class PcapExporterTests: XCTestCase {
         XCTAssertTrue(frame.range(of: Data([0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])) != nil)
     }
 }
+
+final class PcapAnalyzerTests: XCTestCase {
+    func testParsesClassicPcapBeacon() throws {
+        let network = makeNetwork(
+            bssid: "00:11:22:33:44:55", ssid: "Offline", band: .band5, channel: 36
+        )
+        let data = PcapExporter.makeCapture(networks: [network])
+        let beacons = try PcapAnalyzer.parse(data: data)
+        let beacon = try XCTUnwrap(beacons.first)
+        XCTAssertEqual(beacon.ssid, "Offline")
+        XCTAssertEqual(beacon.bssid, "00:11:22:33:44:55")
+        XCTAssertEqual(beacon.channel, 36)
+        XCTAssertEqual(beacon.source, "pcap")
+    }
+
+    func testParsesPcapngBeacon() throws {
+        let network = makeNetwork(
+            bssid: "AA:BB:CC:DD:EE:FF", ssid: "Pcapng", band: .band24, channel: 6
+        )
+        let data = PcapExporter.makePcapngCapture(networks: [network])
+        XCTAssertEqual(data.prefix(4), Data([0x0A, 0x0D, 0x0D, 0x0A]))
+        let beacons = try PcapAnalyzer.parse(data: data)
+        let beacon = try XCTUnwrap(beacons.first)
+        XCTAssertEqual(beacon.ssid, "Pcapng")
+        XCTAssertEqual(beacon.bssid, "AA:BB:CC:DD:EE:FF")
+        XCTAssertEqual(beacon.channel, 6)
+        XCTAssertEqual(beacon.source, "pcapng")
+    }
+
+    func testRejectsUnknownCapture() {
+        XCTAssertThrowsError(try PcapAnalyzer.parse(data: Data("not a capture".utf8)))
+    }
+}

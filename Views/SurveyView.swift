@@ -46,6 +46,13 @@ struct SurveyView: View {
             }
             .controlSize(.small)
 
+            Button {
+                survey.exportPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+            } label: {
+                Label("PDF", systemImage: "doc.richtext")
+            }
+            .controlSize(.small)
+
             Button(role: .destructive) {
                 survey.clearSamples()
             } label: {
@@ -80,6 +87,27 @@ struct SurveyView: View {
             .disabled(survey.walls.isEmpty)
 
             Divider().frame(height: 20)
+
+            Picker(
+                "Floor",
+                selection: Binding(
+                    get: { survey.project.id },
+                    set: { survey.selectProject(id: $0) }
+                )
+            ) {
+                ForEach(survey.projects) { project in
+                    Text(project.name).tag(project.id)
+                }
+            }
+            .frame(minWidth: 130, maxWidth: 190)
+            .controlSize(.small)
+            Button {
+                survey.newFloor()
+            } label: {
+                Image(systemName: "plus.rectangle.on.rectangle")
+            }
+            .controlSize(.small)
+            .help("New floor")
 
             Picker("Network", selection: $survey.selectedNetworkId) {
                 Text("All networks").tag(String?.none)

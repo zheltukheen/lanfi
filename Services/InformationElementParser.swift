@@ -566,9 +566,38 @@ struct InformationElementParser {
                 name: "Extension: MU EDCA Parameter Set", summary: summary,
                 detailLines: ["MU EDCA Parameter Set: \(summary)"]
             )
+        case 106:
+            return decodeEhtOperation(Data(payload))
+        case 108:
+            return (
+                name: "Extension: EHT Capabilities",
+                summary: "EHT Capabilities (\(payload.count) bytes)",
+                detailLines: ["EHT Capabilities: \(hexString(Data(payload)))"]
+            )
         default:
             return (name: "Extension", summary: "Raw: \(hexString(data))", detailLines: ["Raw: \(hexString(data))"])
         }
+    }
+
+    private static func decodeEhtOperation(_ data: Data) -> (name: String, summary: String, detailLines: [String]) {
+        guard data.count >= 6 else {
+            return (
+                name: "Extension: EHT Operation",
+                summary: "EHT Operation (truncated)",
+                detailLines: ["EHT Operation: \(hexString(data))"]
+            )
+        }
+        let widthCode = data[5] & 0x07
+        let widths = [0: "20 MHz", 1: "40 MHz", 2: "80 MHz", 3: "160 MHz", 4: "320 MHz"]
+        let width = widths[Int(widthCode)] ?? "reserved"
+        return (
+            name: "Extension: EHT Operation",
+            summary: "EHT Operation · \(width)",
+            detailLines: [
+                "EHT Operation: channel width \(width)",
+                "EHT Operation parameters: 0x\(String(format: "%02X", data[0]))",
+            ]
+        )
     }
 
     private static func decodeHeCapabilities(_ data: Data) -> (summary: String, detailLines: [String]) {

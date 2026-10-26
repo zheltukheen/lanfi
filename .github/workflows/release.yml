@@ -17,6 +17,14 @@ jobs:
     name: Build and publish
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      HAS_SIGNING: ${{ secrets.DEVELOPER_ID_P12 != '' && secrets.DEVELOPER_ID_IDENTITY != '' && secrets.APPLE_ID != '' && secrets.APPLE_APP_PASSWORD != '' }}
+      DEVELOPER_ID_IDENTITY: ${{ secrets.DEVELOPER_ID_IDENTITY }}
+      DEVELOPER_ID_P12: ${{ secrets.DEVELOPER_ID_P12 }}
+      DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -24,6 +32,23 @@ jobs:
 
       - name: Toolchain
         run: xcodebuild -version
+
+      - name: Import Developer ID certificate
+        if: env.HAS_SIGNING == 'true'
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/lanfi-signing.keychain-db"
+          KEYCHAIN_PASSWORD="lanfi-actions"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$KEYCHAIN" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
+          security default-keychain -d user -s "$KEYCHAIN"
+          security find-identity -v -p codesigning "$KEYCHAIN"
 
       - name: Lint
         run: |
@@ -58,7 +83,16 @@ jobs:
           }
 
       - name: Build universal app
+        env:
+          CODESIGN_IDENTITY: ${{ env.DEVELOPER_ID_IDENTITY }}
         run: ./build.sh
+
+      - name: Release smoke test
+        run: ./scripts/release_smoke_test.sh build/LanFi-Universal/LanFi.app
+
+      - name: Notarize app
+        if: env.HAS_SIGNING == 'true'
+        run: ./scripts/notarize.sh app build/LanFi-Universal/LanFi.app
 
       - name: Package
         run: |
@@ -79,10 +113,36 @@ jobs:
             -ov -format UDZO \
             "build/dist/LanFi-${VERSION}.dmg"
 
+      - name: Notarize DMG
+        if: env.HAS_SIGNING == 'true'
+        run: ./scripts/notarize.sh dmg "build/dist/LanFi-${GITHUB_REF_NAME#v}.dmg"
+
+      - name: Checksums
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
           cd build/dist
           shasum -a 256 "LanFi-${VERSION}.zip" > "LanFi-${VERSION}.sha256"
           shasum -a 256 "LanFi-${VERSION}.dmg" >> "LanFi-${VERSION}.sha256"
           cat "LanFi-${VERSION}.sha256"
+
+      - name: Build CLI
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -project LanFi.xcodeproj \
+            -scheme lanfi-cli \
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+          CLI="$(find build/DerivedData/Build/Products/Release -maxdepth 1 -name lanfi-cli -type f | head -1)"
+          "$CLI" help
+          mkdir -p build/dist/cli
+          cp "$CLI" build/dist/cli/lanfi-cli
+          VERSION="${GITHUB_REF_NAME#v}"
+          cd build/dist
+          zip -q "LanFi-CLI-${VERSION}.zip" cli/lanfi-cli
+          shasum -a 256 "LanFi-CLI-${VERSION}.zip" >> "LanFi-${VERSION}.sha256"
 
       - name: Generate release notes
         run: python3 scripts/release_notes.py
@@ -146,4 +206,5 @@ jobs:
             build/dist/LanFi-*.zip
             build/dist/LanFi-*.dmg
             build/dist/LanFi-*.sha256
+            build/dist/LanFi-CLI-*.zip
             build/dist/appcast.xml

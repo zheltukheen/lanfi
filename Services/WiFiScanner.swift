@@ -34,7 +34,9 @@ actor WiFiScanner {
 
     private static func performScan() throws -> [NetworkModel] {
         let client = CWWiFiClient.shared()
-        guard let interface = client.interface() else {
+        let preferred = UserDefaults.standard.string(forKey: "Wifa.wifiInterface")
+        let interface = preferred.flatMap { client.interface(withName: $0) } ?? client.interface()
+        guard let interface else {
             throw WiFiError.interfaceNotFound
         }
         guard interface.powerOn() else {
@@ -294,5 +296,11 @@ actor WiFiScanner {
         let beaconsPerSecond = 1000.0 / Double(beaconInterval)
         let airtimePerSecondMs = airtimeMs * beaconsPerSecond
         return airtimePerSecondMs > 0 ? airtimePerSecondMs : nil
+    }
+}
+
+enum WiFiInterfaceCatalog {
+    static func names() -> [String] {
+        (CWWiFiClient.shared().interfaceNames() ?? []).sorted()
     }
 }

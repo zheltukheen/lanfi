@@ -45,7 +45,7 @@ struct WiFiTableView: NSViewRepresentable {
         tableView.headerView?.menu = headerMenu
 
         tableView.allowsEmptySelection = true
-        tableView.allowsMultipleSelection = false
+        tableView.allowsMultipleSelection = true
         tableView.setAccessibilityLabel("Wi-Fi networks")
 
         let rowMenu = NSMenu()
@@ -161,7 +161,8 @@ struct WiFiTableView: NSViewRepresentable {
     }
 
     private func restoreSelection(in tableView: NSTableView, coordinator: Coordinator) {
-        guard let selectedId = viewModel.selectedNetworkId else {
+        let ids = viewModel.selectedNetworkIds
+        guard !ids.isEmpty else {
             if tableView.selectedRow >= 0 {
                 coordinator.isUpdatingSelection = true
                 tableView.deselectAll(nil)
@@ -170,19 +171,25 @@ struct WiFiTableView: NSViewRepresentable {
             return
         }
 
-        if let index = viewModel.tableRows.firstIndex(where: { $0.network?.id == selectedId }) {
-            if tableView.selectedRow != index {
-                coordinator.isUpdatingSelection = true
-                tableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
-                tableView.scrollRowToVisible(index)
-                coordinator.isUpdatingSelection = false
+        let indexes = IndexSet(
+            viewModel.tableRows.enumerated().compactMap { index, row in
+                guard let network = row.network, ids.contains(network.id) else { return nil }
+                return index
             }
-        } else {
+        )
+        guard !indexes.isEmpty else {
             if tableView.selectedRow >= 0 {
                 coordinator.isUpdatingSelection = true
                 tableView.deselectAll(nil)
                 coordinator.isUpdatingSelection = false
             }
+            return
+        }
+        if tableView.selectedRowIndexes != indexes {
+            coordinator.isUpdatingSelection = true
+            tableView.selectRowIndexes(indexes, byExtendingSelection: false)
+            if let first = indexes.first { tableView.scrollRowToVisible(first) }
+            coordinator.isUpdatingSelection = false
         }
     }
 
@@ -282,21 +289,21 @@ struct WiFiTableView: NSViewRepresentable {
 
         func tableViewSelectionDidChange(_ notification: Notification) {
             guard !isUpdatingSelection, let tableView = notification.object as? NSTableView else { return }
-            let row = tableView.selectedRow
+            let ids = Set(
+                tableView.selectedRowIndexes.compactMap { index -> String? in
+                    guard index >= 0, index < parent.viewModel.tableRows.count else { return nil }
+                    return parent.viewModel.tableRows[index].network?.id
+                }
+            )
+            let primaryIndex = tableView.clickedRow >= 0 ? tableView.clickedRow : tableView.selectedRow
+            let primary =
+                primaryIndex >= 0 && primaryIndex < parent.viewModel.tableRows.count
+                ? parent.viewModel.tableRows[primaryIndex].network?.id
+                : nil
 
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                if row >= 0, row < self.parent.viewModel.tableRows.count,
-                    let net = self.parent.viewModel.tableRows[row].network
-                {
-                    if self.parent.viewModel.selectedNetworkId != net.id {
-                        self.parent.viewModel.selectedNetworkId = net.id
-                    }
-                } else {
-                    if self.parent.viewModel.selectedNetworkId != nil {
-                        self.parent.viewModel.selectedNetworkId = nil
-                    }
-                }
+                self.parent.viewModel.setSelection(ids: ids, primary: primary)
             }
         }
 

@@ -6,6 +6,7 @@ import SwiftUI
 
 struct SpectrumView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedBand: WiFiBand = .band5
 
@@ -67,7 +68,7 @@ struct SpectrumView: View {
                         )
                     }
                 }
-                .animation(.easeInOut(duration: 0.5), value: viewModel.networks)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.5), value: viewModel.networks)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Spectrum for \(effectiveBand.label), \(networks.count) networks")
                 .accessibilityValue(
