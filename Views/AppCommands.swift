@@ -13,7 +13,7 @@ struct LanFiCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About LanFi") {
-                showAboutPanel()
+                openWindow(id: "about")
             }
             Button("Check for Updates…") {
                 updater.checkForUpdates()
@@ -68,7 +68,7 @@ struct LanFiCommands: Commands {
             .keyboardShortcut("f")
         }
 
-        CommandMenu("Display") {
+        CommandMenu("Layout") {
             Picker("Group By", selection: $viewModel.groupMode) {
                 ForEach(NetworkGroupMode.allCases) { mode in
                     Text(mode.title).tag(mode)
@@ -189,18 +189,15 @@ struct LanFiCommands: Commands {
                 viewModel.importFilterProfile()
             }
         }
-    }
 
-    private func showAboutPanel() {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
-        let credits = NSAttributedString(
-            string: "Native macOS Wi‑Fi Analyzer\n© 2026 LanFi Contributors\nAuthor: zheltukheen")
-
-        NSApp.orderFrontStandardAboutPanel(options: [
-            NSApplication.AboutPanelOptionKey.applicationName: "LanFi",
-            NSApplication.AboutPanelOptionKey.applicationVersion: "Version \(version) (\(build))",
-            NSApplication.AboutPanelOptionKey.credits: credits,
-        ])
+        CommandGroup(replacing: .help) {
+            Button("LanFi Help") {
+                openWindow(id: "help")
+            }
+            .keyboardShortcut("?", modifiers: [.command])
+            Button("Keyboard Shortcuts") {
+                openWindow(id: "help")
+            }
+        }
     }
 }

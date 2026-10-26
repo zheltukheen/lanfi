@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.5.3 — 2026-10-26
+
+### Added
+- Dedicated branded **About LanFi** window with app icon, version, feature
+  summary, links and ad-hoc signing disclosure.
+- Searchable **LanFi Help** window with 10 topics (English/Russian), keyboard
+  shortcut reference and README/issue links.
+- Help menu entry (⌘?) and About menu entry now open these windows.
+
+### Changed
+- Renamed the custom Display menu to Layout to avoid colliding with the
+  system-localized View menu.
+- Help sidebar width increased for long topic names.
+
+
 ## 2.5.2 — 2026-10-26
 
 ### Changed

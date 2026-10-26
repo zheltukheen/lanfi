@@ -72,6 +72,16 @@ struct LanFiApp: App {
             SurveyView(analyzer: viewModel, survey: survey)
         }
 
+        Window("About LanFi", id: "about") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
+
+        Window("LanFi Help", id: "help") {
+            HelpView()
+        }
+        .defaultSize(width: 900, height: 620)
+
         Settings {
             SettingsView()
                 .environmentObject(updater)
