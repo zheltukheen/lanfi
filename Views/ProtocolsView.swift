@@ -39,8 +39,8 @@ struct ProtocolsView: View {
                     alignment: .leading,
                     spacing: 10
                 ) {
-                    ForEach(profile.blocks) { block in
-                        ProtocolBlockCard(block: block, band: profile.band)
+                    ForEach(Array(profile.blocks.enumerated()), id: \.element.id) { index, block in
+                        ProtocolBlockCard(block: block, index: index + 1, band: profile.band)
                     }
                 }
             }
@@ -51,6 +51,9 @@ struct ProtocolsView: View {
     private func protocolHeader(_ profile: ProtocolProfile) -> some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
+                Label("Selected network", systemImage: "cursorarrow.click")
+                    .font(.caption2.bold())
+                    .foregroundColor(.accentColor)
                 HStack(spacing: 8) {
                     Text(profile.title)
                         .font(.title3.bold())
@@ -117,6 +120,16 @@ struct ProtocolsView: View {
     private var overviewContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Protocols overview")
+                        .font(.headline)
+                    Text(
+                        "All \(coverage.networkCount) visible networks are summarised here. Select a row to inspect one network in six protocol blocks."
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
+
                 HStack(spacing: 10) {
                     coverageCard("Networks", value: "\(coverage.networkCount)", tint: .accentColor)
                     coverageCard("6 GHz", value: "\(coverage.sixGHzCount)", tint: .purple)
@@ -204,9 +217,11 @@ struct ProtocolsView: View {
                         .foregroundColor(tint)
                 }
             }
+
+            Spacer(minLength: 0)
         }
         .padding(10)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 318, maxHeight: 318, alignment: .topLeading)
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.12), lineWidth: 1))
@@ -234,11 +249,15 @@ struct ProtocolsView: View {
 
 private struct ProtocolBlockCard: View {
     let block: ProtocolBlock
+    let index: Int
     let band: WiFiBand
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 7) {
+                Text(String(format: "%02d", index))
+                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .foregroundColor(.secondary)
                 Image(systemName: block.systemImage)
                     .foregroundColor(statusColor)
                     .frame(width: 18)
@@ -258,7 +277,7 @@ private struct ProtocolBlockCard: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 6) {
-                ForEach(block.facts) { fact in
+                ForEach(block.facts.prefix(6)) { fact in
                     HStack(alignment: .top, spacing: 7) {
                         Circle()
                             .fill(factColor(fact.status))
@@ -281,9 +300,11 @@ private struct ProtocolBlockCard: View {
                     }
                 }
             }
+
+            Spacer(minLength: 0)
         }
         .padding(10)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 318, maxHeight: 318, alignment: .topLeading)
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 9))
         .overlay(

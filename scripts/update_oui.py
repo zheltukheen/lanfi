@@ -2,7 +2,7 @@
 """Build Resources/oui from the IEEE registries and the Wireshark manuf file.
 
 The database stores 24-bit (MA-L), 28-bit (MA-M) and 36-bit (MA-S) prefixes so
-WiFA can resolve an access point's vendor as precisely as the registries allow.
+LanFi can resolve an access point's vendor as precisely as the registries allow.
 Longest-prefix matching happens in Utils/OUIParser.swift.
 
 Usage:
@@ -49,7 +49,7 @@ SKIP_VENDORS = {
 
 
 def fetch(url: str) -> str:
-    request = Request(url, headers={"User-Agent": "WiFA-OUI-Updater/2.0"})
+    request = Request(url, headers={"User-Agent": "LanFi-OUI-Updater/2.0"})
     with urlopen(request, timeout=90) as response:
         return response.read().decode("utf-8", errors="ignore")
 

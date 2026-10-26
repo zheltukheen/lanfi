@@ -3,7 +3,7 @@
 _Last researched: 2026-10-26. Prices and feature sets change; verify before
 quoting externally._
 
-WiFA already goes beyond most free analyzers on **interpretation**: a 0–100
+LanFi already goes beyond most free analyzers on **interpretation**: a 0–100
 quality score, ranked channel recommendations, and a WPA3/OWE/PMF/WPS security
 audit with remediation. The remaining gap to paid desktop tools is mostly
 **workflow, distribution and survey features**, not raw scanning.
@@ -12,7 +12,7 @@ audit with remediation. The remaining gap to paid desktop tools is mostly
 
 | Product | Positioning | Notable capabilities | Typical price |
 | --- | --- | --- | --- |
-| **WiFA** | Free, open-source, privacy-first macOS analyzer | Quality/congestion scores, ranked 2.4/5/6 GHz channels, security audit, IE decoding, CSV/JSON, menu bar, 58k-prefix OUI DB | Free (MIT) |
+| **LanFi** | Free, open-source, privacy-first macOS analyzer | Quality/congestion scores, ranked 2.4/5/6 GHz channels, security audit, IE decoding, CSV/JSON, menu bar, 58k-prefix OUI DB | Free (MIT) |
 | **WiFi Explorer Pro 3** (macOS) | Prosumer/IT analyzer | 950+ fields, grouping and column profiles, remote sensors (SSH/WLAN Pi), PCAP/PCAPNG, hardware spectrum, MLO/Wi-Fi 7 details, AP-name detection, vendor DB updates, 5 languages, notarized | ~$100–150 one-time |
 | **WiFi Explorer** (macOS) | Mainstream Mac analyzer | Fast scan, filters, details, 6 GHz, clean native UI, notarized | ~$20 one-time |
 | **NetSpot** | Heatmaps/site surveys | Floor-plan import, walking surveys, heatmaps, reports | Free tier; ~$19/mo or ~$179 one-time |
@@ -28,7 +28,7 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 [Acrylic Wi-Fi](https://www.acrylicwifi.com/), [Homedale](https://www.the-sz.com/products/homedale/),
 [Ekahau](https://www.ookla.com/ekahau), [Unstore 2026 comparison](https://unstore.io/discover/best-wifi-analyzer-apps-desktop).
 
-## Where WiFA stands
+## Where LanFi stands
 
 **Ahead of the market**
 - Graded security findings (critical/warning/info) with remediation text.
@@ -51,6 +51,14 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Remote sensors, external adapters, heatmaps/site surveys, spectrum hardware.
 - Full localization, VoiceOver coverage, Windows parity (out of scope for now).
 - In-app vendor database updates and crash diagnostics.
+
+## Delivered in 1.6
+
+- Renamed the product to **LanFi** (bundle id retained for update continuity).
+- Reorganized the bottom panel into Overview/RF/Network/Troubleshoot categories.
+- Made Insights scope explicit ("all visible networks" + connected network).
+- Clarified Protocols as selected-network analysis; fixed card heights and order.
+- New bold LanFi icon and higher default bottom panel.
 
 ## Delivered in 1.5
 
@@ -91,7 +99,7 @@ be delivered and verified end-to-end.
 | In-app vendor DB updater + custom OUI overrides | Wi-Fi vendor data changes weekly; no app release needed | S |
 
 **Exit criteria:** a consultant can group, annotate, save, export and hand off a
-scan without leaving WiFA.
+scan without leaving LanFi.
 
 ### 1.6 — Workflow and reach
 
@@ -126,7 +134,7 @@ A credible commercial competitor in 2026 needs all of the following:
 - [~] Russian primary UI + VoiceOver summaries (full localization pending)
 - [~] Survey-lite heatmap (remote sensors and interpolation pending)
 
-WiFA covers the first three. The roadmap above closes the rest in value order;
+LanFi covers the first three. The roadmap above closes the rest in value order;
 1.4 and 1.5 are the minimum for “commercial parity minus surveys”.
 
 ## Non-goals

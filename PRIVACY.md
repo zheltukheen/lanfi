@@ -1,16 +1,16 @@
 # Privacy
 
-WiFA is a local-first macOS utility. It does not include analytics, crash
+LanFi is a local-first macOS utility. It does not include analytics, crash
 reporting, advertising, accounts, or any network telemetry.
 
-## What WiFA accesses
+## What LanFi accesses
 
 - **Wi-Fi scan results** (SSID, BSSID, RSSI, channel, information elements) via
   Apple's public CoreWLAN framework. These exist only in memory while the app
   is running.
 - **Location Services authorization**, required by macOS before it reveals
-  SSID/BSSID values to an application. WiFA requests *always* authorization
-  because CoreWLAN exposes the data through that permission. WiFA does not
+  SSID/BSSID values to an application. LanFi requests *always* authorization
+  because CoreWLAN exposes the data through that permission. LanFi does not
   request, read, or store geographic coordinates, and no location data leaves
   the Mac.
 - **UserDefaults** to remember window layout, column configuration, refresh
@@ -18,7 +18,7 @@ reporting, advertising, accounts, or any network telemetry.
 
 ## Network requests
 
-WiFA makes only these outbound requests:
+LanFi makes only these outbound requests:
 
 - **Sparkle update check** to `github.com` for the signed `appcast.xml` and, if
   you accept an update, the release archive. No identifiers are added.
@@ -29,11 +29,11 @@ WiFA makes only these outbound requests:
 
 There is no telemetry, cloud sync, remote logging or third-party analytics SDK.
 Exports (CSV/JSON/PCAP) and saved sessions/annotations/surveys are written only
-to local paths you choose or to WiFA's Application Support directory.
+to local paths you choose or to LanFi's Application Support directory.
 
 ## Data retention
 
-Scan data is kept in memory and discarded when WiFA quits, unless you explicitly
+Scan data is kept in memory and discarded when LanFi quits, unless you explicitly
 save a session, annotation or survey. Preferences and saved files remain on your
 Mac until you remove them (the Homebrew cask `zap` stanza removes them).
 

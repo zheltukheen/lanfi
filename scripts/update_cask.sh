@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 
 VERSION="${1:-}"
 SHA256="${2:-}"
-CASK="Casks/wifa.rb"
+CASK="Casks/lanfi.rb"
 
 if [ -z "$VERSION" ] || [ -z "$SHA256" ]; then
     echo "Usage: ./scripts/update_cask.sh <version> <dmg-sha256>" >&2

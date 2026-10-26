@@ -1,3 +1,14 @@
+/* Bottom panel categories */
+"OVERVIEW" = "ОБЗОР";
+"RF" = "РАДИО";
+"NETWORK" = "СЕТЬ";
+"TROUBLESHOOT" = "ДИАГНОСТИКА";
+"All visible networks" = "Все видимые сети";
+"These insights cover the whole scan. Use the inspector or Protocols tab for one network." = "Эти данные охватывают весь скан. Для одной сети используйте инспектор или вкладку Protocols.";
+"No active connection" = "Нет активного подключения";
+"Selected network" = "Выбранная сеть";
+"Protocols overview" = "Обзор протоколов";
+
 /* Navigation */
 "Insights" = "Анализ";
 "Spectrum" = "Спектр";
@@ -40,9 +51,9 @@
 "Open Session…" = "Открыть сессию…";
 "Resume Live Scan" = "Вернуться к живому сканированию";
 "Check for Updates…" = "Проверить обновления…";
-"About WiFA" = "О WiFA";
-"Quit WiFA" = "Завершить WiFA";
-"Open WiFA" = "Открыть WiFA";
+"About LanFi" = "О LanFi";
+"Quit LanFi" = "Завершить LanFi";
+"Open LanFi" = "Открыть LanFi";
 "Open Site Survey" = "Открыть обследование";
 "Import Floor Plan" = "Импортировать план";
 "Save" = "Сохранить";

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# autopush.sh — keep the WiFA GitHub repository in sync automatically.
+# autopush.sh — keep the LanFi GitHub repository in sync automatically.
 #
 # Modes:
 #   ./scripts/autopush.sh                  commit meaningful local changes and push
@@ -26,7 +26,7 @@ BRANCH="${AUTOPUSH_BRANCH:-main}"
 QUIET="${AUTOPUSH_QUIET:-90}"
 INTERVAL="${AUTOPUSH_INTERVAL:-5}"
 DRY_RUN="${AUTOPUSH_DRY_RUN:-0}"
-HOOK_MARKER="# WiFA autopush hook"
+HOOK_MARKER="# LanFi autopush hook"
 HOOK_PATH=""
 
 log() { printf '[autopush] %s\n' "$*"; }

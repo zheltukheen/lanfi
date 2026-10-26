@@ -19,11 +19,11 @@ Include:
 - a proof of concept if available.
 
 You can expect an acknowledgement within 72 hours and a coordinated disclosure
-timeline. WiFA has no server component and collects no telemetry, so most
+timeline. LanFi has no server component and collects no telemetry, so most
 reports will concern local parsing, file export, or macOS permissions.
 
 ## Scope
 
-In scope: the WiFA application, build scripts and GitHub workflows in this
+In scope: the LanFi application, build scripts and GitHub workflows in this
 repository. Out of scope: vulnerabilities in macOS, CoreWLAN, Xcode, or
 third-party services used by GitHub.

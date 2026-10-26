@@ -20,18 +20,24 @@ struct NetworkAnnotation: Codable, Equatable {
 
 final class AnnotationStore {
     private let fileURL: URL
-    private let queue = DispatchQueue(label: "ru.zheltukheen.WiFA.annotations")
+    private let queue = DispatchQueue(label: "ru.zheltukheen.LanFi.annotations")
     private var saveWorkItem: DispatchWorkItem?
 
     private(set) var annotations: [String: NetworkAnnotation]
 
     init(directory: URL? = nil) {
-        let base =
-            directory
-            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("WiFA", isDirectory: true)
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let base = directory ?? support.appendingPathComponent("LanFi", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         fileURL = base.appendingPathComponent("annotations.json")
+
+        // Preserve annotations created before the LanFi rename.
+        let legacy = support.appendingPathComponent("WiFA/annotations.json")
+        if !FileManager.default.fileExists(atPath: fileURL.path),
+            FileManager.default.fileExists(atPath: legacy.path)
+        {
+            try? FileManager.default.copyItem(at: legacy, to: fileURL)
+        }
         annotations = Self.load(from: fileURL)
     }
 

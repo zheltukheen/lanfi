@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-struct WiFACommands: Commands {
+struct LanFiCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     @ObservedObject var viewModel: AnalyzerViewModel
@@ -11,7 +11,7 @@ struct WiFACommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
-            Button("About WiFA") {
+            Button("About LanFi") {
                 showAboutPanel()
             }
             Button("Check for Updates…") {
@@ -104,8 +104,8 @@ struct WiFACommands: Commands {
                 Text("Insights").tag(0)
                 Text("Spectrum").tag(1)
                 Text("History").tag(2)
-                Text("Raw Data").tag(3)
-                Text("Protocols").tag(4)
+                Text("Protocols").tag(3)
+                Text("Raw Data").tag(4)
                 Text("Diagnostics").tag(5)
             }
 
@@ -117,9 +117,9 @@ struct WiFACommands: Commands {
                 .keyboardShortcut("2", modifiers: [.command])
             Button("Show History") { uiState.selectedBottomTab = 2 }
                 .keyboardShortcut("3", modifiers: [.command])
-            Button("Show Raw Data") { uiState.selectedBottomTab = 3 }
+            Button("Show Protocols") { uiState.selectedBottomTab = 3 }
                 .keyboardShortcut("4", modifiers: [.command])
-            Button("Show Protocols") { uiState.selectedBottomTab = 4 }
+            Button("Show Raw Data") { uiState.selectedBottomTab = 4 }
                 .keyboardShortcut("5", modifiers: [.command])
             Button("Show Diagnostics") { uiState.selectedBottomTab = 5 }
                 .keyboardShortcut("6", modifiers: [.command])
@@ -184,10 +184,10 @@ struct WiFACommands: Commands {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
         let credits = NSAttributedString(
-            string: "Native macOS Wi‑Fi Analyzer\n© 2026 WiFA Contributors\nAuthor: zheltukheen")
+            string: "Native macOS Wi‑Fi Analyzer\n© 2026 LanFi Contributors\nAuthor: zheltukheen")
 
         NSApp.orderFrontStandardAboutPanel(options: [
-            NSApplication.AboutPanelOptionKey.applicationName: "WiFA",
+            NSApplication.AboutPanelOptionKey.applicationName: "LanFi",
             NSApplication.AboutPanelOptionKey.applicationVersion: "Version \(version) (\(build))",
             NSApplication.AboutPanelOptionKey.credits: credits,
         ])

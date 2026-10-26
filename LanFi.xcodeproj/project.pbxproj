@@ -1,0 +1,719 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		02F564797A4737ABA1C62CD4 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C668C45805BE620587A4C21 /* AppCommands.swift */; };
+		096C32C22F17A43A7964FD40 /* NetworkColumnFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */; };
+		1553D68492677966F2C1DDBF /* ProtocolProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */; };
+		15C122DF91B199970BEC161B /* oui in Resources */ = {isa = PBXBuildFile; fileRef = 6F2AFA70627054823768D660 /* oui */; };
+		16D02A332CA9E208F31CB1A8 /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
+		18B1511F8FC314D12791E073 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A182714C038138461289B /* MenuBarView.swift */; };
+		19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23E9DF192173EEBD466621A /* ColumnCatalog.swift */; };
+		270CFF52C9C727A9ACB7E6DC /* MainTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34AD44DBB07BC1BB913826E /* MainTableView.swift */; };
+		27B946813F3D2B8C4632914B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D368881E2DEB581D710828AE /* PrivacyInfo.xcprivacy */; };
+		30F8A7623A9EC47D36E35653 /* RawDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91900D72A9CC042601EC0C7C /* RawDataView.swift */; };
+		342C3649806ECE78FDD894D1 /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1002A4F0143646CB9EF6A42 /* ScanSession.swift */; };
+		3A990E992BA05E58A3660FBD /* SurveyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EECC86AC4031596CE3DFC3 /* SurveyTests.swift */; };
+		3AEA3FCF4941A7AFDD261FCC /* DiagnosticsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */; };
+		3C4129BF2791C83851FE20B6 /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
+		3E683683B0D3F663C66234DB /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC59D32F77002751B3EBB790 /* LocationManager.swift */; };
+		4ADB4161FC54C42691A05E26 /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1335A7BFB3791419C177D1B /* SessionTests.swift */; };
+		4C0808FF17864193C9DAFEF7 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */; };
+		53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
+		59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
+		5CAF3FE4F11BCD65CA2004F1 /* NetworkAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */; };
+		5EE7172570E8A9EFB461DCB6 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */; };
+		5EFE518555377023C5EF85AE /* NetworkGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */; };
+		5F2033806533879194D749C7 /* ColumnCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23E9DF192173EEBD466621A /* ColumnCatalog.swift */; };
+		60B784BD118E53F1658524C7 /* NetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */; };
+		63030EDF0AB7C7EBFC2C1838 /* NetworkGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */; };
+		63AE48290D6297384E9A2A39 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */; };
+		64F07FC9BAEDF6CF3A04BB61 /* NetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */; };
+		6500C6EDE50D8FE6ED2DA7CB /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB0A732B64417000F67233E /* OUIParser.swift */; };
+		6C53527A6CFCCB7C1F5A51E3 /* SpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F250B2C1D615077EC1A92B0E /* SpectrumView.swift */; };
+		6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */; };
+		6EC14A40FFD09C70E2496B45 /* NetworkGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */; };
+		6F1E84A4F606560CDBE5019F /* DiagnosticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */; };
+		8098AE614F87EFD37D52A707 /* AnnotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */; };
+		8A566DC0965253A4A677EF9C /* SurveyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */; };
+		8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54545FDFE743E9E0AD7B4553 /* DiagnosticsView.swift */; };
+		8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F284D3055FA72E1197279C47 /* AppUIState.swift */; };
+		8F33E69C2D666B37F261CEE1 /* NetworkAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */; };
+		955F735ACDFBAFD541C469C9 /* TableCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F5CE72100DE88434ACFFF7 /* TableCells.swift */; };
+		997C983A4012AEF957383CEF /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
+		9A65FCCCBAA960A7C663A87E /* LanFiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9751E1A8C39ED7C2C526084 /* LanFiApp.swift */; };
+		9E163D0F01C427902FC8A9FA /* WiFiScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4E536F1E321D433C834C41 /* WiFiScanner.swift */; };
+		A1E3C52CFFB4B7BE766E01D2 /* NetworkColumnFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */; };
+		A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687874D5350B989C31061197 /* DiagnosticsTests.swift */; };
+		A71453AA5540760662F17737 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 54D6771B7C5FC5CC8C9B887A /* Localizable.strings */; };
+		A8069A49C53DABB0DB253387 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9EF9C5F85D2F561B74DB852E /* InfoPlist.strings */; };
+		A862642AA20FB3C72F423930 /* DiagnosticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */; };
+		AE63074E60A93D7CF851D661 /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
+		AE71876A0AF8AE300753BEF6 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D738C591A8707E4A7316C0 /* UpdaterController.swift */; };
+		B5FB900DC70AB04096915C6F /* InformationElementParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */; };
+		B83C4C6309BB2B9A0F4A5179 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 544BCF73F96E99C5CFCA5728 /* Sparkle */; };
+		BFFC6CE6F7691DE2140BCC72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A523B096357134ADAD3A2442 /* Assets.xcassets */; };
+		C2BA409446C06082FD4B574C /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB0A732B64417000F67233E /* OUIParser.swift */; };
+		C31F9BE12C97FC55EB78488F /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1002A4F0143646CB9EF6A42 /* ScanSession.swift */; };
+		C78DE2401AD4AFD73A13B62F /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0745B6A062696C94CF715558 /* InsightsView.swift */; };
+		C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D486B1748C166298A6029AF /* ProtocolsView.swift */; };
+		D029C59767AE2D08643E4B72 /* SidebarFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */; };
+		D5537C10DA8C95E91D911916 /* PcapExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */; };
+		D77AB7A3C4DBF43E63FAFE44 /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
+		D7C7ADF67713E3586A83AF2A /* OUIParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0199BFE1A054037863D28285 /* OUIParserTests.swift */; };
+		DB2AC9503743CA5E1E17CF6C /* ProtocolAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */; };
+		DBA254C5682AAE9B5E7C5B3E /* ProtocolProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */; };
+		E28BF0B44751A1C4B7BBEE58 /* ColumnCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */; };
+		E5A9CB7DE26E07DD53CE0578 /* SignalHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */; };
+		E72C15A389C39001C6B92E4A /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
+		E74FA2996C24893BB9A680C2 /* DiagnosticsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */; };
+		E82F82092EFD25CD3FEC4142 /* NetworkAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */; };
+		EEFE937D6AB642E5E8C9B79F /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
+		F10DC9BE92DD6E2326F6288E /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
+		F6F5BA6DE53C47BD40D2F569 /* WiFiTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5429E87C67B2ED203E194F1A /* WiFiTableView.swift */; };
+		F6F8AF3652EA31397B4DE0B4 /* SurveyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3560EFA84AE4D6AC3614B54 /* SurveyView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0199BFE1A054037863D28285 /* OUIParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIParserTests.swift; sourceTree = "<group>"; };
+		0745B6A062696C94CF715558 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		0AB0A732B64417000F67233E /* OUIParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIParser.swift; sourceTree = "<group>"; };
+		0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolAnalyzerTests.swift; sourceTree = "<group>"; };
+		10F5CE72100DE88434ACFFF7 /* TableCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCells.swift; sourceTree = "<group>"; };
+		171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkGroupingTests.swift; sourceTree = "<group>"; };
+		175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkGrouping.swift; sourceTree = "<group>"; };
+		191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsModel.swift; sourceTree = "<group>"; };
+		1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolProfile.swift; sourceTree = "<group>"; };
+		2C668C45805BE620587A4C21 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
+		36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
+		43889DE9E5A131FBE2527D7A /* LanFi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LanFi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnalyzer.swift; sourceTree = "<group>"; };
+		5429E87C67B2ED203E194F1A /* WiFiTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiTableView.swift; sourceTree = "<group>"; };
+		54545FDFE743E9E0AD7B4553 /* DiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsView.swift; sourceTree = "<group>"; };
+		54D6771B7C5FC5CC8C9B887A /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		55EECC86AC4031596CE3DFC3 /* SurveyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyTests.swift; sourceTree = "<group>"; };
+		5D4A182714C038138461289B /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		648FEFFCCE62F69288760DDB /* PcapExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcapExporter.swift; sourceTree = "<group>"; };
+		687874D5350B989C31061197 /* DiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsTests.swift; sourceTree = "<group>"; };
+		6F2AFA70627054823768D660 /* oui */ = {isa = PBXFileReference; path = oui; sourceTree = "<group>"; };
+		7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParserTests.swift; sourceTree = "<group>"; };
+		7D486B1748C166298A6029AF /* ProtocolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolsView.swift; sourceTree = "<group>"; };
+		8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkColumnFormatter.swift; sourceTree = "<group>"; };
+		91900D72A9CC042601EC0C7C /* RawDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataView.swift; sourceTree = "<group>"; };
+		957F50461891605F6C31319B /* Survey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Survey.swift; sourceTree = "<group>"; };
+		A523B096357134ADAD3A2442 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnnotation.swift; sourceTree = "<group>"; };
+		AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHistoryView.swift; sourceTree = "<group>"; };
+		B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnCatalogTests.swift; sourceTree = "<group>"; };
+		B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsViewModel.swift; sourceTree = "<group>"; };
+		B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationTests.swift; sourceTree = "<group>"; };
+		B9751E1A8C39ED7C2C526084 /* LanFiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanFiApp.swift; sourceTree = "<group>"; };
+		BE4E536F1E321D433C834C41 /* WiFiScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiScanner.swift; sourceTree = "<group>"; };
+		BF3B253B251CEBF891065826 /* LanFiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LanFiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C23E9DF192173EEBD466621A /* ColumnCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnCatalog.swift; sourceTree = "<group>"; };
+		C93F615B00753F1F4577B061 /* InformationElementParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParser.swift; sourceTree = "<group>"; };
+		CC59D32F77002751B3EBB790 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsEngine.swift; sourceTree = "<group>"; };
+		D368881E2DEB581D710828AE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D434AE2398E571E7D0231BB3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		D4C531AD9B5EB82679A4AE71 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyViewModel.swift; sourceTree = "<group>"; };
+		E1335A7BFB3791419C177D1B /* SessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
+		E34AD44DBB07BC1BB913826E /* MainTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableView.swift; sourceTree = "<group>"; };
+		E3560EFA84AE4D6AC3614B54 /* SurveyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyView.swift; sourceTree = "<group>"; };
+		E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalDisplayMode.swift; sourceTree = "<group>"; };
+		E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolAnalyzer.swift; sourceTree = "<group>"; };
+		F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkModel.swift; sourceTree = "<group>"; };
+		F1002A4F0143646CB9EF6A42 /* ScanSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanSession.swift; sourceTree = "<group>"; };
+		F250B2C1D615077EC1A92B0E /* SpectrumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrumView.swift; sourceTree = "<group>"; };
+		F284D3055FA72E1197279C47 /* AppUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUIState.swift; sourceTree = "<group>"; };
+		F4D738C591A8707E4A7316C0 /* UpdaterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterController.swift; sourceTree = "<group>"; };
+		F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcapExporterTests.swift; sourceTree = "<group>"; };
+		F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnalyzerTests.swift; sourceTree = "<group>"; };
+		FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFilterView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		29D2B87CC229D6B52C659D8C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B83C4C6309BB2B9A0F4A5179 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		133928E5A5CEDF95AD3CC82D /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */,
+				B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */,
+				687874D5350B989C31061197 /* DiagnosticsTests.swift */,
+				7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */,
+				F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */,
+				171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */,
+				0199BFE1A054037863D28285 /* OUIParserTests.swift */,
+				F63219AD7368A2B5CA73066F /* PcapExporterTests.swift */,
+				0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */,
+				E1335A7BFB3791419C177D1B /* SessionTests.swift */,
+				55EECC86AC4031596CE3DFC3 /* SurveyTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		2C239233C9DAA1FCA468BDEB /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */,
+				F284D3055FA72E1197279C47 /* AppUIState.swift */,
+				B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */,
+				DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		411C51EFF50893E096ECE10F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				43889DE9E5A131FBE2527D7A /* LanFi.app */,
+				BF3B253B251CEBF891065826 /* LanFiTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		875A6E42C37E9E98CCD9C545 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */,
+				C93F615B00753F1F4577B061 /* InformationElementParser.swift */,
+				53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */,
+				8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */,
+				648FEFFCCE62F69288760DDB /* PcapExporter.swift */,
+				E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */,
+				F4D738C591A8707E4A7316C0 /* UpdaterController.swift */,
+				BE4E536F1E321D433C834C41 /* WiFiScanner.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A0EAD970214F2F589ECBA0BF /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2C668C45805BE620587A4C21 /* AppCommands.swift */,
+				54545FDFE743E9E0AD7B4553 /* DiagnosticsView.swift */,
+				0745B6A062696C94CF715558 /* InsightsView.swift */,
+				E34AD44DBB07BC1BB913826E /* MainTableView.swift */,
+				5D4A182714C038138461289B /* MenuBarView.swift */,
+				7D486B1748C166298A6029AF /* ProtocolsView.swift */,
+				91900D72A9CC042601EC0C7C /* RawDataView.swift */,
+				FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */,
+				AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */,
+				F250B2C1D615077EC1A92B0E /* SpectrumView.swift */,
+				E3560EFA84AE4D6AC3614B54 /* SurveyView.swift */,
+				10F5CE72100DE88434ACFFF7 /* TableCells.swift */,
+				5429E87C67B2ED203E194F1A /* WiFiTableView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AAF9288B6B16EDFE16165973 = {
+			isa = PBXGroup;
+			children = (
+				BC327DF6060DEFC63CE367D2 /* Models */,
+				D09C133842F99064771CB591 /* Resources */,
+				875A6E42C37E9E98CCD9C545 /* Services */,
+				133928E5A5CEDF95AD3CC82D /* Tests */,
+				D132CC87C270B6840277E9AB /* Utils */,
+				2C239233C9DAA1FCA468BDEB /* ViewModels */,
+				A0EAD970214F2F589ECBA0BF /* Views */,
+				A523B096357134ADAD3A2442 /* Assets.xcassets */,
+				B9751E1A8C39ED7C2C526084 /* LanFiApp.swift */,
+				411C51EFF50893E096ECE10F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BC327DF6060DEFC63CE367D2 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C23E9DF192173EEBD466621A /* ColumnCatalog.swift */,
+				191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */,
+				AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */,
+				175549E82D8BCC8C7BA56B50 /* NetworkGrouping.swift */,
+				F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */,
+				1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */,
+				F1002A4F0143646CB9EF6A42 /* ScanSession.swift */,
+				E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */,
+				957F50461891605F6C31319B /* Survey.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D09C133842F99064771CB591 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				9EF9C5F85D2F561B74DB852E /* InfoPlist.strings */,
+				54D6771B7C5FC5CC8C9B887A /* Localizable.strings */,
+				6F2AFA70627054823768D660 /* oui */,
+				D368881E2DEB581D710828AE /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D132CC87C270B6840277E9AB /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				CC59D32F77002751B3EBB790 /* LocationManager.swift */,
+				0AB0A732B64417000F67233E /* OUIParser.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		97126DCA2BE9C5A1706C5FDF /* LanFi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E48E21A97902D32B0F56A8C8 /* Build configuration list for PBXNativeTarget "LanFi" */;
+			buildPhases = (
+				A98C4AD01E04F7B3F1825517 /* Sources */,
+				35992801932914F4C591C5D4 /* Resources */,
+				29D2B87CC229D6B52C659D8C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LanFi;
+			packageProductDependencies = (
+				544BCF73F96E99C5CFCA5728 /* Sparkle */,
+			);
+			productName = LanFi;
+			productReference = 43889DE9E5A131FBE2527D7A /* LanFi.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D36A67590D4E9F93DAB40FD1 /* LanFiTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE0F657D3D3A44A9D1A89373 /* Build configuration list for PBXNativeTarget "LanFiTests" */;
+			buildPhases = (
+				A974C0E2099CCB4E68C44A6D /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LanFiTests;
+			packageProductDependencies = (
+			);
+			productName = LanFiTests;
+			productReference = BF3B253B251CEBF891065826 /* LanFiTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8369AFBDFA800CF35CACB8B1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					97126DCA2BE9C5A1706C5FDF = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					D36A67590D4E9F93DAB40FD1 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 4BC502007DE1844439000E65 /* Build configuration list for PBXProject "LanFi" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				ru,
+			);
+			mainGroup = AAF9288B6B16EDFE16165973;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7D7467D5D11AC55DAF4684A9 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 411C51EFF50893E096ECE10F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				97126DCA2BE9C5A1706C5FDF /* LanFi */,
+				D36A67590D4E9F93DAB40FD1 /* LanFiTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		35992801932914F4C591C5D4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BFFC6CE6F7691DE2140BCC72 /* Assets.xcassets in Resources */,
+				A8069A49C53DABB0DB253387 /* InfoPlist.strings in Resources */,
+				A71453AA5540760662F17737 /* Localizable.strings in Resources */,
+				27B946813F3D2B8C4632914B /* PrivacyInfo.xcprivacy in Resources */,
+				15C122DF91B199970BEC161B /* oui in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A974C0E2099CCB4E68C44A6D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8098AE614F87EFD37D52A707 /* AnnotationTests.swift in Sources */,
+				5F2033806533879194D749C7 /* ColumnCatalog.swift in Sources */,
+				E28BF0B44751A1C4B7BBEE58 /* ColumnCatalogTests.swift in Sources */,
+				6F1E84A4F606560CDBE5019F /* DiagnosticsEngine.swift in Sources */,
+				E74FA2996C24893BB9A680C2 /* DiagnosticsModel.swift in Sources */,
+				A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */,
+				3C4129BF2791C83851FE20B6 /* InformationElementParser.swift in Sources */,
+				B5FB900DC70AB04096915C6F /* InformationElementParserTests.swift in Sources */,
+				4C0808FF17864193C9DAFEF7 /* NetworkAnalyzer.swift in Sources */,
+				5CAF3FE4F11BCD65CA2004F1 /* NetworkAnalyzerTests.swift in Sources */,
+				8F33E69C2D666B37F261CEE1 /* NetworkAnnotation.swift in Sources */,
+				A1E3C52CFFB4B7BE766E01D2 /* NetworkColumnFormatter.swift in Sources */,
+				63030EDF0AB7C7EBFC2C1838 /* NetworkGrouping.swift in Sources */,
+				6EC14A40FFD09C70E2496B45 /* NetworkGroupingTests.swift in Sources */,
+				64F07FC9BAEDF6CF3A04BB61 /* NetworkModel.swift in Sources */,
+				6500C6EDE50D8FE6ED2DA7CB /* OUIParser.swift in Sources */,
+				D7C7ADF67713E3586A83AF2A /* OUIParserTests.swift in Sources */,
+				16D02A332CA9E208F31CB1A8 /* PcapExporter.swift in Sources */,
+				D5537C10DA8C95E91D911916 /* PcapExporterTests.swift in Sources */,
+				E72C15A389C39001C6B92E4A /* ProtocolAnalyzer.swift in Sources */,
+				DB2AC9503743CA5E1E17CF6C /* ProtocolAnalyzerTests.swift in Sources */,
+				DBA254C5682AAE9B5E7C5B3E /* ProtocolProfile.swift in Sources */,
+				C31F9BE12C97FC55EB78488F /* ScanSession.swift in Sources */,
+				4ADB4161FC54C42691A05E26 /* SessionTests.swift in Sources */,
+				D77AB7A3C4DBF43E63FAFE44 /* SignalDisplayMode.swift in Sources */,
+				AE63074E60A93D7CF851D661 /* Survey.swift in Sources */,
+				3A990E992BA05E58A3660FBD /* SurveyTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A98C4AD01E04F7B3F1825517 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5EE7172570E8A9EFB461DCB6 /* AnalyzerViewModel.swift in Sources */,
+				02F564797A4737ABA1C62CD4 /* AppCommands.swift in Sources */,
+				8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */,
+				19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */,
+				A862642AA20FB3C72F423930 /* DiagnosticsEngine.swift in Sources */,
+				3AEA3FCF4941A7AFDD261FCC /* DiagnosticsModel.swift in Sources */,
+				8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */,
+				6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */,
+				F10DC9BE92DD6E2326F6288E /* InformationElementParser.swift in Sources */,
+				C78DE2401AD4AFD73A13B62F /* InsightsView.swift in Sources */,
+				9A65FCCCBAA960A7C663A87E /* LanFiApp.swift in Sources */,
+				3E683683B0D3F663C66234DB /* LocationManager.swift in Sources */,
+				270CFF52C9C727A9ACB7E6DC /* MainTableView.swift in Sources */,
+				18B1511F8FC314D12791E073 /* MenuBarView.swift in Sources */,
+				63AE48290D6297384E9A2A39 /* NetworkAnalyzer.swift in Sources */,
+				E82F82092EFD25CD3FEC4142 /* NetworkAnnotation.swift in Sources */,
+				096C32C22F17A43A7964FD40 /* NetworkColumnFormatter.swift in Sources */,
+				5EFE518555377023C5EF85AE /* NetworkGrouping.swift in Sources */,
+				60B784BD118E53F1658524C7 /* NetworkModel.swift in Sources */,
+				C2BA409446C06082FD4B574C /* OUIParser.swift in Sources */,
+				EEFE937D6AB642E5E8C9B79F /* PcapExporter.swift in Sources */,
+				997C983A4012AEF957383CEF /* ProtocolAnalyzer.swift in Sources */,
+				1553D68492677966F2C1DDBF /* ProtocolProfile.swift in Sources */,
+				C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */,
+				30F8A7623A9EC47D36E35653 /* RawDataView.swift in Sources */,
+				342C3649806ECE78FDD894D1 /* ScanSession.swift in Sources */,
+				D029C59767AE2D08643E4B72 /* SidebarFilterView.swift in Sources */,
+				59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */,
+				E5A9CB7DE26E07DD53CE0578 /* SignalHistoryView.swift in Sources */,
+				6C53527A6CFCCB7C1F5A51E3 /* SpectrumView.swift in Sources */,
+				53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */,
+				F6F8AF3652EA31397B4DE0B4 /* SurveyView.swift in Sources */,
+				8A566DC0965253A4A677EF9C /* SurveyViewModel.swift in Sources */,
+				955F735ACDFBAFD541C469C9 /* TableCells.swift in Sources */,
+				AE71876A0AF8AE300753BEF6 /* UpdaterController.swift in Sources */,
+				9E163D0F01C427902FC8A9FA /* WiFiScanner.swift in Sources */,
+				F6F5BA6DE53C47BD40D2F569 /* WiFiTableView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		9EF9C5F85D2F561B74DB852E /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D434AE2398E571E7D0231BB3 /* en */,
+				D4C531AD9B5EB82679A4AE71 /* ru */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0360A04B809D85BB462BCAAD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		3CF379C5214B69FAEEDDCB46 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA.Tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		424497733B9A2D94DB9BB36A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 12;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7DEA651BD77A4F56F0EC1BAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		B28CABEAEE589FB7E49D5D1F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 12;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F5FDF579226326419868ACF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA.Tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4BC502007DE1844439000E65 /* Build configuration list for PBXProject "LanFi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7DEA651BD77A4F56F0EC1BAC /* Debug */,
+				0360A04B809D85BB462BCAAD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE0F657D3D3A44A9D1A89373 /* Build configuration list for PBXNativeTarget "LanFiTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CF379C5214B69FAEEDDCB46 /* Debug */,
+				F5FDF579226326419868ACF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E48E21A97902D32B0F56A8C8 /* Build configuration list for PBXNativeTarget "LanFi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B28CABEAEE589FB7E49D5D1F /* Debug */,
+				424497733B9A2D94DB9BB36A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7D7467D5D11AC55DAF4684A9 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		544BCF73F96E99C5CFCA5728 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7D7467D5D11AC55DAF4684A9 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8369AFBDFA800CF35CACB8B1 /* Project object */;
+}

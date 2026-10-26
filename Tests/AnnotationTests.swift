@@ -3,7 +3,7 @@ import XCTest
 final class AnnotationTests: XCTestCase {
     func testAnnotationStoreRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("WiFA-annotation-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("LanFi-annotation-tests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
 
@@ -25,7 +25,7 @@ final class AnnotationTests: XCTestCase {
 
     func testEmptyAnnotationRemovesRecord() {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("WiFA-annotation-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("LanFi-annotation-tests-\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
 

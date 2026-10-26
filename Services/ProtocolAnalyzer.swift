@@ -13,7 +13,7 @@ enum ProtocolAnalyzer {
         let format = formatBlock(network)
         let vendor = vendorBlock(network)
 
-        let blocks = [radio, security, mobility, spectrum, format, vendor]
+        let blocks = [radio, security, spectrum, mobility, format, vendor]
         let warnings = blocks.flatMap { block in
             block.facts
                 .filter { $0.status == .critical || $0.status == .warning }
