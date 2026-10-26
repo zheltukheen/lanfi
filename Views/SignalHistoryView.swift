@@ -142,6 +142,13 @@ struct SignalHistoryView: View {
         .padding(.trailing, 16)
         .background(Color(nsColor: .controlBackgroundColor))
         .accessibilityLabel("Signal history for \(viewModel.networks.count) networks")
+        .accessibilityValue(
+            viewModel.selectedNetworkId.flatMap { id in
+                viewModel.signalHistory[id]?.last.map {
+                    "\(viewModel.networks.first { $0.id == id }?.displaySSID ?? "selected network"): \($0) dBm"
+                }
+            } ?? "No network selected"
+        )
     }
 
     // MARK: - Subviews & Builders

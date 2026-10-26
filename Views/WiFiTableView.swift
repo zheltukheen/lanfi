@@ -170,7 +170,7 @@ struct WiFiTableView: NSViewRepresentable {
             return
         }
 
-        if let index = viewModel.networks.firstIndex(where: { $0.id == selectedId }) {
+        if let index = viewModel.tableRows.firstIndex(where: { $0.network?.id == selectedId }) {
             if tableView.selectedRow != index {
                 coordinator.isUpdatingSelection = true
                 tableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
@@ -212,16 +212,50 @@ struct WiFiTableView: NSViewRepresentable {
         }
 
         func numberOfRows(in tableView: NSTableView) -> Int {
-            parent.viewModel.networks.count
+            parent.viewModel.tableRows.count
+        }
+
+        func tableView(_ tableView: NSTableView, isGroupRow row: Int) -> Bool {
+            guard row >= 0, row < parent.viewModel.tableRows.count else { return false }
+            if case .group = parent.viewModel.tableRows[row] { return true }
+            return false
+        }
+
+        func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
+            guard row >= 0, row < parent.viewModel.tableRows.count else { return false }
+            if case .group = parent.viewModel.tableRows[row] { return false }
+            return true
+        }
+
+        func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
+            guard row >= 0, row < parent.viewModel.tableRows.count else { return tableView.rowHeight }
+            if case .group = parent.viewModel.tableRows[row] { return 28 }
+            return tableView.rowHeight
         }
 
         func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+            guard row >= 0, row < parent.viewModel.tableRows.count else { return nil }
+
+            if case .group(let group) = parent.viewModel.tableRows[row] {
+                if let column = tableColumn, column != tableView.tableColumns.first {
+                    return nil
+                }
+                let cell =
+                    tableView.makeView(withIdentifier: GroupTableCellView.identifier, owner: self)
+                    as? GroupTableCellView
+                    ?? {
+                        let view = GroupTableCellView()
+                        view.identifier = GroupTableCellView.identifier
+                        return view
+                    }()
+                cell.configure(group: group)
+                return cell
+            }
+
             guard let column = tableColumn,
-                row >= 0,
-                row < parent.viewModel.networks.count
+                let network = parent.viewModel.tableRows[row].network
             else { return nil }
 
-            let network = parent.viewModel.networks[row]
             let colId = column.identifier.rawValue
 
             var cellView =
@@ -252,8 +286,9 @@ struct WiFiTableView: NSViewRepresentable {
 
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                if row >= 0, row < self.parent.viewModel.networks.count {
-                    let net = self.parent.viewModel.networks[row]
+                if row >= 0, row < self.parent.viewModel.tableRows.count,
+                    let net = self.parent.viewModel.tableRows[row].network
+                {
                     if self.parent.viewModel.selectedNetworkId != net.id {
                         self.parent.viewModel.selectedNetworkId = net.id
                     }
@@ -554,8 +589,11 @@ struct WiFiTableView: NSViewRepresentable {
         @objc func copyBSSID() { copyToClipboard(keyPath: \.bssid) }
 
         private func copyToClipboard(keyPath: KeyPath<NetworkModel, String>) {
-            guard let row = tableView?.clickedRow, row >= 0 else { return }
-            let net = parent.viewModel.networks[row]
+            guard let row = tableView?.clickedRow,
+                row >= 0,
+                row < parent.viewModel.tableRows.count,
+                let net = parent.viewModel.tableRows[row].network
+            else { return }
             let string = net[keyPath: keyPath]
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(string, forType: .string)

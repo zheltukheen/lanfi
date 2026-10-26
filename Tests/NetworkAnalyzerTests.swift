@@ -171,6 +171,7 @@ func makeNetwork(
     width: Int = 20,
     generation: WiFiStandard = .mode11ax,
     security: String = "WPA2 Personal",
+    vendor: String = "Test Vendor",
     signal: Int = -60,
     noise: Int? = -95,
     snr: Int? = 35,
@@ -179,7 +180,8 @@ func makeNetwork(
     clients: Int? = nil,
     stations: Int? = nil,
     wpsEnabled: Bool? = false,
-    pmfRequired: Bool? = true
+    pmfRequired: Bool? = true,
+    informationElements: [InformationElement] = []
 ) -> NetworkModel {
     NetworkModel(
         id: id,
@@ -190,7 +192,7 @@ func makeNetwork(
         channelWidthMHz: width,
         generation: generation,
         security: security,
-        vendor: "Test Vendor",
+        vendor: vendor,
         mode: "Infrastructure",
         signal: signal,
         noise: noise,
@@ -219,7 +221,7 @@ func makeNetwork(
         ieCount: 10,
         ieTotalLength: 100,
         ratesEstimated: true,
-        informationElements: [],
+        informationElements: informationElements,
         count: 1,
         firstSeen: Date(timeIntervalSince1970: 0),
         lastSeen: Date(timeIntervalSince1970: 0)

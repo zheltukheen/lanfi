@@ -87,6 +87,56 @@ jobs:
       - name: Generate release notes
         run: python3 scripts/release_notes.py
 
+      - name: Sign update and generate appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
+            echo "SPARKLE_PRIVATE_KEY is not configured; skipping appcast." >&2
+            exit 0
+          fi
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          BUILD="$(awk '/^[[:space:]]*CURRENT_PROJECT_VERSION:/ {gsub(/"/, "", $2); print $2; exit}' project.yml)"
+          echo "$SPARKLE_PRIVATE_KEY" | base64 --decode > "$RUNNER_TEMP/sparkle_private_key"
+          chmod 600 "$RUNNER_TEMP/sparkle_private_key"
+
+          curl -sSL --max-time 120 \
+            "https://github.com/sparkle-project/Sparkle/releases/download/2.10.1/Sparkle-2.10.1.tar.xz" \
+            -o "$RUNNER_TEMP/Sparkle.tar.xz"
+          mkdir -p "$RUNNER_TEMP/sparkle"
+          tar -xf "$RUNNER_TEMP/Sparkle.tar.xz" -C "$RUNNER_TEMP/sparkle"
+
+          ZIP="build/dist/WiFA-${VERSION}.zip"
+          SIGNATURE="$("$RUNNER_TEMP/sparkle/bin/sign_update" --ed-key-file "$RUNNER_TEMP/sparkle_private_key" -p "$ZIP")"
+          LENGTH="$(stat -f%z "$ZIP")"
+          python3 scripts/make_appcast.py \
+            --version "$VERSION" \
+            --build "$BUILD" \
+            --url "https://github.com/zheltukheen/wifa/releases/download/v${VERSION}/WiFA-${VERSION}.zip" \
+            --signature "$SIGNATURE" \
+            --length "$LENGTH" \
+            --notes release_notes.md \
+            --output build/dist/appcast.xml
+          cat build/dist/appcast.xml
+
+      - name: Update Homebrew cask
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          SHA="$(shasum -a 256 "build/dist/WiFA-${VERSION}.dmg" | awk '{print $1}')"
+          ./scripts/update_cask.sh "$VERSION" "$SHA"
+          if git diff --quiet -- Casks/wifa.rb; then
+            exit 0
+          fi
+          git config user.name "WiFA Release Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add Casks/wifa.rb
+          git commit -m "chore: update Homebrew cask to ${VERSION}"
+          git push origin HEAD:main
+
       - name: Publish release
         uses: softprops/action-gh-release@v3
         with:
@@ -96,3 +146,4 @@ jobs:
             build/dist/WiFA-*.zip
             build/dist/WiFA-*.dmg
             build/dist/WiFA-*.sha256
+            build/dist/appcast.xml

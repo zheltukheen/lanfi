@@ -6,6 +6,9 @@ struct WifiAnalyzerApp: App {
     // ViewModel создается здесь и живет все время работы приложения
     @StateObject private var viewModel = AnalyzerViewModel()
     @StateObject private var uiState = AppUIState()
+    @StateObject private var diagnostics = DiagnosticsViewModel()
+    @StateObject private var updater = UpdaterController()
+    @StateObject private var survey = SurveyViewModel()
 
     // Свойство для отслеживания состояния приложения (активно/фон)
     @Environment(\.scenePhase) var scenePhase
@@ -15,6 +18,7 @@ struct WifiAnalyzerApp: App {
             MainTableView(viewModel: viewModel)
                 .frame(minWidth: 900, minHeight: 600)
                 .environmentObject(uiState)
+                .environmentObject(diagnostics)
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {
                         // ИСПРАВЛЕНО: Вызываем публичный метод ViewModel
@@ -28,11 +32,15 @@ struct WifiAnalyzerApp: App {
                 }
         }
         .commands {
-            WiFACommands(viewModel: viewModel, uiState: uiState)
+            WiFACommands(viewModel: viewModel, uiState: uiState, diagnostics: diagnostics, updater: updater)
+        }
+
+        Window("Site Survey", id: "survey") {
+            SurveyView(analyzer: viewModel, survey: survey)
         }
 
         MenuBarExtra {
-            MenuBarView(viewModel: viewModel)
+            MenuBarView(viewModel: viewModel, diagnostics: diagnostics)
         } label: {
             Label("WiFA", systemImage: "wifi")
         }

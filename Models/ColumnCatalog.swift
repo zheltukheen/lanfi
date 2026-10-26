@@ -50,49 +50,49 @@ enum ColumnId: String, CaseIterable, Codable {
 
     var defaultTitle: String {
         switch self {
-        case .apName: return "AP Name"
-        case .amendments: return "Amendments"
-        case .annotations: return "Annotations"
-        case .bssid: return "BSSID"
-        case .band: return "Band"
-        case .basicRates: return "Basic Rates"
-        case .beaconAirtime: return "Beacon Airtime"
-        case .beaconInterval: return "Beacon Interval"
-        case .beaconMode: return "Beacon Mode"
-        case .beaconRate: return "Beacon Rate"
-        case .centerFrequency: return "Center Frequency"
-        case .channel: return "Channel"
-        case .channelUtilization: return "Channel Utilization"
-        case .channelWidth: return "Width"
-        case .clients: return "Clients"
-        case .congestion: return "Congestion"
-        case .count: return "Count"
-        case .countryCode: return "Country Code"
-        case .fastTransition: return "Fast Transition"
-        case .firstSeen: return "First Seen"
-        case .generation: return "Generation"
-        case .ieCount: return "IE Count"
-        case .ieTotalLength: return "IE Total Length"
-        case .lastSeen: return "Last Seen"
-        case .maxBasicRate: return "Max Basic Rate"
-        case .maxRate: return "Max Rate"
-        case .minBasicRate: return "Min Basic Rate"
-        case .minRate: return "Min Rate"
-        case .mode: return "Mode"
-        case .networkName: return "Network Name"
-        case .noise: return "Noise"
-        case .protectionMode: return "Protection Mode"
-        case .quality: return "Quality"
-        case .snr: return "SNR"
-        case .security: return "Security"
-        case .seen: return "Seen"
-        case .signal: return "Signal"
-        case .stations: return "Stations"
-        case .streams: return "Streams"
-        case .type: return "Type"
-        case .uptime: return "Uptime"
-        case .vendor: return "Vendor"
-        case .wideChannel: return "Wide Channel"
+        case .apName: return String(localized: "AP Name")
+        case .amendments: return String(localized: "Amendments")
+        case .annotations: return String(localized: "Annotations")
+        case .bssid: return String(localized: "BSSID")
+        case .band: return String(localized: "Band")
+        case .basicRates: return String(localized: "Basic Rates")
+        case .beaconAirtime: return String(localized: "Beacon Airtime")
+        case .beaconInterval: return String(localized: "Beacon Interval")
+        case .beaconMode: return String(localized: "Beacon Mode")
+        case .beaconRate: return String(localized: "Beacon Rate")
+        case .centerFrequency: return String(localized: "Center Frequency")
+        case .channel: return String(localized: "Channel")
+        case .channelUtilization: return String(localized: "Channel Utilization")
+        case .channelWidth: return String(localized: "Width")
+        case .clients: return String(localized: "Clients")
+        case .congestion: return String(localized: "Congestion")
+        case .count: return String(localized: "Count")
+        case .countryCode: return String(localized: "Country Code")
+        case .fastTransition: return String(localized: "Fast Transition")
+        case .firstSeen: return String(localized: "First Seen")
+        case .generation: return String(localized: "Generation")
+        case .ieCount: return String(localized: "IE Count")
+        case .ieTotalLength: return String(localized: "IE Total Length")
+        case .lastSeen: return String(localized: "Last Seen")
+        case .maxBasicRate: return String(localized: "Max Basic Rate")
+        case .maxRate: return String(localized: "Max Rate")
+        case .minBasicRate: return String(localized: "Min Basic Rate")
+        case .minRate: return String(localized: "Min Rate")
+        case .mode: return String(localized: "Mode")
+        case .networkName: return String(localized: "Network Name")
+        case .noise: return String(localized: "Noise")
+        case .protectionMode: return String(localized: "Protection Mode")
+        case .quality: return String(localized: "Quality")
+        case .snr: return String(localized: "SNR")
+        case .security: return String(localized: "Security")
+        case .seen: return String(localized: "Seen")
+        case .signal: return String(localized: "Signal")
+        case .stations: return String(localized: "Stations")
+        case .streams: return String(localized: "Streams")
+        case .type: return String(localized: "Type")
+        case .uptime: return String(localized: "Uptime")
+        case .vendor: return String(localized: "Vendor")
+        case .wideChannel: return String(localized: "Wide Channel")
         }
     }
 

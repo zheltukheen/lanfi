@@ -34,5 +34,13 @@
 	<string>NSApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<false/>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/zheltukheen/wifa/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>rFs9J6EODXIM2BpP2gHfe8C1KAZdkYNipngstUHolP8=</string>
 </dict>
 </plist>

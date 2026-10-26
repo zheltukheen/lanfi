@@ -86,7 +86,7 @@ struct ScoreRow: View {
 }
 
 struct StatCard: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     var subtitle: String? = nil
     var tint: Color = .accentColor
@@ -423,6 +423,9 @@ struct InsightsView: View {
                     }
                 }
                 .accessibilityLabel("Channel occupancy for \(occupancyBand.label)")
+                .accessibilityValue(
+                    data.map { "channel \($0.channel): \($0.networkCount) networks" }.joined(separator: ", ")
+                )
                 .frame(height: 150)
             }
         }

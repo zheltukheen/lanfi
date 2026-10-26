@@ -16,16 +16,26 @@ reporting, advertising, accounts, or any network telemetry.
 - **UserDefaults** to remember window layout, column configuration, refresh
   interval, filters and display preferences on your Mac.
 
-## What WiFA stores or sends
+## Network requests
 
-Nothing is transmitted. Exports (CSV/JSON) are written only to a location you
-choose in the save panel. There is no cloud sync, no remote logging and no
-third-party SDK.
+WiFA makes only these outbound requests:
+
+- **Sparkle update check** to `github.com` for the signed `appcast.xml` and, if
+  you accept an update, the release archive. No identifiers are added.
+- **Optional diagnostics** you explicitly run: a DNS lookup and HTTPS check of
+  `captive.apple.com`, plus ICMP echo to the default gateway and `1.1.1.1`.
+  These requests prove connectivity and measure latency; their results stay on
+  your Mac and are never uploaded.
+
+There is no telemetry, cloud sync, remote logging or third-party analytics SDK.
+Exports (CSV/JSON/PCAP) and saved sessions/annotations/surveys are written only
+to local paths you choose or to WiFA's Application Support directory.
 
 ## Data retention
 
-Scan data is kept in memory and discarded when WiFA quits. Preferences remain
-in your macOS user defaults until you remove the app or reset them.
+Scan data is kept in memory and discarded when WiFA quits, unless you explicitly
+save a session, annotation or survey. Preferences and saved files remain on your
+Mac until you remove them (the Homebrew cask `zap` stanza removes them).
 
 ## Contact
 

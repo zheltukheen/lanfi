@@ -60,6 +60,8 @@ class AnalyzerViewModel: ObservableObject {
     // MARK: - Dependencies
     private let scanner = WiFiScanner()  // Actor
     private let locationManager = LocationManager()
+    private let annotationStore = AnnotationStore()
+    private let sessionStore = SessionStore()
     private let refreshIntervalKey = "RefreshIntervalSeconds"
     private let historyWindowSeconds: TimeInterval = 180
 
@@ -105,6 +107,10 @@ class AnalyzerViewModel: ObservableObject {
     @Published var currentConnectedBSSID: String? = nil
     @Published var signalHistory: [String: [Int]] = [:]
     @Published private(set) var analysis: AnalysisReport = .empty
+    @Published private(set) var annotations: [String: NetworkAnnotation] = [:]
+    @Published private(set) var sessions: [ScanSession] = []
+    @Published private(set) var loadedSession: ScanSession?
+    @Published var sessionMessage: String?
     @Published var selectedNetworkId: String? = nil
     @Published var highlightConnectedNetworks: Bool = true { didSet { savePreferences() } }
 
@@ -123,6 +129,8 @@ class AnalyzerViewModel: ObservableObject {
     @Published var refreshInterval: Double = 3.0
     @Published var isSortAscending: Bool = false { didSet { applyFilters(); savePreferences() } }
     @Published var currentSortKey: String? = ColumnId.signal.rawValue { didSet { applyFilters(); savePreferences() } }
+    @Published var groupMode: NetworkGroupMode = .none { didSet { applyFilters(); savePreferences() } }
+    @Published private(set) var tableRows: [NetworkTableRow] = []
     @Published var columnDefinitions: [ColumnDefinition] = ColumnDefinition.defaults
 
     // Quick filters (sidebar)
@@ -141,6 +149,8 @@ class AnalyzerViewModel: ObservableObject {
     // MARK: - Initialization
     init() {
         setupBindings()
+        annotations = annotationStore.annotations
+        sessions = sessionStore.sessions()
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
@@ -185,13 +195,15 @@ class AnalyzerViewModel: ObservableObject {
     func updateRefreshInterval(to newValue: Double) {
         refreshInterval = newValue
         UserDefaults.standard.set(newValue, forKey: refreshIntervalKey)
-        startScanningLoop()
+        if loadedSession == nil {
+            startScanningLoop()
+        }
     }
 
     // MARK: - Refresh Logic (Async/Await)
 
     func refresh() {
-        guard !isScanning else { return }
+        guard !isScanning, loadedSession == nil else { return }
         isScanning = true
 
         let currentBSSID = CWWiFiClient.shared().interface()?.bssid()?.uppercased()
@@ -380,6 +392,12 @@ class AnalyzerViewModel: ObservableObject {
         }
 
         self.networks = filtered
+        self.tableRows = NetworkGrouper.rows(
+            for: filtered,
+            mode: groupMode,
+            metricsByNetworkId: analysis.metricsByNetworkId,
+            annotationsByNetworkId: annotations
+        )
         if let selectedId = selectedNetworkId, !filtered.contains(where: { $0.id == selectedId }) {
             selectedNetworkId = nil
         }
@@ -406,12 +424,120 @@ class AnalyzerViewModel: ObservableObject {
         NetworkColumnFormatter(
             signalDisplayMode: signalDisplayMode,
             connectedBSSID: currentConnectedBSSID,
-            metricsByNetworkId: analysis.metricsByNetworkId
+            metricsByNetworkId: analysis.metricsByNetworkId,
+            annotationsByNetworkId: annotations
         )
     }
 
     func metrics(for network: NetworkModel) -> NetworkMetrics? {
         analysis.metrics(for: network.id)
+    }
+
+    func annotation(for network: NetworkModel) -> NetworkAnnotation {
+        annotationStore.annotation(for: network.id)
+    }
+
+    func updateAnnotation(_ annotation: NetworkAnnotation, for network: NetworkModel) {
+        annotationStore.update(annotation, for: network.id)
+        annotations = annotationStore.annotations
+        applyFilters()
+    }
+
+    func displayName(for network: NetworkModel) -> String {
+        annotation(for: network).displayAlias ?? network.displaySSID
+    }
+
+    // MARK: - Sessions
+
+    var isSessionMode: Bool { loadedSession != nil }
+
+    @discardableResult
+    func saveSession(named name: String) -> Bool {
+        guard !persistentNetworks.isEmpty else {
+            presentError("There are no scan results to save yet.")
+            return false
+        }
+        do {
+            let session = try sessionStore.save(
+                name: name,
+                networks: persistentNetworks.values.sorted { $0.displaySSID < $1.displaySSID },
+                annotations: annotations
+            )
+            sessions = sessionStore.sessions()
+            sessionMessage = "Saved session “\(session.displayName)”"
+            return true
+        } catch {
+            presentError("Could not save the session: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    func loadSession(_ session: ScanSession) {
+        timer?.invalidate()
+        timer = nil
+        loadedSession = session
+        persistentNetworks = Dictionary(uniqueKeysWithValues: session.networks.map { ($0.id, $0) })
+        annotations = session.annotations
+        annotationStore.replaceAll(session.annotations)
+        signalHistory = [:]
+        selectedNetworkId = nil
+        analysis = NetworkAnalyzer.analyze(networks: session.networks)
+        sessionMessage = "Session “\(session.displayName)” · \(session.networkCount) networks"
+        applyFilters()
+    }
+
+    func resumeLiveScan() {
+        guard loadedSession != nil else { return }
+        loadedSession = nil
+        sessionMessage = nil
+        persistentNetworks.removeAll()
+        analysis = .empty
+        applyFilters()
+        startScanningLoop()
+        refresh()
+    }
+
+    func deleteSession(_ session: ScanSession) {
+        sessionStore.delete(session)
+        sessions = sessionStore.sessions()
+    }
+
+    func promptSaveSession() {
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 22))
+        field.stringValue = "Scan \(Date().formatted(date: .abbreviated, time: .shortened))"
+        let alert = NSAlert()
+        alert.messageText = "Save scan session"
+        alert.informativeText = "Sessions are stored locally and can be reopened without scanning."
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn {
+            _ = saveSession(named: field.stringValue)
+        }
+    }
+
+    func promptOpenSession() {
+        sessions = sessionStore.sessions()
+        guard !sessions.isEmpty else {
+            presentError("No saved sessions yet. Use Data → Save Session first.")
+            return
+        }
+
+        let popup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 320, height: 26), pullsDown: false)
+        for session in sessions {
+            popup.addItem(withTitle: "\(session.displayName) · \(session.networkCount) networks")
+        }
+        let alert = NSAlert()
+        alert.messageText = "Open scan session"
+        alert.informativeText = "Live scanning pauses while a saved session is open."
+        alert.accessoryView = popup
+        alert.addButton(withTitle: "Open")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn {
+            let index = popup.indexOfSelectedItem
+            guard sessions.indices.contains(index) else { return }
+            loadSession(sessions[index])
+        }
     }
 
     // 1. Вычисляемое свойство для выбранной сети (нужно для Инспектора)
@@ -582,6 +708,19 @@ class AnalyzerViewModel: ObservableObject {
         )
     }
 
+    func exportPCAP() {
+        guard !networks.isEmpty else {
+            presentError("There are no visible networks to export.")
+            return
+        }
+        let data = PcapExporter.makeCapture(networks: networks)
+        presentSaveData(
+            defaultName: "WiFA-Scan-\(Self.fileTimestamp()).pcap",
+            contentType: UTType(filenameExtension: "pcap") ?? .data,
+            data: data
+        )
+    }
+
     private func networkJSON(_ network: NetworkModel) -> [String: Any] {
         var object: [String: Any] = [
             "id": network.id,
@@ -621,6 +760,22 @@ class AnalyzerViewModel: ObservableObject {
             }
         }
         return object
+    }
+
+    private func presentSaveData(defaultName: String, contentType: UTType, data: Data) {
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [contentType]
+        savePanel.canCreateDirectories = true
+        savePanel.nameFieldStringValue = defaultName
+        savePanel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = savePanel.url else { return }
+            do {
+                try data.write(to: url, options: .atomic)
+            } catch {
+                self?.presentError("Could not save the capture: \(error.localizedDescription)")
+            }
+        }
     }
 
     private func presentSavePanel(defaultName: String, contentType: UTType, content: String) {
@@ -740,6 +895,11 @@ class AnalyzerViewModel: ObservableObject {
         if defaults.object(forKey: "Wifa.sortAscending") != nil {
             isSortAscending = defaults.bool(forKey: "Wifa.sortAscending")
         }
+        if let rawGroup = defaults.string(forKey: "Wifa.groupMode"),
+            let mode = NetworkGroupMode(rawValue: rawGroup)
+        {
+            groupMode = mode
+        }
     }
 
     private func savePreferences() {
@@ -756,6 +916,7 @@ class AnalyzerViewModel: ObservableObject {
             defaults.set(currentSortKey, forKey: "Wifa.sortKey")
         }
         defaults.set(isSortAscending, forKey: "Wifa.sortAscending")
+        defaults.set(groupMode.rawValue, forKey: "Wifa.groupMode")
     }
 
     private func maxHistoryPoints() -> Int {

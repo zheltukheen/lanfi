@@ -52,6 +52,17 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Full localization, VoiceOver coverage, Windows parity (out of scope for now).
 - In-app vendor database updates and crash diagnostics.
 
+## Delivered in 1.5
+
+- Protocol blocks, all-network protocol coverage and capability decoding.
+- Diagnostics engine + tab with 60-second monitoring.
+- Annotations, grouping by SSID/band/vendor/security and saved sessions.
+- Sparkle 2 signed auto-updates, Homebrew cask and cask automation.
+- Synthetic beacon PCAP export.
+- Survey-lite floor plan + RSSI heatmap.
+- Russian localization of primary surfaces and VoiceOver chart summaries.
+- Reviewed and merged the Dependabot GitHub Actions update after a green CI run.
+
 ## Prioritised roadmap
 
 ### 1.4 — Trust and distribution (highest impact, smallest scope)
@@ -108,12 +119,12 @@ A credible commercial competitor in 2026 needs all of the following:
 - [x] Native scan, 2.4/5/6 GHz, Wi-Fi 6E/7 generation detection
 - [x] Quality/interference/channel guidance and security posture
 - [x] CSV/JSON export, copy, search, filters, configurable columns
-- [ ] Signed, notarized, auto-updating distribution
-- [ ] Grouping, column profiles and saved sessions
-- [ ] PCAP export and offline analysis workflow
-- [ ] AP names, annotations and MLO/EHT details
-- [ ] Full localization and accessibility
-- [ ] Remote sensors and survey/heatmap option
+- [x] Signed auto-updating distribution (Sparkle); notarization still pending
+- [x] Grouping, annotations and saved sessions (column profiles pending)
+- [~] PCAP export (synthetic beacons; live capture pending)
+- [~] AP names/annotations; MLO/EHT details pending
+- [~] Russian primary UI + VoiceOver summaries (full localization pending)
+- [~] Survey-lite heatmap (remote sensors and interpolation pending)
 
 WiFA covers the first three. The roadmap above closes the rest in value order;
 1.4 and 1.5 are the minimum for “commercial parity minus surveys”.
