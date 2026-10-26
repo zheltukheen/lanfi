@@ -41,8 +41,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
-        MARKETING_VERSION: "2.9.1"
-        CURRENT_PROJECT_VERSION: "32"
+        MARKETING_VERSION: "2.9.2"
+        CURRENT_PROJECT_VERSION: "33"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -101,6 +101,7 @@ targets:
       - path: Services/SurveyReportExporter.swift
       - path: Services/LiveCaptureService.swift
       - path: Services/RemoteSensorService.swift
+      - path: Services/RemoteCaptureService.swift
       - path: Services/NetworkAnalyzer.swift
       - path: Services/ProtocolAnalyzer.swift
       - path: Services/DiagnosticsEngine.swift

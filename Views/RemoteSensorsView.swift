@@ -10,6 +10,7 @@ struct RemoteSensorsView: View {
     @State private var showingEditor = false
     @State private var editingSensor: RemoteSensor?
     @State private var autoRefresh = false
+    @State private var showingRemoteCapture = false
 
     private let store = RemoteSensorStore()
 
@@ -54,6 +55,11 @@ struct RemoteSensorsView: View {
                 if !Task.isCancelled, autoRefresh, !isScanning {
                     scan(selected, clear: false)
                 }
+            }
+        }
+        .sheet(isPresented: $showingRemoteCapture) {
+            if let selected {
+                RemoteCaptureSheet(sensor: selected)
             }
         }
         .sheet(isPresented: $showingEditor) {
@@ -152,6 +158,8 @@ struct RemoteSensorsView: View {
                     }
                     Button("Scan") { scan(selected) }
                         .buttonStyle(.borderedProminent)
+                        .disabled(isScanning)
+                    Button("Capture…") { showingRemoteCapture = true }
                         .disabled(isScanning)
                 }
                 .padding([.horizontal, .top], 12)

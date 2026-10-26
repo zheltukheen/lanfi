@@ -27,7 +27,7 @@ enum RemoteSensorService {
         }
     }
 
-    static func sshArguments(for sensor: RemoteSensor) throws -> [String] {
+    static func baseArguments(for sensor: RemoteSensor) throws -> [String] {
         try validate(sensor)
         var args = [
             "-o", "BatchMode=yes",
@@ -39,6 +39,11 @@ enum RemoteSensorService {
             args.append(contentsOf: ["-i", identity])
         }
         args.append("\(sensor.username)@\(sensor.host)")
+        return args
+    }
+
+    static func sshArguments(for sensor: RemoteSensor) throws -> [String] {
+        var args = try baseArguments(for: sensor)
         args.append("system_profiler SPAirPortDataType -json")
         return args
     }
