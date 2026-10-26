@@ -4,13 +4,14 @@ final class FilterProfileTests: XCTestCase {
     func testProfileRoundTrip() throws {
         let profile = FilterProfile.capture(
             name: "5 GHz lab", searchText: "lab", band24: false, band5: true, band6: false,
-            minSignal: -70, groupMode: .ssid, signalUnit: .percent
+            wifi7: false, minSignal: -70, groupMode: .ssid, signalUnit: .percent
         )
         let data = try JSONEncoder().encode(profile)
         let decoded = try JSONDecoder().decode(FilterProfile.self, from: data)
         XCTAssertEqual(decoded, profile)
         XCTAssertFalse(decoded.band24)
         XCTAssertEqual(decoded.groupMode, "ssid")
+        XCTAssertEqual(decoded.wifi7, false)
     }
 
     func testUnknownEnumValuesDoNotBreakImport() {

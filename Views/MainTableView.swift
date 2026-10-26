@@ -342,6 +342,34 @@ struct TabGroup<Content: View>: View {
     }
 }
 
+struct BandFilterChip: View {
+    let title: String
+    let color: Color
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button {
+            isOn.toggle()
+        } label: {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundColor(isOn ? color : .secondary)
+                .frame(minWidth: 30, minHeight: 24)
+                .background(
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(isOn ? color.opacity(0.16) : Color(nsColor: .controlBackgroundColor))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 7)
+                        .stroke(isOn ? color.opacity(0.55) : Color.secondary.opacity(0.18), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Filter \(title)")
+        .accessibilityValue(isOn ? "On" : "Off")
+    }
+}
+
 struct TabButton: View {
     let title: LocalizedStringKey
     let icon: String
@@ -476,16 +504,17 @@ struct ToolbarView: View {
                 .help("Settings & Monitoring Control")
             }
 
-            // 2. Band Filters
-            HStack(spacing: 0) {
-                Toggle("2.4", isOn: $viewModel.filterBand24)
-                Divider().frame(height: 12).padding(.horizontal, 6)
-                Toggle("5", isOn: $viewModel.filterBand5)
-                Divider().frame(height: 12).padding(.horizontal, 6)
-                Toggle("6", isOn: $viewModel.filterBand6)
+            // 2. Band / generation filters
+            HStack(spacing: 4) {
+                BandFilterChip(title: "2.4", color: .blue, isOn: $viewModel.filterBand24)
+                    .help("Show 2.4 GHz networks")
+                BandFilterChip(title: "5", color: .purple, isOn: $viewModel.filterBand5)
+                    .help("Show 5 GHz networks")
+                BandFilterChip(title: "6", color: .teal, isOn: $viewModel.filterBand6)
+                    .help("Show 6 GHz networks")
+                BandFilterChip(title: "7", color: .green, isOn: $viewModel.filterWiFi7)
+                    .help("Show Wi-Fi 7 / 802.11be networks")
             }
-            .toggleStyle(.button)
-            .controlSize(.small)
 
             // 3. Search
             HStack {

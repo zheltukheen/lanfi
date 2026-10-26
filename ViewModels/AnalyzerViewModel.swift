@@ -134,6 +134,7 @@ class AnalyzerViewModel: ObservableObject {
     @Published var filterBand24 = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var filterBand5 = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var filterBand6 = true { didSet { requestFilterUpdate(); savePreferences() } }
+    @Published var filterWiFi7 = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var minSignalThreshold: Double = -100 { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var searchText: String = ""  // Обрабатывается через debounce в init
 
@@ -360,6 +361,7 @@ class AnalyzerViewModel: ObservableObject {
             if !filterBand24 && net.band == .band24 { return false }
             if !filterBand5 && net.band == .band5 { return false }
             if !filterBand6 && net.band == .band6 { return false }
+            if !filterWiFi7 && net.generation == .mode11be { return false }
             if Double(net.signal) < minSignalThreshold { return false }
 
             if !query.isEmpty {
@@ -620,7 +622,7 @@ class AnalyzerViewModel: ObservableObject {
 
     var hasActiveFilters: Bool {
         !searchText.isEmpty
-            || !filterBand24 || !filterBand5 || !filterBand6
+            || !filterBand24 || !filterBand5 || !filterBand6 || !filterWiFi7
             || minSignalThreshold > -100
             || quickFilterNetworkName != nil
             || quickFilterMode != nil
@@ -636,6 +638,7 @@ class AnalyzerViewModel: ObservableObject {
         filterBand24 = true
         filterBand5 = true
         filterBand6 = true
+        filterWiFi7 = true
         minSignalThreshold = -100
         clearQuickFilters()
     }
@@ -837,6 +840,7 @@ class AnalyzerViewModel: ObservableObject {
         FilterProfile.capture(
             name: name, searchText: searchText,
             band24: filterBand24, band5: filterBand5, band6: filterBand6,
+            wifi7: filterWiFi7,
             minSignal: minSignalThreshold, groupMode: groupMode,
             signalUnit: signalDisplayMode
         )
@@ -847,6 +851,7 @@ class AnalyzerViewModel: ObservableObject {
         filterBand24 = profile.band24
         filterBand5 = profile.band5
         filterBand6 = profile.band6
+        filterWiFi7 = profile.wifi7 ?? true
         minSignalThreshold = profile.minSignal
         if let mode = NetworkGroupMode(rawValue: profile.groupMode) {
             groupMode = mode
@@ -1062,6 +1067,9 @@ class AnalyzerViewModel: ObservableObject {
         if defaults.object(forKey: "Wifa.filterBand6") != nil {
             filterBand6 = defaults.bool(forKey: "Wifa.filterBand6")
         }
+        if defaults.object(forKey: "Wifa.filterWiFi7") != nil {
+            filterWiFi7 = defaults.bool(forKey: "Wifa.filterWiFi7")
+        }
         if defaults.object(forKey: "Wifa.minSignal") != nil {
             minSignalThreshold = defaults.double(forKey: "Wifa.minSignal")
         }
@@ -1097,6 +1105,7 @@ class AnalyzerViewModel: ObservableObject {
         defaults.set(filterBand24, forKey: "Wifa.filterBand24")
         defaults.set(filterBand5, forKey: "Wifa.filterBand5")
         defaults.set(filterBand6, forKey: "Wifa.filterBand6")
+        defaults.set(filterWiFi7, forKey: "Wifa.filterWiFi7")
         defaults.set(minSignalThreshold, forKey: "Wifa.minSignal")
         defaults.set(removeAfterInterval.rawValue, forKey: "Wifa.removeAfter")
         defaults.set(signalDisplayMode.rawValue, forKey: "Wifa.signalUnit")
