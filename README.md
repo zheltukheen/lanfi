@@ -153,10 +153,10 @@ As of October 2026, against common macOS tools:
 | CSV + JSON export | ✅ | CSV/PCAP | CSV/PDF | — |
 | Raw information elements | ✅ | ✅ (Pro) | — | — |
 | Menu bar extra | ✅ | — | — | — |
-| Site survey / heatmap | Survey-lite | — | ✅ | — |
+| Site survey / heatmap | IDW + wall attenuation | — | ✅ | — |
 | Protocol blocks + diagnostics | ✅ | Partial | Partial | Partial |
 | Grouping, saved sessions, annotations | ✅ | ✅ (Pro) | Partial | — |
-| PCAP export | Synthetic beacons | ✅ | — | ✅ |
+| PCAP export | Synthetic + live capture | ✅ | — | ✅ |
 | Auto-update | Sparkle signed appcast | ✅ | ✅ | ✅ |
 | Notarized | Roadmap | ✅ | ✅ | ✅ |
 
@@ -171,11 +171,16 @@ The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-Delivered in 1.5: protocol blocks, diagnostics + monitoring, annotations,
-grouping, saved sessions, synthetic PCAP, survey-lite heatmap, Sparkle,
-Homebrew cask and VoiceOver summaries. Next up: Developer ID notarization,
-column profiles, AP-name detection, MLO/EHT details, live PCAP capture,
-remote sensors, full localization and richer survey interpolation.
+Delivered through 1.9: protocol blocks, all-interface analysis, diagnostics
+with persisted monitoring history, annotations, grouping, sessions, column
+profiles, synthetic + live PCAP, IDW survey heatmaps with walls, SSH remote
+sensors, AP-name detection, an explicit EHT/MLO block, Sparkle, Homebrew cask,
+expanded localization and VoiceOver chart descriptors.
+
+Still open: actual Developer ID notarization (tooling is ready but credentials
+are not configured), full localization of dynamic detail strings, true MLO
+link/320 MHz decoding (CoreWLAN does not expose it), PCAPNG and offline PCAP
+analysis, in-app vendor DB updates, multi-select, menu-bar alerts and a CLI.
 
 ## Project structure
 
