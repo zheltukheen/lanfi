@@ -10,6 +10,21 @@ struct SurveySample: Codable, Identifiable, Equatable {
     let recordedAt: Date
 }
 
+struct SurveyPoint: Codable, Equatable {
+    var x: Double
+    var y: Double
+}
+
+struct SurveyObstacle: Codable, Identifiable, Equatable {
+    let id: UUID
+    var points: [SurveyPoint]
+    var attenuationDb: Double
+
+    static func new(points: [SurveyPoint], attenuationDb: Double = 8) -> SurveyObstacle {
+        SurveyObstacle(id: UUID(), points: points, attenuationDb: attenuationDb)
+    }
+}
+
 struct SurveyWall: Codable, Identifiable, Equatable {
     let id: UUID
     var x1: Double
@@ -29,16 +44,23 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var imageFileName: String?
     var samples: [SurveySample]
     var walls: [SurveyWall]
+    var obstacles: [SurveyObstacle]
+    var planWidthMeters: Double?
+    var reportTitle: String?
+    var clientName: String?
+    var reportNotes: String?
     var updatedAt: Date
 
     static func new(name: String = "Untitled survey") -> SurveyProject {
         SurveyProject(
-            id: UUID(), name: name, imageFileName: nil, samples: [], walls: [], updatedAt: Date()
+            id: UUID(), name: name, imageFileName: nil, samples: [], walls: [],
+            obstacles: [], updatedAt: Date()
         )
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, imageFileName, samples, walls, updatedAt
+        case id, name, imageFileName, samples, walls, obstacles, planWidthMeters
+        case reportTitle, clientName, reportNotes, updatedAt
     }
 
     init(
@@ -47,6 +69,11 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         imageFileName: String?,
         samples: [SurveySample],
         walls: [SurveyWall] = [],
+        obstacles: [SurveyObstacle] = [],
+        planWidthMeters: Double? = nil,
+        reportTitle: String? = nil,
+        clientName: String? = nil,
+        reportNotes: String? = nil,
         updatedAt: Date
     ) {
         self.id = id
@@ -54,6 +81,11 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         self.imageFileName = imageFileName
         self.samples = samples
         self.walls = walls
+        self.obstacles = obstacles
+        self.planWidthMeters = planWidthMeters
+        self.reportTitle = reportTitle
+        self.clientName = clientName
+        self.reportNotes = reportNotes
         self.updatedAt = updatedAt
     }
 
@@ -64,6 +96,11 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         imageFileName = try container.decodeIfPresent(String.self, forKey: .imageFileName)
         samples = try container.decodeIfPresent([SurveySample].self, forKey: .samples) ?? []
         walls = try container.decodeIfPresent([SurveyWall].self, forKey: .walls) ?? []
+        obstacles = try container.decodeIfPresent([SurveyObstacle].self, forKey: .obstacles) ?? []
+        planWidthMeters = try container.decodeIfPresent(Double.self, forKey: .planWidthMeters)
+        reportTitle = try container.decodeIfPresent(String.self, forKey: .reportTitle)
+        clientName = try container.decodeIfPresent(String.self, forKey: .clientName)
+        reportNotes = try container.decodeIfPresent(String.self, forKey: .reportNotes)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
     }
 }

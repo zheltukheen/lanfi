@@ -51,3 +51,22 @@ final class SurveyInterpolatorTests: XCTestCase {
         )
     }
 }
+
+final class SurveyObstacleTests: XCTestCase {
+    func testPolygonAttenuationLowersEstimate() throws {
+        let sample = SurveySample(
+            id: UUID(), x: 0.2, y: 0.5, rssi: -40, ssid: "S", bssid: "B", recordedAt: Date()
+        )
+        let room = SurveyObstacle.new(points: [
+            SurveyPoint(x: 0.4, y: 0.3), SurveyPoint(x: 0.6, y: 0.3),
+            SurveyPoint(x: 0.6, y: 0.7), SurveyPoint(x: 0.4, y: 0.7),
+        ])
+        let clear = try XCTUnwrap(
+            SurveyInterpolator.estimate(x: 0.8, y: 0.5, samples: [sample], walls: [])
+        )
+        let blocked = try XCTUnwrap(
+            SurveyInterpolator.estimate(x: 0.8, y: 0.5, samples: [sample], walls: [], obstacles: [room])
+        )
+        XCTAssertLessThan(blocked, clear)
+    }
+}

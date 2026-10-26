@@ -75,6 +75,8 @@ struct OfflineCaptureView: View {
                         TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(40)
                         TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(70)
                         TableColumn("Security", value: \.security)
+                        TableColumn("IEs") { Text("\($0.informationElements.count)") }.width(40)
+                        TableColumn("Clients") { Text($0.clientCount.map(String.init) ?? "—") }.width(55)
                         TableColumn("EHT") { Text($0.isEHT ? "Yes" : "—") }.width(40)
                     }
                     .tableStyle(.inset)

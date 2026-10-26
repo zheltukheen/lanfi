@@ -66,6 +66,7 @@ class AnalyzerViewModel: ObservableObject {
     private let customFilterStore = CustomFilterStore()
     private let coloringRuleStore = ColoringRuleStore()
     private let workspaceProfileStore = WorkspaceProfileStore()
+    private let expressionColumnStore = ExpressionColumnStore()
     private let refreshIntervalKey = "RefreshIntervalSeconds"
     private let historyWindowSeconds: TimeInterval = 180
 
@@ -121,6 +122,7 @@ class AnalyzerViewModel: ObservableObject {
     @Published private(set) var customFilters: [CustomFilter] = []
     @Published private(set) var coloringRules: [ColoringRule] = []
     @Published private(set) var workspaceProfiles: [WorkspaceProfile] = []
+    @Published private(set) var expressionColumns: [ExpressionColumn] = []
     @Published var activeFilterId: String?
     @Published private(set) var loadedSession: ScanSession?
     @Published var sessionMessage: String?
@@ -182,6 +184,8 @@ class AnalyzerViewModel: ObservableObject {
         customFilters = customFilterStore.load()
         coloringRules = coloringRuleStore.load()
         workspaceProfiles = workspaceProfileStore.load()
+        expressionColumns = expressionColumnStore.load()
+        appendExpressionColumnDefinitions()
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
@@ -478,6 +482,14 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func textForColumn(id: String, net: NetworkModel) -> String {
+        if id.hasPrefix("expr:"),
+            let uuid = UUID(uuidString: String(id.dropFirst(5))),
+            let expression = expressionColumns.first(where: { $0.id == uuid })
+        {
+            return ExpressionEvaluator.evaluate(
+                expression.template, network: net, metrics: analysis.metrics(for: net.id)
+            )
+        }
         guard let column = ColumnId(rawValue: id) else { return "-" }
         return columnFormatter.text(for: column, network: net)
     }
@@ -530,6 +542,47 @@ class AnalyzerViewModel: ObservableObject {
         var annotation = annotation(for: network)
         annotation.colorHex = hex
         updateAnnotation(annotation, for: network)
+    }
+
+    func addExpressionColumn(name: String, template: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        expressionColumns.append(ExpressionColumn(id: UUID(), name: trimmed, template: template))
+        expressionColumnStore.save(expressionColumns)
+        appendExpressionColumnDefinitions()
+    }
+
+    func updateExpressionColumn(_ column: ExpressionColumn) {
+        guard let index = expressionColumns.firstIndex(where: { $0.id == column.id }) else { return }
+        expressionColumns[index] = column
+        expressionColumnStore.save(expressionColumns)
+        appendExpressionColumnDefinitions()
+    }
+
+    func deleteExpressionColumn(_ column: ExpressionColumn) {
+        expressionColumns.removeAll { $0.id == column.id }
+        expressionColumnStore.save(expressionColumns)
+        columnDefinitions.removeAll { $0.id == "expr:\(column.id.uuidString)" }
+        saveColumnSettings()
+        objectWillChange.send()
+    }
+
+    private func appendExpressionColumnDefinitions() {
+        columnDefinitions.removeAll { $0.id.hasPrefix("expr:") }
+        var order = (columnDefinitions.map(\.order).max() ?? 0) + 1
+        for expression in expressionColumns {
+            columnDefinitions.append(
+                ColumnDefinition(
+                    id: "expr:\(expression.id.uuidString)",
+                    title: expression.name,
+                    width: 180,
+                    isVisible: true,
+                    order: order
+                )
+            )
+            order += 1
+        }
+        saveColumnSettings()
     }
 
     func saveWorkspaceProfile(named name: String) {
@@ -1037,6 +1090,28 @@ class AnalyzerViewModel: ObservableObject {
         }
     }
 
+    func importExternalScan() {
+        let panel = NSOpenPanel()
+        panel.title = "Import scan"
+        panel.allowedContentTypes = [.json, .commaSeparatedText]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let networks = try GenericScanImporter.load(url)
+            guard !networks.isEmpty else {
+                presentError("The import contained no usable networks.")
+                return
+            }
+            let session = ScanSession(
+                id: UUID(), name: "Imported \(url.lastPathComponent)",
+                createdAt: Date(), networks: networks, annotations: annotations
+            )
+            loadSession(session)
+        } catch {
+            presentError("Import failed: \(error.localizedDescription)")
+        }
+    }
+
     func importFilterProfile() {
         let panel = NSOpenPanel()
         panel.title = "Import filter profile"
@@ -1210,6 +1285,12 @@ class AnalyzerViewModel: ObservableObject {
                 fallback.order = order
                 normalized.append(fallback)
             }
+            order += 1
+        }
+        for def in sortedSaved where def.id.hasPrefix("expr:") && unique[def.id] != nil {
+            var expression = def
+            expression.order = order
+            normalized.append(expression)
             order += 1
         }
         return normalized

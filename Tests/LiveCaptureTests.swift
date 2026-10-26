@@ -4,7 +4,8 @@ final class LiveCaptureTests: XCTestCase {
     func testMonitorModeCommandContainsRadiotapAndDuration() throws {
         let url = URL(fileURLWithPath: "/tmp/LanFi test.pcap")
         let options = LiveCaptureOptions(
-            interfaceName: "en0", duration: 15, outputURL: url, monitorMode: true
+            interfaceName: "en0", duration: 15, outputURL: url, monitorMode: true,
+            filter: "type mgt"
         )
         try LiveCaptureService.validate(options)
         let command = LiveCaptureService.shellCommand(for: options)
@@ -13,6 +14,7 @@ final class LiveCaptureTests: XCTestCase {
         XCTAssertTrue(command.contains("/tmp/LanFi test.pcap"))
         XCTAssertTrue(command.contains("sleep 15"))
         XCTAssertTrue(command.contains("kill -TERM $PID"))
+        XCTAssertTrue(command.contains("type mgt"))
         XCTAssertFalse(command.contains("\n"))
         XCTAssertFalse(command.contains("&;"))
     }

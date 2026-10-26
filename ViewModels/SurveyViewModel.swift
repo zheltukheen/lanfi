@@ -30,6 +30,7 @@ final class SurveyViewModel: ObservableObject {
 
     var samples: [SurveySample] { project.samples }
     var walls: [SurveyWall] { project.walls }
+    var obstacles: [SurveyObstacle] { project.obstacles }
 
     func samples(for network: NetworkModel?) -> [SurveySample] {
         guard let network else { return project.samples }
@@ -82,6 +83,48 @@ final class SurveyViewModel: ObservableObject {
         project.updatedAt = Date()
         scheduleSave()
         statusMessage = "Wall added · \(Int(project.walls.last?.attenuationDb ?? 8)) dB attenuation."
+    }
+
+    func addObstacle(points: [SurveyPoint]) {
+        guard points.count >= 3 else { return }
+        let clamped = points.map {
+            SurveyPoint(x: min(max($0.x, 0), 1), y: min(max($0.y, 0), 1))
+        }
+        project.obstacles.append(.new(points: clamped))
+        project.updatedAt = Date()
+        scheduleSave()
+        statusMessage = "Room added · \(project.obstacles.count) rooms."
+    }
+
+    func clearObstacles() {
+        project.obstacles.removeAll()
+        project.updatedAt = Date()
+        store.save(project, imageData: nil)
+        statusMessage = "Rooms cleared."
+    }
+
+    func updateReportMetadata(title: String, client: String, planWidth: String, notes: String) {
+        project.reportTitle = title.isEmpty ? nil : title
+        project.clientName = client.isEmpty ? nil : client
+        project.planWidthMeters = Double(planWidth.replacingOccurrences(of: ",", with: "."))
+        project.reportNotes = notes.isEmpty ? nil : notes
+        project.updatedAt = Date()
+        save()
+    }
+
+    func exportAllFloorsPDF(networkName: String) {
+        let panel = NSSavePanel()
+        panel.title = "Export all floors"
+        panel.nameFieldStringValue = "LanFi-Survey-All-Floors.pdf"
+        panel.allowedContentTypes = [.pdf]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let all = projects.isEmpty ? [project] : projects
+        let images = Dictionary(
+            uniqueKeysWithValues: all.map { ($0.id, store.imageData(for: $0).flatMap(NSImage.init(data:))) })
+        let data = SurveyReportExporter.makePortfolioPDF(
+            projects: all, images: images, networkName: networkName
+        )
+        try? data.write(to: url, options: .atomic)
     }
 
     func clearWalls() {

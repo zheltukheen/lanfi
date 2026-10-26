@@ -12,6 +12,8 @@ struct LiveCaptureView: View {
     @State private var completedURL: URL?
     @State private var showingAnalysis = false
     @State private var customOutput = false
+    @State private var filter = ""
+    @State private var profiles: [CaptureProfile] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -24,6 +26,15 @@ struct LiveCaptureView: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
+                Menu("Profiles") {
+                    ForEach(profiles) { profile in
+                        Button(profile.name) { apply(profile) }
+                    }
+                    if !profiles.isEmpty { Divider() }
+                    Button("Save current…") { saveProfile() }
+                }
+                .menuStyle(.borderlessButton)
+                .frame(width: 90)
                 Button("Close") { dismiss() }
             }
 
@@ -50,6 +61,12 @@ struct LiveCaptureView: View {
                     }
                     .labelsHidden()
                     .frame(width: 220)
+                }
+                GridRow {
+                    Text("BPF filter").foregroundColor(.secondary)
+                    TextField("e.g. type mgt subtype beacon", text: $filter)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 300)
                 }
                 GridRow {
                     Text("Output").foregroundColor(.secondary)
@@ -130,6 +147,7 @@ struct LiveCaptureView: View {
                 selectedInterface = first
             }
             monitorMode = selectedInterface == "en0"
+            profiles = CaptureProfileStore().load()
         }
     }
 
@@ -145,7 +163,8 @@ struct LiveCaptureView: View {
             interfaceName: selectedInterface,
             duration: duration,
             outputURL: outputURL,
-            monitorMode: monitorMode && selectedInterface.hasPrefix("en")
+            monitorMode: monitorMode && selectedInterface.hasPrefix("en"),
+            filter: filter
         )
         isCapturing = true
         Task {
@@ -164,6 +183,36 @@ struct LiveCaptureView: View {
                 }
             }
         }
+    }
+
+    private func apply(_ profile: CaptureProfile) {
+        selectedInterface = profile.interfaceName
+        duration = profile.duration
+        monitorMode = profile.monitorMode
+        filter = profile.filter
+    }
+
+    private func saveProfile() {
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 22))
+        field.stringValue = "Capture profile"
+        let alert = NSAlert()
+        alert.messageText = "Save capture profile"
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        let profile = CaptureProfile.new(
+            name: name, interfaceName: selectedInterface, duration: duration,
+            monitorMode: monitorMode, filter: filter
+        )
+        if let index = profiles.firstIndex(where: { $0.name == name }) {
+            profiles[index] = profile
+        } else {
+            profiles.append(profile)
+        }
+        CaptureProfileStore().save(profiles)
     }
 
     private func chooseOutput() {

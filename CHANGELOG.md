@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.7.0 — 2026-10-26
+
+### Added
+- Survey walking mode with throttled automatic sampling.
+- Room obstacle polygons with attenuation; scale, client/title/notes metadata.
+- Branded PDF reports and an all-floors portfolio PDF.
+- Generic scan importer for LanFi JSON and CSV.
+- Capture profiles and BPF filter expressions.
+- PCAP IE decoding and BSS-Load client counts in offline analysis.
+- Custom expression columns with tokens and Settings editor.
+- Copy all/selected information elements.
+- Hide empty graphs setting.
+
+### Changed
+- Version 2.7.0 (build 28).
+
+
 ## 2.6.0 — 2026-10-26
 
 ### Added

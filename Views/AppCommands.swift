@@ -166,6 +166,9 @@ struct LanFiCommands: Commands {
             Button("Open Session…") {
                 viewModel.promptOpenSession()
             }
+            Button("Import External Scan…") {
+                viewModel.importExternalScan()
+            }
             if viewModel.isSessionMode {
                 Button("Resume Live Scan") {
                     viewModel.resumeLiveScan()

@@ -6,6 +6,7 @@ struct LiveCaptureOptions: Equatable {
     let duration: Int
     let outputURL: URL
     let monitorMode: Bool
+    var filter: String = ""
 
     var isWiFi: Bool { interfaceName == "en0" || monitorMode }
 }
@@ -51,6 +52,9 @@ enum LiveCaptureService {
         ]
         if options.monitorMode {
             args.append(contentsOf: ["-I", "-y", "IEEE802_11_RADIO"])
+        }
+        if !options.filter.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            args.append(shellQuote(options.filter))
         }
         args.append(contentsOf: ["2>", errorPath])
         let command = args.joined(separator: " ")

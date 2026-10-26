@@ -18,6 +18,8 @@ struct SettingsView: View {
                 .tabItem { Label("Vendors", systemImage: "building.2") }
             ColorRulesSettingsView(viewModel: analyzer)
                 .tabItem { Label("Colors", systemImage: "paintpalette") }
+            ExpressionColumnsSettingsView(viewModel: analyzer)
+                .tabItem { Label("Columns", systemImage: "tablecells") }
             DiagnosticsSettingsView()
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
         }
@@ -60,6 +62,16 @@ private struct GeneralSettingsView: View {
                         forType: .string
                     )
                 }
+            }
+
+            Section("Display") {
+                Toggle(
+                    "Hide empty graphs",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "Wifa.hideEmptyGraphs") },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.hideEmptyGraphs") }
+                    )
+                )
             }
 
             Section("Data") {

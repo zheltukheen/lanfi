@@ -53,6 +53,14 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Manual VoiceOver audit of every remaining screen (chart descriptors and key
   controls are covered).
 
+## Delivered in 2.7
+
+- Walking and room-polygon surveys, scale/report metadata, branded
+  single-floor and all-floors PDFs.
+- Generic JSON/CSV importer, capture profiles with BPF filters.
+- PCAP IE parsing and client counts; custom expression columns; IE copy;
+  hide-empty-graphs setting.
+
 ## Delivered in 2.6
 
 - Custom filter expressions/automatic presets and multi-select sidebar filters.
