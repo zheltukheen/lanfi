@@ -513,3 +513,6 @@
 "Regulatory & 6 GHz" = "Регуляторика и 6 ГГц";
 "Other radios" = "Другие радио";
 "Not visible to the built-in Wi-Fi radio. Requires a dedicated 802.15.4 adapter; LanFi does not emulate that data." = "Встроенное Wi-Fi радио этого не видит. Нужен отдельный 802.15.4 адаптер; LanFi не эмулирует эти данные.";
+
+"High contrast mode" = "Режим высокой контрастности";
+"Increases contrast and border weight for low-vision use." = "Повышает контраст и толщину границ для слабовидящих.";

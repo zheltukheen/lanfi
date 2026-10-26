@@ -48,6 +48,7 @@ final class WiFiTableCellView: NSTableCellView {
     ) {
         textFieldLabel.stringValue = text
         textFieldLabel.toolTip = text
+        textFieldLabel.setAccessibilityLabel(text)
         textFieldLabel.alignment = alignment
 
         let baseFont = NSFont.systemFont(ofSize: NSFont.systemFontSize)
@@ -207,7 +208,9 @@ final class TintedRowView: NSTableRowView {
 
     override func drawBackground(in dirtyRect: NSRect) {
         if let tint {
-            tint.withAlphaComponent(0.16).setFill()
+            let alpha: CGFloat =
+                NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? 0.26 : 0.20
+            tint.withAlphaComponent(alpha).setFill()
             dirtyRect.fill()
         }
         super.drawBackground(in: dirtyRect)

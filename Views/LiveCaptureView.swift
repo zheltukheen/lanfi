@@ -5,6 +5,7 @@ struct LiveCaptureView: View {
     @State private var interfaces: [String] = []
     @State private var selectedInterface = "en0"
     @State private var duration = 20
+    @State private var startDelay = 0
     @State private var monitorMode = true
     @State private var outputURL = LiveCaptureView.defaultOutputURL()
     @State private var isCapturing = false
@@ -58,6 +59,17 @@ struct LiveCaptureView: View {
                         Text("20 seconds").tag(20)
                         Text("30 seconds").tag(30)
                         Text("60 seconds").tag(60)
+                    }
+                    .labelsHidden()
+                    .frame(width: 220)
+                }
+                GridRow {
+                    Text("Start delay").foregroundColor(.secondary)
+                    Picker("", selection: $startDelay) {
+                        Text("No delay").tag(0)
+                        Text("5 seconds").tag(5)
+                        Text("10 seconds").tag(10)
+                        Text("30 seconds").tag(30)
                     }
                     .labelsHidden()
                     .frame(width: 220)
@@ -164,7 +176,8 @@ struct LiveCaptureView: View {
             duration: duration,
             outputURL: outputURL,
             monitorMode: monitorMode && selectedInterface.hasPrefix("en"),
-            filter: filter
+            filter: filter,
+            startDelay: startDelay
         )
         isCapturing = true
         Task {
