@@ -205,7 +205,7 @@ private struct InterfaceCard: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
                 .frame(width: 66, alignment: .leading)
-            Text(value.isEmpty ? "—" : String(localized: String.LocalizationValue(value)))
+            Text(value.isEmpty ? "—" : TechnicalLocalizer.localize(value))
                 .font(.caption2)
                 .lineLimit(2)
                 .truncationMode(.middle)
