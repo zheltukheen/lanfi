@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.9.0 — 2026-10-26
+
+### Added
+- Diagnostics history is persisted across launches (last 12 reports); history
+  capsules can restore a report and history can be cleared.
+- VoiceOver chart descriptors for signal history and channel occupancy, plus
+  combined accessibility cards for protocol blocks and interfaces.
+
+### Changed
+- Expanded Russian localization for remaining static UI: diagnostics, panels,
+  filters, commands, profiles, empty states and status labels.
+- Homebrew tap now points at the main repository, so every cask update is
+  immediately installable via
+  `brew tap zheltukheen/lanfi https://github.com/zheltukheen/wifa`.
+
+
 ## 1.8.0 — 2026-10-26
 
 ### Added

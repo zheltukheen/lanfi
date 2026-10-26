@@ -18,7 +18,13 @@ final class DiagnosticsViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let engine = NetworkDiagnosticsEngine()
+    private let historyStore = DiagnosticsHistoryStore()
     private var monitorTask: Task<Void, Never>?
+
+    init() {
+        history = historyStore.load()
+        report = history.last
+    }
 
     var overall: DiagnosticStatus {
         report?.overall ?? .pending
@@ -38,11 +44,22 @@ final class DiagnosticsViewModel: ObservableObject {
         report = result
         history.append(result)
         if history.count > 12 { history.removeFirst(history.count - 12) }
+        historyStore.save(history)
         errorMessage = nil
     }
 
     func toggleMonitoring() {
         autoMonitor.toggle()
+    }
+
+    func selectHistory(_ item: DiagnosticsReport) {
+        report = item
+    }
+
+    func clearHistory() {
+        history.removeAll()
+        historyStore.clear()
+        report = nil
     }
 
     func copyReport() {

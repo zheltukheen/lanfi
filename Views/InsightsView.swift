@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import Accessibility
 
 // MARK: - Shared quality components
 
@@ -454,6 +455,8 @@ struct InsightsView: View {
                         }
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityChartDescriptor(OccupancyDescriptor(rows: data, band: occupancyBand))
                 .accessibilityLabel("Channel occupancy for \(occupancyBand.label)")
                 .accessibilityValue(
                     data.map { "channel \($0.channel): \($0.networkCount) networks" }.joined(separator: ", ")
@@ -495,5 +498,42 @@ struct InsightsView: View {
         case .warning: return "exclamationmark.triangle.fill"
         case .info: return "info.circle.fill"
         }
+    }
+}
+
+private struct OccupancyDescriptor: AXChartDescriptorRepresentable {
+    let rows: [ChannelOccupancy]
+    let band: WiFiBand
+
+    func makeChartDescriptor() -> AXChartDescriptor {
+        let channels = rows.map(\.channel)
+        let maxChannel = max(channels.max() ?? 1, 1)
+        let minChannel = min(channels.min() ?? 1, maxChannel)
+        let maxCount = max(rows.map(\.networkCount).max() ?? 1, 1)
+        let xAxis = AXNumericDataAxisDescriptor(
+            title: "Channel",
+            range: Double(minChannel)...Double(maxChannel),
+            gridlinePositions: []
+        ) { value in "Channel \(Int(value))" }
+        let yAxis = AXNumericDataAxisDescriptor(
+            title: "Networks",
+            range: 0...Double(maxCount),
+            gridlinePositions: []
+        ) { value in "\(Int(value)) networks" }
+        let points = rows.map { row in
+            AXDataPoint(
+                x: Double(row.channel),
+                y: Double(row.networkCount),
+                label: "Channel \(row.channel), \(row.networkCount) networks"
+            )
+        }
+        return AXChartDescriptor(
+            title: "Channel occupancy",
+            summary: "\(band.label), \(rows.count) channels",
+            xAxis: xAxis,
+            yAxis: yAxis,
+            additionalAxes: [],
+            series: [AXDataSeriesDescriptor(name: band.label, isContinuous: false, dataPoints: points)]
+        )
     }
 }

@@ -16,6 +16,7 @@
 		1553D68492677966F2C1DDBF /* ProtocolProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */; };
 		15C122DF91B199970BEC161B /* oui in Resources */ = {isa = PBXBuildFile; fileRef = 6F2AFA70627054823768D660 /* oui */; };
 		16D02A332CA9E208F31CB1A8 /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
+		17BA794AE56AAB4BB6C8C284 /* DiagnosticsHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB06740BC5AD190BF0363B /* DiagnosticsHistoryStore.swift */; };
 		18B1511F8FC314D12791E073 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A182714C038138461289B /* MenuBarView.swift */; };
 		19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23E9DF192173EEBD466621A /* ColumnCatalog.swift */; };
 		1C3C02C396F0120F287E7634 /* SystemInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20608B23AE2BDC4528717865 /* SystemInterface.swift */; };
@@ -31,6 +32,7 @@
 		4ADB4161FC54C42691A05E26 /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1335A7BFB3791419C177D1B /* SessionTests.swift */; };
 		4C0808FF17864193C9DAFEF7 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */; };
 		53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
+		58B6C80CD67271533EA0EAB8 /* DiagnosticsHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F4351A08D1255E0E2730AB /* DiagnosticsHistoryTests.swift */; };
 		590D50DA6E2DA166F4C8554C /* SurveyInterpolator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76D0661115093391A9191CE /* SurveyInterpolator.swift */; };
 		59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
 		5BCB4A9A391022705968072E /* APNameDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657C986D019A224FDFEE348D /* APNameDetectorTests.swift */; };
@@ -76,6 +78,7 @@
 		AE63074E60A93D7CF851D661 /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
 		AE71876A0AF8AE300753BEF6 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D738C591A8707E4A7316C0 /* UpdaterController.swift */; };
 		B4D6F48E2D0F1F0E56844497 /* LiveCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */; };
+		B5E3692F509F5EFFD29586FD /* DiagnosticsHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB06740BC5AD190BF0363B /* DiagnosticsHistoryStore.swift */; };
 		B5FB900DC70AB04096915C6F /* InformationElementParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */; };
 		B83C4C6309BB2B9A0F4A5179 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 544BCF73F96E99C5CFCA5728 /* Sparkle */; };
 		BDEBC62FEE192FF66E0ABDF9 /* APNameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */; };
@@ -137,6 +140,7 @@
 		687874D5350B989C31061197 /* DiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsTests.swift; sourceTree = "<group>"; };
 		6F2AFA70627054823768D660 /* oui */ = {isa = PBXFileReference; path = oui; sourceTree = "<group>"; };
 		70BE8CC2AA6D732B20760EEF /* RemoteSensorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSensorsView.swift; sourceTree = "<group>"; };
+		75F4351A08D1255E0E2730AB /* DiagnosticsHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsHistoryTests.swift; sourceTree = "<group>"; };
 		7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParserTests.swift; sourceTree = "<group>"; };
 		7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnProfileTests.swift; sourceTree = "<group>"; };
 		7CC8A261F612C8FEDB72654D /* RemoteSensorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSensorService.swift; sourceTree = "<group>"; };
@@ -180,6 +184,7 @@
 		FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFilterView.swift; sourceTree = "<group>"; };
 		FBBCB97B25338A19AF78881E /* ColumnProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnProfile.swift; sourceTree = "<group>"; };
 		FC63E28A660C8C0A8B2B2D28 /* InterfacesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfacesViewModel.swift; sourceTree = "<group>"; };
+		FEFB06740BC5AD190BF0363B /* DiagnosticsHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsHistoryStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +206,7 @@
 				657C986D019A224FDFEE348D /* APNameDetectorTests.swift */,
 				B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */,
 				7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */,
+				75F4351A08D1255E0E2730AB /* DiagnosticsHistoryTests.swift */,
 				687874D5350B989C31061197 /* DiagnosticsTests.swift */,
 				7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */,
 				CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */,
@@ -244,6 +250,7 @@
 			children = (
 				AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */,
 				CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */,
+				FEFB06740BC5AD190BF0363B /* DiagnosticsHistoryStore.swift */,
 				C93F615B00753F1F4577B061 /* InformationElementParser.swift */,
 				5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */,
 				53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */,
@@ -448,6 +455,8 @@
 				7FEA36D79B28E565B476861A /* ColumnProfile.swift in Sources */,
 				D6E8563A3C6351B002E24466 /* ColumnProfileTests.swift in Sources */,
 				6F1E84A4F606560CDBE5019F /* DiagnosticsEngine.swift in Sources */,
+				B5E3692F509F5EFFD29586FD /* DiagnosticsHistoryStore.swift in Sources */,
+				58B6C80CD67271533EA0EAB8 /* DiagnosticsHistoryTests.swift in Sources */,
 				E74FA2996C24893BB9A680C2 /* DiagnosticsModel.swift in Sources */,
 				A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */,
 				3C4129BF2791C83851FE20B6 /* InformationElementParser.swift in Sources */,
@@ -495,6 +504,7 @@
 				19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */,
 				0FD917A1C6F9B064A4DD4A53 /* ColumnProfile.swift in Sources */,
 				A862642AA20FB3C72F423930 /* DiagnosticsEngine.swift in Sources */,
+				17BA794AE56AAB4BB6C8C284 /* DiagnosticsHistoryStore.swift in Sources */,
 				3AEA3FCF4941A7AFDD261FCC /* DiagnosticsModel.swift in Sources */,
 				8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */,
 				6DC6787C94B7BD571757BA76 /* DiagnosticsViewModel.swift in Sources */,
@@ -638,13 +648,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
@@ -722,13 +732,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
