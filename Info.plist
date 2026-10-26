@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 LanFi Contributors</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>LanFi connects to remote sensors on your local network over SSH when you ask it to.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

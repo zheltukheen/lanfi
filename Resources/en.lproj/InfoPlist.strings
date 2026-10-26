@@ -1,2 +1,3 @@
 "NSLocationUsageDescription" = "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.";
 "NSLocationWhenInUseUsageDescription" = "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.";
+"NSLocalNetworkUsageDescription" = "LanFi connects to remote sensors on your local network over SSH when you ask it to.";

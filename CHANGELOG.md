@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.8.0 — 2026-10-26
+
+### Added
+- **Remote sensors over SSH.** Save sensors, run `system_profiler
+  SPAirPortDataType -json` on another Mac, and inspect its visible networks
+  (SSID, band, channel, width, RSSI, SNR, PHY, security). Host/user input is
+  validated against option injection; key-based login is required.
+- Local Network usage description and Russian strings for the remote UI.
+
+### Changed
+- Remote sensor results are deduplicated and displayed in a dedicated sheet
+  under **Data → Remote Sensors…**.
+
+
 ## 1.7.0 — 2026-10-26
 
 ### Added

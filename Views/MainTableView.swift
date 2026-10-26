@@ -14,6 +14,7 @@ struct MainTableView: View {
     // UI State
     @State private var isResizingPanels = false
     @State private var showingLiveCapture = false
+    @State private var showingRemoteSensors = false
 
     // Resizable Panels State
     @State private var inspectorBaseWidth: CGFloat = 300
@@ -206,6 +207,15 @@ struct MainTableView: View {
         // Запрос прав при появлении
         .sheet(isPresented: $showingLiveCapture) {
             LiveCaptureView()
+        }
+        .sheet(isPresented: $showingRemoteSensors) {
+            RemoteSensorsView()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowLiveCapture)) { _ in
+            showingLiveCapture = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowRemoteSensors)) { _ in
+            showingRemoteSensors = true
         }
         .onAppear {
             if !viewModel.isLocationAuthorized {
@@ -518,9 +528,6 @@ struct ToolbarView: View {
         .padding(10)
         .background(Material.bar)
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .bottom)
-        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowLiveCapture)) { _ in
-            showingLiveCapture = true
-        }
         .onReceive(NotificationCenter.default.publisher(for: .wifaFocusSearch)) { _ in
             isSearchFocused = true
         }
@@ -530,6 +537,7 @@ struct ToolbarView: View {
 extension Notification.Name {
     static let wifaFocusSearch = Notification.Name("LanFi.focusSearch")
     static let lanfiShowLiveCapture = Notification.Name("LanFi.showLiveCapture")
+    static let lanfiShowRemoteSensors = Notification.Name("LanFi.showRemoteSensors")
 }
 
 // MARK: - Subviews

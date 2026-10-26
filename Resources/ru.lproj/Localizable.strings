@@ -287,3 +287,32 @@
 "Wall mode: click two points to draw a wall." = "Режим стены: кликните две точки.";
 "Wall start set. Click the second point." = "Начало стены задано. Кликните вторую точку.";
 "· walls -8 dB" = "· стены −8 дБ";
+
+/* Remote sensors */
+"Remote sensors" = "Удалённые сенсоры";
+"Run a scan on another Mac over SSH. Key-based login is required." = "Запуск сканирования на другом Mac по SSH. Нужен вход по ключу.";
+"Add sensor" = "Добавить сенсор";
+"Edit sensor" = "Изменить сенсор";
+"Delete sensor" = "Удалить сенсор";
+"Scan" = "Сканировать";
+"No remote scan yet" = "Удалённого скана пока нет";
+"The sensor must have Remote Login enabled and your SSH key authorized." = "На сенсоре должен быть включён Remote Login, а ваш SSH-ключ — авторизован.";
+"Add a remote sensor" = "Добавьте удалённый сенсор";
+"Add Sensor" = "Добавить сенсор";
+"No sensors" = "Нет сенсоров";
+"SSID" = "SSID";
+"Ch" = "Кан.";
+"Width" = "Ширина";
+"RSSI" = "RSSI";
+"SNR" = "SNR";
+"PHY" = "PHY";
+"Name" = "Имя";
+"Host" = "Хост";
+"User" = "Пользователь";
+"Port" = "Порт";
+"SSH key" = "SSH-ключ";
+"Remote Mac" = "Удалённый Mac";
+"Office Mac" = "Офисный Mac";
+"Add remote sensor" = "Добавить удалённый сенсор";
+"Edit remote sensor" = "Изменить удалённый сенсор";
+"Remote Sensors…" = "Удалённые сенсоры…";

@@ -43,7 +43,7 @@ surfaced with severity and remediation hints.
 | Security | Open/WEP/legacy WPA findings, WPS and PMF (802.11w) detection, severity levels and remediation text |
 | Charts | Per-band spectrum view and 3-minute signal history with hover/click selection |
 | Raw data | 802.11 information-element table with expandable decoded fields (RSN, WPS, HT/VHT/HE, country, BSS Load…) |
-| Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), all BSD interface analysis, live PCAP capture, column profiles, search, filters, menu bar extra |
+| Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), all BSD interface analysis, live PCAP capture, remote SSH sensors, column profiles, search, filters, menu bar extra |
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
