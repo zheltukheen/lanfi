@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0 — 2026-10-26
+
+### Added
+- Decode the IEEE 802.11be Multi-Link extension element (Basic / Probe /
+  Reconfiguration control types), in addition to EHT Operation/Capabilities and
+  320 MHz detection. Full per-link BSSID sets still require offline capture.
+
+
 ## 2.0.0 — 2026-10-26
 
 ### Added

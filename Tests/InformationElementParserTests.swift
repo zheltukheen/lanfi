@@ -119,3 +119,14 @@ final class EHTInformationElementTests: XCTestCase {
         XCTAssertTrue(parsed.elements.contains { $0.name.contains("EHT Capabilities") })
     }
 }
+
+final class MultiLinkInformationElementTests: XCTestCase {
+    func testMultiLinkElementIsDecoded() throws {
+        let payload: [UInt8] = [107, 0x00, 0x00, 0x10, 0x00, 0x01]
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name.contains("Multi-Link") })
+        XCTAssertTrue(element.summary.contains("Basic"))
+    }
+}

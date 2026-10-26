@@ -568,6 +568,8 @@ struct InformationElementParser {
             )
         case 106:
             return decodeEhtOperation(Data(payload))
+        case 107:
+            return decodeMultiLink(Data(payload))
         case 108:
             return (
                 name: "Extension: EHT Capabilities",
@@ -577,6 +579,33 @@ struct InformationElementParser {
         default:
             return (name: "Extension", summary: "Raw: \(hexString(data))", detailLines: ["Raw: \(hexString(data))"])
         }
+    }
+
+    private static func decodeMultiLink(_ data: Data) -> (name: String, summary: String, detailLines: [String]) {
+        guard data.count >= 2 else {
+            return (
+                name: "Extension: Multi-Link",
+                summary: "Multi-Link element (truncated)",
+                detailLines: ["Multi-Link: \(hexString(data))"]
+            )
+        }
+        let control = UInt16(data[data.startIndex]) | (UInt16(data[data.startIndex + 1]) << 8)
+        let type = control & 0x07
+        let typeName: String
+        switch type {
+        case 0: typeName = "Basic"
+        case 1: typeName = "Probe request"
+        case 2: typeName = "Reconfiguration"
+        default: typeName = "type \(type)"
+        }
+        return (
+            name: "Extension: Multi-Link",
+            summary: "Multi-Link · \(typeName)",
+            detailLines: [
+                "Multi-Link control type: \(typeName)",
+                "Multi-Link element length: \(data.count) bytes",
+            ]
+        )
     }
 
     private static func decodeEhtOperation(_ data: Data) -> (name: String, summary: String, detailLines: [String]) {

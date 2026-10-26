@@ -179,8 +179,8 @@ expanded localization and VoiceOver chart descriptors.
 
 Still open: actual Developer ID notarization (the CI pipeline is ready but
 credentials are not configured), full localization of dynamic detail strings,
-and true MLO link-set decoding (CoreWLAN does not expose it; LanFi decodes EHT
-Operation where the IE is present).
+per-link MLO BSSID sets (CoreWLAN does not expose them; LanFi decodes EHT and
+Multi-Link elements where present), and spectrum-analyzer hardware integration.
 
 ## Project structure
 
