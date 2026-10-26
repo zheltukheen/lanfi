@@ -628,7 +628,14 @@ struct InformationElementParser {
                             let staControl =
                                 UInt16(data[data.startIndex + offset])
                                 | (UInt16(data[data.startIndex + offset + 1]) << 8)
-                            links.append(Int(staControl & 0x000F))
+                            let linkID = Int(staControl & 0x000F)
+                            links.append(linkID)
+                            if staControl & 0x0020 != 0, subLength >= 8 {
+                                let mac = (0..<6).map {
+                                    String(format: "%02X", data[data.startIndex + offset + 2 + $0])
+                                }.joined(separator: ":")
+                                details.append("Link \(linkID) BSSID: \(mac)")
+                            }
                         }
                         offset += subLength
                     }
