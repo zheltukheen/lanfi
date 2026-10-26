@@ -171,7 +171,7 @@ The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-Delivered through 2.1: protocol blocks, all-interface analysis, diagnostics
+Delivered through 2.3: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column
 profiles, multi-select, synthetic + live + offline PCAP/PCAPNG, IDW survey
 heatmaps with walls and PDF reports, SSH remote sensors with polling, AP-name
@@ -181,8 +181,9 @@ localization and VoiceOver chart descriptors.
 
 Remaining external blockers: actual Developer ID notarization (the CI pipeline
 is ready; Apple/Developer ID secrets are not configured) and hardware spectrum
-analyzer integration. Per-link MLO BSSID sets require a dedicated monitor
-capture parser; LanFi decodes the Multi-Link and EHT elements it can see.
+analyzer integration. LanFi now decodes Multi-Link AP MLD/link IDs and EHT/320
+MHz; full per-link BSSID sets still need a dedicated monitor-capture parser.
+Dynamic technical output is localized through a generated-phrase catalog.
 
 ## Project structure
 

@@ -53,6 +53,12 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - In-app vendor database updates, crash diagnostics and release VM smoke tests.
 - CLI/JSON automation and filter/profile import-export.
 
+## Delivered in 2.3
+
+- Dynamic technical localization (SSID-safe phrase catalog).
+- Additional VoiceOver labels and continued accessibility polish.
+- 2.3 release with app/CLI/DMG assets and signed appcast.
+
 ## Delivered in 2.1
 
 - Multi-Link extension element decoding (Basic / Probe / Reconfiguration).
