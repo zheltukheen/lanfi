@@ -45,8 +45,6 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 **Behind paid tools / external**
 - Notarized builds (only an Apple Development identity is available; no Apple
   Developer Program account).
-- Multi-select comparison view and bulk annotation editing (multi-select,
-  bulk copy and selected export are implemented).
 - External USB Wi-Fi adapter measurement path beyond interfaces exposed by
   CoreWLAN.
 - Hardware spectrum analyzer integration (WLAN Pi, Wi-Spy, etc.).
@@ -54,6 +52,14 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
   need a dedicated monitor-capture parser).
 - Manual VoiceOver audit of every remaining screen (chart descriptors and key
   controls are covered).
+
+## Delivered in 2.5.2
+
+- Clickable filter section headers and a designed sort popover.
+- Colored 2.4/5/6 GHz + Wi-Fi 7 chips in the toolbar; Wi-Fi 7 filter
+  persistence and filter-profile support.
+- Multi-select comparison grid and bulk alias/notes editing.
+- Reliable live-capture shutdown and clear wrong-link-type diagnostics.
 
 ## Delivered in 2.3
 

@@ -181,10 +181,11 @@ localization and VoiceOver chart descriptors.
 
 Remaining outside the shipped code: actual Apple notarization (no Developer
 Program account/Developer ID certificate), hardware spectrum analyzer
-integration, full per-link MLO BSSID sets, a multi-select comparison/bulk-edit
-view, and a manual VoiceOver audit of the remaining screens. Multi-select,
-bulk copy/export, dynamic technical localization, PCAPNG/offline analysis,
-vendor DB updates, CLI, URL automation, alerts and reports are implemented.
+integration, full per-link MLO BSSID sets, external USB adapter measurement
+beyond CoreWLAN, and a manual VoiceOver audit of the remaining screens.
+Multi-select comparison/bulk edit, dynamic technical localization,
+PCAPNG/offline analysis, vendor DB updates, CLI, URL automation, alerts,
+survey reports and app-wide settings are implemented.
 
 ## Project structure
 
