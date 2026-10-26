@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.5.0 — 2026-10-26
+
+### Added
+- Multi-select comparison grid (signal/channel/quality) and bulk alias/notes
+  editing for every selected network.
+
+### Changed
+- Version 2.5.0 (build 22).
+
+
 ## 2.4.1 — 2026-10-26
 
 ### Fixed

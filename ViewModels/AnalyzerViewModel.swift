@@ -456,6 +456,16 @@ class AnalyzerViewModel: ObservableObject {
         annotationStore.annotation(for: network.id)
     }
 
+    func applyBulkAnnotation(alias: String, notes: String, to ids: Set<String>) {
+        for id in ids {
+            var annotation = annotationStore.annotation(for: id)
+            annotation.alias = alias
+            annotation.notes = notes
+            annotationStore.update(annotation, for: id)
+        }
+        annotations = annotationStore.annotations
+    }
+
     func updateAnnotation(_ annotation: NetworkAnnotation, for network: NetworkModel) {
         annotationStore.update(annotation, for: network.id)
         annotations = annotationStore.annotations
