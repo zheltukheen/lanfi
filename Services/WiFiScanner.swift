@@ -140,6 +140,10 @@ actor WiFiScanner {
         }
     }
 
+    private static func wiFi7PHYMode() -> CWPHYMode? {
+        CWPHYMode(rawValue: 7)
+    }
+
     private static func mapChannelWidth(_ width: CWChannelWidth?) -> Int {
         switch width {
         case .width20MHz: return 20
@@ -151,7 +155,15 @@ actor WiFiScanner {
     }
 
     private static func mapGeneration(_ network: CWNetwork) -> WiFiStandard {
-        if #available(macOS 15.0, *), network.supportsPHYMode(.mode11be) { return .mode11be }
+        // 802.11be was added to CWPHYMode in a later SDK. Use its raw value so
+        // the app still builds against older Xcode versions and detects Wi-Fi 7
+        // at runtime on macOS 15+.
+        if #available(macOS 15.0, *),
+            let wiFi7Mode = wiFi7PHYMode(),
+            network.supportsPHYMode(wiFi7Mode)
+        {
+            return .mode11be
+        }
         if network.supportsPHYMode(.mode11ax) { return .mode11ax }
         if network.supportsPHYMode(.mode11ac) { return .mode11ac }
         if network.supportsPHYMode(.mode11n) { return .mode11n }
