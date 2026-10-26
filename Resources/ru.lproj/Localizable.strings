@@ -427,3 +427,11 @@
 "Location permission may be required to read RSSI" = "Для RSSI может потребоваться доступ к геолокации";
 "macOS did not report a DNS server" = "macOS не сообщила DNS-сервер";
 "Wi-Fi link, gateway, DNS, HTTPS and latency" = "Wi-Fi, шлюз, DNS, HTTPS и задержка";
+
+/* Detail strings */
+"From BSS Load when the AP exposes it" = "Из BSS Load, если AP его передаёт";
+"Preferred scanning channels and AFC may apply" = "Могут применяться preferred scanning channels и AFC";
+"Speeds up roaming between access points" = "Ускоряет роуминг между точками доступа";
+"Wi-Fi link, gateway, DNS, HTTPS and latency" = "Wi-Fi, шлюз, DNS, HTTPS и задержка";
+"Full link set requires offline capture analysis" = "Для полного link set нужен офлайн-анализ захвата";
+"CoreWLAN width:" = "Ширина CoreWLAN:";

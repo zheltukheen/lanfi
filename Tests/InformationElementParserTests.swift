@@ -130,3 +130,21 @@ final class MultiLinkInformationElementTests: XCTestCase {
         XCTAssertTrue(element.summary.contains("Basic"))
     }
 }
+
+final class MultiLinkProfileTests: XCTestCase {
+    func testBasicMultiLinkDecodesMldAndLink() throws {
+        // control=basic, presence=link-id, common-len=8, MLD 6 bytes, link id, then per-STA profile.
+        let payload: [UInt8] = [
+            107, 0x00, 0x00, 0x10, 0x00,
+            0x08, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00,
+            0x00, 0x02, 0x01, 0x00,
+        ]
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name.contains("Multi-Link") })
+        XCTAssertTrue(element.summary.contains("AP MLD AA:BB:CC:DD:EE:FF"))
+        XCTAssertTrue(element.summary.contains("links 1") || element.summary.contains("link 1"))
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Per-STA profile link IDs") })
+    }
+}

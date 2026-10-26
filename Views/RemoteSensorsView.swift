@@ -125,6 +125,7 @@ struct RemoteSensorsView: View {
                 }
                 .disabled(selected == nil)
                 .help("Delete sensor")
+                .accessibilityLabel("Delete sensor")
             }
             .buttonStyle(.borderless)
             .padding(7)

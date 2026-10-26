@@ -78,6 +78,7 @@ struct DiagnosticsView: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .help("Copy diagnostics report")
+            .accessibilityLabel("Copy diagnostics report")
             .disabled(diagnostics.report == nil)
 
             Button {
@@ -92,6 +93,7 @@ struct DiagnosticsView: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .help("Export diagnostics bundle")
+            .accessibilityLabel("Export diagnostics bundle")
         }
     }
 

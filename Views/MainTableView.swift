@@ -392,6 +392,7 @@ struct ToolbarView: View {
                         .foregroundColor(showSidebar ? .accentColor : .primary)
                 }
                 .help("Toggle Filters Sidebar")
+                .accessibilityLabel("Toggle filters sidebar")
                 .buttonStyle(.borderless)
                 .frame(width: 36, height: 28)
                 .background(Color(nsColor: .controlBackgroundColor))
@@ -403,6 +404,7 @@ struct ToolbarView: View {
                     Image(systemName: "arrow.clockwise")
                 }
                 .help("Refresh Now")
+                .accessibilityLabel("Refresh scan")
                 .buttonStyle(.borderless)
                 .frame(width: 36, height: 28)
                 .background(Color(nsColor: .controlBackgroundColor))
@@ -515,6 +517,7 @@ struct ToolbarView: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
                 .help("Export scan results")
+                .accessibilityLabel("Export scan results")
 
                 // Inspector Toggle
                 Button(action: {
@@ -529,6 +532,7 @@ struct ToolbarView: View {
                 }
                 .buttonStyle(.borderless)
                 .help("Toggle Inspector")
+                .accessibilityLabel("Toggle inspector")
                 .frame(width: 36, height: 28)
                 .background(Color(nsColor: .controlBackgroundColor))
                 .cornerRadius(6)
@@ -544,6 +548,7 @@ struct ToolbarView: View {
                     }
                     .buttonStyle(.borderless)
                     .help("Location Access Required")
+                    .accessibilityLabel("Open location settings")
                 }
             }
         }

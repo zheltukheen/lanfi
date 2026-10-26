@@ -598,14 +598,48 @@ struct InformationElementParser {
         case 2: typeName = "Reconfiguration"
         default: typeName = "type \(type)"
         }
-        return (
-            name: "Extension: Multi-Link",
-            summary: "Multi-Link · \(typeName)",
-            detailLines: [
-                "Multi-Link control type: \(typeName)",
-                "Multi-Link element length: \(data.count) bytes",
-            ]
-        )
+        var details = [
+            "Multi-Link control type: \(typeName)",
+            "Multi-Link element length: \(data.count) bytes",
+        ]
+        var summary = "Multi-Link · \(typeName)"
+        if type == 0, data.count >= 4 {
+            let presence = UInt16(data[data.startIndex + 2]) | (UInt16(data[data.startIndex + 3]) << 8)
+            var offset = 4
+            if offset < data.count {
+                let commonLength = Int(data[data.startIndex + offset])
+                if commonLength > 0, offset + commonLength <= data.count {
+                    let commonStart = offset + 1
+                    if commonLength >= 7, commonStart + 6 <= data.count {
+                        let mld = (0..<6).map { String(format: "%02X", data[data.startIndex + commonStart + $0]) }
+                            .joined(separator: ":")
+                        summary += " · AP MLD \(mld)"
+                        details.append("AP MLD address: \(mld)")
+                    }
+                    details.append("Presence bitmap: 0x\(String(format: "%04X", presence))")
+                    offset += commonLength
+                    var links: [Int] = []
+                    while offset + 2 <= data.count {
+                        let subId = data[data.startIndex + offset]
+                        let subLength = Int(data[data.startIndex + offset + 1])
+                        offset += 2
+                        guard offset + subLength <= data.count else { break }
+                        if subId == 0, subLength >= 2 {
+                            let staControl =
+                                UInt16(data[data.startIndex + offset])
+                                | (UInt16(data[data.startIndex + offset + 1]) << 8)
+                            links.append(Int(staControl & 0x000F))
+                        }
+                        offset += subLength
+                    }
+                    if !links.isEmpty {
+                        summary += " · links \(links.map(String.init).joined(separator: ","))"
+                        details.append("Per-STA profile link IDs: \(links.map(String.init).joined(separator: ", "))")
+                    }
+                }
+            }
+        }
+        return (name: "Extension: Multi-Link", summary: summary, detailLines: details)
     }
 
     private static func decodeEhtOperation(_ data: Data) -> (name: String, summary: String, detailLines: [String]) {
