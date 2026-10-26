@@ -164,13 +164,23 @@ struct DiagnosticsView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Recent runs").font(.caption.bold())
             HStack(spacing: 4) {
-                ForEach(diagnostics.history.suffix(12)) { report in
-                    Capsule()
-                        .fill(statusColor(report.overall).opacity(0.7))
-                        .frame(width: 18, height: 7)
-                        .help("\(report.startedAt.formatted(date: .omitted, time: .standard)) · \(report.summary)")
+                ForEach(diagnostics.history.suffix(12)) { historyItem in
+                    Button {
+                        diagnostics.selectHistory(historyItem)
+                    } label: {
+                        Capsule()
+                            .fill(statusColor(historyItem.overall).opacity(0.7))
+                            .frame(width: 18, height: 7)
+                    }
+                    .buttonStyle(.plain)
+                    .help(
+                        "\(historyItem.startedAt.formatted(date: .omitted, time: .standard)) · \(historyItem.summary)")
                 }
                 Spacer()
+                Button("Clear") { diagnostics.clearHistory() }
+                    .buttonStyle(.borderless)
+                    .font(.caption2)
+                    .disabled(diagnostics.history.isEmpty)
             }
         }
     }

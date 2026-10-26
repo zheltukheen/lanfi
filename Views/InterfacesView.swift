@@ -185,6 +185,12 @@ private struct InterfaceCard: View {
             RoundedRectangle(cornerRadius: 9)
                 .stroke(interface.isPrimary ? Color.blue.opacity(0.4) : Color.secondary.opacity(0.12), lineWidth: 1)
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(interface.displayName), \(interface.statusLabel)")
+        .accessibilityValue(
+            "IPv4 \(interface.ipv4.map(\.address).joined(separator: ", ")); "
+                + "RX \(interface.rxLabel), TX \(interface.txLabel)"
+        )
     }
 
     private func fact(_ label: String, _ value: String) -> some View {

@@ -4,6 +4,7 @@
 
 import SwiftUI
 import Charts
+import Accessibility
 
 struct SignalHistoryView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
@@ -141,6 +142,22 @@ struct SignalHistoryView: View {
         .padding(.leading, 12)
         .padding(.trailing, 16)
         .background(Color(nsColor: .controlBackgroundColor))
+        .accessibilityElement(children: .ignore)
+        .accessibilityChartDescriptor(
+            SignalHistoryDescriptor(
+                series: viewModel.networks.compactMap { network in
+                    guard let history = viewModel.signalHistory[network.id], !history.isEmpty else { return nil }
+                    return SignalSeries(
+                        name: network.displayName,
+                        values: history.map {
+                            isPercent ? viewModel.convertToPercent($0) : Double($0)
+                        }
+                    )
+                },
+                isPercent: isPercent,
+                maxPoints: maxDataPoints
+            )
+        )
         .accessibilityLabel("Signal history for \(viewModel.networks.count) networks")
         .accessibilityValue(
             viewModel.selectedNetworkId.flatMap { id in
@@ -287,5 +304,50 @@ struct SignalTrace<X: Plottable, Y: Plottable>: ChartContent {
         .foregroundStyle(color)
         .lineStyle(StrokeStyle(lineWidth: isSelected ? 3 : 1.5))
         .opacity(isSelected ? 1.0 : 0.5)
+    }
+}
+
+private struct SignalSeries {
+    let name: String
+    let values: [Double]
+}
+
+private struct SignalHistoryDescriptor: AXChartDescriptorRepresentable {
+    let series: [SignalSeries]
+    let isPercent: Bool
+    let maxPoints: Int
+
+    func makeChartDescriptor() -> AXChartDescriptor {
+        let xAxis = AXNumericDataAxisDescriptor(
+            title: "Time",
+            range: 0...Double(max(1, maxPoints)),
+            gridlinePositions: []
+        ) { value in "Sample \(Int(value))" }
+        let yAxis = AXNumericDataAxisDescriptor(
+            title: isPercent ? "Signal quality" : "RSSI",
+            range: isPercent ? 0...100 : -100...0,
+            gridlinePositions: isPercent ? [0, 25, 50, 75, 100] : [-100, -80, -60, -40, -20, 0]
+        ) { value in
+            isPercent ? "\(Int(value)) percent" : "\(Int(value)) dBm"
+        }
+        let dataSeries = series.map { item in
+            AXDataSeriesDescriptor(
+                name: item.name,
+                isContinuous: true,
+                dataPoints: item.values.enumerated().map { index, value in
+                    AXDataPoint(x: Double(index), y: value, label: "\(item.name), sample \(index)")
+                }
+            )
+        }
+        return AXChartDescriptor(
+            title: "Signal history",
+            summary: series.isEmpty
+                ? "No signal history"
+                : "\(series.count) networks, \(series.map(\.values.count).max() ?? 0) samples",
+            xAxis: xAxis,
+            yAxis: yAxis,
+            additionalAxes: [],
+            series: dataSeries
+        )
     }
 }
