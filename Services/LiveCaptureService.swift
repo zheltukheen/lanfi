@@ -16,6 +16,7 @@ enum LiveCaptureError: LocalizedError {
     case authorizationCancelled
     case captureFailed(String)
     case emptyCapture
+    case captureInProgress
 
     var errorDescription: String? {
         switch self {
@@ -24,6 +25,7 @@ enum LiveCaptureError: LocalizedError {
         case .authorizationCancelled: return "Administrator authorization was cancelled."
         case .captureFailed(let message): return message
         case .emptyCapture: return "The capture finished without writing any packets."
+        case .captureInProgress: return "Another capture is already running."
         }
     }
 }
@@ -32,10 +34,12 @@ enum LiveCaptureError: LocalizedError {
 /// BPF access, so the user is asked for one-off administrator authorization.
 /// No helper is installed and no credentials are stored.
 enum LiveCaptureService {
+    private static let captureLock = NSLock()
+
     static func shellCommand(for options: LiveCaptureOptions) -> String {
         let duration = min(max(options.duration, 5), 120)
         let output = shellQuote(options.outputURL.path)
-        let errorPath = shellQuote("/tmp/lanfi-live-capture.err")
+        let errorPath = shellQuote(options.outputURL.path + ".tcpdump.log")
         var args = [
             "/usr/sbin/tcpdump",
             "-i", shellQuote(options.interfaceName),
@@ -48,9 +52,17 @@ enum LiveCaptureService {
         }
         args.append(contentsOf: ["2>", errorPath])
         let command = args.joined(separator: " ")
-        return "\(command) & PID=$!; sleep \(duration); "
-            + "kill -INT $PID 2>/dev/null || true; wait $PID 2>/dev/null || true; "
-            + "chown \(getuid()):\(getgid()) \(output) 2>/dev/null || true"
+        return [
+            "\(command) & PID=$!",
+            "sleep \(duration)",
+            "kill -INT $PID 2>/dev/null || true",
+            "for i in 1 2 3 4 5 6 7 8 9 10; do kill -0 $PID 2>/dev/null || break; sleep 0.2; done",
+            "kill -TERM $PID 2>/dev/null || true",
+            "sleep 0.3",
+            "kill -KILL $PID 2>/dev/null || true",
+            "wait $PID 2>/dev/null || true",
+            "chown \(getuid()):\(getgid()) \(output) 2>/dev/null || true",
+        ].joined(separator: "; ")
     }
 
     static func validate(_ options: LiveCaptureOptions) throws {
@@ -65,6 +77,10 @@ enum LiveCaptureService {
 
     static func capture(_ options: LiveCaptureOptions) async throws -> URL {
         try validate(options)
+        guard captureLock.try() else { throw LiveCaptureError.captureInProgress }
+        defer { captureLock.unlock() }
+        let errorURL = URL(fileURLWithPath: options.outputURL.path + ".tcpdump.log")
+        try? FileManager.default.removeItem(at: errorURL)
         let command = shellCommand(for: options)
         let script = "do shell script \(appleScriptQuote(command)) with administrator privileges"
         let process = Process()
@@ -88,10 +104,18 @@ enum LiveCaptureService {
         let attributes = try? FileManager.default.attributesOfItem(atPath: options.outputURL.path)
         let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
         guard size > 24 else {
-            let stderr = (try? String(contentsOfFile: "/tmp/lanfi-live-capture.err", encoding: .utf8)) ?? ""
+            let stderr = (try? String(contentsOf: errorURL, encoding: .utf8)) ?? ""
             throw LiveCaptureError.captureFailed(stderr.isEmpty ? "The capture file is empty." : stderr)
         }
         return options.outputURL
+    }
+
+    static func isCaptureLocked() -> Bool {
+        if captureLock.try() {
+            captureLock.unlock()
+            return false
+        }
+        return true
     }
 
     static func interfaceNames() -> [String] {

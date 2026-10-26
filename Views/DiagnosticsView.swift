@@ -14,6 +14,7 @@ struct DiagnosticsView: View {
                 header
 
                 if let report = diagnostics.report {
+                    scoreStrip(report)
                     snapshotStrip(report.snapshot)
                     checkGrid(report)
                     throughputSection
@@ -139,11 +140,44 @@ struct DiagnosticsView: View {
     }
 
     private func checkGrid(_ report: DiagnosticsReport) -> some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
-            ForEach(report.checks) { check in
-                checkCard(check)
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(DiagnosticCategory.allCases) { category in
+                let checks = report.checks.filter { $0.category == category }
+                if !checks.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label(category.title, systemImage: category.systemImage)
+                            .font(.caption.bold())
+                            .foregroundColor(.secondary)
+                        LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
+                            ForEach(checks) { check in
+                                checkCard(check)
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private func scoreStrip(_ report: DiagnosticsReport) -> some View {
+        HStack(spacing: 10) {
+            Text("\(report.healthScore)")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(statusColor(report.overall))
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Network health").font(.caption.bold())
+                Text("\(report.passedCount) passed · \(report.warningCount) warnings · \(report.failedCount) failed")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Text("\(report.checks.count) checks · \(Int(report.duration * 1000)) ms")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .padding(10)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private func checkCard(_ check: DiagnosticCheck) -> some View {
@@ -167,6 +201,12 @@ struct DiagnosticsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                if let recommendation = check.recommendation {
+                    Text(TechnicalLocalizer.localize(recommendation))
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                        .lineLimit(2)
+                }
             }
         }
         .padding(9)

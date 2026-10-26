@@ -37,7 +37,7 @@ struct LanFiApp: App {
                     case .tab(let index):
                         uiState.selectedBottomTab = index
                     case .interfaces:
-                        uiState.selectedBottomTab = 4
+                        uiState.selectedBottomTab = 2
                     case .search(let query):
                         viewModel.searchText = query
                     case .runDiagnostics:
@@ -74,6 +74,8 @@ struct LanFiApp: App {
 
         Settings {
             SettingsView()
+                .environmentObject(updater)
+                .environmentObject(diagnostics)
         }
 
         MenuBarExtra {

@@ -319,6 +319,39 @@ struct NetworkDiagnosticsEngine {
             )
         }
 
+        if let snr = snapshot.snr {
+            checks.append(
+                check(
+                    id: "wifi-snr",
+                    title: "SNR headroom",
+                    category: .link,
+                    status: snr >= 25 ? .pass : (snr >= 15 ? .warning : .fail),
+                    value: "\(snr) dB",
+                    detail:
+                        "RSSI \(snapshot.rssi.map(String.init) ?? "—") dBm · noise \(snapshot.noise.map(String.init) ?? "—") dBm",
+                    recommendation: snr < 25
+                        ? "Move closer to the AP, switch to a less congested channel, or use 5/6 GHz."
+                        : nil
+                )
+            )
+        }
+
+        checks.append(
+            check(
+                id: "ipv6",
+                title: "IPv6 address",
+                category: .network,
+                status: snapshot.ipv6Addresses.isEmpty ? .warning : .pass,
+                value: snapshot.ipv6Addresses.first ?? "No IPv6 address",
+                detail: snapshot.ipv6Addresses.isEmpty
+                    ? "The interface has no IPv6 address; IPv4-only connectivity may be intentional."
+                    : "\(snapshot.ipv6Addresses.count) IPv6 address(es) configured",
+                recommendation: snapshot.ipv6Addresses.isEmpty
+                    ? "Enable IPv6 on the router or interface if the network is expected to provide it."
+                    : nil
+            )
+        )
+
         checks.append(
             check(
                 id: "wifi-security",
@@ -326,7 +359,9 @@ struct NetworkDiagnosticsEngine {
                 category: .security,
                 status: DiagnosticScoring.securityStatus(snapshot.security),
                 value: snapshot.security ?? "Unknown",
-                detail: securityDetail(snapshot.security)
+                detail: securityDetail(snapshot.security),
+                recommendation: DiagnosticScoring.securityStatus(snapshot.security) == .pass
+                    ? nil : "Use WPA3 (or WPA2/WPA3 transition) with PMF where supported."
             )
         )
 
@@ -349,7 +384,9 @@ struct NetworkDiagnosticsEngine {
                 category: .network,
                 status: gateway == nil ? .warning : DiagnosticScoring.latencyStatus(gateway),
                 value: router ?? "Not found",
-                detail: gatewayDetail(gateway, router: router)
+                detail: gatewayDetail(gateway, router: router),
+                recommendation: gateway == nil
+                    ? "Check the default route and the router's LAN interface." : nil
             )
         )
 
@@ -361,7 +398,9 @@ struct NetworkDiagnosticsEngine {
                 status: dns == nil ? .fail : (dns!.milliseconds > 800 ? .warning : .pass),
                 value: dns?.addresses.first ?? "Resolution failed",
                 detail: dns.map { "\($0.milliseconds) ms · \($0.addresses.count) address(es)" }
-                    ?? "captive.apple.com did not resolve"
+                    ?? "captive.apple.com did not resolve",
+                recommendation: dns == nil
+                    ? "Check DNS server configuration and try a public resolver." : nil
             )
         )
 
@@ -398,7 +437,9 @@ struct NetworkDiagnosticsEngine {
                 value: latency?.averageMilliseconds.map { String(format: "%.0f ms", $0) } ?? "Unreachable",
                 detail: latency.map {
                     "loss \(String(format: "%.0f", $0.packetLossPercent))% · jitter \(String(format: "%.1f", $0.standardDeviationMilliseconds ?? 0)) ms"
-                } ?? "\(publicHost) did not respond"
+                } ?? "\(publicHost) did not respond",
+                recommendation: latency == nil || (latency?.packetLossPercent ?? 0) > 0
+                    ? "Check the WAN link, router load and Wi-Fi retries; packet loss is not normal." : nil
             )
         )
 
@@ -441,7 +482,8 @@ struct NetworkDiagnosticsEngine {
         category: DiagnosticCategory,
         status: DiagnosticStatus,
         value: String,
-        detail: String
+        detail: String,
+        recommendation: String? = nil
     ) -> DiagnosticCheck {
         DiagnosticCheck(
             id: id,
@@ -450,7 +492,8 @@ struct NetworkDiagnosticsEngine {
             status: status,
             value: value,
             detail: detail,
-            durationMilliseconds: nil
+            durationMilliseconds: nil,
+            recommendation: recommendation
         )
     }
 

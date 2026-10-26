@@ -2,7 +2,7 @@ import XCTest
 
 final class DeepLinkTests: XCTestCase {
     func testParsesTabs() {
-        XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://tab/protocols")!), .tab(3))
+        XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://tab/protocols")!), .tab(1))
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://tab/interfaces")!), .interfaces)
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://tab/diagnostics")!), .tab(6))
     }

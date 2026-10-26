@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.4.0 — 2026-10-26
+
+### Fixed
+- Live capture now uses a unique output/error file per run, serializes captures,
+  escalates INT→TERM→KILL and waits for tcpdump, so a capture actually stops and
+  the next run cannot write into the previous file.
+- Captured files can be opened directly in the offline analyzer.
+
+### Changed
+- Overview replaces Insights; Profile replaces Protocols; NETWORK sits directly
+  after OVERVIEW, before RF.
+- Inactive/unused interfaces are collapsed under “Inactive interfaces”.
+- Signal history dynamically scales the RSSI range with padding.
+- Diagnostics now has a health score, category grouping, SNR/IPv6 checks and
+  actionable recommendations.
+- Top menus consolidated into Scan, View, Tools and Data.
+- Settings is now a tabbed app window: General, Alerts, Wi-Fi, Vendors,
+  Diagnostics; includes ad-hoc/notarization explanation, update check, crash
+  logs and support bundle export.
+- Version 2.4.0 (build 20).
+
+
 ## 2.3.0 — 2026-10-26
 
 ### Added

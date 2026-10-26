@@ -10,6 +10,8 @@ struct LiveCaptureView: View {
     @State private var isCapturing = false
     @State private var errorMessage: String?
     @State private var completedURL: URL?
+    @State private var showingAnalysis = false
+    @State private var customOutput = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -80,13 +82,23 @@ struct LiveCaptureView: View {
                     .foregroundColor(.red)
                     .textSelection(.enabled)
             }
-            if let completedURL {
+            if completedURL != nil {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
-                    Text("Saved \(completedURL.lastPathComponent)")
+                    Text("Saved \(savedURL.lastPathComponent)")
                         .font(.caption)
+                    Button("Analyze capture") {
+                        showingAnalysis = true
+                    }
+                    .controlSize(.small)
                     Button("Reveal in Finder") {
-                        NSWorkspace.shared.activateFileViewerSelecting([completedURL])
+                        NSWorkspace.shared.activateFileViewerSelecting([savedURL])
+                    }
+                    .controlSize(.small)
+                    Button("New capture") {
+                        outputURL = Self.defaultOutputURL()
+                        completedURL = nil
+                        customOutput = false
                     }
                     .controlSize(.small)
                 }
@@ -109,6 +121,9 @@ struct LiveCaptureView: View {
         }
         .padding(18)
         .frame(width: 590)
+        .sheet(isPresented: $showingAnalysis) {
+            OfflineCaptureView(initialURL: completedURL)
+        }
         .onAppear {
             interfaces = LiveCaptureService.interfaceNames()
             if !interfaces.contains(selectedInterface), let first = interfaces.first {
@@ -118,9 +133,14 @@ struct LiveCaptureView: View {
         }
     }
 
+    private var savedURL: URL {
+        completedURL ?? URL(fileURLWithPath: "")
+    }
+
     private func start() {
         errorMessage = nil
         completedURL = nil
+        if !customOutput { outputURL = Self.defaultOutputURL() }
         let options = LiveCaptureOptions(
             interfaceName: selectedInterface,
             duration: duration,
@@ -153,6 +173,7 @@ struct LiveCaptureView: View {
         panel.allowedContentTypes = [.init(filenameExtension: "pcap") ?? .data]
         if panel.runModal() == .OK, let url = panel.url {
             outputURL = url
+            customOutput = true
         }
     }
 
@@ -160,8 +181,10 @@ struct LiveCaptureView: View {
         let folder =
             FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
-        let stamp = Date().formatted(.iso8601.year().month().day().time(includingFractionalSeconds: false))
+        let stamp = Date().formatted(.iso8601.year().month().day().time(includingFractionalSeconds: true))
             .replacingOccurrences(of: ":", with: "-")
-        return folder.appendingPathComponent("LanFi-\(stamp).pcap")
+            .replacingOccurrences(of: ".", with: "-")
+        let suffix = UUID().uuidString.prefix(6)
+        return folder.appendingPathComponent("LanFi-\(stamp)-\(suffix).pcap")
     }
 }
