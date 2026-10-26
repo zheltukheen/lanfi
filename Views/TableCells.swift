@@ -201,3 +201,15 @@ final class GroupTableCellView: NSTableCellView {
         toolTip = "\(group.title) — \(group.subtitle)"
     }
 }
+
+final class TintedRowView: NSTableRowView {
+    var tint: NSColor?
+
+    override func drawBackground(in dirtyRect: NSRect) {
+        if let tint {
+            tint.withAlphaComponent(0.16).setFill()
+            dirtyRect.fill()
+        }
+        super.drawBackground(in: dirtyRect)
+    }
+}

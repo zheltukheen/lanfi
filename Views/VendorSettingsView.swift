@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var updater: UpdaterController
     @EnvironmentObject private var diagnostics: DiagnosticsViewModel
+    @EnvironmentObject private var analyzer: AnalyzerViewModel
 
     var body: some View {
         TabView {
@@ -15,6 +16,8 @@ struct SettingsView: View {
                 .tabItem { Label("Wi-Fi", systemImage: "wifi") }
             VendorSettingsView()
                 .tabItem { Label("Vendors", systemImage: "building.2") }
+            ColorRulesSettingsView(viewModel: analyzer)
+                .tabItem { Label("Colors", systemImage: "paintpalette") }
             DiagnosticsSettingsView()
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
         }

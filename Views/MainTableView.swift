@@ -673,12 +673,17 @@ struct NetworkInspectorView: View {
 
                         Divider()
 
-                        // Quality & channel health
+                        // Quality, issues, history and utilization
                         if let metrics = viewModel.metrics(for: network) {
+                            IssuesInspectorSection(network: network, metrics: metrics)
                             QualityInspectorSection(
                                 metrics: metrics,
                                 recommendation: viewModel.analysis.bestChannel(for: network.band)
                             )
+                            HistoryInspectorSection(network: network, viewModel: viewModel)
+                            UtilizationInspectorSection(network: network, viewModel: viewModel)
+                            ProximityBeaconInspectorSection(network: network)
+                            ClientsInspectorSection(network: network)
                         }
 
                         GroupBox("Label & Notes") {
@@ -728,6 +733,34 @@ struct NetworkInspectorView: View {
                                 .scrollContentBackground(.hidden)
                                 .background(Color.secondary.opacity(0.06))
                                 .clipShape(RoundedRectangle(cornerRadius: 5))
+
+                                HStack(spacing: 8) {
+                                    Text("Row color").font(.caption)
+                                    ColorPicker(
+                                        "",
+                                        selection: Binding(
+                                            get: {
+                                                Color(
+                                                    nsColor: ColorHex.color(
+                                                        from: viewModel.annotation(for: network).colorHex ?? ""
+                                                    ) ?? .clear
+                                                )
+                                            },
+                                            set: { value in
+                                                viewModel.setNetworkColor(
+                                                    ColorHex.hex(from: NSColor(value)), for: network
+                                                )
+                                            }
+                                        ),
+                                        supportsOpacity: false
+                                    )
+                                    .labelsHidden()
+                                    .frame(width: 34)
+                                    Button("Clear") {
+                                        viewModel.setNetworkColor("", for: network)
+                                    }
+                                    .controlSize(.mini)
+                                }
 
                                 Text("Saved locally on this Mac")
                                     .font(.caption2)
@@ -1021,8 +1054,12 @@ struct MultiSelectionInspector: View {
                         GridRow {
                             Text("Network").font(.caption2.bold())
                             Text("dBm").font(.caption2.bold())
+                            Text("Band").font(.caption2.bold())
                             Text("Ch").font(.caption2.bold())
-                            Text("Quality").font(.caption2.bold())
+                            Text("Width").font(.caption2.bold())
+                            Text("SNR").font(.caption2.bold())
+                            Text("Security").font(.caption2.bold())
+                            Text("Q").font(.caption2.bold())
                         }
                         ForEach(selected.prefix(12)) { network in
                             GridRow {
@@ -1031,7 +1068,11 @@ struct MultiSelectionInspector: View {
                                     .lineLimit(1)
                                     .frame(minWidth: 110, alignment: .leading)
                                 Text("\(network.signal)").font(.caption2)
+                                Text(network.band.label).font(.caption2)
                                 Text("\(network.channel)").font(.caption2)
+                                Text("\(network.channelWidthLabel)").font(.caption2)
+                                Text(network.snr.map(String.init) ?? "—").font(.caption2)
+                                Text(network.security).font(.caption2).lineLimit(1)
                                 Text("\(viewModel.metrics(for: network)?.qualityScore ?? 0)")
                                     .font(.caption2)
                             }
