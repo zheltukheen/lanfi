@@ -70,7 +70,7 @@ struct LiveCaptureView: View {
                 .help("Adds -I -y IEEE802_11_RADIO. Disable if the driver rejects monitor mode.")
 
             Text(
-                "macOS requires administrator authorization for BPF. LanFi does not install a privileged helper or store credentials. If monitor mode is rejected, use a dedicated monitor-mode interface or disable this option."
+                "macOS requires administrator authorization for BPF. LanFi does not install a privileged helper or store credentials. Built-in Apple Wi-Fi adapters often expose monitor mode but deliver zero frames; use an external monitor-capable adapter, or use Data → Export PCAP (Synthetic Beacons) for offline analysis."
             )
             .font(.caption2)
             .foregroundColor(.secondary)

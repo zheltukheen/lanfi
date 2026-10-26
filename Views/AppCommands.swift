@@ -68,7 +68,7 @@ struct LanFiCommands: Commands {
             .keyboardShortcut("f")
         }
 
-        CommandMenu("View") {
+        CommandMenu("Display") {
             Picker("Group By", selection: $viewModel.groupMode) {
                 ForEach(NetworkGroupMode.allCases) { mode in
                     Text(mode.title).tag(mode)

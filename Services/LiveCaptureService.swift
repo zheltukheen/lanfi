@@ -105,8 +105,17 @@ enum LiveCaptureService {
         let attributes = try? FileManager.default.attributesOfItem(atPath: options.outputURL.path)
         let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
         guard size > 24 else {
-            let stderr = (try? String(contentsOf: errorURL, encoding: .utf8)) ?? ""
-            throw LiveCaptureError.captureFailed(stderr.isEmpty ? "The capture file is empty." : stderr)
+            try? FileManager.default.removeItem(at: options.outputURL)
+            throw LiveCaptureError.captureFailed(
+                "No packets were written. For Wi-Fi monitor capture, disable Monitor mode or use a supported adapter."
+            )
+        }
+        do {
+            _ = try PcapAnalyzer.parse(data: Data(contentsOf: options.outputURL))
+        } catch let error as PcapAnalyzerError {
+            throw LiveCaptureError.captureFailed(error.localizedDescription)
+        } catch {
+            throw LiveCaptureError.captureFailed(error.localizedDescription)
         }
         return options.outputURL
     }
