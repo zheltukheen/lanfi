@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.0 — 2026-10-26
+
+### Added
+- Per-STA Multi-Link profile decoding: AP MLD address and per-link IDs.
+- Accessibility labels on icon-only toolbar, diagnostics, settings and remote
+  sensor controls; localized protocol detail/interface values.
+
+### Changed
+- Version 2.2.0 (build 18); 106 tests.
+
+
 ## 2.1.0 — 2026-10-26
 
 ### Added
