@@ -135,6 +135,7 @@ targets:
       - Services/ProtocolAnalyzer.swift
       - Services/PcapAnalyzer.swift
       - Services/InformationElementParser.swift
+      - Utils/OUIParser.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.CLI
