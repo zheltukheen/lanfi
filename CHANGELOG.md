@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.9.2 — 2026-10-26
+
+### Added
+- Remote capture over SSH: run tcpdump on a saved remote sensor, copy the pcap
+  back, with interface/duration/monitor/BPF options and passwordless-sudo error
+  reporting.
+- Remote capture command validation and tests.
+
+### Changed
+- Version 2.9.2 (build 33).
+
+
 ## 2.9.1 — 2026-10-26
 
 ### Added
