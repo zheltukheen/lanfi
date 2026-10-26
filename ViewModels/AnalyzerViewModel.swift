@@ -443,6 +443,11 @@ class AnalyzerViewModel: ObservableObject {
         applyFilters()
     }
 
+    var connectedNetwork: NetworkModel? {
+        guard let bssid = currentConnectedBSSID else { return nil }
+        return networks.first { $0.bssid == bssid }
+    }
+
     func displayName(for network: NetworkModel) -> String {
         annotation(for: network).displayAlias ?? network.displaySSID
     }
@@ -661,7 +666,7 @@ class AnalyzerViewModel: ObservableObject {
         // UTF-8 BOM keeps non-ASCII SSIDs intact in Excel; CRLF follows RFC 4180.
         let csvContent = "\u{FEFF}" + ([headers] + rows).joined(separator: "\r\n") + "\r\n"
         presentSavePanel(
-            defaultName: "WiFA-Scan-\(Self.fileTimestamp()).csv",
+            defaultName: "LanFi-Scan-\(Self.fileTimestamp()).csv",
             contentType: .commaSeparatedText,
             content: csvContent
         )
@@ -669,7 +674,7 @@ class AnalyzerViewModel: ObservableObject {
 
     func exportJSON() {
         let payload: [String: Any] = [
-            "generator": "WiFA",
+            "generator": "LanFi",
             "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
             "exportedAt": ISO8601DateFormatter().string(from: Date()),
             "summary": [
@@ -702,7 +707,7 @@ class AnalyzerViewModel: ObservableObject {
         }
 
         presentSavePanel(
-            defaultName: "WiFA-Scan-\(Self.fileTimestamp()).json",
+            defaultName: "LanFi-Scan-\(Self.fileTimestamp()).json",
             contentType: .json,
             content: string
         )
@@ -715,7 +720,7 @@ class AnalyzerViewModel: ObservableObject {
         }
         let data = PcapExporter.makeCapture(networks: networks)
         presentSaveData(
-            defaultName: "WiFA-Scan-\(Self.fileTimestamp()).pcap",
+            defaultName: "LanFi-Scan-\(Self.fileTimestamp()).pcap",
             contentType: UTType(filenameExtension: "pcap") ?? .data,
             data: data
         )

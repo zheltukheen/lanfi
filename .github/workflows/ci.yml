@@ -48,8 +48,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild test \
-            -project WiFA.xcodeproj \
-            -scheme WiFA \
+            -project LanFi.xcodeproj \
+            -scheme LanFi \
             -destination 'platform=macOS' \
             -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO
@@ -68,12 +68,12 @@ jobs:
         run: ./build.sh
 
       - name: Verify architectures
-        run: lipo -archs build/WiFA-Universal/WiFA.app/Contents/MacOS/WiFA
+        run: lipo -archs build/LanFi-Universal/LanFi.app/Contents/MacOS/LanFi
 
       - name: Upload app
         uses: actions/upload-artifact@v7
         with:
-          name: WiFA.app
-          path: build/WiFA-Universal/WiFA.app
+          name: LanFi.app
+          path: build/LanFi-Universal/LanFi.app
           if-no-files-found: error
           retention-days: 14

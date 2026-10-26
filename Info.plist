@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>WiFA</string>
+	<string>LanFi</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,9 +27,11 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2026 WiFA Contributors</string>
+	<string>© 2026 LanFi Contributors</string>
 	<key>NSLocationUsageDescription</key>
-	<string>WiFA uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.</string>
+	<string>LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

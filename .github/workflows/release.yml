@@ -40,8 +40,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild test \
-            -project WiFA.xcodeproj \
-            -scheme WiFA \
+            -project LanFi.xcodeproj \
+            -scheme LanFi \
             -destination 'platform=macOS' \
             -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO
@@ -64,25 +64,26 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          APP="build/WiFA-Universal/WiFA.app"
+          APP="build/LanFi-Universal/LanFi.app"
           test -d "$APP"
-          lipo -archs "$APP/Contents/MacOS/WiFA"
+          lipo -archs "$APP/Contents/MacOS/LanFi"
 
           mkdir -p build/dist build/dmg
-          ditto -c -k --sequesterRsrc --keepParent "$APP" "build/dist/WiFA-${VERSION}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "build/dist/LanFi-${VERSION}.zip"
 
           cp -R "$APP" build/dmg/
           ln -s /Applications build/dmg/Applications
           hdiutil create \
-            -volname "WiFA ${VERSION}" \
+            -volname "LanFi ${VERSION}" \
+            -volicon "$APP/Contents/Resources/AppIcon.icns" \
             -srcfolder build/dmg \
             -ov -format UDZO \
-            "build/dist/WiFA-${VERSION}.dmg"
+            "build/dist/LanFi-${VERSION}.dmg"
 
           cd build/dist
-          shasum -a 256 "WiFA-${VERSION}.zip" > "WiFA-${VERSION}.sha256"
-          shasum -a 256 "WiFA-${VERSION}.dmg" >> "WiFA-${VERSION}.sha256"
-          cat "WiFA-${VERSION}.sha256"
+          shasum -a 256 "LanFi-${VERSION}.zip" > "LanFi-${VERSION}.sha256"
+          shasum -a 256 "LanFi-${VERSION}.dmg" >> "LanFi-${VERSION}.sha256"
+          cat "LanFi-${VERSION}.sha256"
 
       - name: Generate release notes
         run: python3 scripts/release_notes.py
@@ -108,13 +109,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sparkle"
           tar -xf "$RUNNER_TEMP/Sparkle.tar.xz" -C "$RUNNER_TEMP/sparkle"
 
-          ZIP="build/dist/WiFA-${VERSION}.zip"
+          ZIP="build/dist/LanFi-${VERSION}.zip"
           SIGNATURE="$("$RUNNER_TEMP/sparkle/bin/sign_update" --ed-key-file "$RUNNER_TEMP/sparkle_private_key" -p "$ZIP")"
           LENGTH="$(stat -f%z "$ZIP")"
           python3 scripts/make_appcast.py \
             --version "$VERSION" \
             --build "$BUILD" \
-            --url "https://github.com/zheltukheen/wifa/releases/download/v${VERSION}/WiFA-${VERSION}.zip" \
+            --url "https://github.com/zheltukheen/wifa/releases/download/v${VERSION}/LanFi-${VERSION}.zip" \
             --signature "$SIGNATURE" \
             --length "$LENGTH" \
             --notes release_notes.md \
@@ -126,14 +127,14 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          SHA="$(shasum -a 256 "build/dist/WiFA-${VERSION}.dmg" | awk '{print $1}')"
+          SHA="$(shasum -a 256 "build/dist/LanFi-${VERSION}.dmg" | awk '{print $1}')"
           ./scripts/update_cask.sh "$VERSION" "$SHA"
-          if git diff --quiet -- Casks/wifa.rb; then
+          if git diff --quiet -- Casks/lanfi.rb; then
             exit 0
           fi
-          git config user.name "WiFA Release Bot"
+          git config user.name "LanFi Release Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add Casks/wifa.rb
+          git add Casks/lanfi.rb
           git commit -m "chore: update Homebrew cask to ${VERSION}"
           git push origin HEAD:main
 
@@ -143,7 +144,7 @@ jobs:
           generate_release_notes: false
           body_path: release_notes.md
           files: |
-            build/dist/WiFA-*.zip
-            build/dist/WiFA-*.dmg
-            build/dist/WiFA-*.sha256
+            build/dist/LanFi-*.zip
+            build/dist/LanFi-*.dmg
+            build/dist/LanFi-*.sha256
             build/dist/appcast.xml

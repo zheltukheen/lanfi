@@ -1,6 +1,6 @@
-# Contributing to WiFA
+# Contributing to LanFi
 
-Thanks for helping make WiFA the best native, open-source Wi-Fi analyzer on
+Thanks for helping make LanFi the best native, open-source Wi-Fi analyzer on
 macOS.
 
 ## Development setup
@@ -12,20 +12,20 @@ brew install xcodegen
 git clone https://github.com/zheltukheen/wifa.git
 cd wifa
 xcodegen generate
-open WiFA.xcodeproj
+open LanFi.xcodeproj
 ```
 
 `project.yml` is the source of truth for the Xcode project. If you add, move or
 delete source files, run `xcodegen generate` and commit the regenerated
-`WiFA.xcodeproj/project.pbxproj`.
+`LanFi.xcodeproj/project.pbxproj`.
 
 ## Build and test
 
 ```bash
 ./build.sh                       # universal Release build
 xcodebuild test \
-  -project WiFA.xcodeproj \
-  -scheme WiFA \
+  -project LanFi.xcodeproj \
+  -scheme LanFi \
   -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO
 ./scripts/lint.sh

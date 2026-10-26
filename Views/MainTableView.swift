@@ -18,7 +18,7 @@ struct MainTableView: View {
     @State private var inspectorDragOffset: CGFloat = 0
 
     // Высота нижней панели (увеличена по умолчанию)
-    @State private var bottomPanelBaseHeight: CGFloat = 280
+    @State private var bottomPanelBaseHeight: CGFloat = 460
     @State private var bottomPanelDragOffset: CGFloat = 0
 
     // Вычисляемые размеры с ограничениями (min/max)
@@ -68,17 +68,22 @@ struct MainTableView: View {
                                 ErrorBanner(message: err, onClose: { viewModel.errorMessage = nil })
                             }
 
-                            if viewModel.isLocationAuthorized {
-                                ZStack {
-                                    WiFiTableView(viewModel: viewModel)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            if viewModel.isLocationAuthorized || !viewModel.networks.isEmpty {
+                                VStack(spacing: 0) {
+                                    if !viewModel.isLocationAuthorized {
+                                        CompactPermissionBanner(viewModel: viewModel)
+                                    }
+                                    ZStack {
+                                        WiFiTableView(viewModel: viewModel)
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                                    if viewModel.networks.isEmpty && viewModel.errorMessage == nil {
-                                        EmptyScanView(
-                                            hasNetworks: viewModel.totalNetworkCount > 0,
-                                            hasActiveFilters: viewModel.hasActiveFilters,
-                                            onClearFilters: { viewModel.clearAllFilters() }
-                                        )
+                                        if viewModel.networks.isEmpty && viewModel.errorMessage == nil {
+                                            EmptyScanView(
+                                                hasNetworks: viewModel.totalNetworkCount > 0,
+                                                hasActiveFilters: viewModel.hasActiveFilters,
+                                                onClearFilters: { viewModel.clearAllFilters() }
+                                            )
+                                        }
                                     }
                                 }
                             } else {
@@ -165,15 +170,15 @@ struct MainTableView: View {
                             switch uiState.selectedBottomTab {
                             case 1: SpectrumView(viewModel: viewModel)
                             case 2: SignalHistoryView(viewModel: viewModel)
-                            case 3: RawDataView(viewModel: viewModel)
-                            case 4: ProtocolsView(viewModel: viewModel)
+                            case 3: ProtocolsView(viewModel: viewModel)
+                            case 4: RawDataView(viewModel: viewModel)
                             case 5: DiagnosticsView(diagnostics: diagnostics)
                             default: InsightsView(viewModel: viewModel)
                             }
                         }
                         .clipped()
                     }
-                    .frame(height: currentBottomPanelHeight)
+                    .frame(height: min(currentBottomPanelHeight, max(240, geo.size.height * 0.6)))
                 }
             }
         }
@@ -210,68 +215,98 @@ struct BottomPanelTabs: View {
     @Binding var selectedTab: Int
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Spacer слева для центрирования
+        HStack(alignment: .bottom, spacing: 0) {
             Spacer()
 
-            TabButton(
-                title: "Insights",
-                icon: "sparkles",
-                isSelected: selectedTab == 0,
-                action: { selectedTab = 0 }
-            )
+            TabGroup("OVERVIEW") {
+                TabButton(
+                    title: "Insights",
+                    icon: "sparkles",
+                    isSelected: selectedTab == 0,
+                    action: { selectedTab = 0 }
+                )
+            }
 
-            Divider().frame(height: 16)
+            groupDivider
 
-            TabButton(
-                title: "Spectrum",
-                icon: "waveform.path.ecg",
-                isSelected: selectedTab == 1,
-                action: { selectedTab = 1 }
-            )
+            TabGroup("RF") {
+                TabButton(
+                    title: "Spectrum",
+                    icon: "waveform.path.ecg",
+                    isSelected: selectedTab == 1,
+                    action: { selectedTab = 1 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "History",
+                    icon: "clock.arrow.circlepath",
+                    isSelected: selectedTab == 2,
+                    action: { selectedTab = 2 }
+                )
+            }
 
-            Divider().frame(height: 16)
+            groupDivider
 
-            TabButton(
-                title: "History",
-                icon: "clock.arrow.circlepath",
-                isSelected: selectedTab == 2,
-                action: { selectedTab = 2 }
-            )
+            TabGroup("NETWORK") {
+                TabButton(
+                    title: "Protocols",
+                    icon: "square.stack.3d.up",
+                    isSelected: selectedTab == 3,
+                    action: { selectedTab = 3 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "Raw Data",
+                    icon: "list.bullet.rectangle",
+                    isSelected: selectedTab == 4,
+                    action: { selectedTab = 4 }
+                )
+            }
 
-            Divider().frame(height: 16)
+            groupDivider
 
-            TabButton(
-                title: "Raw Data",
-                icon: "list.bullet.rectangle",
-                isSelected: selectedTab == 3,
-                action: { selectedTab = 3 }
-            )
+            TabGroup("TROUBLESHOOT") {
+                TabButton(
+                    title: "Diagnostics",
+                    icon: "stethoscope",
+                    isSelected: selectedTab == 5,
+                    action: { selectedTab = 5 }
+                )
+            }
 
-            Divider().frame(height: 16)
-
-            TabButton(
-                title: "Protocols",
-                icon: "square.stack.3d.up",
-                isSelected: selectedTab == 4,
-                action: { selectedTab = 4 }
-            )
-
-            Divider().frame(height: 16)
-
-            TabButton(
-                title: "Diagnostics",
-                icon: "stethoscope",
-                isSelected: selectedTab == 5,
-                action: { selectedTab = 5 }
-            )
-
-            // Spacer справа для центрирования
             Spacer()
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.vertical, 5)
         .background(Material.bar)
+    }
+
+    private var groupDivider: some View {
+        Divider()
+            .frame(height: 30)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 2)
+    }
+}
+
+struct TabGroup<Content: View>: View {
+    let title: LocalizedStringKey
+    @ViewBuilder var content: Content
+
+    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 1) {
+            Text(title)
+                .font(.system(size: 8, weight: .semibold))
+                .tracking(0.8)
+                .foregroundColor(.secondary.opacity(0.75))
+            HStack(spacing: 0) { content }
+        }
+        .padding(.horizontal, 5)
     }
 }
 
@@ -473,7 +508,7 @@ struct ToolbarView: View {
 }
 
 extension Notification.Name {
-    static let wifaFocusSearch = Notification.Name("WiFA.focusSearch")
+    static let wifaFocusSearch = Notification.Name("LanFi.focusSearch")
 }
 
 // MARK: - Subviews
@@ -744,6 +779,32 @@ struct EmptyScanView: View {
     }
 }
 
+struct CompactPermissionBanner: View {
+    @ObservedObject var viewModel: AnalyzerViewModel
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "location.slash.fill")
+                .foregroundColor(.orange)
+            Text("Location access is off — SSID/BSSID may be hidden. Other scan data still works.")
+                .font(.caption)
+            Spacer()
+            Button("Allow") {
+                viewModel.requestLocationAuthorization()
+            }
+            .controlSize(.small)
+            Button("Settings") {
+                viewModel.openSystemLocationSettings()
+            }
+            .controlSize(.small)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Color.orange.opacity(0.1))
+        .overlay(Rectangle().frame(height: 1).foregroundColor(Color.orange.opacity(0.2)), alignment: .bottom)
+    }
+}
+
 struct LocationPermissionView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
 
@@ -755,7 +816,7 @@ struct LocationPermissionView: View {
             Text("Location access is required")
                 .font(.title3.bold())
             Text(
-                "macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services enabled. WiFA uses this permission solely for scanning and never stores or transmits your location."
+                "macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services enabled. LanFi uses this permission solely for scanning and never stores or transmits your location."
             )
             .font(.callout)
             .foregroundColor(.secondary)

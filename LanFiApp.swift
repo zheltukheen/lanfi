@@ -1,8 +1,8 @@
-//  WifiAnalyzerApp.swift
+//  LanFiApp.swift
 import SwiftUI
 
 @main
-struct WifiAnalyzerApp: App {
+struct LanFiApp: App {
     // ViewModel создается здесь и живет все время работы приложения
     @StateObject private var viewModel = AnalyzerViewModel()
     @StateObject private var uiState = AppUIState()
@@ -32,7 +32,7 @@ struct WifiAnalyzerApp: App {
                 }
         }
         .commands {
-            WiFACommands(viewModel: viewModel, uiState: uiState, diagnostics: diagnostics, updater: updater)
+            LanFiCommands(viewModel: viewModel, uiState: uiState, diagnostics: diagnostics, updater: updater)
         }
 
         Window("Site Survey", id: "survey") {
@@ -42,7 +42,7 @@ struct WifiAnalyzerApp: App {
         MenuBarExtra {
             MenuBarView(viewModel: viewModel, diagnostics: diagnostics)
         } label: {
-            Label("WiFA", systemImage: "wifi")
+            Label("LanFi", systemImage: "wifi")
         }
         .menuBarExtraStyle(.window)
     }

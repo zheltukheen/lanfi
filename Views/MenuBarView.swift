@@ -23,7 +23,7 @@ struct MenuBarView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Text("WiFA")
+                Text("LanFi")
                     .font(.headline)
                 Spacer()
                 Text("\(viewModel.networks.count) networks")
@@ -91,7 +91,7 @@ struct MenuBarView: View {
                 openWindow(id: "main")
                 NSApp.activate(ignoringOtherApps: true)
             } label: {
-                Label("Open WiFA", systemImage: "macwindow")
+                Label("Open LanFi", systemImage: "macwindow")
             }
 
             Divider()
@@ -99,7 +99,7 @@ struct MenuBarView: View {
             Button {
                 NSApp.terminate(nil)
             } label: {
-                Label("Quit WiFA", systemImage: "power")
+                Label("Quit LanFi", systemImage: "power")
             }
             .keyboardShortcut("q")
         }

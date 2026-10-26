@@ -1,21 +1,23 @@
-# WiFA — native macOS Wi‑Fi analyzer
+# LanFi — native macOS Wi‑Fi analyzer
+
+<img src="docs/images/lanfi-icon.png" width="96" align="right" alt="LanFi icon">
 
 [![CI](https://github.com/zheltukheen/wifa/actions/workflows/ci.yml/badge.svg)](https://github.com/zheltukheen/wifa/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zheltukheen/wifa)](https://github.com/zheltukheen/wifa/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/macOS-13%2B-black)](https://www.apple.com/macos/)
 
-WiFA is a free, open-source Wi‑Fi analyzer for macOS built on Apple's public
+LanFi is a free, open-source Wi‑Fi analyzer for macOS built on Apple's public
 CoreWLAN framework. It scans nearby networks, decodes 802.11 information
 elements, and turns the raw radio data into **quality scores, ranked channel
 recommendations and a security audit** — then proves the path end-to-end with
 protocol blocks, a local network diagnostics engine and monitoring.
 
-![WiFA with the Insights dashboard](docs/images/wifa-main.webp)
+![LanFi with the Insights dashboard](docs/images/lanfi-main.webp)
 
-## Why WiFA
+## Why LanFi
 
-Most analyzers show a table and leave the diagnosis to you. WiFA scores every
+Most analyzers show a table and leave the diagnosis to you. LanFi scores every
 network from 0–100 using signal, SNR, channel overlap, reported utilization and
 security posture, then recommends the quietest usable channel for each band.
 Open networks, WEP, legacy WPA, WPS and missing management-frame protection are
@@ -41,7 +43,7 @@ surfaced with severity and remediation hints.
 | Security | Open/WEP/legacy WPA findings, WPS and PMF (802.11w) detection, severity levels and remediation text |
 | Charts | Per-band spectrum view and 3-minute signal history with hover/click selection |
 | Raw data | 802.11 information-element table with expandable decoded fields (RSN, WPS, HT/VHT/HE, country, BSS Load…) |
-| Workflow | Search, band/signal filters, sidebar facets, Insights dashboard, menu bar extra |
+| Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), search, filters, Insights with an explicit all-networks scope, menu bar extra |
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
@@ -51,11 +53,11 @@ surfaced with severity and remediation hints.
 | Updates | Sparkle 2 signed appcast, Homebrew cask, universal builds |
 | Privacy | No analytics/accounts/telemetry; only update and optional diagnostic requests; see [PRIVACY.md](PRIVACY.md) |
 
-![WiFA protocol blocks](docs/images/wifa-protocols.webp)
+![LanFi protocol blocks](docs/images/lanfi-protocols.webp)
 
-![WiFA network diagnostics](docs/images/wifa-diagnostics.webp)
+![LanFi network diagnostics](docs/images/lanfi-diagnostics.webp)
 
-![WiFA site survey heatmap](docs/images/wifa-survey.webp)
+![LanFi site survey heatmap](docs/images/lanfi-survey.webp)
 
 ## Requirements
 
@@ -66,7 +68,7 @@ surfaced with severity and remediation hints.
 ## Install
 
 Download the latest `.dmg` or `.zip` from
-[Releases](https://github.com/zheltukheen/wifa/releases/latest), drag **WiFA** to
+[Releases](https://github.com/zheltukheen/wifa/releases/latest), drag **LanFi** to
 Applications, and launch it.
 
 The current builds are **ad-hoc signed, not notarized**. If Gatekeeper warns,
@@ -77,14 +79,18 @@ right-click the app → **Open**, or allow it in
 Or install the cask from this repository:
 
 ```bash
-brew install --cask ./Casks/wifa.rb
+brew install --cask ./Casks/lanfi.rb
 ```
+
+LanFi is the renamed WiFA. Existing preferences, Sparkle updates and local
+annotation/session/survey data are migrated automatically; macOS may ask for
+Location Services again. If both apps are installed, remove the old `WiFA.app`.
 
 On first launch, allow Location Services when macOS asks. If the prompt was
 dismissed, enable it in
-**System Settings → Privacy & Security → Location Services → WiFA**.
+**System Settings → Privacy & Security → Location Services → LanFi**.
 
-WiFA 1.5+ includes Sparkle auto-updates. Update checks fetch a signed appcast
+LanFi 1.5+ includes Sparkle auto-updates. Update checks fetch a signed appcast
 from GitHub Releases; no account or analytics data is sent.
 
 ## Build from source
@@ -94,14 +100,14 @@ git clone https://github.com/zheltukheen/wifa.git
 cd wifa
 brew install xcodegen
 xcodegen generate
-./build.sh          # build/WiFA-Universal/WiFA.app (universal, ad-hoc signed)
-open WiFA.xcodeproj # or develop in Xcode
+./build.sh          # build/LanFi-Universal/LanFi.app (universal, ad-hoc signed)
+open LanFi.xcodeproj # or develop in Xcode
 ```
 
 Run the checks locally:
 
 ```bash
-xcodebuild test -project WiFA.xcodeproj -scheme WiFA \
+xcodebuild test -project LanFi.xcodeproj -scheme LanFi \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 
 ./scripts/lint.sh
@@ -131,7 +137,7 @@ are covered by tests in [`Tests/NetworkAnalyzerTests.swift`](Tests/NetworkAnalyz
 
 As of October 2026, against common macOS tools:
 
-| | WiFA | WiFi Explorer | NetSpot | Apple Wireless Diagnostics |
+| | LanFi | WiFi Explorer | NetSpot | Apple Wireless Diagnostics |
 | --- | --- | --- | --- | --- |
 | Price / license | Free, MIT | Paid | Freemium | Free |
 | Native CoreWLAN scanning | ✅ | ✅ | ✅ | ✅ |
@@ -149,12 +155,12 @@ As of October 2026, against common macOS tools:
 | Notarized | Roadmap | ✅ | ✅ | ✅ |
 
 Competitor capabilities change frequently; corrections via issues are welcome.
-WiFA deliberately focuses on analysis and privacy rather than heatmaps or
+LanFi deliberately focuses on analysis and privacy rather than heatmaps or
 hardware spectrum capture.
 
 ## Roadmap
 
-WiFA already leads on interpretation (quality, channel advice, security audit).
+LanFi already leads on interpretation (quality, channel advice, security audit).
 The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
@@ -168,7 +174,7 @@ remote sensors, full localization and richer survey interpolation.
 ## Project structure
 
 ```text
-WifiAnalyzerApp.swift        App entry, window, menu bar extra
+LanFiApp.swift        App entry, window, menu bar extra
 Models/                      NetworkModel and value types
 Services/
   WiFiScanner.swift          CoreWLAN scan + model construction
@@ -182,7 +188,7 @@ ViewModels/                  Analyzer, diagnostics and survey state
 Views/                       SwiftUI + AppKit table, charts, protocols, diagnostics, survey
 Utils/                       Location permission, OUI vendor lookup
 Resources/                   OUI database, privacy manifest, Russian localization
-Casks/wifa.rb                Homebrew cask
+Casks/lanfi.rb                Homebrew cask
 Tests/                       XCTest coverage for pure logic and parsing
 scripts/autopush.sh          Commit/push automation
 ```
@@ -224,7 +230,7 @@ public issue tracker.
 
 ## License
 
-[MIT](LICENSE) © 2025–2026 zheltukheen and WiFA contributors.
+[MIT](LICENSE) © 2025–2026 zheltukheen and LanFi contributors.
 
-Wi-Fi, WPA2 and WPA3 are trademarks of their respective owners. WiFA is not
+Wi-Fi, WPA2 and WPA3 are trademarks of their respective owners. LanFi is not
 affiliated with Apple or the Wi-Fi Alliance.

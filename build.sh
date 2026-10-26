@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-APP_NAME="WiFA"
+APP_NAME="LanFi"
 SCHEME="$APP_NAME"
 PROJECT="$APP_NAME.xcodeproj"
 OUT_DIR="build"
@@ -50,6 +50,6 @@ fi
 
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
 BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP/Contents/Info.plist")"
-echo "==> Built WiFA ${VERSION} (${BUILD})"
+echo "==> Built LanFi ${VERSION} (${BUILD})"
 lipo -archs "$APP/Contents/MacOS/${APP_NAME}"
 echo "==> App: $APP"

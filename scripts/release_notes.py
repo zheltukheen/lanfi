@@ -40,18 +40,18 @@ def main() -> int:
         print(f"No CHANGELOG section for {version}", file=sys.stderr)
         return 1
 
-    body = f"""## WiFA {version}
+    body = f"""## LanFi {version}
 
 {section}
 
 ### Install
-1. Download `WiFA-{version}.dmg` (or the `.zip`).
-2. Drag WiFA to Applications.
-3. Open WiFA and allow Location Services when prompted — macOS requires it to reveal SSIDs/BSSIDs.
+1. Download `LanFi-{version}.dmg` (or the `.zip`).
+2. Drag LanFi to Applications.
+3. Open LanFi and allow Location Services when prompted — macOS requires it to reveal SSIDs/BSSIDs.
 4. If Gatekeeper blocks the ad-hoc signed build, right-click the app and choose Open.
 
 ### Verify
-The SHA-256 checksums are attached as `WiFA-{version}.sha256`.
+The SHA-256 checksums are attached as `LanFi-{version}.sha256`.
 """
 
     output = pathlib.Path(os.environ.get("OUTPUT", "release_notes.md"))

@@ -17,12 +17,22 @@ final class SessionStore {
     private let decoder: JSONDecoder
 
     init(directory: URL? = nil) {
-        let base =
-            directory
-            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("WiFA/Sessions", isDirectory: true)
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let base = directory ?? support.appendingPathComponent("LanFi/Sessions", isDirectory: true)
         self.directory = base
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+
+        // Move sessions created by the pre-rename app.
+        let legacy = support.appendingPathComponent("WiFA/Sessions", isDirectory: true)
+        if (try? FileManager.default.contentsOfDirectory(at: base, includingPropertiesForKeys: nil))?.isEmpty ?? true,
+            FileManager.default.fileExists(atPath: legacy.path)
+        {
+            let files =
+                (try? FileManager.default.contentsOfDirectory(at: legacy, includingPropertiesForKeys: nil)) ?? []
+            for file in files {
+                try? FileManager.default.copyItem(at: file, to: base.appendingPathComponent(file.lastPathComponent))
+            }
+        }
 
         encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]

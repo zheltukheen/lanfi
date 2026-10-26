@@ -3,7 +3,7 @@ import XCTest
 final class SessionTests: XCTestCase {
     func testSessionRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("WiFA-session-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("LanFi-session-tests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
 
@@ -27,7 +27,7 @@ final class SessionTests: XCTestCase {
 
     func testSessionsAreSortedNewestFirst() throws {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("WiFA-session-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("LanFi-session-tests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
 

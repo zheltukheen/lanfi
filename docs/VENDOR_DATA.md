@@ -21,7 +21,7 @@ matching.
 Wireshark is distributed under GPL-2.0; its `manuf` file is generated registry
 data and is included here as a factual vendor registry with attribution. IEEE
 registration data is published by the IEEE registration authority. Review the
-upstream terms if you redistribute this database separately from WiFA.
+upstream terms if you redistribute this database separately from LanFi.
 
 ## Refresh
 

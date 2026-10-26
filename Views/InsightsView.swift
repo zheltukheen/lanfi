@@ -204,7 +204,7 @@ struct InsightsView: View {
                 .foregroundColor(.secondary.opacity(0.35))
             Text("Insights appear after the first scan")
                 .font(.headline)
-            Text("WiFA scores every network, recommends the quietest channels and audits security.")
+            Text("LanFi scores every network, recommends the quietest channels and audits security.")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -216,6 +216,7 @@ struct InsightsView: View {
     private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                scopeBanner
                 summary
                 channelSection
                 HStack(alignment: .top, spacing: 14) {
@@ -227,6 +228,37 @@ struct InsightsView: View {
             }
             .padding(14)
         }
+    }
+
+    private var scopeBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "globe")
+                .foregroundColor(.accentColor)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("All visible networks")
+                    .font(.caption.bold())
+                Text("These insights cover the whole scan. Use the inspector or Protocols tab for one network.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            if let connected = viewModel.connectedNetwork {
+                Label(connected.displaySSID, systemImage: "wifi")
+                    .font(.caption2.bold())
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Color.green.opacity(0.1))
+                    .clipShape(Capsule())
+            } else {
+                Text("No active connection")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(9)
+        .background(Color.accentColor.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var summary: some View {

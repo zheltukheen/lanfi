@@ -1,17 +1,17 @@
 name: Bug report
-description: Something in WiFA is broken or behaves unexpectedly.
+description: Something in LanFi is broken or behaves unexpectedly.
 title: "[bug] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve WiFA. Please do not report security issues here; see SECURITY.md.
+        Thanks for helping improve LanFi. Please do not report security issues here; see SECURITY.md.
   - type: input
     id: version
     attributes:
-      label: WiFA version
-      description: Shown in WiFA → About WiFA.
+      label: LanFi version
+      description: Shown in LanFi → About LanFi.
       placeholder: "1.3.0 (9)"
     validations:
       required: true
@@ -27,7 +27,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Open WiFA
+        1. Open LanFi
         2. ...
     validations:
       required: true
@@ -55,7 +55,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I checked that Location Services is enabled for WiFA.
+        - label: I checked that Location Services is enabled for LanFi.
           required: true
         - label: I searched existing issues before opening this one.
           required: true

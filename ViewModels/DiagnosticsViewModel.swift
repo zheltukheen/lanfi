@@ -48,7 +48,7 @@ final class DiagnosticsViewModel: ObservableObject {
     func copyReport() {
         guard let report else { return }
         var lines = [
-            "WiFA diagnostics \(report.startedAt.formatted(date: .abbreviated, time: .standard))",
+            "LanFi diagnostics \(report.startedAt.formatted(date: .abbreviated, time: .standard))",
             report.summary,
             "Overall: \(report.overall.label)",
             "",

@@ -124,7 +124,7 @@ enum DiagnosticsSystem {
     }
 
     private static func systemRoutes() -> (router: String?, dns: [String]) {
-        guard let store = SCDynamicStoreCreate(nil, "WiFA.Diagnostics" as CFString, nil, nil) else {
+        guard let store = SCDynamicStoreCreate(nil, "LanFi.Diagnostics" as CFString, nil, nil) else {
             return (nil, [])
         }
 

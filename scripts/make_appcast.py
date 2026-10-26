@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a Sparkle 2 appcast for a single WiFA release."""
+"""Generate a Sparkle 2 appcast for a single LanFi release."""
 
 from __future__ import annotations
 
@@ -33,13 +33,13 @@ def main() -> int:
         },
     )
     channel = ET.SubElement(rss, "channel")
-    ET.SubElement(channel, "title").text = "WiFA"
+    ET.SubElement(channel, "title").text = "LanFi"
     ET.SubElement(channel, "link").text = "https://github.com/zheltukheen/wifa"
     ET.SubElement(channel, "description").text = "Native macOS Wi-Fi analyzer updates"
     ET.SubElement(channel, "language").text = "en"
 
     item = ET.SubElement(channel, "item")
-    ET.SubElement(item, "title").text = f"WiFA {args.version}"
+    ET.SubElement(item, "title").text = f"LanFi {args.version}"
     ET.SubElement(item, "pubDate").text = dt.datetime.now(dt.timezone.utc).strftime(
         "%a, %d %b %Y %H:%M:%S +0000"
     )

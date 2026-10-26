@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "04E5E99586AEB6F71D935E0F"
-               BuildableName = "WiFA.app"
-               BlueprintName = "WiFA"
-               ReferencedContainer = "container:WiFA.xcodeproj">
+               BlueprintIdentifier = "97126DCA2BE9C5A1706C5FDF"
+               BuildableName = "LanFi.app"
+               BlueprintName = "LanFi"
+               ReferencedContainer = "container:LanFi.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,10 +29,10 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "99CC37C56DB4CBA94F936C8E"
-               BuildableName = "WiFATests.xctest"
-               BlueprintName = "WiFATests"
-               ReferencedContainer = "container:WiFA.xcodeproj">
+               BlueprintIdentifier = "D36A67590D4E9F93DAB40FD1"
+               BuildableName = "LanFiTests.xctest"
+               BlueprintName = "LanFiTests"
+               ReferencedContainer = "container:LanFi.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,10 +47,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "04E5E99586AEB6F71D935E0F"
-            BuildableName = "WiFA.app"
-            BlueprintName = "WiFA"
-            ReferencedContainer = "container:WiFA.xcodeproj">
+            BlueprintIdentifier = "97126DCA2BE9C5A1706C5FDF"
+            BuildableName = "LanFi.app"
+            BlueprintName = "LanFi"
+            ReferencedContainer = "container:LanFi.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -59,10 +59,10 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "99CC37C56DB4CBA94F936C8E"
-               BuildableName = "WiFATests.xctest"
-               BlueprintName = "WiFATests"
-               ReferencedContainer = "container:WiFA.xcodeproj">
+               BlueprintIdentifier = "D36A67590D4E9F93DAB40FD1"
+               BuildableName = "LanFiTests.xctest"
+               BlueprintName = "LanFiTests"
+               ReferencedContainer = "container:LanFi.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -83,10 +83,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "04E5E99586AEB6F71D935E0F"
-            BuildableName = "WiFA.app"
-            BlueprintName = "WiFA"
-            ReferencedContainer = "container:WiFA.xcodeproj">
+            BlueprintIdentifier = "97126DCA2BE9C5A1706C5FDF"
+            BuildableName = "LanFi.app"
+            BlueprintName = "LanFi"
+            ReferencedContainer = "container:LanFi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -102,10 +102,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "04E5E99586AEB6F71D935E0F"
-            BuildableName = "WiFA.app"
-            BlueprintName = "WiFA"
-            ReferencedContainer = "container:WiFA.xcodeproj">
+            BlueprintIdentifier = "97126DCA2BE9C5A1706C5FDF"
+            BuildableName = "LanFi.app"
+            BlueprintName = "LanFi"
+            ReferencedContainer = "container:LanFi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>

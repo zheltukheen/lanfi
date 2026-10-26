@@ -1,4 +1,4 @@
-name: WiFA
+name: LanFi
 packages:
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
@@ -22,11 +22,11 @@ settings:
     ENABLE_HARDENED_RUNTIME: YES
 
 targets:
-  WiFA:
+  LanFi:
     type: application
     platform: macOS
     sources:
-      - WifiAnalyzerApp.swift
+      - LanFiApp.swift
       - Models
       - Services
       - ViewModels
@@ -41,20 +41,21 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
-        MARKETING_VERSION: "1.5.0"
-        CURRENT_PROJECT_VERSION: "11"
+        MARKETING_VERSION: "1.6.0"
+        CURRENT_PROJECT_VERSION: "12"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
       path: Info.plist
       properties:
-        CFBundleDisplayName: WiFA
+        CFBundleDisplayName: LanFi
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
-        NSHumanReadableCopyright: "© 2026 WiFA Contributors"
-        NSLocationUsageDescription: "WiFA uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
+        NSHumanReadableCopyright: "© 2026 LanFi Contributors"
+        NSLocationUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
+        NSLocationWhenInUseUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
         NSPrincipalClass: NSApplication
         NSSupportsAutomaticGraphicsSwitching: true
         NSHighResolutionCapable: true
@@ -63,7 +64,7 @@ targets:
         SUEnableAutomaticChecks: true
         SUAutomaticallyUpdate: false
 
-  WiFATests:
+  LanFiTests:
     type: bundle.unit-test
     platform: macOS
     deploymentTarget: "14.0"
@@ -92,18 +93,18 @@ targets:
         CODE_SIGNING_ALLOWED: NO
 
 schemes:
-  WiFA:
+  LanFi:
     build:
       targets:
-        WiFA: all
-        WiFATests: [test]
+        LanFi: all
+        LanFiTests: [test]
     run:
       config: Debug
     test:
       config: Debug
       gatherCoverageData: true
       targets:
-        - WiFATests
+        - LanFiTests
     profile:
       config: Release
     analyze:

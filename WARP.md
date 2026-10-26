@@ -1,10 +1,10 @@
-# WARP.md — working on WiFA
+# WARP.md — working on LanFi
 
 This file orients coding agents and contributors. See also `CONTRIBUTING.md`.
 
 ## Project overview
 
-WiFA is a native macOS 13+ Wi‑Fi analyzer: SwiftUI shell, an AppKit
+LanFi is a native macOS 13+ Wi‑Fi analyzer: SwiftUI shell, an AppKit
 `NSTableView` bridge for the network list, Swift Charts for history, and a
 Canvas-based spectrum view. Scanning uses only public CoreWLAN APIs. No
 analytics, networking, accounts or third-party SDKs.
@@ -13,12 +13,12 @@ analytics, networking, accounts or third-party SDKs.
 
 ```bash
 xcodegen generate                 # project.yml is the source of truth
-open WiFA.xcodeproj               # develop/run
+open LanFi.xcodeproj               # develop/run
 ./build.sh                        # universal Release app + ad-hoc signature
 
 xcodebuild test \
-  -project WiFA.xcodeproj \
-  -scheme WiFA \
+  -project LanFi.xcodeproj \
+  -scheme LanFi \
   -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO
 
@@ -27,15 +27,15 @@ xcodebuild test \
 ```
 
 Outputs:
-- Debug: `build/DerivedData/Build/Products/Debug/WiFA.app`
-- Release: `build/WiFA-Universal/WiFA.app`
+- Debug: `build/DerivedData/Build/Products/Debug/LanFi.app`
+- Release: `build/LanFi-Universal/LanFi.app`
 
 If you add/move/delete files, run `xcodegen generate` and commit the regenerated
-`WiFA.xcodeproj/project.pbxproj` and `Info.plist`.
+`LanFi.xcodeproj/project.pbxproj` and `Info.plist`.
 
 ## Architecture
 
-- `WifiAnalyzerApp.swift` — `@main`, single `AnalyzerViewModel` and
+- `LanFiApp.swift` — `@main`, single `AnalyzerViewModel` and
   `AppUIState`, main `WindowGroup(id: "main")`, `MenuBarExtra`, app commands.
 - `Models/NetworkModel.swift` — immutable `NetworkModel` and `InformationElement`
   value types plus `WiFiBand`/`WiFiStandard` enums and display helpers.
@@ -109,11 +109,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Wifa.signalUnit`, `Wifa.highlightConnected` — display options.
 - `Wifa.sortKey`, `Wifa.sortAscending` — table sort.
 - `Wifa.showSidebar`, `Wifa.showInspector`, `Wifa.bottomTab` — layout
-  (`0` Insights, `1` Spectrum, `2` History, `3` Raw Data, `4` Protocols,
+  (`0` Insights, `1` Spectrum, `2` History, `3` Protocols, `4` Raw Data,
   `5` Diagnostics).
 - `Wifa.groupMode` — none/SSID/band/vendor/security grouping.
 - Session, annotation and survey files live under
-  `~/Library/Application Support/WiFA/{Sessions,annotations.json,Surveys}`.
+  `~/Library/Application Support/LanFi/{Sessions,annotations.json,Surveys}`.
 - Window frame is managed by SwiftUI/AppKit.
 
 ## Adding a column
@@ -151,7 +151,7 @@ python3 scripts/update_oui.py
 
 ## Testing
 
-`WiFATests` compiles `NetworkModel`, `NetworkAnalyzer`,
+`LanFiTests` compiles `NetworkModel`, `NetworkAnalyzer`,
 `InformationElementParser` and `OUIParser` directly (no app host, no
 CoreWLAN), so tests run headless. Add pure-logic tests for scoring, overlap,
 recommendations, parsing and export DTOs. Avoid UI tests that require Location
