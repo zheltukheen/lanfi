@@ -134,6 +134,7 @@ targets:
       - Services/NetworkAnalyzer.swift
       - Services/ProtocolAnalyzer.swift
       - Services/PcapAnalyzer.swift
+      - Services/InformationElementParser.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.CLI
