@@ -179,11 +179,12 @@ detection, EHT/320 MHz and Multi-Link IE decoding, menu-bar alerts, vendor DB
 updates, filter profiles, CLI, URL scheme, Sparkle, Homebrew cask, expanded
 localization and VoiceOver chart descriptors.
 
-Remaining external blockers: actual Developer ID notarization (the CI pipeline
-is ready; Apple/Developer ID secrets are not configured) and hardware spectrum
-analyzer integration. LanFi now decodes Multi-Link AP MLD/link IDs and EHT/320
-MHz; full per-link BSSID sets still need a dedicated monitor-capture parser.
-Dynamic technical output is localized through a generated-phrase catalog.
+Remaining outside the shipped code: actual Apple notarization (no Developer
+Program account/Developer ID certificate), hardware spectrum analyzer
+integration, full per-link MLO BSSID sets, a multi-select comparison/bulk-edit
+view, and a manual VoiceOver audit of the remaining screens. Multi-select,
+bulk copy/export, dynamic technical localization, PCAPNG/offline analysis,
+vendor DB updates, CLI, URL automation, alerts and reports are implemented.
 
 ## Project structure
 
