@@ -2,6 +2,16 @@
 import SwiftUI
 
 @main
+enum LanFiMain {
+    static func main() {
+        if CommandLine.arguments.contains("--smoke-test") {
+            AppSmokeTest.run()
+        }
+        CrashLogger.install()
+        LanFiApp.main()
+    }
+}
+
 struct LanFiApp: App {
     // ViewModel создается здесь и живет все время работы приложения
     @StateObject private var viewModel = AnalyzerViewModel()
@@ -21,6 +31,21 @@ struct LanFiApp: App {
                 .environmentObject(uiState)
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
+                .onOpenURL { url in
+                    guard let link = DeepLink.parse(url) else { return }
+                    switch link {
+                    case .tab(let index):
+                        uiState.selectedBottomTab = index
+                    case .interfaces:
+                        uiState.selectedBottomTab = 4
+                    case .search(let query):
+                        viewModel.searchText = query
+                    case .runDiagnostics:
+                        uiState.selectedBottomTab = 6
+                        Task { await diagnostics.run() }
+                    }
+                    NSApp.activate(ignoringOtherApps: true)
+                }
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {
                         // ИСПРАВЛЕНО: Вызываем публичный метод ViewModel
@@ -45,6 +70,10 @@ struct LanFiApp: App {
 
         Window("Site Survey", id: "survey") {
             SurveyView(analyzer: viewModel, survey: survey)
+        }
+
+        Settings {
+            SettingsView()
         }
 
         MenuBarExtra {

@@ -9,6 +9,7 @@ struct RemoteSensorsView: View {
     @State private var errorMessage: String?
     @State private var showingEditor = false
     @State private var editingSensor: RemoteSensor?
+    @State private var autoRefresh = false
 
     private let store = RemoteSensorStore()
 
@@ -46,6 +47,15 @@ struct RemoteSensorsView: View {
             }
         }
         .frame(width: 860, height: 540)
+        .task(id: PollKey(id: selectedID, enabled: autoRefresh)) {
+            guard autoRefresh, let selected else { return }
+            while !Task.isCancelled, autoRefresh {
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+                if !Task.isCancelled, autoRefresh, !isScanning {
+                    scan(selected, clear: false)
+                }
+            }
+        }
         .sheet(isPresented: $showingEditor) {
             RemoteSensorEditor(sensor: editingSensor) { sensor in
                 if let index = sensors.firstIndex(where: { $0.id == sensor.id }) {
@@ -133,6 +143,9 @@ struct RemoteSensorsView: View {
                             .foregroundColor(.secondary)
                     }
                     Spacer()
+                    Toggle("Auto 60 s", isOn: $autoRefresh)
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
                     if isScanning {
                         ProgressView().controlSize(.small)
                     }
@@ -193,9 +206,11 @@ struct RemoteSensorsView: View {
         }
     }
 
-    private func scan(_ sensor: RemoteSensor) {
-        errorMessage = nil
-        results = []
+    private func scan(_ sensor: RemoteSensor, clear: Bool = true) {
+        if clear {
+            errorMessage = nil
+            results = []
+        }
         isScanning = true
         Task {
             do {
@@ -290,4 +305,9 @@ private struct RemoteSensorEditor: View {
         .padding(18)
         .frame(width: 460)
     }
+}
+
+private struct PollKey: Hashable {
+    let id: UUID?
+    let enabled: Bool
 }

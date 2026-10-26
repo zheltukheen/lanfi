@@ -111,9 +111,23 @@ class AnalyzerViewModel: ObservableObject {
     @Published private(set) var annotations: [String: NetworkAnnotation] = [:]
     @Published private(set) var sessions: [ScanSession] = []
     @Published private(set) var columnProfiles: [ColumnProfile] = []
+    @Published private(set) var menuBarAlerts: [MenuBarAlert] = []
     @Published private(set) var loadedSession: ScanSession?
     @Published var sessionMessage: String?
-    @Published var selectedNetworkId: String? = nil
+    @Published private var selectedNetworkIdStorage: String? = nil
+    @Published var selectedNetworkIds: Set<String> = []
+
+    var selectedNetworkId: String? {
+        get { selectedNetworkIdStorage }
+        set {
+            selectedNetworkIdStorage = newValue
+            if let newValue {
+                selectedNetworkIds = [newValue]
+            } else {
+                selectedNetworkIds.removeAll()
+            }
+        }
+    }
     @Published var highlightConnectedNetworks: Bool = true { didSet { savePreferences() } }
 
     // Settings & Filters
@@ -266,6 +280,7 @@ class AnalyzerViewModel: ObservableObject {
 
         analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))
         applyFilters()
+        refreshMenuBarAlerts()
     }
 
     private func observing(net: NetworkModel, existing: NetworkModel?, now: Date) -> NetworkModel {
@@ -493,6 +508,7 @@ class AnalyzerViewModel: ObservableObject {
         analysis = NetworkAnalyzer.analyze(networks: session.networks)
         sessionMessage = "Session “\(session.displayName)” · \(session.networkCount) networks"
         applyFilters()
+        refreshMenuBarAlerts()
     }
 
     func resumeLiveScan() {
@@ -690,6 +706,10 @@ class AnalyzerViewModel: ObservableObject {
     // MARK: - Export (Improved CSV)
 
     func exportCSV() {
+        exportCSV(networks: networks, suffix: "scan")
+    }
+
+    func exportCSV(networks: [NetworkModel], suffix: String) {
         let visibleColumns = columnDefinitions.sorted { $0.order < $1.order }.filter { $0.isVisible }
         let headers = visibleColumns.map { "\"\($0.displayTitle)\"" }.joined(separator: ",")
 
@@ -706,13 +726,17 @@ class AnalyzerViewModel: ObservableObject {
         // UTF-8 BOM keeps non-ASCII SSIDs intact in Excel; CRLF follows RFC 4180.
         let csvContent = "\u{FEFF}" + ([headers] + rows).joined(separator: "\r\n") + "\r\n"
         presentSavePanel(
-            defaultName: "LanFi-Scan-\(Self.fileTimestamp()).csv",
+            defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).csv",
             contentType: .commaSeparatedText,
             content: csvContent
         )
     }
 
     func exportJSON() {
+        exportJSON(networks: networks, suffix: "scan")
+    }
+
+    func exportJSON(networks: [NetworkModel], suffix: String) {
         let payload: [String: Any] = [
             "generator": "LanFi",
             "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
@@ -747,10 +771,107 @@ class AnalyzerViewModel: ObservableObject {
         }
 
         presentSavePanel(
-            defaultName: "LanFi-Scan-\(Self.fileTimestamp()).json",
+            defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).json",
             contentType: .json,
             content: string
         )
+    }
+
+    private func refreshMenuBarAlerts() {
+        let defaults = UserDefaults.standard
+        let weak = defaults.object(forKey: "Wifa.alerts.weakSignal") as? Bool ?? true
+        let open = defaults.object(forKey: "Wifa.alerts.openNetwork") as? Bool ?? true
+        let channel = defaults.object(forKey: "Wifa.alerts.channelChange") as? Bool ?? true
+        let previous = defaults.object(forKey: "Wifa.alerts.lastConnectedChannel") as? Int
+        menuBarAlerts = MenuBarAlertEngine.compute(
+            networks: networks,
+            connectedBSSID: currentConnectedBSSID,
+            weakSignalEnabled: weak,
+            openNetworkEnabled: open,
+            channelChangeEnabled: channel,
+            previousChannel: previous
+        )
+        if let connected = networks.first(where: { $0.bssid == currentConnectedBSSID }) {
+            defaults.set(connected.channel, forKey: "Wifa.alerts.lastConnectedChannel")
+        }
+    }
+
+    var selectedNetworks: [NetworkModel] {
+        let ids = selectedNetworkIds
+        if ids.isEmpty, let selectedNetwork {
+            return [selectedNetwork]
+        }
+        return networks.filter { ids.contains($0.id) }
+    }
+
+    func setSelection(ids: Set<String>, primary: String?) {
+        selectedNetworkIds = ids
+        selectedNetworkIdStorage = primary ?? ids.first
+    }
+
+    func copySelectedNetworks() {
+        let lines = selectedNetworks.map { "\($0.displaySSID) · \($0.bssid)" }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(lines.joined(separator: "\n"), forType: .string)
+    }
+
+    func exportSelectedCSV() {
+        exportCSV(networks: selectedNetworks, suffix: "selection")
+    }
+
+    func exportSelectedJSON() {
+        exportJSON(networks: selectedNetworks, suffix: "selection")
+    }
+
+    func currentFilterProfile(name: String = "LanFi filter") -> FilterProfile {
+        FilterProfile.capture(
+            name: name, searchText: searchText,
+            band24: filterBand24, band5: filterBand5, band6: filterBand6,
+            minSignal: minSignalThreshold, groupMode: groupMode,
+            signalUnit: signalDisplayMode
+        )
+    }
+
+    func applyFilterProfile(_ profile: FilterProfile) {
+        searchText = profile.searchText
+        filterBand24 = profile.band24
+        filterBand5 = profile.band5
+        filterBand6 = profile.band6
+        minSignalThreshold = profile.minSignal
+        if let mode = NetworkGroupMode(rawValue: profile.groupMode) {
+            groupMode = mode
+        }
+        if let unit = SignalDisplayMode(rawValue: profile.signalUnit) {
+            signalDisplayMode = unit
+        }
+    }
+
+    func exportFilterProfile() {
+        let panel = NSSavePanel()
+        panel.title = "Export filter profile"
+        panel.nameFieldStringValue = "LanFi-Filter.json"
+        panel.allowedContentTypes = [.json]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(currentFilterProfile()) {
+            try? data.write(to: url, options: .atomic)
+        }
+    }
+
+    func importFilterProfile() {
+        let panel = NSOpenPanel()
+        panel.title = "Import filter profile"
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url,
+            let data = try? Data(contentsOf: url),
+            let profile = try? JSONDecoder().decode(FilterProfile.self, from: data)
+        else {
+            presentError("Could not decode the filter profile.")
+            return
+        }
+        applyFilterProfile(profile)
     }
 
     func exportPCAP() {
@@ -762,6 +883,19 @@ class AnalyzerViewModel: ObservableObject {
         presentSaveData(
             defaultName: "LanFi-Scan-\(Self.fileTimestamp()).pcap",
             contentType: UTType(filenameExtension: "pcap") ?? .data,
+            data: data
+        )
+    }
+
+    func exportPCAPNG() {
+        guard !networks.isEmpty else {
+            presentError("There are no visible networks to export.")
+            return
+        }
+        let data = PcapExporter.makePcapngCapture(networks: networks)
+        presentSaveData(
+            defaultName: "LanFi-Scan-\(Self.fileTimestamp()).pcapng",
+            contentType: UTType(filenameExtension: "pcapng") ?? .data,
             data: data
         )
     }

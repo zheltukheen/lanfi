@@ -5,6 +5,7 @@ import SwiftUI
 @MainActor
 final class SurveyViewModel: ObservableObject {
     @Published private(set) var project: SurveyProject
+    @Published private(set) var projects: [SurveyProject] = []
     @Published private(set) var floorPlanData: Data?
     @Published var selectedNetworkId: String?
     @Published var statusMessage: String = "Import a floor plan, then click to record signal."
@@ -20,6 +21,7 @@ final class SurveyViewModel: ObservableObject {
         } else {
             project = .new()
         }
+        projects = store.projects()
     }
 
     var floorPlanImage: NSImage? {
@@ -89,6 +91,44 @@ final class SurveyViewModel: ObservableObject {
         statusMessage = "Walls cleared."
     }
 
+    func selectProject(id: UUID) {
+        guard let selected = projects.first(where: { $0.id == id }) else { return }
+        project = selected
+        floorPlanData = store.imageData(for: selected)
+        statusMessage = "Loaded \(selected.name) · \(selected.samples.count) points"
+    }
+
+    func newFloor() {
+        let alert = NSAlert()
+        alert.messageText = "New floor"
+        alert.informativeText = "Create a separate floor plan and survey."
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 22))
+        field.placeholderString = "Floor name"
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Create")
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newProject = SurveyProject.new(name: name.isEmpty ? "New floor" : name)
+        store.save(newProject, imageData: nil)
+        projects = store.projects()
+        project = newProject
+        floorPlanData = nil
+        statusMessage = "Created \(newProject.name). Import a floor plan to begin."
+    }
+
+    func exportPDF(networkName: String) {
+        let panel = NSSavePanel()
+        panel.title = "Export survey report"
+        panel.nameFieldStringValue = "LanFi-Survey-\(project.name).pdf"
+        panel.allowedContentTypes = [.pdf]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let data = SurveyReportExporter.makePDF(
+            project: project, image: floorPlanImage, networkName: networkName
+        )
+        try? data.write(to: url, options: .atomic)
+    }
+
     func clearSamples() {
         project.samples.removeAll()
         project.updatedAt = Date()
@@ -98,6 +138,7 @@ final class SurveyViewModel: ObservableObject {
 
     func save() {
         store.save(project, imageData: floorPlanData)
+        projects = store.projects()
         statusMessage = "Survey saved locally."
     }
 

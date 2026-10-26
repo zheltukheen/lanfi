@@ -10,11 +10,13 @@ struct MainTableView: View {
     @EnvironmentObject var uiState: AppUIState
     @EnvironmentObject var diagnostics: DiagnosticsViewModel
     @EnvironmentObject var interfaces: InterfacesViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // UI State
     @State private var isResizingPanels = false
     @State private var showingLiveCapture = false
     @State private var showingRemoteSensors = false
+    @State private var showingOfflineCapture = false
 
     // Resizable Panels State
     @State private var inspectorBaseWidth: CGFloat = 300
@@ -211,11 +213,17 @@ struct MainTableView: View {
         .sheet(isPresented: $showingRemoteSensors) {
             RemoteSensorsView()
         }
+        .sheet(isPresented: $showingOfflineCapture) {
+            OfflineCaptureView()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowLiveCapture)) { _ in
             showingLiveCapture = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowRemoteSensors)) { _ in
             showingRemoteSensors = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowOfflineCapture)) { _ in
+            showingOfflineCapture = true
         }
         .onAppear {
             if !viewModel.isLocationAuthorized {
@@ -353,12 +361,14 @@ struct TabButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
 /// Тулбар с унифицированными кнопками настроек
 struct ToolbarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var showSidebar: Bool
     @Binding var showInspector: Bool
     @Binding var customIntervalText: String
@@ -371,7 +381,13 @@ struct ToolbarView: View {
 
             // 1. LEFT CONTROLS (Refresh & Settings)
             HStack(spacing: 10) {
-                Button(action: { withAnimation(.spring(response: 0.3)) { showSidebar.toggle() } }) {
+                Button(action: {
+                    if reduceMotion {
+                        showSidebar.toggle()
+                    } else {
+                        withAnimation(.spring(response: 0.3)) { showSidebar.toggle() }
+                    }
+                }) {
                     Image(systemName: "sidebar.left")
                         .foregroundColor(showSidebar ? .accentColor : .primary)
                 }
@@ -501,7 +517,13 @@ struct ToolbarView: View {
                 .help("Export scan results")
 
                 // Inspector Toggle
-                Button(action: { withAnimation(.spring(response: 0.3)) { showInspector.toggle() } }) {
+                Button(action: {
+                    if reduceMotion {
+                        showInspector.toggle()
+                    } else {
+                        withAnimation(.spring(response: 0.3)) { showInspector.toggle() }
+                    }
+                }) {
                     Image(systemName: "sidebar.right")
                         .foregroundColor(showInspector ? .accentColor : .primary)
                 }
@@ -538,6 +560,7 @@ extension Notification.Name {
     static let wifaFocusSearch = Notification.Name("LanFi.focusSearch")
     static let lanfiShowLiveCapture = Notification.Name("LanFi.showLiveCapture")
     static let lanfiShowRemoteSensors = Notification.Name("LanFi.showRemoteSensors")
+    static let lanfiShowOfflineCapture = Notification.Name("LanFi.showOfflineCapture")
 }
 
 // MARK: - Subviews
@@ -576,7 +599,9 @@ struct NetworkInspectorView: View {
             Divider()
 
             ScrollView {
-                if let network = viewModel.selectedNetwork {
+                if viewModel.selectedNetworkIds.count > 1 {
+                    MultiSelectionInspector(viewModel: viewModel)
+                } else if let network = viewModel.selectedNetwork {
                     VStack(alignment: .leading, spacing: 12) {
 
                         // Header
@@ -915,6 +940,69 @@ struct NetworkStatusBar: View {
         .frame(height: 24)
         .background(Material.bar)
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .top)
+    }
+}
+
+struct MultiSelectionInspector: View {
+    @ObservedObject var viewModel: AnalyzerViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "square.stack.3d.up.fill")
+                    .foregroundColor(.accentColor)
+                Text("\(viewModel.selectedNetworkIds.count) networks selected")
+                    .font(.headline)
+            }
+            Text("Use ⌘-click or ⇧-click in the table to extend the selection.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            let selected = viewModel.selectedNetworks
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(selected.prefix(8)) { network in
+                    HStack {
+                        Text(network.displaySSID).font(.caption).lineLimit(1)
+                        Spacer()
+                        Text("\(network.signal) dBm").font(.caption2).foregroundColor(.secondary)
+                    }
+                }
+                if selected.count > 8 {
+                    Text("+ \(selected.count - 8) more")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(9)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            HStack {
+                Button {
+                    viewModel.copySelectedNetworks()
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc")
+                }
+                Button {
+                    viewModel.exportSelectedCSV()
+                } label: {
+                    Label("CSV", systemImage: "tablecells")
+                }
+                Button {
+                    viewModel.exportSelectedJSON()
+                } label: {
+                    Label("JSON", systemImage: "curlybraces")
+                }
+            }
+            .controlSize(.small)
+
+            Button("Clear Selection") {
+                viewModel.setSelection(ids: [], primary: nil)
+            }
+            .controlSize(.small)
+        }
+        .padding(14)
     }
 }
 

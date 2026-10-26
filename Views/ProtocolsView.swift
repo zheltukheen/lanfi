@@ -248,6 +248,7 @@ struct ProtocolsView: View {
 }
 
 private struct ProtocolBlockCard: View {
+    @Environment(\.colorSchemeContrast) private var contrast
     let block: ProtocolBlock
     let index: Int
     let band: WiFiBand

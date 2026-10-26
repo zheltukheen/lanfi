@@ -31,6 +31,27 @@ enum PcapExporter {
         return data
     }
 
+    static func makePcapngCapture(networks: [NetworkModel], timestamp: Date = Date()) -> Data {
+        var data = Data()
+        data.append(contentsOf: sectionHeader())
+        data.append(contentsOf: interfaceDescription())
+        let microfraction = UInt64(timestamp.timeIntervalSince1970 * 1_000_000)
+        for (index, network) in networks.enumerated() {
+            guard let frame = beaconFrame(for: network) else { continue }
+            var radiotap = Data([0x00, 0x00])
+            radiotap.append(littleEndian: UInt16(8))
+            radiotap.append(littleEndian: UInt32(0))
+            let packet = radiotap + frame
+            let ticks = microfraction + UInt64(index) * 1_000_000
+            data.append(
+                enhancedPacket(
+                    timestampMicroseconds: ticks,
+                    packet: packet
+                ))
+        }
+        return data
+    }
+
     static func beaconFrame(for network: NetworkModel) -> Data? {
         guard let bssid = macBytes(network.bssid) ?? macBytes("02:00:00:00:00:01") else {
             return nil
@@ -74,6 +95,51 @@ enum PcapExporter {
         data.append(littleEndian: UInt32(65_535))
         data.append(littleEndian: linkTypeIEEE80211Radiotap)
         return data
+    }
+
+    private static func sectionHeader() -> Data {
+        var body = Data()
+        body.append(littleEndian: UInt32(0x1A2B3C4D))
+        body.append(littleEndian: UInt16(1))
+        body.append(littleEndian: UInt16(0))
+        body.append(littleEndian: Int64(-1))
+        var block = Data()
+        block.append(littleEndian: UInt32(0x0A0D0D0A))
+        block.append(littleEndian: UInt32(28))
+        block.append(body)
+        block.append(littleEndian: UInt32(28))
+        return block
+    }
+
+    private static func interfaceDescription() -> Data {
+        var body = Data()
+        body.append(littleEndian: UInt16(127))
+        body.append(littleEndian: UInt16(0))
+        body.append(littleEndian: UInt32(65_535))
+        var block = Data()
+        block.append(littleEndian: UInt32(1))
+        block.append(littleEndian: UInt32(20))
+        block.append(body)
+        block.append(littleEndian: UInt32(20))
+        return block
+    }
+
+    private static func enhancedPacket(timestampMicroseconds: UInt64, packet: Data) -> Data {
+        var body = Data()
+        body.append(littleEndian: UInt32(0))  // interface id
+        body.append(littleEndian: UInt32(timestampMicroseconds >> 32))
+        body.append(littleEndian: UInt32(timestampMicroseconds & 0xFFFF_FFFF))
+        body.append(littleEndian: UInt32(packet.count))
+        body.append(littleEndian: UInt32(packet.count))
+        body.append(packet)
+        while body.count % 4 != 0 { body.append(0) }
+        let total = UInt32(12 + body.count)
+        var block = Data()
+        block.append(littleEndian: UInt32(6))
+        block.append(littleEndian: total)
+        block.append(body)
+        block.append(littleEndian: total)
+        return block
     }
 
     private static func packetHeader(

@@ -1,5 +1,37 @@
 # Changelog
 
+## 2.0.0 — 2026-10-26
+
+### Added
+- **Offline capture analysis** for pcap and pcapng (radiotap or bare 802.11),
+  with beacon/probe-response SSID, BSSID, channel, RSSI, security and EHT flags.
+- **PCAPNG export** alongside classic pcap.
+- **Multi-select** table with bulk copy and selected CSV/JSON export.
+- **CLI** `lanfi-cli` with `summary`, `protocols`, `pcap` and JSON output;
+  built and smoke-tested in CI/release.
+- **Deep links** (`lanfi://tab/...`, `lanfi://search?q=...`,
+  `lanfi://diagnostics/run`).
+- **Filter profile import/export**.
+- **Menu-bar alerts** for weak signal, open networks and connected-channel
+  change, with Settings toggles.
+- **Vendor database updater** (Wireshark manuf) and custom OUI overrides.
+- **Survey floor projects**, PDF report export and IDW heatmap in the report.
+- **Throughput test** through Apple `networkQuality`.
+- **Remote-sensor auto-refresh** every 60 seconds.
+- **Diagnostics bundle export** with report/history/interfaces/system info and
+  recent local crash logs; local-only uncaught-exception logging.
+- **Notarized release pipeline**: conditional Developer ID import, app/DMG
+  notarization, headless release smoke test, CI smoke test.
+- EHT Operation/Capabilities decoding and 320 MHz detection from IEs.
+- Signature/accessibility polish: reduce-motion support, high-contrast card
+  borders, chart descriptors and selected-tab VoiceOver trait.
+
+### Changed
+- Wi-Fi interface can be selected in Settings (external adapters exposed by
+  macOS/CoreWLAN).
+- Release uploads a `LanFi-CLI-<version>.zip` asset.
+- Version 2.0.0 (build 16).
+
 ## 1.9.0 — 2026-10-26
 
 ### Added

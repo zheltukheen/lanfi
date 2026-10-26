@@ -158,6 +158,10 @@ enum ProtocolAnalyzer {
         let isWiFi7 = network.generation == .mode11be
         let hasEHT = isWiFi7 || !ehtElements.isEmpty
         let mloElement = ehtElements.contains { $0.name.lowercased().contains("multi-link") }
+        let ehtOperation = ehtElements.first { $0.name.localizedCaseInsensitiveContains("EHT Operation") }
+        let reports320 =
+            network.channelWidthMHz >= 320
+            || (ehtOperation?.summary.localizedCaseInsensitiveContains("320 MHz") ?? false)
         var facts: [ProtocolFact] = [
             ProtocolFact(
                 id: "wifi7",
@@ -185,9 +189,11 @@ enum ProtocolAnalyzer {
             ProtocolFact(
                 id: "width320",
                 label: "320 MHz",
-                value: network.channelWidthMHz >= 320 ? "Reported" : "Not reported",
-                detail: "CoreWLAN width: \(network.channelWidthLabel) MHz",
-                status: network.channelWidthMHz >= 320 ? .good : .unknown
+                value: reports320 ? "Reported" : "Not reported",
+                detail: reports320
+                    ? "EHT Operation or CoreWLAN reports 320 MHz"
+                    : "CoreWLAN width: \(network.channelWidthLabel) MHz",
+                status: reports320 ? .good : .unknown
             ),
         ]
         if network.band == .band6 {

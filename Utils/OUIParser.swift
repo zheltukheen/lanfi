@@ -26,6 +26,7 @@ struct OUIParser {
     ]
 
     private static var cached: [String: String]?
+    private static let overrideKey = "Wifa.customOUIOverrides"
 
     /// Returns the best vendor name for a MAC address. The database contains
     /// 24-, 28- and 36-bit prefixes; the longest matching prefix wins.
@@ -37,7 +38,39 @@ struct OUIParser {
             return "Randomized MAC"
         }
 
+        if let custom = lookup(mac: key, in: customOverrides()) { return custom }
         return lookup(mac: key, in: db()) ?? "-"
+    }
+
+    static func customOverrides() -> [String: String] {
+        guard let data = UserDefaults.standard.data(forKey: overrideKey),
+            let decoded = try? JSONDecoder().decode([String: String].self, from: data)
+        else { return [:] }
+        return decoded
+    }
+
+    static func setOverride(prefix: String, vendor: String) -> Bool {
+        let key = normalizedMAC(prefix)
+        let value = vendor.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard (6...9).contains(key.count), !value.isEmpty else { return false }
+        var overrides = customOverrides()
+        overrides[key] = value
+        if let data = try? JSONEncoder().encode(overrides) {
+            UserDefaults.standard.set(data, forKey: overrideKey)
+        }
+        return true
+    }
+
+    static func removeOverride(_ prefix: String) {
+        var overrides = customOverrides()
+        overrides.removeValue(forKey: normalizedMAC(prefix))
+        if let data = try? JSONEncoder().encode(overrides) {
+            UserDefaults.standard.set(data, forKey: overrideKey)
+        }
+    }
+
+    static func reload() {
+        cached = nil
     }
 
     /// Longest-prefix lookup over a database of 6, 7, 8 or 9 hex characters.
@@ -73,18 +106,25 @@ struct OUIParser {
     private static func db() -> [String: String] {
         if let cached { return cached }
 
-        let candidates: [(name: String, ext: String?)] = [("oui", nil), ("oui", "txt"), ("OUI", nil)]
-        for candidate in candidates {
-            if let url = Bundle.main.url(forResource: candidate.name, withExtension: candidate.ext),
-                let text = try? String(contentsOf: url, encoding: .utf8)
-            {
-                let parsed = parseDatabase(text)
-                cached = parsed.isEmpty ? builtIn : parsed
-                return cached!
+        var database = builtIn
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let customURL = support.appendingPathComponent("LanFi/oui.txt")
+        if let text = try? String(contentsOf: customURL, encoding: .utf8) {
+            let parsed = parseDatabase(text)
+            if !parsed.isEmpty { database = parsed }
+        } else {
+            let candidates: [(name: String, ext: String?)] = [("oui", nil), ("oui", "txt"), ("OUI", nil)]
+            for candidate in candidates {
+                if let url = Bundle.main.url(forResource: candidate.name, withExtension: candidate.ext),
+                    let text = try? String(contentsOf: url, encoding: .utf8)
+                {
+                    let parsed = parseDatabase(text)
+                    if !parsed.isEmpty { database = parsed; break }
+                }
             }
         }
-        cached = builtIn
-        return cached!
+        cached = database
+        return database
     }
 
     /// Normalizes MAC/OUI input to uppercase hex without separators. It does

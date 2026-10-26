@@ -22,6 +22,33 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            if !viewModel.menuBarAlerts.isEmpty {
+                VStack(alignment: .leading, spacing: 5) {
+                    ForEach(viewModel.menuBarAlerts.prefix(3)) { alert in
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(
+                                systemName: alert.severity == .critical
+                                    ? "exclamationmark.triangle.fill"
+                                    : alert.severity == .warning ? "exclamationmark.circle.fill" : "info.circle.fill"
+                            )
+                            .foregroundColor(
+                                alert.severity == .critical
+                                    ? .red : alert.severity == .warning ? .orange : .blue)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(alert.title).font(.caption.bold())
+                                Text(alert.detail)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(2)
+                            }
+                        }
+                    }
+                }
+                .padding(8)
+                .background(Color.orange.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
             HStack(alignment: .firstTextBaseline) {
                 Text("LanFi")
                     .font(.headline)

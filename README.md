@@ -177,10 +177,10 @@ profiles, synthetic + live PCAP, IDW survey heatmaps with walls, SSH remote
 sensors, AP-name detection, an explicit EHT/MLO block, Sparkle, Homebrew cask,
 expanded localization and VoiceOver chart descriptors.
 
-Still open: actual Developer ID notarization (tooling is ready but credentials
-are not configured), full localization of dynamic detail strings, true MLO
-link/320 MHz decoding (CoreWLAN does not expose it), PCAPNG and offline PCAP
-analysis, in-app vendor DB updates, multi-select, menu-bar alerts and a CLI.
+Still open: actual Developer ID notarization (the CI pipeline is ready but
+credentials are not configured), full localization of dynamic detail strings,
+and true MLO link-set decoding (CoreWLAN does not expose it; LanFi decodes EHT
+Operation where the IE is present).
 
 ## Project structure
 
@@ -200,6 +200,7 @@ Views/                       SwiftUI + AppKit table, charts, protocols, diagnost
 Utils/                       Location permission, OUI vendor lookup
 Resources/                   OUI database, privacy manifest, Russian localization
 Casks/lanfi.rb                Homebrew cask (tap: zheltukheen/lanfi)
+CLI/LanFiCLI.swift            Offline CLI target (lanfi-cli)
 Tests/                       XCTest coverage for pure logic and parsing
 scripts/autopush.sh          Commit/push automation
 ```
@@ -247,6 +248,26 @@ Signed/notarized distribution is documented in [docs/DISTRIBUTION.md](docs/DISTR
 
 Wi-Fi, WPA2 and WPA3 are trademarks of their respective owners. LanFi is not
 affiliated with Apple or the Wi-Fi Alliance.
+
+## CLI and automation
+
+`lanfi-cli` is built with the app and published as a separate release asset:
+
+```bash
+lanfi-cli summary scan.json
+lanfi-cli summary scan.json --json
+lanfi-cli protocols scan.json
+lanfi-cli pcap capture.pcapng --json
+```
+
+Deep links: `lanfi://tab/interfaces`, `lanfi://tab/protocols`,
+`lanfi://search?q=AX55`, `lanfi://diagnostics/run`.
+
+## Offline capture analysis
+
+Open **Data → Analyze Packet Capture…** to decode pcap/pcapng files with
+radiotap or bare 802.11 frames. Beacon/probe-response SSID, BSSID, channel,
+RSSI, security and EHT presence are shown offline; no network is contacted.
 
 ## Remote sensors
 

@@ -129,6 +129,7 @@ struct InterfacesView: View {
 }
 
 private struct InterfaceCard: View {
+    @Environment(\.colorSchemeContrast) private var contrast
     let interface: SystemInterface
 
     var body: some View {
@@ -183,7 +184,12 @@ private struct InterfaceCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 9))
         .overlay(
             RoundedRectangle(cornerRadius: 9)
-                .stroke(interface.isPrimary ? Color.blue.opacity(0.4) : Color.secondary.opacity(0.12), lineWidth: 1)
+                .stroke(
+                    interface.isPrimary
+                        ? Color.blue.opacity(contrast == .increased ? 0.8 : 0.4)
+                        : Color.secondary.opacity(contrast == .increased ? 0.4 : 0.12),
+                    lineWidth: contrast == .increased ? 2 : 1
+                )
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(interface.displayName), \(interface.statusLabel)")

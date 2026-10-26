@@ -385,3 +385,45 @@
 "Not run yet" = "Ещё не запускалось";
 "No diagnostics run" = "Диагностика не запускалась";
 "Clear" = "Очистить";
+
+/* 2.0 additions */
+"Add" = "Добавить";
+"Analyze Packet Capture…" = "Анализ захвата пакетов…";
+"Auto 60 s" = "Авто 60 с";
+"CSV" = "CSV";
+"JSON" = "JSON";
+"Clear Selection" = "Снять выделение";
+"Copy" = "Копировать";
+"Export Filter Profile…" = "Экспорт профиля фильтра…";
+"Export PCAPNG (Synthetic Beacons)…" = "Экспорт PCAPNG (синтетические beacon)…";
+"External USB Wi-Fi adapters appear here when macOS exposes them through CoreWLAN." = "Внешние USB Wi-Fi адаптеры появятся здесь, если macOS отдаёт их через CoreWLAN.";
+"Floor plan heatmap" = "Тепловая карта плана";
+"Import Filter Profile…" = "Импорт профиля фильтра…";
+"No capture loaded" = "Захват не загружен";
+"Offline packet analysis" = "Офлайн-анализ пакетов";
+"Open Capture…" = "Открыть захват…";
+"Open a pcap or pcapng capture with radiotap or 802.11 frames." = "Откройте pcap/pcapng с radiotap или 802.11-кадрами.";
+"Overrides are stored locally and win over the downloaded database." = "Переопределения хранятся локально и важнее загруженной базы.";
+"PDF" = "PDF";
+"Prefix (6–9 hex)" = "Префикс (6–9 hex)";
+"Run speed test" = "Запустить тест скорости";
+"Runs Apple networkQuality; it uploads/downloads test traffic for up to 20 seconds." = "Запускает Apple networkQuality; тестовый трафик до 20 секунд.";
+"System default" = "Системный по умолчанию";
+"Throughput" = "Скорость";
+"Update from Wireshark" = "Обновить из Wireshark";
+"Vendor name" = "Имя вендора";
+"Use ⌘-click or ⇧-click in the table to extend the selection." = "Используйте ⌘-клик или ⇧-клик в таблице для расширения выделения.";
+"Weighted by overlapping airtime, signal strength and reported channel utilization." = "С учётом перекрытия эфира, уровня сигнала и заявленной загрузки канала.";
+"Beacons and probe responses from monitor-mode captures are decoded offline." = "Beacon и probe response из monitor-mode захвата декодируются офлайн.";
+"10 seconds" = "10 секунд";
+"20 seconds" = "20 секунд";
+"30 seconds" = "30 секунд";
+"60 seconds" = "60 секунд";
+
+/* Diagnostics detail strings */
+"Radio is powered on" = "Радио включено";
+"Wi-Fi radio is off or unavailable" = "Wi-Fi выключен или недоступен";
+"No active association" = "Нет активного подключения";
+"Location permission may be required to read RSSI" = "Для RSSI может потребоваться доступ к геолокации";
+"macOS did not report a DNS server" = "macOS не сообщила DNS-сервер";
+"Wi-Fi link, gateway, DNS, HTTPS and latency" = "Wi-Fi, шлюз, DNS, HTTPS и задержка";
