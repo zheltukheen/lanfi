@@ -4,6 +4,7 @@ struct SidebarFilterView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var expandedSections: Set<SidebarCategory> = []
     @State private var showSortPopover = false
+    @State private var showCustomFilters = false
 
     private let sortOptions: [ColumnId] = [
         .signal, .quality, .networkName, .channel, .band, .security,
@@ -17,6 +18,7 @@ struct SidebarFilterView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     sortCard
+                    automaticRules
                     ForEach(SidebarCategory.allCases, id: \.self) { category in
                         let options = viewModel.sidebarOptions(for: category)
                         let total = options.reduce(0) { $0 + $1.count }
@@ -43,6 +45,9 @@ struct SidebarFilterView: View {
             }
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .sheet(isPresented: $showCustomFilters) {
+            CustomFiltersView(viewModel: viewModel)
+        }
     }
 
     private var header: some View {
@@ -56,7 +61,14 @@ struct SidebarFilterView: View {
             }
             Spacer()
             Button {
-                viewModel.clearQuickFilters()
+                showCustomFilters = true
+            } label: {
+                Image(systemName: "line.3.horizontal.decrease.circle")
+            }
+            .buttonStyle(.borderless)
+            .help("Custom filters")
+            Button {
+                viewModel.clearAllFilters()
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(viewModel.hasActiveFilters ? .secondary : .secondary.opacity(0.35))
@@ -67,6 +79,68 @@ struct SidebarFilterView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
+    }
+
+    private var automaticRules: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Rules").font(.caption.bold())
+                Spacer()
+                Button {
+                    showCustomFilters = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .help("Edit custom filters")
+            }
+            Menu {
+                Button("None") { viewModel.setActiveFilter(nil) }
+                Divider()
+                ForEach(viewModel.allFilters) { filter in
+                    Button {
+                        viewModel.setActiveFilter(filter)
+                    } label: {
+                        if viewModel.activeFilterId == filter.id {
+                            Label(filter.name, systemImage: "checkmark")
+                        } else {
+                            Text(filter.name)
+                        }
+                    }
+                }
+                Divider()
+                Button("Edit custom filters…") { showCustomFilters = true }
+            } label: {
+                HStack {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .foregroundColor(.accentColor)
+                    Text(viewModel.activeFilter?.name ?? "No rule")
+                        .font(.caption)
+                        .lineLimit(1)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 8))
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 7)
+                .background(Color(nsColor: .windowBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                )
+            }
+            .menuStyle(.borderlessButton)
+        }
+        .padding(9)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 9)
+                .stroke(Color.secondary.opacity(0.10), lineWidth: 1)
+        )
     }
 
     private var sortCard: some View {

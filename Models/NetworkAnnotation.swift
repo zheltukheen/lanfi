@@ -4,12 +4,14 @@ struct NetworkAnnotation: Codable, Equatable {
     var alias: String = ""
     var notes: String = ""
     var tags: [String] = []
+    var colorHex: String?
     var updatedAt: Date = .distantPast
 
     var isEmpty: Bool {
         alias.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && tags.isEmpty
+            && (colorHex ?? "").isEmpty
     }
 
     var displayAlias: String? {

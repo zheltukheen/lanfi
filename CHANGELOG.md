@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.6.0 — 2026-10-26
+
+### Added
+- Custom filter builder: field/operator/value rules, AND/OR combinators,
+  automatic presets (open, weak, 6 GHz, Wi-Fi 7, WPA3, hidden) and persistence.
+- Coloring rules with automatic row tint and manual per-network color.
+- Unified workspace profiles: filters, bands, columns, coloring rules, custom
+  filters and active rule in one profile.
+- Per-network Issues inspector, signal/noise/SNR history chart and channel
+  utilization history.
+- iBeacon proximity inspector and BSS-Load client count inspector.
+- Detailed multi-select comparison (band, width, SNR, security, quality).
+- Settings Colors tab; About/Help windows.
+
+### Changed
+- Sidebar filters support multiple values per category and larger rows.
+- Sidebar sort popover, Wi-Fi 7 chip, rule picker and custom filter editor.
+- Version 2.6.0 (build 27).
+
+
 ## 2.5.4 — 2026-10-26
 
 ### Added

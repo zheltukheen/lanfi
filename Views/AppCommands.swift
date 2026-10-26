@@ -87,6 +87,14 @@ struct LanFiCommands: Commands {
             Toggle("Show Inspector", isOn: $uiState.showInspector)
                 .keyboardShortcut("i", modifiers: [.command, .option])
 
+            Menu("Workspace Profiles") {
+                ForEach(viewModel.workspaceProfiles) { profile in
+                    Button(profile.name) { viewModel.applyWorkspaceProfile(profile) }
+                }
+                if !viewModel.workspaceProfiles.isEmpty { Divider() }
+                Button("Save Workspace…") { viewModel.promptSaveWorkspaceProfile() }
+            }
+
             Menu("Column Profiles") {
                 ForEach(viewModel.columnProfiles) { profile in
                     Button(profile.name) { viewModel.applyColumnProfile(profile) }

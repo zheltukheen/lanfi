@@ -86,6 +86,7 @@ struct LanFiApp: App {
             SettingsView()
                 .environmentObject(updater)
                 .environmentObject(diagnostics)
+                .environmentObject(viewModel)
         }
 
         MenuBarExtra {

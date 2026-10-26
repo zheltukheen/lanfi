@@ -53,6 +53,14 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Manual VoiceOver audit of every remaining screen (chart descriptors and key
   controls are covered).
 
+## Delivered in 2.6
+
+- Custom filter expressions/automatic presets and multi-select sidebar filters.
+- Coloring rules and per-network colors; complete workspace profiles.
+- Per-network Issues, signal/noise/SNR, utilization, iBeacon and clients
+  inspectors; detailed comparison.
+- About and searchable Help windows; Settings tabs.
+
 ## Delivered in 2.5.2
 
 - Clickable filter section headers and a designed sort popover.

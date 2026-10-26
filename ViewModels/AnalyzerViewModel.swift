@@ -63,6 +63,9 @@ class AnalyzerViewModel: ObservableObject {
     private let annotationStore = AnnotationStore()
     private let sessionStore = SessionStore()
     private let columnProfileStore = ColumnProfileStore()
+    private let customFilterStore = CustomFilterStore()
+    private let coloringRuleStore = ColoringRuleStore()
+    private let workspaceProfileStore = WorkspaceProfileStore()
     private let refreshIntervalKey = "RefreshIntervalSeconds"
     private let historyWindowSeconds: TimeInterval = 180
 
@@ -107,11 +110,18 @@ class AnalyzerViewModel: ObservableObject {
     @Published var baseFilteredNetworks: [NetworkModel] = []
     @Published var currentConnectedBSSID: String? = nil
     @Published var signalHistory: [String: [Int]] = [:]
+    @Published var noiseHistory: [String: [Int?]] = [:]
+    @Published var snrHistory: [String: [Int?]] = [:]
+    @Published var utilizationHistory: [String: [Int?]] = [:]
     @Published private(set) var analysis: AnalysisReport = .empty
     @Published private(set) var annotations: [String: NetworkAnnotation] = [:]
     @Published private(set) var sessions: [ScanSession] = []
     @Published private(set) var columnProfiles: [ColumnProfile] = []
     @Published private(set) var menuBarAlerts: [MenuBarAlert] = []
+    @Published private(set) var customFilters: [CustomFilter] = []
+    @Published private(set) var coloringRules: [ColoringRule] = []
+    @Published private(set) var workspaceProfiles: [WorkspaceProfile] = []
+    @Published var activeFilterId: String?
     @Published private(set) var loadedSession: ScanSession?
     @Published var sessionMessage: String?
     @Published private var selectedNetworkIdStorage: String? = nil
@@ -169,6 +179,9 @@ class AnalyzerViewModel: ObservableObject {
         annotations = annotationStore.annotations
         sessions = sessionStore.sessions()
         columnProfiles = columnProfileStore.profiles()
+        customFilters = customFilterStore.load()
+        coloringRules = coloringRuleStore.load()
+        workspaceProfiles = workspaceProfileStore.load()
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
@@ -277,6 +290,9 @@ class AnalyzerViewModel: ObservableObject {
         for key in keysToRemove {
             persistentNetworks.removeValue(forKey: key)
             signalHistory.removeValue(forKey: key)
+            noiseHistory.removeValue(forKey: key)
+            snrHistory.removeValue(forKey: key)
+            utilizationHistory.removeValue(forKey: key)
         }
 
         analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))
@@ -342,6 +358,21 @@ class AnalyzerViewModel: ObservableObject {
             history.removeFirst(history.count - maxPoints)
         }
         signalHistory[net.id] = history
+
+        var noise = noiseHistory[net.id] ?? []
+        noise.append(net.noise)
+        if noise.count > maxPoints { noise.removeFirst(noise.count - maxPoints) }
+        noiseHistory[net.id] = noise
+
+        var snr = snrHistory[net.id] ?? []
+        snr.append(net.snr)
+        if snr.count > maxPoints { snr.removeFirst(snr.count - maxPoints) }
+        snrHistory[net.id] = snr
+
+        var utilization = utilizationHistory[net.id] ?? []
+        utilization.append(net.channelUtilization)
+        if utilization.count > maxPoints { utilization.removeFirst(utilization.count - maxPoints) }
+        utilizationHistory[net.id] = utilization
     }
 
     // MARK: - Filtering & Sorting
@@ -398,6 +429,15 @@ class AnalyzerViewModel: ObservableObject {
         }
         if !quickFilterVendor.isEmpty {
             baseFiltered = baseFiltered.filter { quickFilterVendor.contains($0.vendor) }
+        }
+        if let activeFilter {
+            baseFiltered = baseFiltered.filter {
+                activeFilter.matches(
+                    $0,
+                    metrics: analysis.metrics(for: $0.id),
+                    connectedBSSID: currentConnectedBSSID
+                )
+            }
         }
 
         var filtered = baseFiltered
@@ -467,6 +507,95 @@ class AnalyzerViewModel: ObservableObject {
             annotationStore.update(annotation, for: id)
         }
         annotations = annotationStore.annotations
+    }
+
+    func rowColor(for network: NetworkModel) -> NSColor? {
+        if let custom = ColorHex.color(from: annotation(for: network).colorHex ?? "") {
+            return custom
+        }
+        for rule in coloringRules where rule.isEnabled {
+            let filterRule = NetworkFilterRule(field: rule.field, op: rule.op, value: rule.value)
+            if NetworkFilterEngine.evaluate(
+                filterRule, network: network,
+                metrics: analysis.metrics(for: network.id),
+                connectedBSSID: currentConnectedBSSID
+            ), let color = ColorHex.color(from: rule.colorHex) {
+                return color
+            }
+        }
+        return nil
+    }
+
+    func setNetworkColor(_ hex: String, for network: NetworkModel) {
+        var annotation = annotation(for: network)
+        annotation.colorHex = hex
+        updateAnnotation(annotation, for: network)
+    }
+
+    func saveWorkspaceProfile(named name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let profile = WorkspaceProfile.new(
+            name: trimmed,
+            filter: currentFilterProfile(name: trimmed),
+            columns: columnDefinitions,
+            coloringRules: coloringRules,
+            customFilters: customFilters,
+            activeFilterId: activeFilterId
+        )
+        if let index = workspaceProfiles.firstIndex(where: {
+            $0.name.caseInsensitiveCompare(trimmed) == .orderedSame
+        }) {
+            var updated = profile
+            updated = WorkspaceProfile(
+                id: workspaceProfiles[index].id, name: trimmed, filter: profile.filter,
+                columns: profile.columns, coloringRules: profile.coloringRules,
+                customFilters: profile.customFilters, activeFilterId: profile.activeFilterId,
+                createdAt: workspaceProfiles[index].createdAt
+            )
+            workspaceProfiles[index] = updated
+        } else {
+            workspaceProfiles.append(profile)
+        }
+        workspaceProfileStore.save(workspaceProfiles)
+    }
+
+    func applyWorkspaceProfile(_ profile: WorkspaceProfile) {
+        applyFilterProfile(profile.filter)
+        columnDefinitions = normalizeColumnDefinitions(profile.columns)
+        saveColumnSettings()
+        coloringRules = profile.coloringRules
+        coloringRuleStore.save(profile.coloringRules)
+        customFilters = profile.customFilters
+        customFilterStore.save(profile.customFilters)
+        activeFilterId = profile.activeFilterId
+        applyFilters()
+        objectWillChange.send()
+    }
+
+    func deleteWorkspaceProfile(_ profile: WorkspaceProfile) {
+        workspaceProfiles.removeAll { $0.id == profile.id }
+        workspaceProfileStore.save(workspaceProfiles)
+    }
+
+    func promptSaveWorkspaceProfile() {
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 22))
+        field.stringValue = "Workspace"
+        let alert = NSAlert()
+        alert.messageText = "Save workspace profile"
+        alert.informativeText = "Save filters, bands, columns, coloring rules and custom filters."
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn {
+            saveWorkspaceProfile(named: field.stringValue)
+        }
+    }
+
+    func saveColoringRules(_ rules: [ColoringRule]) {
+        coloringRules = rules
+        coloringRuleStore.save(rules)
+        objectWillChange.send()
     }
 
     func updateAnnotation(_ annotation: NetworkAnnotation, for network: NetworkModel) {
@@ -632,6 +761,7 @@ class AnalyzerViewModel: ObservableObject {
             || !quickFilterSecurity.isEmpty
             || !quickFilterAccessPoint.isEmpty
             || !quickFilterVendor.isEmpty
+            || activeFilterId != nil
     }
 
     func clearAllFilters() {
@@ -652,6 +782,7 @@ class AnalyzerViewModel: ObservableObject {
         quickFilterSecurity.removeAll()
         quickFilterAccessPoint.removeAll()
         quickFilterVendor.removeAll()
+        activeFilterId = nil
     }
 
     // 2. Методы управления столбцами (нужны для ColumnSettingsView)
@@ -808,6 +939,37 @@ class AnalyzerViewModel: ObservableObject {
         if let connected = networks.first(where: { $0.bssid == currentConnectedBSSID }) {
             defaults.set(connected.channel, forKey: "Wifa.alerts.lastConnectedChannel")
         }
+    }
+
+    var allFilters: [CustomFilter] {
+        CustomFilter.automatic + customFilters
+    }
+
+    var activeFilter: CustomFilter? {
+        guard let activeFilterId else { return nil }
+        return allFilters.first { $0.id == activeFilterId }
+    }
+
+    func setActiveFilter(_ filter: CustomFilter?) {
+        activeFilterId = filter?.id
+        applyFilters()
+    }
+
+    func saveCustomFilter(_ filter: CustomFilter) {
+        if let index = customFilters.firstIndex(where: { $0.id == filter.id }) {
+            customFilters[index] = filter
+        } else {
+            customFilters.append(filter)
+        }
+        customFilterStore.save(customFilters)
+        if activeFilterId == filter.id { applyFilters() }
+    }
+
+    func deleteCustomFilter(_ filter: CustomFilter) {
+        customFilters.removeAll { $0.id == filter.id }
+        if activeFilterId == filter.id { activeFilterId = nil }
+        customFilterStore.save(customFilters)
+        applyFilters()
     }
 
     var selectedNetworks: [NetworkModel] {

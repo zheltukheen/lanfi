@@ -234,6 +234,15 @@ struct WiFiTableView: NSViewRepresentable {
             return true
         }
 
+        func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+            guard row >= 0, row < parent.viewModel.tableRows.count,
+                let network = parent.viewModel.tableRows[row].network
+            else { return nil }
+            let view = TintedRowView()
+            view.tint = parent.viewModel.rowColor(for: network)
+            return view
+        }
+
         func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
             guard row >= 0, row < parent.viewModel.tableRows.count else { return tableView.rowHeight }
             if case .group = parent.viewModel.tableRows[row] { return 28 }
