@@ -76,10 +76,12 @@ right-click the app → **Open**, or allow it in
 **System Settings → Privacy & Security**. Builds are universal (`arm64` +
 `x86_64`) and include SHA-256 checksums.
 
-Or install the cask from this repository:
+Or install via Homebrew:
 
 ```bash
-brew install --cask ./Casks/lanfi.rb
+brew tap zheltukheen/lanfi
+brew trust zheltukheen/lanfi
+brew install --cask lanfi
 ```
 
 LanFi is the renamed WiFA. Existing preferences, Sparkle updates and local
@@ -188,7 +190,7 @@ ViewModels/                  Analyzer, diagnostics and survey state
 Views/                       SwiftUI + AppKit table, charts, protocols, diagnostics, survey
 Utils/                       Location permission, OUI vendor lookup
 Resources/                   OUI database, privacy manifest, Russian localization
-Casks/lanfi.rb                Homebrew cask
+Casks/lanfi.rb                Homebrew cask (also mirrored in zheltukheen/homebrew-lanfi)
 Tests/                       XCTest coverage for pure logic and parsing
 scripts/autopush.sh          Commit/push automation
 ```
