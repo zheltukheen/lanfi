@@ -1,6 +1,6 @@
 cask "lanfi" do
-  version "2.5.2"
-  sha256 "5fec852d62d73f15d1c5a3455a259339ac034e47b67c7cbd16ab4c24b35a72e1"
+  version "2.5.3"
+  sha256 "e6f812fa27086f09f1e0bc941dde4404700e661d5aa83dc46a76f81c5c72ad13"
 
   url "https://github.com/zheltukheen/wifa/releases/download/v#{version}/LanFi-#{version}.dmg"
   name "LanFi"
