@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SidebarFilterView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
-    @State private var expandedSections: Set<SidebarCategory> = []
+    @State private var expandedSections: Set<FilterColumn> = []
     @State private var showSortPopover = false
     @State private var showCustomFilters = false
 
@@ -19,12 +19,12 @@ struct SidebarFilterView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     sortCard
                     automaticRules
-                    ForEach(SidebarCategory.allCases, id: \.self) { category in
+                    ForEach(FilterColumn.allCases) { category in
                         let options = viewModel.sidebarOptions(for: category)
                         let total = options.reduce(0) { $0 + $1.count }
                         SidebarSection(
                             title: category.title,
-                            systemImage: icon(for: category),
+                            systemImage: category.systemImage,
                             options: options,
                             totalCount: total,
                             selection: binding(for: category),
@@ -217,29 +217,13 @@ struct SidebarFilterView: View {
         )
     }
 
-    private func icon(for category: SidebarCategory) -> String {
-        switch category {
-        case .networkName: return "wifi"
-        case .mode: return "dot.radiowaves.left.and.right"
-        case .channel: return "waveform.path.ecg"
-        case .channelWidth: return "arrow.left.and.right"
-        case .security: return "lock.shield"
-        case .accessPoint: return "antenna.radiowaves.left.and.right"
-        case .vendor: return "building.2"
-        }
+    private func binding(for category: FilterColumn) -> Binding<Set<String>> {
+        Binding(
+            get: { viewModel.filterSelection(for: category) },
+            set: { viewModel.setFilterSelection($0, for: category) }
+        )
     }
 
-    private func binding(for category: SidebarCategory) -> Binding<Set<String>> {
-        switch category {
-        case .networkName: return $viewModel.quickFilterNetworkName
-        case .mode: return $viewModel.quickFilterMode
-        case .channel: return $viewModel.quickFilterChannel
-        case .channelWidth: return $viewModel.quickFilterChannelWidth
-        case .security: return $viewModel.quickFilterSecurity
-        case .accessPoint: return $viewModel.quickFilterAccessPoint
-        case .vendor: return $viewModel.quickFilterVendor
-        }
-    }
 }
 
 struct SidebarSection: View {

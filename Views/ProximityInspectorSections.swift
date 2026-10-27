@@ -35,6 +35,7 @@ struct ProximityBeaconInspectorSection: View {
 
 struct ClientsInspectorSection: View {
     let network: NetworkModel
+    @State private var showDiscovery = false
 
     var body: some View {
         GroupBox {
@@ -55,7 +56,15 @@ struct ClientsInspectorSection: View {
             .padding(4)
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
-            Label("Clients", systemImage: "person.3")
+            HStack {
+                Label("Clients", systemImage: "person.3")
+                Spacer()
+                Button("Discover…") { showDiscovery = true }
+                    .controlSize(.mini)
+            }
+        }
+        .sheet(isPresented: $showDiscovery) {
+            LiveClientDiscoveryView()
         }
     }
 }

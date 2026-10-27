@@ -24,6 +24,10 @@ struct SettingsView: View {
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
             HardwareSettingsView()
                 .tabItem { Label("Hardware", systemImage: "cable.connector") }
+            AutomationSettingsView(viewModel: analyzer)
+                .tabItem { Label("Automation", systemImage: "clock.arrow.circlepath") }
+            ControllersSettingsView()
+                .tabItem { Label("Controllers", systemImage: "server.rack") }
         }
         .frame(width: 620, height: 520)
     }
@@ -80,6 +84,27 @@ private struct GeneralSettingsView: View {
                     isOn: Binding(
                         get: { UserDefaults.standard.bool(forKey: "Wifa.hideEmptyGraphs") },
                         set: { UserDefaults.standard.set($0, forKey: "Wifa.hideEmptyGraphs") }
+                    )
+                )
+                Toggle(
+                    "Show channel recommendations",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.object(forKey: "Wifa.graph.channel") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.graph.channel") }
+                    )
+                )
+                Toggle(
+                    "Show security audit",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.object(forKey: "Wifa.graph.security") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.graph.security") }
+                    )
+                )
+                Toggle(
+                    "Show channel occupancy",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.object(forKey: "Wifa.graph.occupancy") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.graph.occupancy") }
                     )
                 )
             }

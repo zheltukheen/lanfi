@@ -208,7 +208,7 @@ struct MainTableView: View {
         }
         // Запрос прав при появлении
         .sheet(isPresented: $showingLiveCapture) {
-            LiveCaptureView()
+            LiveCaptureView(viewModel: viewModel)
         }
         .sheet(isPresented: $showingRemoteSensors) {
             RemoteSensorsView()
@@ -684,6 +684,7 @@ struct NetworkInspectorView: View {
                             UtilizationInspectorSection(network: network, viewModel: viewModel)
                             ProximityBeaconInspectorSection(network: network)
                             ClientsInspectorSection(network: network)
+                            MLOInspectorSection(network: network)
                             RegulatoryInspectorSection(network: network)
                             OtherRadiosInspectorSection()
                         }

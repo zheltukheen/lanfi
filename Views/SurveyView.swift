@@ -12,6 +12,9 @@ struct SurveyView: View {
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
     @State private var predictiveMode = false
+    @State private var show3DFloors = false
+    @State private var calibrating = false
+    @State private var calibrationPoints: [SurveyPoint] = []
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -36,6 +39,9 @@ struct SurveyView: View {
         .background(Color(nsColor: .windowBackgroundColor))
         .sheet(isPresented: $showReportSettings) {
             SurveyReportSettingsView(survey: survey)
+        }
+        .sheet(isPresented: $show3DFloors) {
+            MultiFloorSurveyView(survey: survey)
         }
     }
 
@@ -152,6 +158,15 @@ struct SurveyView: View {
                 }
                 .disabled(survey.accessPoints.isEmpty)
                 Divider()
+                Button(calibrating ? "Cancel Calibration" : "Calibrate Scale") {
+                    calibrating.toggle()
+                    calibrationPoints = []
+                    survey.statusMessage =
+                        calibrating
+                        ? "Calibration: click two points and enter the real distance."
+                        : "Calibration cancelled."
+                }
+                Divider()
                 Button("Clear Walls", role: .destructive) {
                     survey.clearWalls()
                     pendingWallStart = nil
@@ -186,6 +201,13 @@ struct SurveyView: View {
             }
             .controlSize(.small)
             .help("New floor")
+            Button {
+                show3DFloors = true
+            } label: {
+                Label("3D", systemImage: "square.3.layers.3d")
+            }
+            .controlSize(.small)
+            .help("Multi-floor 3D view")
 
             Picker("Network", selection: $survey.selectedNetworkId) {
                 Text("All networks").tag(String?.none)
@@ -252,6 +274,7 @@ struct SurveyView: View {
                         drawWalls(context: context, rect: rect)
                         drawRooms(context: context, rect: rect)
                         drawAccessPoints(context: context, rect: rect)
+                        drawCalibration(context: context, rect: rect)
                     }
                     .allowsHitTesting(false)
                     .accessibilityLabel("Floor plan heatmap")
@@ -292,6 +315,13 @@ struct SurveyView: View {
                     guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
                     let x = Double((location.x - rect.minX) / rect.width)
                     let y = Double((location.y - rect.minY) / rect.height)
+                    if calibrating {
+                        calibrationPoints.append(SurveyPoint(x: x, y: y))
+                        if calibrationPoints.count == 2 {
+                            finishCalibration()
+                        }
+                        return
+                    }
                     if predictiveMode {
                         let network = captureNetwork
                         survey.addAccessPoint(
@@ -335,6 +365,49 @@ struct SurveyView: View {
                 }
             }
         }
+    }
+
+    private func finishCalibration() {
+        let first = calibrationPoints[0]
+        let second = calibrationPoints[1]
+        let distance = hypot(second.x - first.x, second.y - first.y)
+        guard distance > 0 else {
+            calibrationPoints = []
+            return
+        }
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 22))
+        field.placeholderString = "metres"
+        let alert = NSAlert()
+        alert.messageText = "Calibrate plan scale"
+        alert.informativeText = "Enter the real-world distance between the two points."
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Apply")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn,
+            let meters = Double(field.stringValue.replacingOccurrences(of: ",", with: "."))
+        {
+            survey.calibrateScale(realMeters: meters, normalizedDistance: distance)
+        }
+        calibrationPoints = []
+        calibrating = false
+    }
+
+    private func drawCalibration(context: GraphicsContext, rect: CGRect) {
+        guard calibrationPoints.count == 2 else {
+            if let point = calibrationPoints.first {
+                let p = CGPoint(x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                context.fill(Path(ellipseIn: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)), with: .color(.cyan))
+            }
+            return
+        }
+        let a = calibrationPoints[0]
+        let b = calibrationPoints[1]
+        let p1 = CGPoint(x: rect.minX + a.x * rect.width, y: rect.minY + a.y * rect.height)
+        let p2 = CGPoint(x: rect.minX + b.x * rect.width, y: rect.minY + b.y * rect.height)
+        var path = Path()
+        path.move(to: p1)
+        path.addLine(to: p2)
+        context.stroke(path, with: .color(.cyan), style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
     }
 
     private func finishRoom() {
