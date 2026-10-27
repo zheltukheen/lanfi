@@ -20,7 +20,7 @@ struct CaptureProfile: Codable, Identifiable, Equatable {
 
 final class CaptureProfileStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.captureProfiles"
+    private let key = "LanFi.captureProfiles"
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [CaptureProfile] {

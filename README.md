@@ -2,8 +2,8 @@
 
 <img src="docs/images/lanfi-icon.png" width="96" align="right" alt="LanFi icon">
 
-[![CI](https://github.com/zheltukheen/wifa/actions/workflows/ci.yml/badge.svg)](https://github.com/zheltukheen/wifa/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/zheltukheen/wifa)](https://github.com/zheltukheen/wifa/releases/latest)
+[![CI](https://github.com/zheltukheen/lanfi/actions/workflows/ci.yml/badge.svg)](https://github.com/zheltukheen/lanfi/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/zheltukheen/lanfi)](https://github.com/zheltukheen/lanfi/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/macOS-13%2B-black)](https://www.apple.com/macos/)
 
@@ -72,7 +72,7 @@ surfaced with severity and remediation hints.
 ## Install
 
 Download the latest `.dmg` or `.zip` from
-[Releases](https://github.com/zheltukheen/wifa/releases/latest), drag **LanFi** to
+[Releases](https://github.com/zheltukheen/lanfi/releases/latest), drag **LanFi** to
 Applications, and launch it.
 
 The current builds are **ad-hoc signed, not notarized**. If Gatekeeper warns,
@@ -83,14 +83,14 @@ right-click the app → **Open**, or allow it in
 Or install via Homebrew:
 
 ```bash
-brew tap zheltukheen/lanfi https://github.com/zheltukheen/wifa
+brew tap zheltukheen/lanfi https://github.com/zheltukheen/lanfi
 brew trust zheltukheen/lanfi
 brew install --cask lanfi
 ```
 
-LanFi is the renamed WiFA. Existing preferences, Sparkle updates and local
+LanFi is the renamed LanFi. Existing preferences, Sparkle updates and local
 annotation/session/survey data are migrated automatically; macOS may ask for
-Location Services again. If both apps are installed, remove the old `WiFA.app`.
+Location Services again. If both apps are installed, remove the old `LanFi.app`.
 
 On first launch, allow Location Services when macOS asks. If the prompt was
 dismissed, enable it in
@@ -102,8 +102,8 @@ from GitHub Releases; no account or analytics data is sent.
 ## Build from source
 
 ```bash
-git clone https://github.com/zheltukheen/wifa.git
-cd wifa
+git clone https://github.com/zheltukheen/lanfi.git
+cd lanfi
 brew install xcodegen
 xcodegen generate
 ./build.sh          # build/LanFi-Universal/LanFi.app (universal, ad-hoc signed)

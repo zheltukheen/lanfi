@@ -48,7 +48,7 @@ struct ControllerAccessPoint: Identifiable, Equatable {
 
 final class ControllerAccountStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.controllerAccounts"
+    private let key = "LanFi.controllerAccounts"
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [ControllerAccount] {

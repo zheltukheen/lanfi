@@ -9,7 +9,7 @@ Security fixes are applied to the latest release on `main`.
 Please **do not** open a public issue for a security vulnerability. Use GitHub's
 private vulnerability reporting:
 
-<https://github.com/zheltukheen/wifa/security/advisories/new>
+<https://github.com/zheltukheen/lanfi/security/advisories/new>
 
 Include:
 

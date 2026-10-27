@@ -66,12 +66,12 @@ private struct GeneralSettingsView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 Button("Open release page") {
-                    NSWorkspace.shared.open(URL(string: "https://github.com/zheltukheen/wifa/releases/latest")!)
+                    NSWorkspace.shared.open(URL(string: "https://github.com/zheltukheen/lanfi/releases/latest")!)
                 }
                 Button("Copy Homebrew command") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(
-                        "brew tap zheltukheen/lanfi https://github.com/zheltukheen/wifa && brew trust zheltukheen/lanfi && brew install --cask lanfi",
+                        "brew tap zheltukheen/lanfi https://github.com/zheltukheen/lanfi && brew trust zheltukheen/lanfi && brew install --cask lanfi",
                         forType: .string
                     )
                 }
@@ -81,8 +81,8 @@ private struct GeneralSettingsView: View {
                 Picker(
                     "Theme",
                     selection: Binding(
-                        get: { UserDefaults.standard.string(forKey: "Wifa.appearance") ?? "system" },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.appearance") }
+                        get: { UserDefaults.standard.string(forKey: "LanFi.appearance") ?? "system" },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.appearance") }
                     )
                 ) {
                     Text("System").tag("system")
@@ -93,10 +93,10 @@ private struct GeneralSettingsView: View {
                     "Table row density",
                     selection: Binding(
                         get: {
-                            UserDefaults.standard.double(forKey: "Wifa.rowDensity") > 0
-                                ? UserDefaults.standard.double(forKey: "Wifa.rowDensity") : 30
+                            UserDefaults.standard.double(forKey: "LanFi.rowDensity") > 0
+                                ? UserDefaults.standard.double(forKey: "LanFi.rowDensity") : 30
                         },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.rowDensity") }
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.rowDensity") }
                     )
                 ) {
                     Text("Compact").tag(24.0)
@@ -106,47 +106,47 @@ private struct GeneralSettingsView: View {
             }
 
             Section("Toolbar") {
-                Toggle("Band chips", isOn: binding("Wifa.toolbar.bands", default: true))
-                Toggle("Search field", isOn: binding("Wifa.toolbar.search", default: true))
-                Toggle("Export menu", isOn: binding("Wifa.toolbar.export", default: true))
-                Toggle("Live capture button", isOn: binding("Wifa.toolbar.capture", default: true))
+                Toggle("Band chips", isOn: binding("LanFi.toolbar.bands", default: true))
+                Toggle("Search field", isOn: binding("LanFi.toolbar.search", default: true))
+                Toggle("Export menu", isOn: binding("LanFi.toolbar.export", default: true))
+                Toggle("Live capture button", isOn: binding("LanFi.toolbar.capture", default: true))
             }
 
             Section("Display") {
                 Toggle(
                     "High contrast mode",
                     isOn: Binding(
-                        get: { UserDefaults.standard.bool(forKey: "Wifa.highContrast") },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.highContrast") }
+                        get: { UserDefaults.standard.bool(forKey: "LanFi.highContrast") },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.highContrast") }
                     )
                 )
                 .help("Increases contrast and border weight for low-vision use.")
                 Toggle(
                     "Hide empty graphs",
                     isOn: Binding(
-                        get: { UserDefaults.standard.bool(forKey: "Wifa.hideEmptyGraphs") },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.hideEmptyGraphs") }
+                        get: { UserDefaults.standard.bool(forKey: "LanFi.hideEmptyGraphs") },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.hideEmptyGraphs") }
                     )
                 )
                 Toggle(
                     "Show channel recommendations",
                     isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "Wifa.graph.channel") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.graph.channel") }
+                        get: { UserDefaults.standard.object(forKey: "LanFi.graph.channel") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.channel") }
                     )
                 )
                 Toggle(
                     "Show security audit",
                     isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "Wifa.graph.security") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.graph.security") }
+                        get: { UserDefaults.standard.object(forKey: "LanFi.graph.security") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.security") }
                     )
                 )
                 Toggle(
                     "Show channel occupancy",
                     isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "Wifa.graph.occupancy") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.graph.occupancy") }
+                        get: { UserDefaults.standard.object(forKey: "LanFi.graph.occupancy") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.occupancy") }
                     )
                 )
             }
@@ -171,9 +171,9 @@ private struct AlertSettingsView: View {
     var body: some View {
         Form {
             Section("Menu bar alerts") {
-                Toggle("Weak Wi-Fi signal", isOn: binding("Wifa.alerts.weakSignal"))
-                Toggle("Open networks visible", isOn: binding("Wifa.alerts.openNetwork"))
-                Toggle("Connected channel changes", isOn: binding("Wifa.alerts.channelChange"))
+                Toggle("Weak Wi-Fi signal", isOn: binding("LanFi.alerts.weakSignal"))
+                Toggle("Open networks visible", isOn: binding("LanFi.alerts.openNetwork"))
+                Toggle("Connected channel changes", isOn: binding("LanFi.alerts.channelChange"))
             }
             Section {
                 Text("Weak signal alert triggers at −75 dBm for the connected network. Alerts update on each scan.")
@@ -200,8 +200,8 @@ private struct WiFiSettingsView: View {
                 Picker(
                     "Scan interface",
                     selection: Binding(
-                        get: { UserDefaults.standard.string(forKey: "Wifa.wifiInterface") ?? "" },
-                        set: { UserDefaults.standard.set($0.isEmpty ? nil : $0, forKey: "Wifa.wifiInterface") }
+                        get: { UserDefaults.standard.string(forKey: "LanFi.wifiInterface") ?? "" },
+                        set: { UserDefaults.standard.set($0.isEmpty ? nil : $0, forKey: "LanFi.wifiInterface") }
                     )
                 ) {
                     Text("System default").tag("")
@@ -217,8 +217,8 @@ private struct WiFiSettingsView: View {
                 Toggle(
                     "Scan automatically on launch",
                     isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "Wifa.scanOnLaunch") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "Wifa.scanOnLaunch") }
+                        get: { UserDefaults.standard.object(forKey: "LanFi.scanOnLaunch") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "LanFi.scanOnLaunch") }
                     )
                 )
                 LabeledContent("Location access") {

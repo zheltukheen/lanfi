@@ -167,7 +167,7 @@ class AnalyzerViewModel: ObservableObject {
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
-        if UserDefaults.standard.object(forKey: "Wifa.scanOnLaunch") as? Bool ?? true {
+        if UserDefaults.standard.object(forKey: "LanFi.scanOnLaunch") as? Bool ?? true {
             startScanningLoop()
         }
         configureScheduledReports()
@@ -368,11 +368,11 @@ class AnalyzerViewModel: ObservableObject {
         scheduledReportTimer?.invalidate()
         scheduledReportTimer = nil
         let defaults = UserDefaults.standard
-        guard defaults.bool(forKey: "Wifa.reports.enabled"),
-            let folder = defaults.string(forKey: "Wifa.reports.folder"),
+        guard defaults.bool(forKey: "LanFi.reports.enabled"),
+            let folder = defaults.string(forKey: "LanFi.reports.folder"),
             !folder.isEmpty
         else { return }
-        let minutes = max(defaults.integer(forKey: "Wifa.reports.minutes"), 5)
+        let minutes = max(defaults.integer(forKey: "LanFi.reports.minutes"), 5)
         scheduledReportTimer = Timer.scheduledTimer(withTimeInterval: Double(minutes) * 60, repeats: true) {
             [weak self] _ in
             Task { @MainActor in self?.writeScheduledReport() }
@@ -381,8 +381,8 @@ class AnalyzerViewModel: ObservableObject {
 
     func writeScheduledReport() {
         let defaults = UserDefaults.standard
-        guard let folder = defaults.string(forKey: "Wifa.reports.folder"), !folder.isEmpty else { return }
-        let format = defaults.string(forKey: "Wifa.reports.format") ?? "CSV"
+        guard let folder = defaults.string(forKey: "LanFi.reports.folder"), !folder.isEmpty else { return }
+        let format = defaults.string(forKey: "LanFi.reports.format") ?? "CSV"
         let ext = format == "PDF" ? "pdf" : "csv"
         let url = URL(fileURLWithPath: folder, isDirectory: true)
             .appendingPathComponent("LanFi-Report-\(Self.fileTimestamp()).\(ext)")
@@ -987,10 +987,10 @@ class AnalyzerViewModel: ObservableObject {
 
     private func refreshMenuBarAlerts() {
         let defaults = UserDefaults.standard
-        let weak = defaults.object(forKey: "Wifa.alerts.weakSignal") as? Bool ?? true
-        let open = defaults.object(forKey: "Wifa.alerts.openNetwork") as? Bool ?? true
-        let channel = defaults.object(forKey: "Wifa.alerts.channelChange") as? Bool ?? true
-        let previous = defaults.object(forKey: "Wifa.alerts.lastConnectedChannel") as? Int
+        let weak = defaults.object(forKey: "LanFi.alerts.weakSignal") as? Bool ?? true
+        let open = defaults.object(forKey: "LanFi.alerts.openNetwork") as? Bool ?? true
+        let channel = defaults.object(forKey: "LanFi.alerts.channelChange") as? Bool ?? true
+        let previous = defaults.object(forKey: "LanFi.alerts.lastConnectedChannel") as? Int
         menuBarAlerts = MenuBarAlertEngine.compute(
             networks: networks,
             connectedBSSID: currentConnectedBSSID,
@@ -1000,7 +1000,7 @@ class AnalyzerViewModel: ObservableObject {
             previousChannel: previous
         )
         if let connected = networks.first(where: { $0.bssid == currentConnectedBSSID }) {
-            defaults.set(connected.channel, forKey: "Wifa.alerts.lastConnectedChannel")
+            defaults.set(connected.channel, forKey: "LanFi.alerts.lastConnectedChannel")
         }
     }
 
@@ -1370,41 +1370,41 @@ class AnalyzerViewModel: ObservableObject {
         let savedInterval = defaults.double(forKey: refreshIntervalKey)
         if savedInterval >= 0.5 { refreshInterval = savedInterval }
 
-        if defaults.object(forKey: "Wifa.filterBand24") != nil {
-            filterBand24 = defaults.bool(forKey: "Wifa.filterBand24")
+        if defaults.object(forKey: "LanFi.filterBand24") != nil {
+            filterBand24 = defaults.bool(forKey: "LanFi.filterBand24")
         }
-        if defaults.object(forKey: "Wifa.filterBand5") != nil {
-            filterBand5 = defaults.bool(forKey: "Wifa.filterBand5")
+        if defaults.object(forKey: "LanFi.filterBand5") != nil {
+            filterBand5 = defaults.bool(forKey: "LanFi.filterBand5")
         }
-        if defaults.object(forKey: "Wifa.filterBand6") != nil {
-            filterBand6 = defaults.bool(forKey: "Wifa.filterBand6")
+        if defaults.object(forKey: "LanFi.filterBand6") != nil {
+            filterBand6 = defaults.bool(forKey: "LanFi.filterBand6")
         }
-        if defaults.object(forKey: "Wifa.filterWiFi7") != nil {
-            filterWiFi7 = defaults.bool(forKey: "Wifa.filterWiFi7")
+        if defaults.object(forKey: "LanFi.filterWiFi7") != nil {
+            filterWiFi7 = defaults.bool(forKey: "LanFi.filterWiFi7")
         }
-        if defaults.object(forKey: "Wifa.minSignal") != nil {
-            minSignalThreshold = defaults.double(forKey: "Wifa.minSignal")
+        if defaults.object(forKey: "LanFi.minSignal") != nil {
+            minSignalThreshold = defaults.double(forKey: "LanFi.minSignal")
         }
-        if let rawRemove = defaults.object(forKey: "Wifa.removeAfter") as? Double,
+        if let rawRemove = defaults.object(forKey: "LanFi.removeAfter") as? Double,
             let interval = NetworkRemovalInterval(rawValue: rawRemove)
         {
             removeAfterInterval = interval
         }
-        if let rawUnit = defaults.string(forKey: "Wifa.signalUnit"),
+        if let rawUnit = defaults.string(forKey: "LanFi.signalUnit"),
             let mode = SignalDisplayMode(rawValue: rawUnit)
         {
             signalDisplayMode = mode
         }
-        if defaults.object(forKey: "Wifa.highlightConnected") != nil {
-            highlightConnectedNetworks = defaults.bool(forKey: "Wifa.highlightConnected")
+        if defaults.object(forKey: "LanFi.highlightConnected") != nil {
+            highlightConnectedNetworks = defaults.bool(forKey: "LanFi.highlightConnected")
         }
-        if let sortKey = defaults.string(forKey: "Wifa.sortKey"), ColumnId(rawValue: sortKey) != nil {
+        if let sortKey = defaults.string(forKey: "LanFi.sortKey"), ColumnId(rawValue: sortKey) != nil {
             currentSortKey = sortKey
         }
-        if defaults.object(forKey: "Wifa.sortAscending") != nil {
-            isSortAscending = defaults.bool(forKey: "Wifa.sortAscending")
+        if defaults.object(forKey: "LanFi.sortAscending") != nil {
+            isSortAscending = defaults.bool(forKey: "LanFi.sortAscending")
         }
-        if let rawGroup = defaults.string(forKey: "Wifa.groupMode"),
+        if let rawGroup = defaults.string(forKey: "LanFi.groupMode"),
             let mode = NetworkGroupMode(rawValue: rawGroup)
         {
             groupMode = mode
@@ -1414,19 +1414,19 @@ class AnalyzerViewModel: ObservableObject {
     private func savePreferences() {
         let defaults = UserDefaults.standard
         defaults.set(refreshInterval, forKey: refreshIntervalKey)
-        defaults.set(filterBand24, forKey: "Wifa.filterBand24")
-        defaults.set(filterBand5, forKey: "Wifa.filterBand5")
-        defaults.set(filterBand6, forKey: "Wifa.filterBand6")
-        defaults.set(filterWiFi7, forKey: "Wifa.filterWiFi7")
-        defaults.set(minSignalThreshold, forKey: "Wifa.minSignal")
-        defaults.set(removeAfterInterval.rawValue, forKey: "Wifa.removeAfter")
-        defaults.set(signalDisplayMode.rawValue, forKey: "Wifa.signalUnit")
-        defaults.set(highlightConnectedNetworks, forKey: "Wifa.highlightConnected")
+        defaults.set(filterBand24, forKey: "LanFi.filterBand24")
+        defaults.set(filterBand5, forKey: "LanFi.filterBand5")
+        defaults.set(filterBand6, forKey: "LanFi.filterBand6")
+        defaults.set(filterWiFi7, forKey: "LanFi.filterWiFi7")
+        defaults.set(minSignalThreshold, forKey: "LanFi.minSignal")
+        defaults.set(removeAfterInterval.rawValue, forKey: "LanFi.removeAfter")
+        defaults.set(signalDisplayMode.rawValue, forKey: "LanFi.signalUnit")
+        defaults.set(highlightConnectedNetworks, forKey: "LanFi.highlightConnected")
         if let currentSortKey {
-            defaults.set(currentSortKey, forKey: "Wifa.sortKey")
+            defaults.set(currentSortKey, forKey: "LanFi.sortKey")
         }
-        defaults.set(isSortAscending, forKey: "Wifa.sortAscending")
-        defaults.set(groupMode.rawValue, forKey: "Wifa.groupMode")
+        defaults.set(isSortAscending, forKey: "LanFi.sortAscending")
+        defaults.set(groupMode.rawValue, forKey: "LanFi.groupMode")
     }
 
     private func maxHistoryPoints() -> Int {

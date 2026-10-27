@@ -999,7 +999,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA.Tests;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi.Tests;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1009,14 +1009,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
+				MARKETING_VERSION = 4.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -1125,14 +1125,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
+				MARKETING_VERSION = 4.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1150,7 +1150,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA.Tests;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi.Tests;
 				SDKROOT = macosx;
 			};
 			name = Release;

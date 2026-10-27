@@ -174,7 +174,7 @@ jobs:
           python3 scripts/make_appcast.py \
             --version "$VERSION" \
             --build "$BUILD" \
-            --url "https://github.com/zheltukheen/wifa/releases/download/v${VERSION}/LanFi-${VERSION}.zip" \
+            --url "https://github.com/zheltukheen/lanfi/releases/download/v${VERSION}/LanFi-${VERSION}.zip" \
             --signature "$SIGNATURE" \
             --length "$LENGTH" \
             --notes release_notes.md \

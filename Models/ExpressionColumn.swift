@@ -38,7 +38,7 @@ enum ExpressionEvaluator {
 
 final class ExpressionColumnStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.expressionColumns"
+    private let key = "LanFi.expressionColumns"
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [ExpressionColumn] {

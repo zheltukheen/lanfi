@@ -32,14 +32,6 @@ final class AnnotationStore {
         let base = directory ?? support.appendingPathComponent("LanFi", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         fileURL = base.appendingPathComponent("annotations.json")
-
-        // Preserve annotations created before the LanFi rename.
-        let legacy = support.appendingPathComponent("WiFA/annotations.json")
-        if !FileManager.default.fileExists(atPath: fileURL.path),
-            FileManager.default.fileExists(atPath: legacy.path)
-        {
-            try? FileManager.default.copyItem(at: legacy, to: fileURL)
-        }
         annotations = Self.load(from: fileURL)
     }
 

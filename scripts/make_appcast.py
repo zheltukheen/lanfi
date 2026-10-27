@@ -34,7 +34,7 @@ def main() -> int:
     )
     channel = ET.SubElement(rss, "channel")
     ET.SubElement(channel, "title").text = "LanFi"
-    ET.SubElement(channel, "link").text = "https://github.com/zheltukheen/wifa"
+    ET.SubElement(channel, "link").text = "https://github.com/zheltukheen/lanfi"
     ET.SubElement(channel, "description").text = "Native macOS Wi-Fi analyzer updates"
     ET.SubElement(channel, "language").text = "en"
 

@@ -170,7 +170,7 @@ extension CustomFilter {
 
 final class CustomFilterStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.customFilters"
+    private let key = "LanFi.customFilters"
 
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 

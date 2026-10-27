@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/zheltukheen/wifa/security/advisories/new
+    url: https://github.com/zheltukheen/lanfi/security/advisories/new
     about: Report security issues privately.
   - name: Questions and ideas
-    url: https://github.com/zheltukheen/wifa/discussions
+    url: https://github.com/zheltukheen/lanfi/discussions
     about: Ask a question or discuss an idea with the community.

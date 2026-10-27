@@ -178,10 +178,10 @@ struct RecommendationCard: View {
 struct InsightsView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var occupancyBand: WiFiBand = .band24
-    @AppStorage("Wifa.hideEmptyGraphs") private var hideEmptyGraphs = false
-    @AppStorage("Wifa.graph.channel") private var showChannelGraphs = true
-    @AppStorage("Wifa.graph.security") private var showSecurityGraphs = true
-    @AppStorage("Wifa.graph.occupancy") private var showOccupancyGraphs = true
+    @AppStorage("LanFi.hideEmptyGraphs") private var hideEmptyGraphs = false
+    @AppStorage("LanFi.graph.channel") private var showChannelGraphs = true
+    @AppStorage("LanFi.graph.security") private var showSecurityGraphs = true
+    @AppStorage("LanFi.graph.occupancy") private var showOccupancyGraphs = true
 
     private var report: AnalysisReport { viewModel.analysis }
 

@@ -26,7 +26,7 @@ struct OUIParser {
     ]
 
     private static var cached: [String: String]?
-    private static let overrideKey = "Wifa.customOUIOverrides"
+    private static let overrideKey = "LanFi.customOUIOverrides"
 
     /// Returns the best vendor name for a MAC address. The database contains
     /// 24-, 28- and 36-bit prefixes; the longest matching prefix wins.
