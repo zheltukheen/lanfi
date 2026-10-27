@@ -28,24 +28,67 @@ enum NetworkRemovalInterval: TimeInterval, CaseIterable, Identifiable {
     }
 }
 
-enum SidebarCategory: CaseIterable {
-    case networkName
-    case mode
+enum FilterColumn: String, CaseIterable, Identifiable {
+    case band
     case channel
     case channelWidth
     case security
+    case mode
+    case generation
     case accessPoint
     case vendor
+    case countryCode
+    case apName
 
-    var title: String {
+    var id: String { rawValue }
+
+    /// The table column this filter is derived from. SSID is deliberately
+    /// excluded: a network name is searchable, not a categorical filter.
+    var column: ColumnId {
         switch self {
-        case .networkName: return "Network Name"
-        case .mode: return "Mode"
-        case .channel: return "Channel"
-        case .channelWidth: return "Width"
-        case .security: return "Security"
-        case .accessPoint: return "Access Point"
-        case .vendor: return "Vendor"
+        case .band: return .band
+        case .channel: return .channel
+        case .channelWidth: return .channelWidth
+        case .security: return .security
+        case .mode: return .mode
+        case .generation: return .generation
+        case .accessPoint: return .bssid
+        case .vendor: return .vendor
+        case .countryCode: return .countryCode
+        case .apName: return .apName
+        }
+    }
+
+    var title: String { column.defaultTitle }
+
+    var systemImage: String {
+        switch self {
+        case .band: return "antenna.radiowaves.left.and.right"
+        case .channel: return "waveform.path.ecg"
+        case .channelWidth: return "arrow.left.and.right"
+        case .security: return "lock.shield"
+        case .mode: return "dot.radiowaves.left.and.right"
+        case .generation: return "sparkles"
+        case .accessPoint:
+            return "antenna.radiowaves.left.and.right"
+        case .vendor: return "building.2"
+        case .countryCode: return "globe"
+        case .apName: return "rectangle.connected.to.line.below"
+        }
+    }
+
+    func value(for network: NetworkModel) -> String {
+        switch self {
+        case .band: return network.band.label
+        case .channel: return String(network.channel)
+        case .channelWidth: return network.channelWidthLabel
+        case .security: return network.security
+        case .mode: return network.mode
+        case .generation: return network.generation.label
+        case .accessPoint: return network.bssid.isEmpty ? "<Hidden>" : network.bssid
+        case .vendor: return network.vendor
+        case .countryCode: return network.countryCode ?? "—"
+        case .apName: return network.apName ?? "—"
         }
     }
 }
@@ -163,13 +206,7 @@ class AnalyzerViewModel: ObservableObject {
     @Published var columnDefinitions: [ColumnDefinition] = ColumnDefinition.defaults
 
     // Quick filters (sidebar)
-    @Published var quickFilterNetworkName: Set<String> = [] { didSet { requestFilterUpdate() } }
-    @Published var quickFilterMode: Set<String> = [] { didSet { requestFilterUpdate() } }
-    @Published var quickFilterChannel: Set<String> = [] { didSet { requestFilterUpdate() } }
-    @Published var quickFilterChannelWidth: Set<String> = [] { didSet { requestFilterUpdate() } }
-    @Published var quickFilterSecurity: Set<String> = [] { didSet { requestFilterUpdate() } }
-    @Published var quickFilterAccessPoint: Set<String> = [] { didSet { requestFilterUpdate() } }
-    @Published var quickFilterVendor: Set<String> = [] { didSet { requestFilterUpdate() } }
+    @Published private(set) var quickFilters: [FilterColumn: Set<String>] = [:]
 
     @Published var isLocationAuthorized = false
     @Published var errorMessage: String?
@@ -190,6 +227,7 @@ class AnalyzerViewModel: ObservableObject {
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
         startScanningLoop()
+        configureScheduledReports()
     }
 
     private func setupBindings() {
@@ -381,6 +419,48 @@ class AnalyzerViewModel: ObservableObject {
 
     // MARK: - Filtering & Sorting
 
+    private var scheduledReportTimer: Timer?
+
+    func configureScheduledReports() {
+        scheduledReportTimer?.invalidate()
+        scheduledReportTimer = nil
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: "Wifa.reports.enabled"),
+            let folder = defaults.string(forKey: "Wifa.reports.folder"),
+            !folder.isEmpty
+        else { return }
+        let minutes = max(defaults.integer(forKey: "Wifa.reports.minutes"), 5)
+        scheduledReportTimer = Timer.scheduledTimer(withTimeInterval: Double(minutes) * 60, repeats: true) {
+            [weak self] _ in
+            Task { @MainActor in self?.writeScheduledReport() }
+        }
+    }
+
+    func writeScheduledReport() {
+        let defaults = UserDefaults.standard
+        guard let folder = defaults.string(forKey: "Wifa.reports.folder"), !folder.isEmpty else { return }
+        let url = URL(fileURLWithPath: folder, isDirectory: true)
+            .appendingPathComponent("LanFi-Report-\(Self.fileTimestamp()).csv")
+        let content = csvContent(for: networks)
+        try? content.write(to: url, atomically: true, encoding: .utf8)
+        sessionMessage = "Scheduled report saved: \(url.lastPathComponent)"
+    }
+
+    private func csvContent(for networks: [NetworkModel]) -> String {
+        let visibleColumns = columnDefinitions.sorted { $0.order < $1.order }.filter { $0.isVisible }
+        let headers = visibleColumns.map { "\"\($0.displayTitle)\"" }.joined(separator: ",")
+        var rows: [String] = []
+        for net in networks {
+            let fields = visibleColumns.map { col -> String in
+                let value = textForColumn(id: col.id, net: net)
+                let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
+                return "\"\(escaped)\""
+            }
+            rows.append(fields.joined(separator: ","))
+        }
+        return "\u{FEFF}" + ([headers] + rows).joined(separator: "\r\n") + "\r\n"
+    }
+
     private func requestFilterUpdate() {
         // Простой debounce не нужен здесь, так как toggles нажимаются редко.
         // Выполняем сразу.
@@ -411,28 +491,8 @@ class AnalyzerViewModel: ObservableObject {
         baseFilteredNetworks = baseFiltered
 
         // 2. Quick Filters (Sidebar)
-        if !quickFilterNetworkName.isEmpty {
-            baseFiltered = baseFiltered.filter { quickFilterNetworkName.contains($0.displaySSID) }
-        }
-        if !quickFilterMode.isEmpty {
-            baseFiltered = baseFiltered.filter { quickFilterMode.contains($0.mode) }
-        }
-        if !quickFilterChannel.isEmpty {
-            baseFiltered = baseFiltered.filter { quickFilterChannel.contains(String($0.channel)) }
-        }
-        if !quickFilterChannelWidth.isEmpty {
-            baseFiltered = baseFiltered.filter { quickFilterChannelWidth.contains($0.channelWidthLabel) }
-        }
-        if !quickFilterSecurity.isEmpty {
-            baseFiltered = baseFiltered.filter { quickFilterSecurity.contains($0.security) }
-        }
-        if !quickFilterAccessPoint.isEmpty {
-            baseFiltered = baseFiltered.filter {
-                quickFilterAccessPoint.contains($0.bssid.isEmpty ? "<Hidden>" : $0.bssid)
-            }
-        }
-        if !quickFilterVendor.isEmpty {
-            baseFiltered = baseFiltered.filter { quickFilterVendor.contains($0.vendor) }
+        for (filter, values) in quickFilters where !values.isEmpty {
+            baseFiltered = baseFiltered.filter { values.contains(filter.value(for: $0)) }
         }
         if let activeFilter {
             baseFiltered = baseFiltered.filter {
@@ -766,31 +826,12 @@ class AnalyzerViewModel: ObservableObject {
         return networks.first { $0.id == selectedNetworkId }
     }
 
-    func sidebarOptions(for category: SidebarCategory) -> [(value: String, count: Int)] {
+    func sidebarOptions(for filter: FilterColumn) -> [(value: String, count: Int)] {
         let source = baseFilteredNetworks
         var counts: [String: Int] = [:]
-
         for net in source {
-            let key: String
-            switch category {
-            case .networkName:
-                key = net.displaySSID
-            case .mode:
-                key = net.mode
-            case .channel:
-                key = "\(net.channel)"
-            case .channelWidth:
-                key = net.channelWidthLabel
-            case .security:
-                key = net.security
-            case .accessPoint:
-                key = net.bssid.isEmpty ? "<Hidden>" : net.bssid
-            case .vendor:
-                key = net.vendor
-            }
-            counts[key, default: 0] += 1
+            counts[filter.value(for: net), default: 0] += 1
         }
-
         return counts.keys
             .sorted { lhs, rhs in
                 let lc = counts[lhs, default: 0]
@@ -801,19 +842,26 @@ class AnalyzerViewModel: ObservableObject {
             .map { (value: $0, count: counts[$0, default: 0]) }
     }
 
+    func filterSelection(for filter: FilterColumn) -> Set<String> {
+        quickFilters[filter] ?? []
+    }
+
+    func setFilterSelection(_ values: Set<String>, for filter: FilterColumn) {
+        if values.isEmpty {
+            quickFilters.removeValue(forKey: filter)
+        } else {
+            quickFilters[filter] = values
+        }
+        requestFilterUpdate()
+    }
+
     var totalNetworkCount: Int { persistentNetworks.count }
 
     var hasActiveFilters: Bool {
         !searchText.isEmpty
             || !filterBand24 || !filterBand5 || !filterBand6 || !filterWiFi7
             || minSignalThreshold > -100
-            || !quickFilterNetworkName.isEmpty
-            || !quickFilterMode.isEmpty
-            || !quickFilterChannel.isEmpty
-            || !quickFilterChannelWidth.isEmpty
-            || !quickFilterSecurity.isEmpty
-            || !quickFilterAccessPoint.isEmpty
-            || !quickFilterVendor.isEmpty
+            || !quickFilters.isEmpty
             || activeFilterId != nil
     }
 
@@ -828,13 +876,7 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func clearQuickFilters() {
-        quickFilterNetworkName.removeAll()
-        quickFilterMode.removeAll()
-        quickFilterChannel.removeAll()
-        quickFilterChannelWidth.removeAll()
-        quickFilterSecurity.removeAll()
-        quickFilterAccessPoint.removeAll()
-        quickFilterVendor.removeAll()
+        quickFilters.removeAll()
         activeFilterId = nil
     }
 
@@ -908,25 +950,10 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func exportCSV(networks: [NetworkModel], suffix: String) {
-        let visibleColumns = columnDefinitions.sorted { $0.order < $1.order }.filter { $0.isVisible }
-        let headers = visibleColumns.map { "\"\($0.displayTitle)\"" }.joined(separator: ",")
-
-        var rows: [String] = []
-        for net in networks {
-            let fields = visibleColumns.map { col -> String in
-                let value = textForColumn(id: col.id, net: net)
-                let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
-                return "\"\(escaped)\""
-            }
-            rows.append(fields.joined(separator: ","))
-        }
-
-        // UTF-8 BOM keeps non-ASCII SSIDs intact in Excel; CRLF follows RFC 4180.
-        let csvContent = "\u{FEFF}" + ([headers] + rows).joined(separator: "\r\n") + "\r\n"
         presentSavePanel(
             defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).csv",
             contentType: .commaSeparatedText,
-            content: csvContent
+            content: csvContent(for: networks)
         )
     }
 

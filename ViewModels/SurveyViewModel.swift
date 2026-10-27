@@ -120,6 +120,14 @@ final class SurveyViewModel: ObservableObject {
         statusMessage = "Rooms cleared."
     }
 
+    func calibrateScale(realMeters: Double, normalizedDistance: Double) {
+        guard realMeters > 0, normalizedDistance > 0 else { return }
+        project.planWidthMeters = realMeters / normalizedDistance
+        project.updatedAt = Date()
+        save()
+        statusMessage = String(format: "Calibrated: plan width %.1f m.", project.planWidthMeters ?? 0)
+    }
+
     func updateReportMetadata(title: String, client: String, planWidth: String, notes: String) {
         project.reportTitle = title.isEmpty ? nil : title
         project.clientName = client.isEmpty ? nil : client
@@ -127,6 +135,10 @@ final class SurveyViewModel: ObservableObject {
         project.reportNotes = notes.isEmpty ? nil : notes
         project.updatedAt = Date()
         save()
+    }
+
+    func floorImage(for project: SurveyProject) -> NSImage? {
+        store.imageData(for: project).flatMap(NSImage.init(data:))
     }
 
     func exportAllFloorsPDF(networkName: String) {

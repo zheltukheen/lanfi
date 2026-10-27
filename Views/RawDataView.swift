@@ -10,7 +10,9 @@ struct RawDataView: View {
             Color(nsColor: .controlBackgroundColor)
                 .edgesIgnoringSafeArea(.all)
 
-            if let network = viewModel.selectedNetwork {
+            if viewModel.selectedNetworkIds.count > 1 {
+                MultiNetworkComparisonView(viewModel: viewModel)
+            } else if let network = viewModel.selectedNetwork {
                 ZStack(alignment: .topTrailing) {
                     RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
                         .onChange(of: viewModel.selectedNetworkId) { _ in

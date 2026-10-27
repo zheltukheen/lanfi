@@ -179,6 +179,9 @@ struct InsightsView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var occupancyBand: WiFiBand = .band24
     @AppStorage("Wifa.hideEmptyGraphs") private var hideEmptyGraphs = false
+    @AppStorage("Wifa.graph.channel") private var showChannelGraphs = true
+    @AppStorage("Wifa.graph.security") private var showSecurityGraphs = true
+    @AppStorage("Wifa.graph.occupancy") private var showOccupancyGraphs = true
 
     private var report: AnalysisReport { viewModel.analysis }
 
@@ -220,12 +223,16 @@ struct InsightsView: View {
             VStack(alignment: .leading, spacing: 14) {
                 scopeBanner
                 summary
-                channelSection
+                if showChannelGraphs {
+                    channelSection
+                }
                 HStack(alignment: .top, spacing: 14) {
-                    securitySection
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    if showSecurityGraphs {
+                        securitySection
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                    }
                     Group {
-                        if !hideEmptyGraphs || !report.occupancy.isEmpty {
+                        if showOccupancyGraphs && (!hideEmptyGraphs || !report.occupancy.isEmpty) {
                             occupancySection
                         }
                     }

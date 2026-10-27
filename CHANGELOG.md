@@ -1,5 +1,25 @@
 # Changelog
 
+## 3.0.0 — 2026-10-27
+
+### Added
+- Sidebar filters now derive from table columns (single source of truth);
+  non-filterable SSID is excluded and new categorical columns are included.
+- Multi-network comparison in the bottom Profile and Raw Data panels.
+- Per-graph visibility toggles for channel recommendations, security audit
+  and channel occupancy.
+- Interactive multi-floor 3D stack view.
+- BSSID-appearance triggered capture.
+- Two-point plan-scale calibration.
+- Wi-Fi 7/MLO inspector with AP MLD, link IDs, per-link BSSIDs and 320 MHz.
+- Scheduled CSV reports while LanFi is running.
+- On-demand live client discovery via a short monitor capture.
+- UniFi and Meraki controller inventory with Keychain-stored API tokens.
+
+### Changed
+- Version 3.0.0 (build 35).
+
+
 ## 2.9.3 — 2026-10-26
 
 ### Added

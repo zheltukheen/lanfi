@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LiveCaptureView: View {
+    @ObservedObject var viewModel: AnalyzerViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var interfaces: [String] = []
     @State private var selectedInterface = "en0"
@@ -15,6 +16,9 @@ struct LiveCaptureView: View {
     @State private var customOutput = false
     @State private var filter = ""
     @State private var profiles: [CaptureProfile] = []
+    @State private var triggerMode = 0
+    @State private var triggerBSSID = ""
+    @State private var waitingForTrigger = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -62,6 +66,24 @@ struct LiveCaptureView: View {
                     }
                     .labelsHidden()
                     .frame(width: 220)
+                }
+                GridRow {
+                    Text("Trigger").foregroundColor(.secondary)
+                    Picker("", selection: $triggerMode) {
+                        Text("Start immediately").tag(0)
+                        Text("After start delay").tag(1)
+                        Text("When BSSID appears").tag(2)
+                    }
+                    .labelsHidden()
+                    .frame(width: 300)
+                }
+                if triggerMode == 2 {
+                    GridRow {
+                        Text("Target BSSID").foregroundColor(.secondary)
+                        TextField("AA:BB:CC:DD:EE:FF", text: $triggerBSSID)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 300)
+                    }
                 }
                 GridRow {
                     Text("Start delay").foregroundColor(.secondary)
@@ -143,9 +165,14 @@ struct LiveCaptureView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                Button("Start Capture") { start() }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(isCapturing || interfaces.isEmpty)
+                if waitingForTrigger {
+                    Button("Cancel trigger") { waitingForTrigger = false }
+                    Text("Waiting for \(triggerBSSID)…").font(.caption).foregroundColor(.secondary)
+                } else {
+                    Button("Start Capture") { armOrStart() }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(isCapturing || interfaces.isEmpty)
+                }
             }
         }
         .padding(18)
@@ -161,10 +188,39 @@ struct LiveCaptureView: View {
             monitorMode = selectedInterface == "en0"
             profiles = CaptureProfileStore().load()
         }
+        .onChange(of: viewModel.networks.map(\.bssid)) { _ in
+            checkTrigger()
+        }
     }
 
     private var savedURL: URL {
         completedURL ?? URL(fileURLWithPath: "")
+    }
+
+    private func armOrStart() {
+        if triggerMode == 2 {
+            let target = triggerBSSID.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+            guard !target.isEmpty else {
+                errorMessage = "Enter a target BSSID."
+                return
+            }
+            if viewModel.networks.contains(where: { $0.bssid.uppercased() == target }) {
+                start()
+            } else {
+                waitingForTrigger = true
+                errorMessage = nil
+            }
+        } else {
+            start()
+        }
+    }
+
+    private func checkTrigger() {
+        guard waitingForTrigger else { return }
+        let target = triggerBSSID.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        guard viewModel.networks.contains(where: { $0.bssid.uppercased() == target }) else { return }
+        waitingForTrigger = false
+        start()
     }
 
     private func start() {

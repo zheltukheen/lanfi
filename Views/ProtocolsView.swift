@@ -14,7 +14,9 @@ struct ProtocolsView: View {
 
     var body: some View {
         Group {
-            if let profile = selectedProfile {
+            if viewModel.selectedNetworkIds.count > 1 {
+                MultiNetworkComparisonView(viewModel: viewModel)
+            } else if let profile = selectedProfile {
                 selectedContent(profile)
             } else {
                 overviewContent
