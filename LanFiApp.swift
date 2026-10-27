@@ -21,6 +21,15 @@ struct LanFiApp: App {
     @StateObject private var survey = SurveyViewModel()
     @StateObject private var interfaces = InterfacesViewModel()
     @AppStorage("Wifa.highContrast") private var highContrast = false
+    @AppStorage("Wifa.appearance") private var appearance = "system"
+
+    private var preferredAppearance: ColorScheme? {
+        switch appearance {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
 
     // Свойство для отслеживания состояния приложения (активно/фон)
     @Environment(\.scenePhase) var scenePhase
@@ -33,6 +42,7 @@ struct LanFiApp: App {
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
                 .environment(\.lanFiHighContrast, highContrast)
+                .preferredColorScheme(preferredAppearance)
                 .onOpenURL { url in
                     guard let link = DeepLink.parse(url) else { return }
                     switch link {
@@ -73,6 +83,7 @@ struct LanFiApp: App {
         Window("Site Survey", id: "survey") {
             SurveyView(analyzer: viewModel, survey: survey)
                 .environment(\.lanFiHighContrast, highContrast)
+                .preferredColorScheme(preferredAppearance)
         }
 
         Window("About LanFi", id: "about") {
@@ -93,6 +104,7 @@ struct LanFiApp: App {
                 .environmentObject(diagnostics)
                 .environmentObject(viewModel)
                 .environment(\.lanFiHighContrast, highContrast)
+                .preferredColorScheme(preferredAppearance)
         }
 
         MenuBarExtra {

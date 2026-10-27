@@ -28,69 +28,10 @@ enum NetworkRemovalInterval: TimeInterval, CaseIterable, Identifiable {
     }
 }
 
-enum FilterColumn: String, CaseIterable, Identifiable {
-    case band
-    case channel
-    case channelWidth
-    case security
-    case mode
-    case generation
-    case accessPoint
-    case vendor
-    case countryCode
-    case apName
-
-    var id: String { rawValue }
-
-    /// The table column this filter is derived from. SSID is deliberately
-    /// excluded: a network name is searchable, not a categorical filter.
-    var column: ColumnId {
-        switch self {
-        case .band: return .band
-        case .channel: return .channel
-        case .channelWidth: return .channelWidth
-        case .security: return .security
-        case .mode: return .mode
-        case .generation: return .generation
-        case .accessPoint: return .bssid
-        case .vendor: return .vendor
-        case .countryCode: return .countryCode
-        case .apName: return .apName
-        }
-    }
-
-    var title: String { column.defaultTitle }
-
-    var systemImage: String {
-        switch self {
-        case .band: return "antenna.radiowaves.left.and.right"
-        case .channel: return "waveform.path.ecg"
-        case .channelWidth: return "arrow.left.and.right"
-        case .security: return "lock.shield"
-        case .mode: return "dot.radiowaves.left.and.right"
-        case .generation: return "sparkles"
-        case .accessPoint:
-            return "antenna.radiowaves.left.and.right"
-        case .vendor: return "building.2"
-        case .countryCode: return "globe"
-        case .apName: return "rectangle.connected.to.line.below"
-        }
-    }
-
-    func value(for network: NetworkModel) -> String {
-        switch self {
-        case .band: return network.band.label
-        case .channel: return String(network.channel)
-        case .channelWidth: return network.channelWidthLabel
-        case .security: return network.security
-        case .mode: return network.mode
-        case .generation: return network.generation.label
-        case .accessPoint: return network.bssid.isEmpty ? "<Hidden>" : network.bssid
-        case .vendor: return network.vendor
-        case .countryCode: return network.countryCode ?? "—"
-        case .apName: return network.apName ?? "—"
-        }
-    }
+struct FilterColumn: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let systemImage: String
 }
 
 // MARK: - ViewModel
@@ -206,7 +147,7 @@ class AnalyzerViewModel: ObservableObject {
     @Published var columnDefinitions: [ColumnDefinition] = ColumnDefinition.defaults
 
     // Quick filters (sidebar)
-    @Published private(set) var quickFilters: [FilterColumn: Set<String>] = [:]
+    @Published private(set) var quickFilters: [String: Set<String>] = [:]
 
     @Published var isLocationAuthorized = false
     @Published var errorMessage: String?
@@ -226,7 +167,9 @@ class AnalyzerViewModel: ObservableObject {
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
-        startScanningLoop()
+        if UserDefaults.standard.object(forKey: "Wifa.scanOnLaunch") as? Bool ?? true {
+            startScanningLoop()
+        }
         configureScheduledReports()
     }
 
@@ -501,8 +444,9 @@ class AnalyzerViewModel: ObservableObject {
         baseFilteredNetworks = baseFiltered
 
         // 2. Quick Filters (Sidebar)
-        for (filter, values) in quickFilters where !values.isEmpty {
-            baseFiltered = baseFiltered.filter { values.contains(filter.value(for: $0)) }
+        for (columnID, values) in quickFilters where !values.isEmpty {
+            guard columnDefinitions.first(where: { $0.id == columnID })?.isVisible == true else { continue }
+            baseFiltered = baseFiltered.filter { values.contains(textForColumn(id: columnID, net: $0)) }
         }
         if let activeFilter {
             baseFiltered = baseFiltered.filter {
@@ -836,11 +780,40 @@ class AnalyzerViewModel: ObservableObject {
         return networks.first { $0.id == selectedNetworkId }
     }
 
+    var filterColumns: [FilterColumn] {
+        columnDefinitions
+            .sorted { $0.order < $1.order }
+            .filter { $0.isVisible && $0.id != ColumnId.networkName.rawValue }
+            .map { def in
+                FilterColumn(
+                    id: def.id,
+                    title: def.displayTitle,
+                    systemImage: filterIcon(for: def.id)
+                )
+            }
+    }
+
+    private func filterIcon(for id: String) -> String {
+        guard let column = ColumnId(rawValue: id) else { return "line.3.horizontal.decrease.circle" }
+        switch column {
+        case .band: return "antenna.radiowaves.left.and.right"
+        case .channel: return "waveform.path.ecg"
+        case .channelWidth: return "arrow.left.and.right"
+        case .security: return "lock.shield"
+        case .mode: return "dot.radiowaves.left.and.right"
+        case .generation: return "sparkles"
+        case .bssid, .apName: return "antenna.radiowaves.left.and.right"
+        case .vendor: return "building.2"
+        case .countryCode: return "globe"
+        default: return "line.3.horizontal.decrease.circle"
+        }
+    }
+
     func sidebarOptions(for filter: FilterColumn) -> [(value: String, count: Int)] {
         let source = baseFilteredNetworks
         var counts: [String: Int] = [:]
         for net in source {
-            counts[filter.value(for: net), default: 0] += 1
+            counts[textForColumn(id: filter.id, net: net), default: 0] += 1
         }
         return counts.keys
             .sorted { lhs, rhs in
@@ -853,14 +826,14 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func filterSelection(for filter: FilterColumn) -> Set<String> {
-        quickFilters[filter] ?? []
+        quickFilters[filter.id] ?? []
     }
 
     func setFilterSelection(_ values: Set<String>, for filter: FilterColumn) {
         if values.isEmpty {
-            quickFilters.removeValue(forKey: filter)
+            quickFilters.removeValue(forKey: filter.id)
         } else {
-            quickFilters[filter] = values
+            quickFilters[filter.id] = values
         }
         requestFilterUpdate()
     }
@@ -1328,6 +1301,9 @@ class AnalyzerViewModel: ObservableObject {
     func toggleColumn(_ id: String) {
         if let idx = columnDefinitions.firstIndex(where: { $0.id == id }) {
             columnDefinitions[idx].isVisible.toggle()
+            if !columnDefinitions[idx].isVisible {
+                quickFilters.removeValue(forKey: id)
+            }
             saveColumnSettings()
             // Принудительно уведомляем View об изменении
             objectWillChange.send()

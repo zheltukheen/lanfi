@@ -20,7 +20,7 @@ struct SidebarFilterView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     sortCard
                     automaticRules
-                    ForEach(FilterColumn.allCases) { category in
+                    ForEach(viewModel.filterColumns) { category in
                         let options = viewModel.sidebarOptions(for: category)
                         let total = options.reduce(0) { $0 + $1.count }
                         SidebarSection(

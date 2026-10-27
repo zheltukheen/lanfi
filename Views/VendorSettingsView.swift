@@ -43,6 +43,13 @@ private struct GeneralSettingsView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
     }
 
+    private func binding(_ key: String, default defaultValue: Bool = true) -> Binding<Bool> {
+        Binding(
+            get: { UserDefaults.standard.object(forKey: key) as? Bool ?? defaultValue },
+            set: { UserDefaults.standard.set($0, forKey: key) }
+        )
+    }
+
     var body: some View {
         Form {
             Section("LanFi") {
@@ -68,6 +75,41 @@ private struct GeneralSettingsView: View {
                         forType: .string
                     )
                 }
+            }
+
+            Section("Appearance") {
+                Picker(
+                    "Theme",
+                    selection: Binding(
+                        get: { UserDefaults.standard.string(forKey: "Wifa.appearance") ?? "system" },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.appearance") }
+                    )
+                ) {
+                    Text("System").tag("system")
+                    Text("Light").tag("light")
+                    Text("Dark").tag("dark")
+                }
+                Picker(
+                    "Table row density",
+                    selection: Binding(
+                        get: {
+                            UserDefaults.standard.double(forKey: "Wifa.rowDensity") > 0
+                                ? UserDefaults.standard.double(forKey: "Wifa.rowDensity") : 30
+                        },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.rowDensity") }
+                    )
+                ) {
+                    Text("Compact").tag(24.0)
+                    Text("Standard").tag(30.0)
+                    Text("Roomy").tag(38.0)
+                }
+            }
+
+            Section("Toolbar") {
+                Toggle("Band chips", isOn: binding("Wifa.toolbar.bands", default: true))
+                Toggle("Search field", isOn: binding("Wifa.toolbar.search", default: true))
+                Toggle("Export menu", isOn: binding("Wifa.toolbar.export", default: true))
+                Toggle("Live capture button", isOn: binding("Wifa.toolbar.capture", default: true))
             }
 
             Section("Display") {
@@ -172,6 +214,13 @@ private struct WiFiSettingsView: View {
                     .foregroundColor(.secondary)
             }
             Section("Scanning") {
+                Toggle(
+                    "Scan automatically on launch",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.object(forKey: "Wifa.scanOnLaunch") as? Bool ?? true },
+                        set: { UserDefaults.standard.set($0, forKey: "Wifa.scanOnLaunch") }
+                    )
+                )
                 LabeledContent("Location access") {
                     Text("Required for SSID/BSSID")
                         .foregroundColor(.secondary)
@@ -228,8 +277,17 @@ private struct VendorSettingsView: View {
 
             Section("Custom OUI overrides") {
                 HStack {
-                    TextField("Prefix (6–9 hex)", text: $prefix).frame(width: 140)
-                    TextField("Vendor name", text: $vendor)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Prefix").font(.caption2).foregroundColor(.secondary)
+                        TextField("", text: $prefix, prompt: Text("AA:BB:CC"))
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 140)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Vendor").font(.caption2).foregroundColor(.secondary)
+                        TextField("", text: $vendor, prompt: Text("Acme Corp."))
+                            .textFieldStyle(.roundedBorder)
+                    }
                     Button("Add") {
                         guard OUIParser.setOverride(prefix: prefix, vendor: vendor) else {
                             errorMessage = "Prefix must be 6–9 hex characters and vendor must not be empty."
@@ -241,6 +299,9 @@ private struct VendorSettingsView: View {
                         errorMessage = nil
                     }
                 }
+                Text("6–9 hex digits, e.g. 001122 or 00:11:22. Overrides apply after the next scan.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
                 ForEach(overrides.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
                     HStack {
                         Text(key).font(.system(.caption, design: .monospaced))
