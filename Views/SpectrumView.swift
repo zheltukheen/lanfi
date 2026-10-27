@@ -18,7 +18,7 @@ struct SpectrumView: View {
 
     private var availableBands: [WiFiBand] {
         WiFiBand.allCases.filter { band in
-            band != .unknown && viewModel.networks.contains { $0.band == band }
+            band != .unknown && viewModel.chartNetworks.contains { $0.band == band }
         }
     }
 
@@ -28,7 +28,7 @@ struct SpectrumView: View {
     }
 
     private var displayedNetworks: [NetworkModel] {
-        viewModel.networks.filter { $0.band == effectiveBand }
+        viewModel.chartNetworks.filter { $0.band == effectiveBand }
     }
 
     var body: some View {
@@ -106,6 +106,7 @@ struct SpectrumView: View {
         }
         .onAppear { chooseBandIfNeeded() }
         .onChange(of: viewModel.networks.count) { _ in chooseBandIfNeeded() }
+        .onChange(of: viewModel.selectedNetworkIds) { _ in chooseBandIfNeeded() }
         .onChange(of: viewModel.selectedNetworkId) { _ in
             guard
                 let id = viewModel.selectedNetworkId,
@@ -119,7 +120,8 @@ struct SpectrumView: View {
     private func chooseBandIfNeeded() {
         guard !availableBands.contains(selectedBand),
             let best = availableBands.max(by: { lhs, rhs in
-                viewModel.networks.filter { $0.band == lhs }.count < viewModel.networks.filter { $0.band == rhs }.count
+                viewModel.chartNetworks.filter { $0.band == lhs }.count
+                    < viewModel.chartNetworks.filter { $0.band == rhs }.count
             })
         else { return }
         selectedBand = best

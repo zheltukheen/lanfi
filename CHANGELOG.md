@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.2.1 — 2026-10-27
+
+### Changed
+- Spectrum and History show all networks when 0 or 1 network is selected,
+  and only the selected set when 2+ networks are selected.
+
+### Version
+- 3.2.1 (build 41).
+
+
 ## 3.2.0 — 2026-10-27
 
 ### Changed
