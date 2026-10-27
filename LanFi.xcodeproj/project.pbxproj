@@ -61,6 +61,7 @@
 		4C0808FF17864193C9DAFEF7 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */; };
 		53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
 		557D1FC30AB64374ABB0DA43 /* DiagnosticsBundleExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E962425BD1FAD5D1CD1C8626 /* DiagnosticsBundleExporter.swift */; };
+		56651295EFF628554130EDBB /* ScanReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9A82DDBC473A667972DDA7 /* ScanReportExporter.swift */; };
 		58B6C80CD67271533EA0EAB8 /* DiagnosticsHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F4351A08D1255E0E2730AB /* DiagnosticsHistoryTests.swift */; };
 		590D50DA6E2DA166F4C8554C /* SurveyInterpolator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76D0661115093391A9191CE /* SurveyInterpolator.swift */; };
 		59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
@@ -176,6 +177,7 @@
 		DB2AC9503743CA5E1E17CF6C /* ProtocolAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */; };
 		DBA254C5682AAE9B5E7C5B3E /* ProtocolProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */; };
 		DC952CF84FA99BBEAEFFE20F /* ThroughputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81EC7247D1E56F9712A60063 /* ThroughputTests.swift */; };
+		DD07A0BF9156B2DD842CBF8B /* ScanReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9A82DDBC473A667972DDA7 /* ScanReportExporter.swift */; };
 		DE3F5B93BECBB6234DD94409 /* MenuBarAlertTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2E378036378E58C047B46C /* MenuBarAlertTests.swift */; };
 		E26E21AEBE9A0A22988C7317 /* ColorRulesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70F649DE5D78DFB69DC4F6B /* ColorRulesSettingsView.swift */; };
 		E28BF0B44751A1C4B7BBEE58 /* ColumnCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */; };
@@ -282,6 +284,7 @@
 		A523B096357134ADAD3A2442 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA340EAC49424D1B34A6FE2F /* NetworkAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAnnotation.swift; sourceTree = "<group>"; };
 		AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHistoryView.swift; sourceTree = "<group>"; };
+		AB9A82DDBC473A667972DDA7 /* ScanReportExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReportExporter.swift; sourceTree = "<group>"; };
 		AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNameDetector.swift; sourceTree = "<group>"; };
 		B30088737EFBE639B958CD4D /* VendorSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VendorSettingsView.swift; sourceTree = "<group>"; };
 		B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnCatalogTests.swift; sourceTree = "<group>"; };
@@ -444,6 +447,7 @@
 				E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */,
 				CFC5B62627D0E1C2117394A2 /* RemoteCaptureService.swift */,
 				7CC8A261F612C8FEDB72654D /* RemoteSensorService.swift */,
+				AB9A82DDBC473A667972DDA7 /* ScanReportExporter.swift */,
 				E76D0661115093391A9191CE /* SurveyInterpolator.swift */,
 				B90B3763FEBE0A808B12AB64 /* SurveyReportExporter.swift */,
 				18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */,
@@ -777,6 +781,7 @@
 				36E8CD8BB18DE144C7BE11F5 /* RemoteSensor.swift in Sources */,
 				6FAEC5C3F3EDAA1E30A0A6C7 /* RemoteSensorService.swift in Sources */,
 				F39348DD63B10E4FE0F01F55 /* RemoteSensorTests.swift in Sources */,
+				DD07A0BF9156B2DD842CBF8B /* ScanReportExporter.swift in Sources */,
 				C31F9BE12C97FC55EB78488F /* ScanSession.swift in Sources */,
 				4ADB4161FC54C42691A05E26 /* SessionTests.swift in Sources */,
 				D77AB7A3C4DBF43E63FAFE44 /* SignalDisplayMode.swift in Sources */,
@@ -876,6 +881,7 @@
 				7FE578C16DC9761AF3DD432F /* RemoteSensor.swift in Sources */,
 				15212C9FB96D5D23BEFB3F4F /* RemoteSensorService.swift in Sources */,
 				A2800C92267706A97DD5D63D /* RemoteSensorsView.swift in Sources */,
+				56651295EFF628554130EDBB /* ScanReportExporter.swift in Sources */,
 				342C3649806ECE78FDD894D1 /* ScanSession.swift in Sources */,
 				D029C59767AE2D08643E4B72 /* SidebarFilterView.swift in Sources */,
 				59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */,
@@ -999,13 +1005,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 3.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
@@ -1115,13 +1121,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 3.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
