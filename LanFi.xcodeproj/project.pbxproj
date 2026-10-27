@@ -186,6 +186,7 @@
 		E8A97408EA8506A09A42C657 /* ThroughputReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8AD8AE18BE59654726CA6C /* ThroughputReport.swift */; };
 		E9991D8982D889943B4BDC3E /* SystemInterfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */; };
 		EA7F861E691BB57E1273D4C8 /* MenuBarAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBEB91987438B9C71550E0B /* MenuBarAlert.swift */; };
+		EAD10E1B7276C30949A8AE33 /* ControllerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D01BE5B1934356CF44A37C /* ControllerServiceTests.swift */; };
 		EEFE937D6AB642E5E8C9B79F /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
 		F040C7AF4481DEB7B6AEC400 /* RemoteCaptureSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFFB67F76B8A47EF37241BC /* RemoteCaptureSheet.swift */; };
 		F10DC9BE92DD6E2326F6288E /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
@@ -197,6 +198,7 @@
 		F6F8AF3652EA31397B4DE0B4 /* SurveyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3560EFA84AE4D6AC3614B54 /* SurveyView.swift */; };
 		F72D6A578F2D20CBE6B66D7A /* SurveyAccessPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC294FDA735B3A998DE3D49C /* SurveyAccessPoint.swift */; };
 		FC2AE35B4589B815662299A6 /* NetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AB9623B9BDCD84D368A854 /* NetworkModel.swift */; };
+		FF27F0FD0F9394533FA62CB2 /* ControllerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D856BE9B63CC2E3655BA90B /* ControllerService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -286,6 +288,7 @@
 		B4322DE958F9E2353026A60F /* OfflineCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCaptureView.swift; sourceTree = "<group>"; };
 		B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsViewModel.swift; sourceTree = "<group>"; };
 		B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationTests.swift; sourceTree = "<group>"; };
+		B8D01BE5B1934356CF44A37C /* ControllerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerServiceTests.swift; sourceTree = "<group>"; };
 		B90B3763FEBE0A808B12AB64 /* SurveyReportExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyReportExporter.swift; sourceTree = "<group>"; };
 		B9751E1A8C39ED7C2C526084 /* LanFiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanFiApp.swift; sourceTree = "<group>"; };
 		BC294FDA735B3A998DE3D49C /* SurveyAccessPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyAccessPoint.swift; sourceTree = "<group>"; };
@@ -361,6 +364,7 @@
 				83D9F0FB9D0A8CE8CC031028 /* ColoringRuleTests.swift */,
 				B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */,
 				7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */,
+				B8D01BE5B1934356CF44A37C /* ControllerServiceTests.swift */,
 				39C73E82C9496C0462E8ED4F /* CustomFilterTests.swift */,
 				4886D26196780F92820822BA /* DeepLinkTests.swift */,
 				8B28FAB5E9E72BE98EE26B24 /* DiagnosticsBundleTests.swift */,
@@ -720,6 +724,8 @@
 				7FEA36D79B28E565B476861A /* ColumnProfile.swift in Sources */,
 				D6E8563A3C6351B002E24466 /* ColumnProfileTests.swift in Sources */,
 				7B8CF056CAC5E29030087A73 /* ControllerAccount.swift in Sources */,
+				FF27F0FD0F9394533FA62CB2 /* ControllerService.swift in Sources */,
+				EAD10E1B7276C30949A8AE33 /* ControllerServiceTests.swift in Sources */,
 				437D12346B36F54DD51E0008 /* CrashLogger.swift in Sources */,
 				992E60935D5DACDEC32E2782 /* CustomFilter.swift in Sources */,
 				15ECABAF71E55675B7E84011 /* CustomFilterTests.swift in Sources */,
@@ -993,13 +999,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
@@ -1109,13 +1115,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};

@@ -3,11 +3,22 @@ import Foundation
 enum ControllerKind: String, Codable, CaseIterable, Identifiable {
     case unifi
     case meraki
+    case snmp
 
     var id: String { rawValue }
-    var title: String { self == .unifi ? "UniFi" : "Meraki" }
+    var title: String {
+        switch self {
+        case .unifi: return "UniFi"
+        case .meraki: return "Meraki"
+        case .snmp: return "SNMP"
+        }
+    }
     var endpointHint: String {
-        self == .unifi ? "https://controller:8443" : "https://api.meraki.com"
+        switch self {
+        case .unifi: return "https://controller:8443"
+        case .meraki: return "https://api.meraki.com"
+        case .snmp: return "192.0.2.10"
+        }
     }
 }
 
