@@ -28,7 +28,7 @@ struct WorkspaceProfile: Codable, Identifiable {
 
 final class WorkspaceProfileStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.workspaceProfiles"
+    private let key = "LanFi.workspaceProfiles"
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 

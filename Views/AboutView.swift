@@ -42,9 +42,9 @@ struct AboutView: View {
             Divider()
 
             HStack(spacing: 16) {
-                Link("GitHub", destination: URL(string: "https://github.com/zheltukheen/wifa")!)
-                Link("Releases", destination: URL(string: "https://github.com/zheltukheen/wifa/releases")!)
-                Link("Documentation", destination: URL(string: "https://github.com/zheltukheen/wifa#readme")!)
+                Link("GitHub", destination: URL(string: "https://github.com/zheltukheen/lanfi")!)
+                Link("Releases", destination: URL(string: "https://github.com/zheltukheen/lanfi/releases")!)
+                Link("Documentation", destination: URL(string: "https://github.com/zheltukheen/lanfi#readme")!)
             }
             .font(.caption)
 

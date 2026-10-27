@@ -126,18 +126,6 @@ final class SurveyStore {
         let base = directory ?? support.appendingPathComponent("LanFi/Surveys", isDirectory: true)
         self.directory = base
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-
-        // Move surveys and floor plans created by the pre-rename app.
-        let legacy = support.appendingPathComponent("WiFA/Surveys", isDirectory: true)
-        if (try? FileManager.default.contentsOfDirectory(at: base, includingPropertiesForKeys: nil))?.isEmpty ?? true,
-            FileManager.default.fileExists(atPath: legacy.path)
-        {
-            let entries =
-                (try? FileManager.default.contentsOfDirectory(at: legacy, includingPropertiesForKeys: nil)) ?? []
-            for entry in entries {
-                try? FileManager.default.copyItem(at: entry, to: base.appendingPathComponent(entry.lastPathComponent))
-            }
-        }
     }
 
     func latestProject() -> SurveyProject? {

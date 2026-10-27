@@ -13,7 +13,7 @@ struct ColoringRule: Codable, Identifiable, Equatable {
 
 final class ColoringRuleStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.coloringRules"
+    private let key = "LanFi.coloringRules"
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [ColoringRule] {

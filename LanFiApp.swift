@@ -20,8 +20,8 @@ struct LanFiApp: App {
     @StateObject private var updater = UpdaterController()
     @StateObject private var survey = SurveyViewModel()
     @StateObject private var interfaces = InterfacesViewModel()
-    @AppStorage("Wifa.highContrast") private var highContrast = false
-    @AppStorage("Wifa.appearance") private var appearance = "system"
+    @AppStorage("LanFi.highContrast") private var highContrast = false
+    @AppStorage("LanFi.appearance") private var appearance = "system"
 
     private var preferredAppearance: ColorScheme? {
         switch appearance {

@@ -82,10 +82,11 @@ struct HelpView: View {
 
                         Divider()
                         HStack {
-                            Link("Open README", destination: URL(string: "https://github.com/zheltukheen/wifa#readme")!)
+                            Link(
+                                "Open README", destination: URL(string: "https://github.com/zheltukheen/lanfi#readme")!)
                             Link(
                                 "Report an issue",
-                                destination: URL(string: "https://github.com/zheltukheen/wifa/issues")!)
+                                destination: URL(string: "https://github.com/zheltukheen/lanfi/issues")!)
                         }
                         .font(.caption)
                     }

@@ -10,7 +10,7 @@ enum AppSmokeTest {
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
         let bundleID = bundle.bundleIdentifier ?? "-"
 
-        checks.append(("bundle-id", bundleID == "ru.zheltukheen.WiFA", bundleID))
+        checks.append(("bundle-id", bundleID == "ru.zheltukheen.LanFi", bundleID))
         checks.append(("version", version != "-" && build != "-", "\(version) (\(build))"))
         checks.append(("oui-database", bundle.url(forResource: "oui", withExtension: nil) != nil, "oui"))
         checks.append(

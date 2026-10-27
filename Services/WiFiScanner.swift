@@ -34,7 +34,7 @@ actor WiFiScanner {
 
     private static func performScan() throws -> [NetworkModel] {
         let client = CWWiFiClient.shared()
-        let preferred = UserDefaults.standard.string(forKey: "Wifa.wifiInterface")
+        let preferred = UserDefaults.standard.string(forKey: "LanFi.wifiInterface")
         let interface = preferred.flatMap { client.interface(withName: $0) } ?? client.interface()
         guard let interface else {
             throw WiFiError.interfaceNotFound

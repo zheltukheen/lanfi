@@ -102,16 +102,16 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 ## Persistence keys
 
 - `WifiColumns_v4` — JSON `[ColumnDefinition]` (order/width/visibility/title).
-- `Wifa.tabLayoutVersion` — one-time migration to the Insights-first tab layout.
+- `LanFi.tabLayoutVersion` — one-time migration to the Insights-first tab layout.
 - `RefreshIntervalSeconds` — scan interval.
-- `Wifa.filterBand24|filterBand5|filterBand6` — band filters.
-- `Wifa.minSignal`, `Wifa.removeAfter` — signal threshold and expiry.
-- `Wifa.signalUnit`, `Wifa.highlightConnected` — display options.
-- `Wifa.sortKey`, `Wifa.sortAscending` — table sort.
-- `Wifa.showSidebar`, `Wifa.showInspector`, `Wifa.bottomTab` — layout
+- `LanFi.filterBand24|filterBand5|filterBand6` — band filters.
+- `LanFi.minSignal`, `LanFi.removeAfter` — signal threshold and expiry.
+- `LanFi.signalUnit`, `LanFi.highlightConnected` — display options.
+- `LanFi.sortKey`, `LanFi.sortAscending` — table sort.
+- `LanFi.showSidebar`, `LanFi.showInspector`, `LanFi.bottomTab` — layout
   (`0` Insights, `1` Spectrum, `2` History, `3` Protocols, `4` Interfaces,
   `5` Raw Data, `6` Diagnostics).
-- `Wifa.groupMode` — none/SSID/band/vendor/security grouping.
+- `LanFi.groupMode` — none/SSID/band/vendor/security grouping.
 - Session, annotation and survey files live under
   `~/Library/Application Support/LanFi/{Sessions,annotations.json,Surveys}`.
 - Window frame is managed by SwiftUI/AppKit.
@@ -163,10 +163,10 @@ permission.
   installs a `post-commit` hook. It refuses credentials/oversized files and
   rebases on non-fast-forward pushes.
 - Sparkle 2 update checks use `SUFeedURL` →
-  `https://github.com/zheltukheen/wifa/releases/latest/download/appcast.xml`.
+  `https://github.com/zheltukheen/lanfi/releases/latest/download/appcast.xml`.
   The release workflow signs the ZIP with the `SPARKLE_PRIVATE_KEY` secret and
   attaches `appcast.xml`.
-- `Casks/wifa.rb` is updated automatically on release.
+- `Casks/lanfi.rb` is updated automatically on release.
 - CI (`.github/workflows/ci.yml`) runs swift-format lint, XCTest and a universal
   Release build on macOS 15.
 - Release (`.github/workflows/release.yml`) is triggered by `v*` tags: verifies

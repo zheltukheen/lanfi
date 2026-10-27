@@ -2,10 +2,10 @@ import SwiftUI
 
 struct AutomationSettingsView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
-    @State private var enabled = UserDefaults.standard.bool(forKey: "Wifa.reports.enabled")
-    @State private var minutes = max(UserDefaults.standard.integer(forKey: "Wifa.reports.minutes"), 15)
-    @State private var folder = UserDefaults.standard.string(forKey: "Wifa.reports.folder") ?? ""
-    @State private var format = UserDefaults.standard.string(forKey: "Wifa.reports.format") ?? "CSV"
+    @State private var enabled = UserDefaults.standard.bool(forKey: "LanFi.reports.enabled")
+    @State private var minutes = max(UserDefaults.standard.integer(forKey: "LanFi.reports.minutes"), 15)
+    @State private var folder = UserDefaults.standard.string(forKey: "LanFi.reports.folder") ?? ""
+    @State private var format = UserDefaults.standard.string(forKey: "LanFi.reports.format") ?? "CSV"
 
     var body: some View {
         Form {
@@ -30,10 +30,10 @@ struct AutomationSettingsView: View {
                     Button("Choose…") { chooseFolder() }
                 }
                 Button("Save settings") {
-                    UserDefaults.standard.set(enabled, forKey: "Wifa.reports.enabled")
-                    UserDefaults.standard.set(minutes, forKey: "Wifa.reports.minutes")
-                    UserDefaults.standard.set(folder, forKey: "Wifa.reports.folder")
-                    UserDefaults.standard.set(format, forKey: "Wifa.reports.format")
+                    UserDefaults.standard.set(enabled, forKey: "LanFi.reports.enabled")
+                    UserDefaults.standard.set(minutes, forKey: "LanFi.reports.minutes")
+                    UserDefaults.standard.set(folder, forKey: "LanFi.reports.folder")
+                    UserDefaults.standard.set(format, forKey: "LanFi.reports.format")
                     viewModel.configureScheduledReports()
                 }
                 Button("Write report now") {

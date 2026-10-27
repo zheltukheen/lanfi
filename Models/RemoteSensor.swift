@@ -34,7 +34,7 @@ struct RemoteNetwork: Identifiable, Equatable {
 
 final class RemoteSensorStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.remoteSensors"
+    private let key = "LanFi.remoteSensors"
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

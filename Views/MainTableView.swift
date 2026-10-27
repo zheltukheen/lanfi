@@ -403,10 +403,10 @@ struct ToolbarView: View {
     @Binding var showingCustomIntervalAlert: Bool
     @Binding var showingLiveCapture: Bool
     @FocusState private var isSearchFocused: Bool
-    @AppStorage("Wifa.toolbar.bands") private var showBands = true
-    @AppStorage("Wifa.toolbar.search") private var showSearch = true
-    @AppStorage("Wifa.toolbar.export") private var showExport = true
-    @AppStorage("Wifa.toolbar.capture") private var showCapture = true
+    @AppStorage("LanFi.toolbar.bands") private var showBands = true
+    @AppStorage("LanFi.toolbar.search") private var showSearch = true
+    @AppStorage("LanFi.toolbar.export") private var showExport = true
+    @AppStorage("LanFi.toolbar.capture") private var showCapture = true
 
     var body: some View {
         HStack(spacing: 16) {
@@ -609,14 +609,14 @@ struct ToolbarView: View {
         .padding(10)
         .background(Material.bar)
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .bottom)
-        .onReceive(NotificationCenter.default.publisher(for: .wifaFocusSearch)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiFocusSearch)) { _ in
             isSearchFocused = true
         }
     }
 }
 
 extension Notification.Name {
-    static let wifaFocusSearch = Notification.Name("LanFi.focusSearch")
+    static let lanfiFocusSearch = Notification.Name("LanFi.focusSearch")
     static let lanfiShowLiveCapture = Notification.Name("LanFi.showLiveCapture")
     static let lanfiShowRemoteSensors = Notification.Name("LanFi.showRemoteSensors")
     static let lanfiShowOfflineCapture = Notification.Name("LanFi.showOfflineCapture")

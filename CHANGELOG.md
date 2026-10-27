@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.0.0 — 2026-10-27
+
+### Changed — full LanFi identity
+- Bundle identifier changed from `ru.zheltukheen.WiFA` to
+  `ru.zheltukheen.LanFi` (app, tests, CLI).
+- All `Wifa.*` preference keys, Application Support paths, queue labels,
+  URLs, docs, scripts and cask references renamed to `LanFi`/`lanfi`.
+- GitHub repository renamed to `zheltukheen/lanfi`; release/appcast URLs updated.
+- Removed obsolete pre-rename migration blocks.
+- Build 42, ad-hoc re-signed.
+
+
 ## 3.2.1 — 2026-10-27
 
 ### Changed
@@ -371,7 +383,7 @@
   filters, commands, profiles, empty states and status labels.
 - Homebrew tap now points at the main repository, so every cask update is
   immediately installable via
-  `brew tap zheltukheen/lanfi https://github.com/zheltukheen/wifa`.
+  `brew tap zheltukheen/lanfi https://github.com/zheltukheen/lanfi`.
 
 
 ## 1.8.0 — 2026-10-26
@@ -421,12 +433,12 @@
 ## 1.6.0 — 2026-10-26
 
 ### Changed
-- **Renamed the app from WiFA to LanFi.** The product, executable, Xcode project, scheme, cask, DMG/ZIP names, menus, About panel, appcast and documentation now use the LanFi brand. The internal bundle identifier remains `ru.zheltukheen.WiFA` so existing preferences, Location permission and Sparkle updates continue to work.
+- **Renamed the app from LanFi to LanFi.** The product, executable, Xcode project, scheme, cask, DMG/ZIP names, menus, About panel, appcast and documentation now use the LanFi brand. The internal bundle identifier remains `ru.zheltukheen.LanFi` so existing preferences, Location permission and Sparkle updates continue to work.
 - **New bold app icon** (radar/Wi-Fi mark with an L monogram) across Dock, Finder, About panel and release bundles.
 - **Bottom panel is taller** (460 pt by default, capped to 60% of the window) and tabs are grouped into Overview, RF, Network and Troubleshoot categories.
 - **Insights scope is explicit**: a banner states that insights cover all visible networks and shows the currently connected network.
 - **Protocols is explicitly scoped to the selected network**, with a six-block order (radio, security, spectrum, roaming, format, vendor), numbered cards and a fixed card height so blocks no longer jump in size.
-- Localized bottom-panel categories and new scope labels; migrated annotations, sessions and surveys from the old `WiFA` Application Support directory.
+- Localized bottom-panel categories and new scope labels; migrated annotations, sessions and surveys from the old `LanFi` Application Support directory.
 
 ### Fixed
 - Tab layout migration maps the 1.5 order (Raw Data/Protocols) to the new order.
@@ -517,7 +529,7 @@
 - The default bottom panel is shorter so the network table gets more room.
 - Spectrum and signal-history charts now follow light/dark appearance and the spectrum view switches to the selected network's band.
 - The project is generated from `project.yml` with a shared scheme and a test target.
-- The Xcode project now enables hardened runtime and uses a stable bundle identifier (`ru.zheltukheen.WiFA`).
+- The Xcode project now enables hardened runtime and uses a stable bundle identifier (`ru.zheltukheen.LanFi`).
 
 ### Fixed
 - Sorting no longer has undefined ordering when two rows compare equal.

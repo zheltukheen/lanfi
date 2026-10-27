@@ -39,5 +39,5 @@ Mac until you remove them (the Homebrew cask `zap` stanza removes them).
 
 ## Contact
 
-Open an issue at <https://github.com/zheltukheen/wifa/issues> for privacy
+Open an issue at <https://github.com/zheltukheen/lanfi/issues> for privacy
 questions.

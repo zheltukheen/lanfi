@@ -63,7 +63,7 @@ struct LanFiCommands: Commands {
                 viewModel.clearQuickFilters()
             }
             Button("Search Networks…") {
-                NotificationCenter.default.post(name: .wifaFocusSearch, object: nil)
+                NotificationCenter.default.post(name: .lanfiFocusSearch, object: nil)
             }
             .keyboardShortcut("f")
         }

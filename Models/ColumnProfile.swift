@@ -13,7 +13,7 @@ struct ColumnProfile: Codable, Identifiable {
 
 final class ColumnProfileStore {
     private let defaults: UserDefaults
-    private let key = "Wifa.columnProfiles"
+    private let key = "LanFi.columnProfiles"
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 

@@ -40,9 +40,9 @@ targets:
       - package: Sparkle
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
-        MARKETING_VERSION: "3.2.1"
-        CURRENT_PROJECT_VERSION: "41"
+        PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
+        MARKETING_VERSION: "4.0.0"
+        CURRENT_PROJECT_VERSION: "42"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -64,7 +64,7 @@ targets:
         NSPrincipalClass: NSApplication
         NSSupportsAutomaticGraphicsSwitching: true
         NSHighResolutionCapable: true
-        SUFeedURL: "https://github.com/zheltukheen/wifa/releases/latest/download/appcast.xml"
+        SUFeedURL: "https://github.com/zheltukheen/lanfi/releases/latest/download/appcast.xml"
         SUPublicEDKey: "rFs9J6EODXIM2BpP2gHfe8C1KAZdkYNipngstUHolP8="
         SUEnableAutomaticChecks: true
         SUAutomaticallyUpdate: false
@@ -126,7 +126,7 @@ targets:
       - path: Utils/OUIParser.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA.Tests
+        PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.Tests
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGNING_ALLOWED: NO
 

@@ -9,8 +9,8 @@ Requirements: macOS 13+, Xcode 16+ and [XcodeGen](https://github.com/yonaskolb/X
 
 ```bash
 brew install xcodegen
-git clone https://github.com/zheltukheen/wifa.git
-cd wifa
+git clone https://github.com/zheltukheen/lanfi.git
+cd lanfi
 xcodegen generate
 open LanFi.xcodeproj
 ```
