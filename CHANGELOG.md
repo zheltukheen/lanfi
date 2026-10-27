@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.1 — 2026-10-27
+
+### Added
+- Import a scan from an HTTP(S) URL (LanFi JSON or CSV).
+- High-contrast styling extended to About/Help and sidebar cards.
+
+### Changed
+- Version 3.1.1 (build 37).
+
+
 ## 3.1.0 — 2026-10-27
 
 ### Added

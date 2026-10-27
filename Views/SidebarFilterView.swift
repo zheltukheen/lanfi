@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SidebarFilterView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    @Environment(\.lanFiHighContrast) private var highContrast
     @State private var expandedSections: Set<FilterColumn> = []
     @State private var showSortPopover = false
     @State private var showCustomFilters = false
@@ -129,7 +130,7 @@ struct SidebarFilterView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                        .stroke(Color.secondary.opacity(highContrast ? 0.55 : 0.15), lineWidth: highContrast ? 2 : 1)
                 )
             }
             .menuStyle(.borderlessButton)
@@ -176,7 +177,8 @@ struct SidebarFilterView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                            .stroke(
+                                Color.secondary.opacity(highContrast ? 0.55 : 0.15), lineWidth: highContrast ? 2 : 1)
                     )
                 }
                 .buttonStyle(.plain)
