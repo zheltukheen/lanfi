@@ -21,11 +21,15 @@ struct SignalHistoryView: View {
         let isPercent = viewModel.signalDisplayMode == .percent
 
         // 1. Вычисляем пределы по оси X
-        let maxDataPoints = max(1, viewModel.signalHistory.values.map { $0.count }.max() ?? 1)
+        let chartNetworks = viewModel.chartNetworks
+        let maxDataPoints = max(
+            1,
+            chartNetworks.compactMap { viewModel.signalHistory[$0.id]?.count }.max() ?? 1
+        )
         // Добавляем 15% справа для подписей
         let xDomainMax = max(1, Int(Double(maxDataPoints) * 1.15))
 
-        let observed = viewModel.networks.flatMap { viewModel.signalHistory[$0.id] ?? [] }
+        let observed = chartNetworks.flatMap { viewModel.signalHistory[$0.id] ?? [] }
         let observedMin = observed.min() ?? Int(minDbm)
         let observedMax = observed.max() ?? Int(maxDbm)
         let span = max(12, observedMax - observedMin)
@@ -43,7 +47,7 @@ struct SignalHistoryView: View {
             // ---------------------------
             // 1. ГРАФИКИ СЕТЕЙ
             // ---------------------------
-            ForEach(viewModel.networks) { network in
+            ForEach(chartNetworks) { network in
                 if let history = viewModel.signalHistory[network.id], !history.isEmpty {
 
                     let isSelected = (viewModel.selectedNetworkId == network.id)
@@ -156,7 +160,7 @@ struct SignalHistoryView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityChartDescriptor(
             SignalHistoryDescriptor(
-                series: viewModel.networks.compactMap { network in
+                series: chartNetworks.compactMap { network in
                     guard let history = viewModel.signalHistory[network.id], !history.isEmpty else { return nil }
                     return SignalSeries(
                         name: network.displayName,
@@ -171,7 +175,7 @@ struct SignalHistoryView: View {
                 maxDomain: maxDomain
             )
         )
-        .accessibilityLabel("Signal history for \(viewModel.networks.count) networks")
+        .accessibilityLabel("Signal history for \(chartNetworks.count) networks")
         .accessibilityValue(
             viewModel.selectedNetworkId.flatMap { id in
                 viewModel.signalHistory[id]?.last.map {

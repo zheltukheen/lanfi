@@ -1035,6 +1035,15 @@ class AnalyzerViewModel: ObservableObject {
         applyFilters()
     }
 
+    /// Charts show everything for 0/1 selected networks, and only the selection
+    /// when the user has deliberately selected two or more.
+    var chartNetworks: [NetworkModel] {
+        if selectedNetworkIds.count >= 2 {
+            return networks.filter { selectedNetworkIds.contains($0.id) }
+        }
+        return networks
+    }
+
     var selectedNetworks: [NetworkModel] {
         let ids = selectedNetworkIds
         if ids.isEmpty, let selectedNetwork {
