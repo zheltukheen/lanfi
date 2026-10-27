@@ -40,6 +40,10 @@ struct ControllerAccessPoint: Identifiable, Equatable {
     let mac: String
     let model: String
     let ip: String
+    var channel: Int? = nil
+    var clients: Int? = nil
+    var txPower: Int? = nil
+    var utilization: Int? = nil
 }
 
 final class ControllerAccountStore {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.3 — 2026-10-27
+
+### Added
+- UniFi controller RF telemetry in the AP inventory: channel, clients,
+  TX power and channel utilization when exposed by the controller.
+
+### Changed
+- Version 3.1.3 (build 39).
+
+
 ## 3.1.2 — 2026-10-27
 
 ### Added
