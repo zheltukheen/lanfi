@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.2 — 2026-10-27
+
+### Added
+- Scheduled scan reports can now be exported as PDF as well as CSV.
+- PDF scan report with visible columns, title, timestamp and paginated rows.
+
+### Changed
+- Version 3.1.2 (build 38).
+
+
 ## 3.1.1 — 2026-10-27
 
 ### Added

@@ -439,10 +439,20 @@ class AnalyzerViewModel: ObservableObject {
     func writeScheduledReport() {
         let defaults = UserDefaults.standard
         guard let folder = defaults.string(forKey: "Wifa.reports.folder"), !folder.isEmpty else { return }
+        let format = defaults.string(forKey: "Wifa.reports.format") ?? "CSV"
+        let ext = format == "PDF" ? "pdf" : "csv"
         let url = URL(fileURLWithPath: folder, isDirectory: true)
-            .appendingPathComponent("LanFi-Report-\(Self.fileTimestamp()).csv")
-        let content = csvContent(for: networks)
-        try? content.write(to: url, atomically: true, encoding: .utf8)
+            .appendingPathComponent("LanFi-Report-\(Self.fileTimestamp()).\(ext)")
+        if format == "PDF" {
+            let data = ScanReportExporter.makePDF(
+                title: "LanFi scan report", networks: networks, columns: columnDefinitions
+            ) { [weak self] id, network in
+                self?.textForColumn(id: id, net: network) ?? ""
+            }
+            try? data.write(to: url, options: .atomic)
+        } else {
+            try? csvContent(for: networks).write(to: url, atomically: true, encoding: .utf8)
+        }
         sessionMessage = "Scheduled report saved: \(url.lastPathComponent)"
     }
 

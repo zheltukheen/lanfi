@@ -5,6 +5,7 @@ struct AutomationSettingsView: View {
     @State private var enabled = UserDefaults.standard.bool(forKey: "Wifa.reports.enabled")
     @State private var minutes = max(UserDefaults.standard.integer(forKey: "Wifa.reports.minutes"), 15)
     @State private var folder = UserDefaults.standard.string(forKey: "Wifa.reports.folder") ?? ""
+    @State private var format = UserDefaults.standard.string(forKey: "Wifa.reports.format") ?? "CSV"
 
     var body: some View {
         Form {
@@ -15,6 +16,10 @@ struct AutomationSettingsView: View {
                     Text("15 minutes").tag(15)
                     Text("30 minutes").tag(30)
                     Text("60 minutes").tag(60)
+                }
+                Picker("Format", selection: $format) {
+                    Text("CSV").tag("CSV")
+                    Text("PDF").tag("PDF")
                 }
                 HStack {
                     Text(folder.isEmpty ? "No folder selected" : folder)
@@ -28,6 +33,7 @@ struct AutomationSettingsView: View {
                     UserDefaults.standard.set(enabled, forKey: "Wifa.reports.enabled")
                     UserDefaults.standard.set(minutes, forKey: "Wifa.reports.minutes")
                     UserDefaults.standard.set(folder, forKey: "Wifa.reports.folder")
+                    UserDefaults.standard.set(format, forKey: "Wifa.reports.format")
                     viewModel.configureScheduledReports()
                 }
                 Button("Write report now") {
