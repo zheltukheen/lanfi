@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.1.0 — 2026-10-27
+
+### License
+- Relicensed new source and releases from MIT to **FSL-1.1-ALv2**
+  (Functional Source License, Apache-2.0 future license).
+- Added trademark policy for the LanFi name/logo.
+- Existing MIT releases remain MIT; the new terms apply going forward.
+
+### Version
+- 4.1.0 (build 43).
+
+
 ## 4.0.0 — 2026-10-27
 
 ### Changed — full LanFi identity
