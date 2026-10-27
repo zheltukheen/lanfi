@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/zheltukheen/lanfi/actions/workflows/ci.yml/badge.svg)](https://github.com/zheltukheen/lanfi/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zheltukheen/lanfi)](https://github.com/zheltukheen/lanfi/releases/latest)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-orange.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/macOS-13%2B-black)](https://www.apple.com/macos/)
 
 LanFi is a free, open-source Wi‑Fi analyzer for macOS built on Apple's public
@@ -145,7 +145,7 @@ As of October 2026, against common macOS tools:
 
 | | LanFi | WiFi Explorer | NetSpot | Apple Wireless Diagnostics |
 | --- | --- | --- | --- | --- |
-| Price / license | Free, MIT | Paid | Freemium | Free |
+| Price / license | Free, FSL-1.1-ALv2 | Paid | Freemium | Free |
 | Native CoreWLAN scanning | ✅ | ✅ | ✅ | ✅ |
 | Quality + congestion scores | ✅ | Partial | Partial | — |
 | Ranked channel recommendations | ✅ | Partial | Partial | — |
@@ -247,7 +247,16 @@ public issue tracker.
 
 ## License
 
-[MIT](LICENSE) © 2025–2026 zheltukheen and LanFi contributors.
+[Functional Source License 1.1, ALv2 Future License](LICENSE)
+(FSL-1.1-ALv2) © 2025–2026 zheltukheen and LanFi contributors.
+
+LanFi is **source-available**, not OSI open source. You may use, modify and
+redistribute it, but you may not offer it as a competing commercial product or
+service. Internal use, non-commercial education/research and professional
+services for licensed users are permitted. Each release becomes available
+under Apache-2.0 on its second anniversary.
+
+The LanFi name and logo are covered separately by [TRADEMARK.md](TRADEMARK.md).
 
 Signed/notarized distribution is documented in [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
 

@@ -61,3 +61,12 @@ repository hook with:
 
 Use `--watch` for a debounced working-tree watcher, or `AUTOPUSH_DRY_RUN=1` to
 preview. The hook never force-pushes and refuses obvious credentials.
+
+
+## Contributions and licensing
+
+LanFi is source-available under FSL-1.1-ALv2. By submitting a pull request you
+confirm that you have the right to contribute the code and grant the project
+maintainers permission to distribute it under the current license and future
+license versions. Significant contributions may require a signed contributor
+license agreement; maintainers will ask before merging.
