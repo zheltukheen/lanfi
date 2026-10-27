@@ -79,7 +79,19 @@ enum ControllerService {
             let ip = (row["ip"] as? String) ?? (row["lanIp"] as? String) ?? "—"
             let id = (row["_id"] as? String) ?? (row["serial"] as? String) ?? mac
             guard !id.isEmpty else { return nil }
-            return ControllerAccessPoint(id: id, name: name, mac: mac, model: model, ip: ip)
+            var channel: Int?
+            var txPower: Int?
+            var utilization: Int?
+            if let radios = row["radio_table_stats"] as? [[String: Any]], let radio = radios.first {
+                channel = radio["channel"] as? Int
+                txPower = radio["tx_power"] as? Int
+                utilization = (radio["cu_total"] as? Int) ?? (radio["cu_self_rx"] as? Int)
+            }
+            let clients = (row["num_sta"] as? Int) ?? (row["clientCount"] as? Int)
+            return ControllerAccessPoint(
+                id: id, name: name, mac: mac, model: model, ip: ip,
+                channel: channel, clients: clients, txPower: txPower, utilization: utilization
+            )
         }
     }
 }

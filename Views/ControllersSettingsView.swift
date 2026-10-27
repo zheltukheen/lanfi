@@ -64,6 +64,10 @@ struct ControllersSettingsView: View {
                         TableColumn("MAC", value: \.mac)
                         TableColumn("Model", value: \.model)
                         TableColumn("IP", value: \.ip)
+                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(40)
+                        TableColumn("Clients") { Text($0.clients.map(String.init) ?? "—") }.width(55)
+                        TableColumn("TX") { Text($0.txPower.map { "\($0) dBm" } ?? "—") }.width(65)
+                        TableColumn("Util.") { Text($0.utilization.map { "\($0)%" } ?? "—") }.width(55)
                     }
                 } else {
                     Text("Add a UniFi or Meraki controller account.")
