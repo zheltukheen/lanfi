@@ -1139,6 +1139,52 @@ class AnalyzerViewModel: ObservableObject {
         }
     }
 
+    func promptImportExternalScanURL() {
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 380, height: 22))
+        field.placeholderString = "https://example.com/scan.json"
+        let alert = NSAlert()
+        alert.messageText = "Import scan from URL"
+        alert.informativeText = "Fetch a LanFi JSON export or a CSV scan from an HTTP(S) endpoint."
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Import")
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let value = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: value), let scheme = url.scheme,
+            scheme == "https" || scheme == "http"
+        else {
+            presentError("Enter a valid HTTP(S) URL.")
+            return
+        }
+        Task {
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                    throw NSError(
+                        domain: "LanFi.Import", code: http.statusCode,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "HTTP \(http.statusCode)"
+                        ])
+                }
+                let networks = try GenericScanImporter.load(
+                    data: data, filename: url.lastPathComponent.isEmpty ? "scan.json" : url.lastPathComponent
+                )
+                guard !networks.isEmpty else {
+                    presentError("The import contained no usable networks.")
+                    return
+                }
+                loadSession(
+                    ScanSession(
+                        id: UUID(), name: "Imported \(url.host ?? "remote")",
+                        createdAt: Date(), networks: networks, annotations: annotations
+                    )
+                )
+            } catch {
+                presentError("Import failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func importFilterProfile() {
         let panel = NSOpenPanel()
         panel.title = "Import filter profile"

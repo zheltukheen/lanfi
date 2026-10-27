@@ -2,8 +2,11 @@ import Foundation
 
 enum GenericScanImporter {
     static func load(_ url: URL) throws -> [NetworkModel] {
-        let data = try Data(contentsOf: url)
-        if url.pathExtension.lowercased() == "csv" {
+        try load(data: Data(contentsOf: url), filename: url.lastPathComponent)
+    }
+
+    static func load(data: Data, filename: String) throws -> [NetworkModel] {
+        if filename.lowercased().hasSuffix(".csv") {
             return parseCSV(String(decoding: data, as: UTF8.self))
         }
         let object = try JSONSerialization.jsonObject(with: data)

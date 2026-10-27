@@ -77,11 +77,13 @@ struct LanFiApp: App {
 
         Window("About LanFi", id: "about") {
             AboutView()
+                .environment(\.lanFiHighContrast, highContrast)
         }
         .windowResizability(.contentSize)
 
         Window("LanFi Help", id: "help") {
             HelpView()
+                .environment(\.lanFiHighContrast, highContrast)
         }
         .defaultSize(width: 900, height: 620)
 

@@ -27,3 +27,13 @@ final class GenericScanImporterTests: XCTestCase {
         XCTAssertEqual(networks.first?.channel, 6)
     }
 }
+
+final class GenericScanImporterDataTests: XCTestCase {
+    func testLoadsCSVFromData() throws {
+        let text =
+            "ssid,bssid,band,channel,widthMHz,signal,security,vendor\nLab,AA:BB:CC:DD:EE:11,6GHz,37,320,-48,WPA3,Test"
+        let networks = try GenericScanImporter.load(data: Data(text.utf8), filename: "scan.csv")
+        XCTAssertEqual(networks.first?.band, .band6)
+        XCTAssertEqual(networks.first?.channelWidthMHz, 320)
+    }
+}
