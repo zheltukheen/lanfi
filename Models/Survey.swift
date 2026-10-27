@@ -46,6 +46,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var walls: [SurveyWall]
     var obstacles: [SurveyObstacle]
     var accessPoints: [SurveyAccessPoint]
+    var floorLevel: Int
+    var floorHeightMeters: Double
     var planWidthMeters: Double?
     var reportTitle: String?
     var clientName: String?
@@ -55,12 +57,13 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     static func new(name: String = "Untitled survey") -> SurveyProject {
         SurveyProject(
             id: UUID(), name: name, imageFileName: nil, samples: [], walls: [],
-            obstacles: [], accessPoints: [], updatedAt: Date()
+            obstacles: [], accessPoints: [], floorLevel: 0, floorHeightMeters: 3.0, updatedAt: Date()
         )
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, imageFileName, samples, walls, obstacles, accessPoints, planWidthMeters
+        case id, name, imageFileName, samples, walls, obstacles, accessPoints, floorLevel, floorHeightMeters,
+            planWidthMeters
         case reportTitle, clientName, reportNotes, updatedAt
     }
 
@@ -72,6 +75,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         walls: [SurveyWall] = [],
         obstacles: [SurveyObstacle] = [],
         accessPoints: [SurveyAccessPoint] = [],
+        floorLevel: Int = 0,
+        floorHeightMeters: Double = 3.0,
         planWidthMeters: Double? = nil,
         reportTitle: String? = nil,
         clientName: String? = nil,
@@ -85,6 +90,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         self.walls = walls
         self.obstacles = obstacles
         self.accessPoints = accessPoints
+        self.floorLevel = floorLevel
+        self.floorHeightMeters = floorHeightMeters
         self.planWidthMeters = planWidthMeters
         self.reportTitle = reportTitle
         self.clientName = clientName
@@ -101,6 +108,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         walls = try container.decodeIfPresent([SurveyWall].self, forKey: .walls) ?? []
         obstacles = try container.decodeIfPresent([SurveyObstacle].self, forKey: .obstacles) ?? []
         accessPoints = try container.decodeIfPresent([SurveyAccessPoint].self, forKey: .accessPoints) ?? []
+        floorLevel = try container.decodeIfPresent(Int.self, forKey: .floorLevel) ?? 0
+        floorHeightMeters = try container.decodeIfPresent(Double.self, forKey: .floorHeightMeters) ?? 3.0
         planWidthMeters = try container.decodeIfPresent(Double.self, forKey: .planWidthMeters)
         reportTitle = try container.decodeIfPresent(String.self, forKey: .reportTitle)
         clientName = try container.decodeIfPresent(String.self, forKey: .clientName)

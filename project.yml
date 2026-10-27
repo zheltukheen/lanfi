@@ -41,8 +41,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.WiFA
-        MARKETING_VERSION: "3.0.0"
-        CURRENT_PROJECT_VERSION: "35"
+        MARKETING_VERSION: "3.1.0"
+        CURRENT_PROJECT_VERSION: "36"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -98,6 +98,7 @@ targets:
       - path: Models/SurveyAccessPoint.swift
       - path: Models/MLOInfo.swift
       - path: Models/ControllerAccount.swift
+      - path: Services/ControllerService.swift
       - path: Models/ThroughputReport.swift
       - path: Services/SurveyInterpolator.swift
       - path: Services/SurveyReportExporter.swift

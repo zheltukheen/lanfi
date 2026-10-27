@@ -15,7 +15,43 @@ struct SurveyAccessPoint: Codable, Identifiable, Equatable {
     }
 }
 
+struct SurveyFloorInput {
+    let floorLevel: Int
+    let floorHeightMeters: Double
+    let walls: [SurveyWall]
+    let obstacles: [SurveyObstacle]
+    let accessPoints: [SurveyAccessPoint]
+}
+
 enum SurveyPredictor {
+    static func estimate3D(
+        x: Double, y: Double, targetFloorLevel: Int, floors: [SurveyFloorInput], planWidthMeters: Double = 30
+    ) -> Int? {
+        var strongest: Int?
+        for floor in floors {
+            for ap in floor.accessPoints {
+                let horizontal = hypot(ap.x - x, ap.y - y) * planWidthMeters
+                let vertical = Double(abs(floor.floorLevel - targetFloorLevel)) * floor.floorHeightMeters
+                let distance = max(0.3, hypot(horizontal, vertical))
+                let frequency = frequencyMHz(band: ap.band, channel: ap.channel)
+                let fspl = 20 * log10(distance) + 20 * log10(frequency) - 27.55
+                let floorLoss = Double(abs(floor.floorLevel - targetFloorLevel)) * 12.0
+                let wallLoss =
+                    floors.first(where: { $0.floorLevel == targetFloorLevel })?.walls.reduce(0.0) {
+                        total, wall in
+                        let hit = SurveyInterpolator.segmentsIntersect(
+                            x1: ap.x, y1: ap.y, x2: x, y2: y,
+                            x3: wall.x1, y3: wall.y1, x4: wall.x2, y4: wall.y2
+                        )
+                        return total + (hit ? wall.attenuationDb : 0)
+                    } ?? 0
+                let rssi = Int((ap.txPowerDbm - fspl - floorLoss - wallLoss).rounded())
+                strongest = max(strongest ?? rssi, rssi)
+            }
+        }
+        return strongest
+    }
+
     static func estimate(
         x: Double, y: Double, accessPoints: [SurveyAccessPoint],
         walls: [SurveyWall], obstacles: [SurveyObstacle], planWidthMeters: Double = 30

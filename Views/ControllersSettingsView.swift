@@ -119,10 +119,16 @@ private struct ControllerEditor: View {
             Picker("Type", selection: $kind) { ForEach(ControllerKind.allCases) { Text($0.title).tag($0) } }
             TextField("Name", text: $name)
             TextField("Base URL", text: $baseURL)
-            TextField(kind == .unifi ? "Site" : "Organization ID", text: $site)
-            SecureField("API token", text: $token)
-            Text(kind == .unifi ? "Uses UniFi API key with X-API-KEY." : "Uses Meraki dashboard API key.")
-                .font(.caption2).foregroundColor(.secondary)
+            TextField(kind == .unifi ? "Site" : kind == .meraki ? "Organization ID" : "OID", text: $site)
+            SecureField(kind == .snmp ? "Community" : "API token", text: $token)
+            Text(
+                kind == .unifi
+                    ? "Uses UniFi API key with X-API-KEY."
+                    : kind == .meraki
+                        ? "Uses Meraki dashboard API key."
+                        : "Runs /usr/bin/snmpwalk -v2c against the host and OID."
+            )
+            .font(.caption2).foregroundColor(.secondary)
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }

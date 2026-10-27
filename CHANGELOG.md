@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.1.0 — 2026-10-27
+
+### Added
+- SNMP controller inventory via /usr/bin/snmpwalk (host + OID + community,
+  community stored in Keychain).
+- Floor-to-floor 3D coverage prediction: floor levels, vertical distance,
+  12 dB/floor attenuation, predictive overlay in the 3D multi-floor view.
+- New floors get monotonic floor levels automatically.
+
+### Changed
+- Version 3.1.0 (build 36).
+
+
 ## 3.0.0 — 2026-10-27
 
 ### Added

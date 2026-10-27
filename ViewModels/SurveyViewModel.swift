@@ -181,7 +181,8 @@ final class SurveyViewModel: ObservableObject {
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let newProject = SurveyProject.new(name: name.isEmpty ? "New floor" : name)
+        var newProject = SurveyProject.new(name: name.isEmpty ? "New floor" : name)
+        newProject.floorLevel = (projects.map(\.floorLevel).max() ?? -1) + 1
         store.save(newProject, imageData: nil)
         projects = store.projects()
         project = newProject
