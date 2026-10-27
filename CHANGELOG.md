@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.2.0 — 2026-10-27
+
+### Changed
+- Sidebar filters now follow visible table columns directly. Hiding a column
+  removes its filter; showing a column adds it. Only SSID is excluded.
+- Shared comparison table used by both the side inspector and bottom panels.
+- Custom OUI override fields have labels and placeholders.
+- Toolbar is configurable: band chips, search, export and capture can be hidden.
+- General settings include theme, row density and scan-on-launch.
+- OUI/settings/top bar cleanup.
+
+### Fixed
+- Stale quick filters no longer survive hiding their column.
+- Duplicate comparison implementations removed.
+
+### Version
+- 3.2.0 (build 40).
+
+
 ## 3.1.3 — 2026-10-27
 
 ### Added

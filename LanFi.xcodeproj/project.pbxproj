@@ -164,6 +164,7 @@
 		C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D486B1748C166298A6029AF /* ProtocolsView.swift */; };
 		CB0C061C7995E4AB1820BCAC /* AutomationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD3A7E0AC5C8C2DA27B2F1F /* AutomationSettingsView.swift */; };
 		CC433033E5281E7434455AEE /* SystemInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20608B23AE2BDC4528717865 /* SystemInterface.swift */; };
+		CD2CEA0E8AB76B3539AE3EB2 /* NetworkComparisonTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA7B0F0189511DB7E761C6D /* NetworkComparisonTable.swift */; };
 		D029C59767AE2D08643E4B72 /* SidebarFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */; };
 		D235C5022147C44A42D9B1AD /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
 		D246F826EE82A96F508E2564 /* PcapAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AFF4059383E0D040E679A4 /* PcapAnalyzer.swift */; };
@@ -279,6 +280,7 @@
 		940A429CB546B3B174C60EBF /* ControllerAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerAccount.swift; sourceTree = "<group>"; };
 		957F50461891605F6C31319B /* Survey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Survey.swift; sourceTree = "<group>"; };
 		99373C5F0562D292C28FCCB3 /* LiveClientDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveClientDiscoveryView.swift; sourceTree = "<group>"; };
+		9AA7B0F0189511DB7E761C6D /* NetworkComparisonTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkComparisonTable.swift; sourceTree = "<group>"; };
 		9DFFB67F76B8A47EF37241BC /* RemoteCaptureSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCaptureSheet.swift; sourceTree = "<group>"; };
 		A08CBF57665F67AA839F1A44 /* ExpressionColumnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpressionColumnTests.swift; sourceTree = "<group>"; };
 		A523B096357134ADAD3A2442 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -480,6 +482,7 @@
 				D13691D6C047BB346F9BB2E3 /* MLOInspectorSection.swift */,
 				56E51135BACE9E5BA4BEA5C7 /* MultiFloorSurveyView.swift */,
 				E208CE84D2DA29FEB3D9C8F9 /* MultiNetworkComparisonView.swift */,
+				9AA7B0F0189511DB7E761C6D /* NetworkComparisonTable.swift */,
 				D50E29FA26E38F5135D06F09 /* NetworkInspectorSections.swift */,
 				B4322DE958F9E2353026A60F /* OfflineCaptureView.swift */,
 				7D486B1748C166298A6029AF /* ProtocolsView.swift */,
@@ -861,6 +864,7 @@
 				63AE48290D6297384E9A2A39 /* NetworkAnalyzer.swift in Sources */,
 				E82F82092EFD25CD3FEC4142 /* NetworkAnnotation.swift in Sources */,
 				096C32C22F17A43A7964FD40 /* NetworkColumnFormatter.swift in Sources */,
+				CD2CEA0E8AB76B3539AE3EB2 /* NetworkComparisonTable.swift in Sources */,
 				5EFE518555377023C5EF85AE /* NetworkGrouping.swift in Sources */,
 				5FCEA597822C995A0A1ADBCD /* NetworkInspectorSections.swift in Sources */,
 				60B784BD118E53F1658524C7 /* NetworkModel.swift in Sources */,
@@ -1005,13 +1009,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 40;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.1.3;
+				MARKETING_VERSION = 3.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};
@@ -1121,13 +1125,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 40;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 3.1.3;
+				MARKETING_VERSION = 3.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.WiFA;
 				SDKROOT = macosx;
 			};

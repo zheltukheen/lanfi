@@ -34,7 +34,8 @@ struct WiFiTableView: NSViewRepresentable {
         tableView.gridStyleMask = []
 
         // A little more breathing room per row; keeps the table compact but readable.
-        tableView.rowHeight = 30
+        let density = UserDefaults.standard.double(forKey: "Wifa.rowDensity")
+        tableView.rowHeight = density > 0 ? density : 30
         tableView.intercellSpacing = NSSize(width: 0, height: 2)
 
         tableView.headerView = NSTableHeaderView()

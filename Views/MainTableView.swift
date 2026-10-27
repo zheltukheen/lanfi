@@ -403,6 +403,10 @@ struct ToolbarView: View {
     @Binding var showingCustomIntervalAlert: Bool
     @Binding var showingLiveCapture: Bool
     @FocusState private var isSearchFocused: Bool
+    @AppStorage("Wifa.toolbar.bands") private var showBands = true
+    @AppStorage("Wifa.toolbar.search") private var showSearch = true
+    @AppStorage("Wifa.toolbar.export") private var showExport = true
+    @AppStorage("Wifa.toolbar.capture") private var showCapture = true
 
     var body: some View {
         HStack(spacing: 16) {
@@ -505,48 +509,69 @@ struct ToolbarView: View {
             }
 
             // 2. Band / generation filters
-            HStack(spacing: 4) {
-                BandFilterChip(title: "2.4", color: .blue, isOn: $viewModel.filterBand24)
-                    .help("Show 2.4 GHz networks")
-                BandFilterChip(title: "5", color: .purple, isOn: $viewModel.filterBand5)
-                    .help("Show 5 GHz networks")
-                BandFilterChip(title: "6", color: .teal, isOn: $viewModel.filterBand6)
-                    .help("Show 6 GHz networks")
-                BandFilterChip(title: "7", color: .green, isOn: $viewModel.filterWiFi7)
-                    .help("Show Wi-Fi 7 / 802.11be networks")
+            if showBands {
+                HStack(spacing: 4) {
+                    BandFilterChip(title: "2.4", color: .blue, isOn: $viewModel.filterBand24)
+                        .help("Show 2.4 GHz networks")
+                    BandFilterChip(title: "5", color: .purple, isOn: $viewModel.filterBand5)
+                        .help("Show 5 GHz networks")
+                    BandFilterChip(title: "6", color: .teal, isOn: $viewModel.filterBand6)
+                        .help("Show 6 GHz networks")
+                    BandFilterChip(title: "7", color: .green, isOn: $viewModel.filterWiFi7)
+                        .help("Show Wi-Fi 7 / 802.11be networks")
+                }
             }
 
             // 3. Search
-            HStack {
-                Image(systemName: "magnifyingglass").foregroundColor(.secondary)
-                TextField("Search...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-                    .focused($isSearchFocused)
-                    .frame(minWidth: 100, maxWidth: 200)
+            if showSearch {
+                HStack {
+                    Image(systemName: "magnifyingglass").foregroundColor(.secondary)
+                    TextField("Search...", text: $viewModel.searchText)
+                        .textFieldStyle(.plain)
+                        .focused($isSearchFocused)
+                        .frame(minWidth: 100, maxWidth: 200)
+                }
+                .padding(5)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .cornerRadius(6)
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
             }
-            .padding(5)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(6)
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
 
             Spacer()
+            Text("\(viewModel.networks.count) networks")
+                .font(.caption2)
+                .foregroundColor(.secondary)
 
             // 4. Right Controls
             HStack(spacing: 16) {
 
                 // Export
-                Menu {
-                    Button("Export CSV…") { viewModel.exportCSV() }
-                    Button("Export JSON…") { viewModel.exportJSON() }
-                    Divider()
-                    Button("Live Capture (PCAP)…") { showingLiveCapture = true }
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
+                if showExport {
+                    Menu {
+                        Button("Export CSV…") { viewModel.exportCSV() }
+                        Button("Export JSON…") { viewModel.exportJSON() }
+                        if showCapture {
+                            Divider()
+                            Button("Live Capture (PCAP)…") { showingLiveCapture = true }
+                        }
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
+                    .help("Export scan results")
+                    .accessibilityLabel("Export scan results")
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                .help("Export scan results")
-                .accessibilityLabel("Export scan results")
+                if showCapture {
+                    Button {
+                        showingLiveCapture = true
+                    } label: {
+                        Image(systemName: "dot.radiowaves.left.and.right")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Live packet capture")
+                    .accessibilityLabel("Live packet capture")
+                }
 
                 // Inspector Toggle
                 Button(action: {
@@ -1052,39 +1077,10 @@ struct MultiSelectionInspector: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Comparison").font(.caption.bold())
-                ScrollView(.horizontal, showsIndicators: true) {
-                    Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 3) {
-                        GridRow {
-                            Text("Network").font(.caption2.bold())
-                            Text("dBm").font(.caption2.bold())
-                            Text("Band").font(.caption2.bold())
-                            Text("Ch").font(.caption2.bold())
-                            Text("Width").font(.caption2.bold())
-                            Text("SNR").font(.caption2.bold())
-                            Text("Security").font(.caption2.bold())
-                            Text("Q").font(.caption2.bold())
-                        }
-                        ForEach(selected.prefix(12)) { network in
-                            GridRow {
-                                Text(network.displaySSID)
-                                    .font(.caption2)
-                                    .lineLimit(1)
-                                    .frame(minWidth: 110, alignment: .leading)
-                                Text("\(network.signal)").font(.caption2)
-                                Text(network.band.label).font(.caption2)
-                                Text("\(network.channel)").font(.caption2)
-                                Text("\(network.channelWidthLabel)").font(.caption2)
-                                Text(network.snr.map(String.init) ?? "—").font(.caption2)
-                                Text(network.security).font(.caption2).lineLimit(1)
-                                Text("\(viewModel.metrics(for: network)?.qualityScore ?? 0)")
-                                    .font(.caption2)
-                            }
-                        }
-                    }
-                    .padding(6)
-                }
-                .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 7))
+                NetworkComparisonTable(viewModel: viewModel, networks: selected)
+                    .frame(maxHeight: 220)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
             }
 
             VStack(alignment: .leading, spacing: 4) {
