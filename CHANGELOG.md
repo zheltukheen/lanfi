@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.6.0 — 2026-10-29
+
+### Channel capability providers
+- Country IE (IE 7) parsing adds AP-advertised channel constraints.
+- Bundled wireless-regdb country regulatory database (ISC) as fallback.
+- Channel advisor applies country IE, regulatory, generation and DFS filters.
+- UniFi controller inventory exposes supported channel lists when the API
+  returns them.
+
+### Tool platform
+- Reusable ToolConsole windows with availability detection, argument editing,
+  copy/save, timeout and full-screen toggling.
+- Toolbar Tools menu for wdutil, networkQuality, ping, traceroute, mtr, dig,
+  dscacheutil, arp, nmap, blueutil, airport, captive portal, iperf3,
+  hostapd_cli, SSH iw phy and custom commands.
+
+### Version
+- 4.6.0 (build 49).
+
+
 ## 4.5.0 — 2026-10-29
 
 ### Spectrum

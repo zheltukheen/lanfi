@@ -44,6 +44,7 @@ struct ControllerAccessPoint: Identifiable, Equatable {
     var clients: Int? = nil
     var txPower: Int? = nil
     var utilization: Int? = nil
+    var supportedChannels: [Int] = []
 }
 
 final class ControllerAccountStore {
