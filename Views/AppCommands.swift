@@ -114,6 +114,7 @@ struct LanFiCommands: Commands {
                 Text("Spectrum").tag(4)
                 Text("History").tag(5)
                 Text("Diagnostics").tag(6)
+                Text("Capture").tag(7)
             }
 
             Button("Show Overview") { uiState.selectedBottomTab = 0 }
@@ -164,9 +165,6 @@ struct LanFiCommands: Commands {
                 }
                 Button("Wireshark…") {
                     NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
-                }
-                Button("Airtool…") {
-                    NSWorkspace.shared.open(URL(string: "https://www.intuitibits.com/products/airtool/")!)
                 }
                 Button("iPerf3…") {
                     NSWorkspace.shared.open(URL(string: "https://iperf.fr/iperf-download.php")!)

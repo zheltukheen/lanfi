@@ -7,13 +7,15 @@ struct CaptureProfile: Codable, Identifiable, Equatable {
     var duration: Int
     var monitorMode: Bool
     var filter: String
+    var channel: Int? = nil
 
     static func new(
-        name: String, interfaceName: String, duration: Int, monitorMode: Bool, filter: String
+        name: String, interfaceName: String, duration: Int, monitorMode: Bool, filter: String,
+        channel: Int? = nil
     ) -> CaptureProfile {
         CaptureProfile(
             id: UUID(), name: name, interfaceName: interfaceName,
-            duration: duration, monitorMode: monitorMode, filter: filter
+            duration: duration, monitorMode: monitorMode, filter: filter, channel: channel
         )
     }
 }

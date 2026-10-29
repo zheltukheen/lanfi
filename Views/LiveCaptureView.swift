@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LiveCaptureView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    var embedded = false
     @Environment(\.dismiss) private var dismiss
     @State private var interfaces: [String] = []
     @State private var selectedInterface = "en0"
@@ -16,9 +17,11 @@ struct LiveCaptureView: View {
     @State private var customOutput = false
     @State private var filter = ""
     @State private var profiles: [CaptureProfile] = []
+    @State private var channel = 0
     @State private var triggerMode = 0
     @State private var triggerBSSID = ""
     @State private var waitingForTrigger = false
+    @State private var autoOpenWireshark = UserDefaults.standard.bool(forKey: "LanFi.capture.autoWireshark")
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -40,7 +43,9 @@ struct LiveCaptureView: View {
                 }
                 .menuStyle(.borderlessButton)
                 .frame(width: 90)
-                Button("Close") { dismiss() }
+                if !embedded {
+                    Button("Close") { dismiss() }
+                }
             }
 
             Divider()
@@ -51,6 +56,17 @@ struct LiveCaptureView: View {
                     Picker("", selection: $selectedInterface) {
                         ForEach(interfaces, id: \.self) { name in
                             Text(name).tag(name)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 220)
+                }
+                GridRow {
+                    Text("Channel").foregroundColor(.secondary)
+                    Picker("", selection: $channel) {
+                        Text("Auto / current").tag(0)
+                        ForEach(Array(Set(viewModel.supportedChannels.map(\.channel))).sorted(), id: \.self) { value in
+                            Text("\(value)").tag(value)
                         }
                     }
                     .labelsHidden()
@@ -116,6 +132,11 @@ struct LiveCaptureView: View {
                 }
             }
 
+            Toggle("Open capture in Wireshark when finished", isOn: $autoOpenWireshark)
+                .onChange(of: autoOpenWireshark) { value in
+                    UserDefaults.standard.set(value, forKey: "LanFi.capture.autoWireshark")
+                }
+
             Toggle("Monitor mode / radiotap (Wi-Fi interfaces)", isOn: $monitorMode)
                 .disabled(!selectedInterface.hasPrefix("en"))
                 .help("Adds -I -y IEEE802_11_RADIO. Disable if the driver rejects monitor mode.")
@@ -144,6 +165,10 @@ struct LiveCaptureView: View {
                     .controlSize(.small)
                     Button("Reveal in Finder") {
                         NSWorkspace.shared.activateFileViewerSelecting([savedURL])
+                    }
+                    .controlSize(.small)
+                    Button("Open in Wireshark") {
+                        openInWireshark()
                     }
                     .controlSize(.small)
                     Button("New capture") {
@@ -175,8 +200,8 @@ struct LiveCaptureView: View {
                 }
             }
         }
-        .padding(18)
-        .frame(width: 590)
+        .padding(embedded ? 10 : 18)
+        .frame(width: embedded ? nil : 590)
         .sheet(isPresented: $showingAnalysis) {
             OfflineCaptureView(initialURL: completedURL)
         }
@@ -190,6 +215,20 @@ struct LiveCaptureView: View {
         }
         .onChange(of: viewModel.networks.map(\.bssid)) { _ in
             checkTrigger()
+        }
+    }
+
+    private func openInWireshark() {
+        guard completedURL != nil else { return }
+        let app = URL(fileURLWithPath: "/Applications/Wireshark.app")
+        if FileManager.default.fileExists(atPath: app.path) {
+            NSWorkspace.shared.open(
+                [savedURL],
+                withApplicationAt: app,
+                configuration: NSWorkspace.OpenConfiguration()
+            )
+        } else {
+            NSWorkspace.shared.open(savedURL)
         }
     }
 
@@ -233,7 +272,8 @@ struct LiveCaptureView: View {
             outputURL: outputURL,
             monitorMode: monitorMode && selectedInterface.hasPrefix("en"),
             filter: filter,
-            startDelay: startDelay
+            startDelay: startDelay,
+            channel: channel == 0 ? nil : channel
         )
         isCapturing = true
         Task {
@@ -244,6 +284,7 @@ struct LiveCaptureView: View {
                 await MainActor.run {
                     isCapturing = false
                     completedURL = result
+                    if autoOpenWireshark { openInWireshark() }
                 }
             } catch {
                 await MainActor.run {
@@ -259,6 +300,7 @@ struct LiveCaptureView: View {
         duration = profile.duration
         monitorMode = profile.monitorMode
         filter = profile.filter
+        channel = profile.channel ?? 0
     }
 
     private func saveProfile() {
@@ -274,7 +316,7 @@ struct LiveCaptureView: View {
         guard !name.isEmpty else { return }
         let profile = CaptureProfile.new(
             name: name, interfaceName: selectedInterface, duration: duration,
-            monitorMode: monitorMode, filter: filter
+            monitorMode: monitorMode, filter: filter, channel: channel == 0 ? nil : channel
         )
         if let index = profiles.firstIndex(where: { $0.name == name }) {
             profiles[index] = profile
