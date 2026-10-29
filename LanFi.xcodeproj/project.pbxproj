@@ -47,6 +47,7 @@
 		3300F5462E3F8BD355E15B9D /* CaptureProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02A3CAF9737FF299301222E /* CaptureProfile.swift */; };
 		3382B6EF873A8547F96CC237 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89FA57C7FC6C6D5F40C5224D /* HelpView.swift */; };
 		342C3649806ECE78FDD894D1 /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1002A4F0143646CB9EF6A42 /* ScanSession.swift */; };
+		344FE21349A05A1CBFCF6448 /* ChannelAdvice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B626DBBCAAC7E3EBB83FA60 /* ChannelAdvice.swift */; };
 		36741811B010D4857679F8B0 /* CustomFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 316ECB1DC40C877C4B2DCFF9 /* CustomFiltersView.swift */; };
 		36E8CD8BB18DE144C7BE11F5 /* RemoteSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C730C160F41F0275FA430A /* RemoteSensor.swift */; };
 		380D8D3D4E152D569F98F8C0 /* RegulatoryInspectorSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBFFB32C7B7BD010AF18988F /* RegulatoryInspectorSections.swift */; };
@@ -135,11 +136,13 @@
 		9EEB6AD80C3FC523A7E83E91 /* OUIUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112365ADA072881067C1A1B0 /* OUIUpdaterTests.swift */; };
 		9F7E52C272F03D0582D3CFEB /* ProximityBeacon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777D1B2C625AE474F831F8DD /* ProximityBeacon.swift */; };
 		9FDCDF1ED5506EF6DF7FC451 /* LiveCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */; };
+		A0FAEEA3E4014438A877F95D /* ChannelAdvice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B626DBBCAAC7E3EBB83FA60 /* ChannelAdvice.swift */; };
 		A1E3C52CFFB4B7BE766E01D2 /* NetworkColumnFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */; };
 		A1EA44C383DF9D487D307F1A /* AppSmokeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFFCF374FF5324414579E8 /* AppSmokeTest.swift */; };
 		A2800C92267706A97DD5D63D /* RemoteSensorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70BE8CC2AA6D732B20760EEF /* RemoteSensorsView.swift */; };
 		A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687874D5350B989C31061197 /* DiagnosticsTests.swift */; };
 		A44F9B79064E345C33C3B3B6 /* CrashLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BE013AC1ED9D3DAC0682A2 /* CrashLogger.swift */; };
+		A61C02BDA38BFA33DDF0688B /* ChannelAdvisor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F7FD8DC2C9014E7B632E79 /* ChannelAdvisor.swift */; };
 		A8069A49C53DABB0DB253387 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9EF9C5F85D2F561B74DB852E /* InfoPlist.strings */; };
 		A862642AA20FB3C72F423930 /* DiagnosticsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA88C6D984E22CD9070EC92 /* DiagnosticsEngine.swift */; };
 		A914D191CAFBDB708E28FAB1 /* DeepLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4886D26196780F92820822BA /* DeepLinkTests.swift */; };
@@ -158,6 +161,7 @@
 		B60F6FE86786273CD8983865 /* PcapAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AFF4059383E0D040E679A4 /* PcapAnalyzer.swift */; };
 		B64BB9067C0AA29AA098BEE4 /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76248B0F388B144C54301AC /* DeepLink.swift */; };
 		B83C4C6309BB2B9A0F4A5179 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 544BCF73F96E99C5CFCA5728 /* Sparkle */; };
+		B8D3B07F49B95240AAF3FBCE /* ChannelAdvisor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F7FD8DC2C9014E7B632E79 /* ChannelAdvisor.swift */; };
 		B9617503065B6E5174847EAF /* TechnicalLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDEE9688DB8FED69CCE776BB /* TechnicalLocalizer.swift */; };
 		BAB12CEF7FDB39A15AC110A9 /* TechnicalLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDEE9688DB8FED69CCE776BB /* TechnicalLocalizer.swift */; };
 		BB4AA25D30628DA1174DEC55 /* ControllersSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 822F5BE9A382863BCE5AADB1 /* ControllersSettingsView.swift */; };
@@ -169,6 +173,7 @@
 		C2BA409446C06082FD4B574C /* OUIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB0A732B64417000F67233E /* OUIParser.swift */; };
 		C31F9BE12C97FC55EB78488F /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1002A4F0143646CB9EF6A42 /* ScanSession.swift */; };
 		C40912D5F08D0590D6904320 /* ThroughputReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8AD8AE18BE59654726CA6C /* ThroughputReport.swift */; };
+		C6D74F44060E0955D2B706E0 /* ChannelAdvisorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F94127BB8CA1EE2514134C0 /* ChannelAdvisorTests.swift */; };
 		C78DE2401AD4AFD73A13B62F /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0745B6A062696C94CF715558 /* InsightsView.swift */; };
 		C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D486B1748C166298A6029AF /* ProtocolsView.swift */; };
 		C96DA99231C835100E21E39F /* SecurityParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3543F9C8415CBB18D3FC7D /* SecurityParser.swift */; };
@@ -273,6 +278,7 @@
 		687874D5350B989C31061197 /* DiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsTests.swift; sourceTree = "<group>"; };
 		6DD3A7E0AC5C8C2DA27B2F1F /* AutomationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationSettingsView.swift; sourceTree = "<group>"; };
 		6F2AFA70627054823768D660 /* oui */ = {isa = PBXFileReference; path = oui; sourceTree = "<group>"; };
+		6F94127BB8CA1EE2514134C0 /* ChannelAdvisorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAdvisorTests.swift; sourceTree = "<group>"; };
 		6FBEB91987438B9C71550E0B /* MenuBarAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarAlert.swift; sourceTree = "<group>"; };
 		70BE8CC2AA6D732B20760EEF /* RemoteSensorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSensorsView.swift; sourceTree = "<group>"; };
 		72F61FB0873325225021D32F /* HistoryExportMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryExportMenu.swift; sourceTree = "<group>"; };
@@ -281,6 +287,7 @@
 		774F454ECF83E0C9A1CAE3AA /* ExpressionColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpressionColumn.swift; sourceTree = "<group>"; };
 		777D1B2C625AE474F831F8DD /* ProximityBeacon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityBeacon.swift; sourceTree = "<group>"; };
 		7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationElementParserTests.swift; sourceTree = "<group>"; };
+		7B626DBBCAAC7E3EBB83FA60 /* ChannelAdvice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAdvice.swift; sourceTree = "<group>"; };
 		7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnProfileTests.swift; sourceTree = "<group>"; };
 		7CC8A261F612C8FEDB72654D /* RemoteSensorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteSensorService.swift; sourceTree = "<group>"; };
 		7D486B1748C166298A6029AF /* ProtocolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolsView.swift; sourceTree = "<group>"; };
@@ -288,6 +295,7 @@
 		822F5BE9A382863BCE5AADB1 /* ControllersSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllersSettingsView.swift; sourceTree = "<group>"; };
 		83D9F0FB9D0A8CE8CC031028 /* ColoringRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColoringRuleTests.swift; sourceTree = "<group>"; };
 		84989E3ECC742B8B5E321BC8 /* OUIUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIUpdater.swift; sourceTree = "<group>"; };
+		88F7FD8DC2C9014E7B632E79 /* ChannelAdvisor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAdvisor.swift; sourceTree = "<group>"; };
 		89FA57C7FC6C6D5F40C5224D /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		8B28FAB5E9E72BE98EE26B24 /* DiagnosticsBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsBundleTests.swift; sourceTree = "<group>"; };
 		8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkColumnFormatter.swift; sourceTree = "<group>"; };
@@ -386,6 +394,7 @@
 			children = (
 				B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */,
 				657C986D019A224FDFEE348D /* APNameDetectorTests.swift */,
+				6F94127BB8CA1EE2514134C0 /* ChannelAdvisorTests.swift */,
 				83D9F0FB9D0A8CE8CC031028 /* ColoringRuleTests.swift */,
 				B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */,
 				7C94F67285FEB64011CB62AE /* ColumnProfileTests.swift */,
@@ -453,6 +462,7 @@
 			children = (
 				AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */,
 				13EFFCF374FF5324414579E8 /* AppSmokeTest.swift */,
+				88F7FD8DC2C9014E7B632E79 /* ChannelAdvisor.swift */,
 				2D856BE9B63CC2E3655BA90B /* ControllerService.swift */,
 				D3BE013AC1ED9D3DAC0682A2 /* CrashLogger.swift */,
 				C76248B0F388B144C54301AC /* DeepLink.swift */,
@@ -550,6 +560,7 @@
 			isa = PBXGroup;
 			children = (
 				E02A3CAF9737FF299301222E /* CaptureProfile.swift */,
+				7B626DBBCAAC7E3EBB83FA60 /* ChannelAdvice.swift */,
 				ED3EBB0A99807D399E66153C /* ColoringRule.swift */,
 				C23E9DF192173EEBD466621A /* ColumnCatalog.swift */,
 				FBBCB97B25338A19AF78881E /* ColumnProfile.swift */,
@@ -752,6 +763,9 @@
 				5BCB4A9A391022705968072E /* APNameDetectorTests.swift in Sources */,
 				8098AE614F87EFD37D52A707 /* AnnotationTests.swift in Sources */,
 				5B49A39EBA66580F9D4C2FFC /* CaptureProfile.swift in Sources */,
+				A0FAEEA3E4014438A877F95D /* ChannelAdvice.swift in Sources */,
+				B8D3B07F49B95240AAF3FBCE /* ChannelAdvisor.swift in Sources */,
+				C6D74F44060E0955D2B706E0 /* ChannelAdvisorTests.swift in Sources */,
 				877CDE2973A9DF0380ABA1C5 /* ColoringRule.swift in Sources */,
 				2545D0F386B2A16F28C59E1F /* ColoringRuleTests.swift in Sources */,
 				5F2033806533879194D749C7 /* ColumnCatalog.swift in Sources */,
@@ -853,6 +867,8 @@
 				8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */,
 				CB0C061C7995E4AB1820BCAC /* AutomationSettingsView.swift in Sources */,
 				3300F5462E3F8BD355E15B9D /* CaptureProfile.swift in Sources */,
+				344FE21349A05A1CBFCF6448 /* ChannelAdvice.swift in Sources */,
+				A61C02BDA38BFA33DDF0688B /* ChannelAdvisor.swift in Sources */,
 				E26E21AEBE9A0A22988C7317 /* ColorRulesSettingsView.swift in Sources */,
 				2581330ADC04E4923E342CE2 /* ColoringRule.swift in Sources */,
 				19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */,
@@ -1057,13 +1073,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 48;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 4.4.1;
+				MARKETING_VERSION = 4.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
@@ -1173,13 +1189,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 48;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 4.4.1;
+				MARKETING_VERSION = 4.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};

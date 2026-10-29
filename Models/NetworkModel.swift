@@ -120,6 +120,21 @@ struct NetworkModel: Identifiable, Equatable, Codable {
 
     var bandLabel: String { band.label }
 
+    /// Model / model number advertised in WPS or vendor information elements.
+    var routerModel: String? {
+        for element in informationElements {
+            for line in element.detailLines {
+                if line.hasPrefix("Model: ") {
+                    return String(line.dropFirst("Model: ".count))
+                }
+                if line.hasPrefix("Model Number: ") {
+                    return String(line.dropFirst("Model Number: ".count))
+                }
+            }
+        }
+        return nil
+    }
+
     var channelWidthLabel: String {
         channelWidthMHz > 0 ? "\(channelWidthMHz)" : "-"
     }

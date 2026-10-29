@@ -8,7 +8,7 @@ struct SpectrumView: View {
     @Environment(\.openWindow) private var openWindow
     var isFullScreen = false
 
-    private let plotInsets = EdgeInsets(top: 52, leading: 44, bottom: 34, trailing: 16)
+    private let plotInsets = EdgeInsets(top: 58, leading: 62, bottom: 40, trailing: 16)
     private var baseDomain: ClosedRange<Double> {
         0...(max(lanes.last?.end ?? 1, 1) + 0.19)
     }
@@ -190,31 +190,47 @@ struct SpectrumView: View {
 
     private func yPosition(dbm: Double, plotRect: CGRect) -> CGFloat {
         let clamped = max(-100, min(-10, dbm))
-        let normalized = (clamped + 10) / 90
+        let normalized = (-10 - clamped) / 90
         return plotRect.minY + CGFloat(normalized) * plotRect.height
     }
 
     private func yPosition(percent: Double, plotRect: CGRect) -> CGFloat {
         let clamped = max(0, min(100, percent))
-        return plotRect.minY + CGFloat((100 - clamped) / 100) * plotRect.height
+        let usable = plotRect.height * 0.92
+        return plotRect.minY + plotRect.height * 0.04 + CGFloat((100 - clamped) / 100) * usable
     }
 
     private func drawGridAndAxis(context: GraphicsContext, plotRect: CGRect) {
         let isPercent = viewModel.signalDisplayMode == .percent
-        let levels: [Double] = isPercent ? [25, 50, 75] : [-40, -60, -80]
+        let levels: [Double] =
+            isPercent
+            ? [0, 25, 50, 75, 100]
+            : [-100, -90, -80, -70, -60, -50, -40, -30, -20, -10]
+
+        var axis = Path()
+        axis.move(to: CGPoint(x: plotRect.minX, y: plotRect.minY))
+        axis.addLine(to: CGPoint(x: plotRect.minX, y: plotRect.maxY))
+        context.stroke(axis, with: .color(.secondary.opacity(0.45)), lineWidth: 1)
+
         for level in levels {
             let y =
                 isPercent ? yPosition(percent: level, plotRect: plotRect) : yPosition(dbm: level, plotRect: plotRect)
             var path = Path()
             path.move(to: CGPoint(x: plotRect.minX, y: y))
             path.addLine(to: CGPoint(x: plotRect.maxX, y: y))
-            context.stroke(path, with: .color(.primary.opacity(0.12)), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            context.stroke(
+                path, with: .color(.primary.opacity(level == -100 || level == 0 ? 0.20 : 0.10)),
+                style: StrokeStyle(lineWidth: 1, dash: [3, 5]))
+            let label = isPercent ? "\(Int(level))%" : "\(Int(level))"
             context.draw(
-                Text(isPercent ? "\(Int(level))%" : "\(Int(level))")
-                    .font(.caption2).foregroundColor(.secondary),
-                at: CGPoint(x: plotRect.minX - 6, y: y - 8), anchor: .trailing
+                Text(label).font(.caption2.monospacedDigit()).foregroundColor(.secondary),
+                at: CGPoint(x: plotRect.minX - 8, y: y), anchor: .trailing
             )
         }
+        context.draw(
+            Text(isPercent ? "Signal %" : "dBm").font(.caption2.bold()).foregroundColor(.secondary),
+            at: CGPoint(x: plotRect.minX - 8, y: plotRect.minY - 16), anchor: .trailing
+        )
 
         let active = Set(networks.map(\.channel))
         for lane in lanes {

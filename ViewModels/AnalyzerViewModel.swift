@@ -522,6 +522,10 @@ class AnalyzerViewModel: ObservableObject {
         )
     }
 
+    func channelAdvice(for network: NetworkModel) -> ChannelAdvice? {
+        ChannelAdvisor.advice(for: network, report: analysis, allNetworks: networks)
+    }
+
     func metrics(for network: NetworkModel) -> NetworkMetrics? {
         analysis.metrics(for: network.id)
     }

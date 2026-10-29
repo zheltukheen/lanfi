@@ -1,5 +1,26 @@
 # Changelog
 
+## 4.5.0 — 2026-10-29
+
+### Spectrum
+- Corrected dBm-to-Y mapping (higher dBm is higher on screen) and added a
+  full -100…-10 dBm ruler.
+- Added a top margin so peaks and labels stay inside the plot.
+- Full-screen Spectrum/History opens in a dedicated window.
+
+### Channel advisor
+- Connected/selected network now gets a same-band channel recommendation.
+- Recommends a less loaded channel only when it improves by >=10 points;
+  otherwise Keep current channel.
+- Filters candidates by Wi-Fi generation (no 6 GHz for 11n), avoids DFS when
+  the current channel is non-DFS, and surfaces the advertised router model.
+- Channel advice shows current score, target channel/width, DFS warning and
+  reason.
+
+### Version
+- 4.5.0 (build 48).
+
+
 ## 4.4.1 — 2026-10-29
 
 ### Fixed
