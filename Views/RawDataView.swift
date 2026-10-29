@@ -4,6 +4,7 @@ import AppKit
 struct RawDataView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var expandedRows: Set<String> = []
+    @State private var showFields = false
 
     var body: some View {
         ZStack {
@@ -13,18 +14,32 @@ struct RawDataView: View {
             if viewModel.selectedNetworkIds.count > 1 {
                 MultiNetworkComparisonView(viewModel: viewModel)
             } else if let network = viewModel.selectedNetwork {
-                ZStack(alignment: .topTrailing) {
-                    RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
-                        .onChange(of: viewModel.selectedNetworkId) { _ in
-                            expandedRows.removeAll()
-                        }
-                    Button {
-                        copyAll(network.informationElements)
-                    } label: {
-                        Label("Copy All IEs", systemImage: "doc.on.doc")
+                VStack(spacing: 0) {
+                    Picker("", selection: $showFields) {
+                        Text("Network fields").tag(true)
+                        Text("Information elements").tag(false)
                     }
-                    .controlSize(.small)
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
                     .padding(8)
+
+                    if showFields {
+                        RawNetworkFieldsView(network: network)
+                    } else {
+                        ZStack(alignment: .topTrailing) {
+                            RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
+                                .onChange(of: viewModel.selectedNetworkId) { _ in
+                                    expandedRows.removeAll()
+                                }
+                            Button {
+                                copyAll(network.informationElements)
+                            } label: {
+                                Label("Copy All IEs", systemImage: "doc.on.doc")
+                            }
+                            .controlSize(.small)
+                            .padding(8)
+                        }
+                    }
                 }
             } else {
                 VStack(spacing: 16) {
@@ -37,6 +52,7 @@ struct RawDataView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .textSelection(.enabled)
         .onChange(of: viewModel.selectedNetworkId) { _ in
             expandedRows.removeAll()
         }
@@ -245,7 +261,13 @@ struct RawDataTableView: NSViewRepresentable {
                 parent.expandedIds.insert(element.id)
             }
             guard let tableView = tableView else { return }
-            tableView.reloadData()
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.2
+                context.allowsImplicitAnimation = true
+                tableView.beginUpdates()
+                tableView.reloadData()
+                tableView.endUpdates()
+            }
         }
 
         private struct RowItem {

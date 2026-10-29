@@ -12,6 +12,8 @@ struct SignalHistoryView: View {
     // Состояние для интерактивности
     @State private var hoverLocation: CGPoint? = nil
     @State private var hoverIndex: Int? = nil
+    @State private var zoom = 1.0
+    @State private var showFullScreen = false
 
     // Константы масштаба
     private let minDbm: Double = -100
@@ -28,6 +30,8 @@ struct SignalHistoryView: View {
         )
         // Добавляем 15% справа для подписей
         let xDomainMax = max(1, Int(Double(maxDataPoints) * 1.15))
+        let visibleSpan = max(2, Int(Double(xDomainMax) / max(zoom, 1)))
+        let xDomainMin = max(0, xDomainMax - visibleSpan)
 
         let observed = chartNetworks.flatMap { viewModel.signalHistory[$0.id] ?? [] }
         let observedMin = observed.min() ?? Int(minDbm)
@@ -92,7 +96,7 @@ struct SignalHistoryView: View {
         }
         // Настройки осей
         .chartYScale(domain: minDomain...maxDomain)
-        .chartXScale(domain: 0...xDomainMax)
+        .chartXScale(domain: xDomainMin...xDomainMax)
         .chartXAxis(.hidden)
         .chartPlotStyle { plot in
             plot
@@ -156,6 +160,34 @@ struct SignalHistoryView: View {
         .padding(.bottom, 10)
         .padding(.leading, 12)
         .padding(.trailing, 16)
+        .overlay(alignment: .topTrailing) {
+            HStack(spacing: 6) {
+                Button {
+                    zoom = min(8, zoom * 1.5)
+                } label: {
+                    Image(systemName: "plus.magnifyingglass")
+                }
+                .buttonStyle(.borderless).disabled(zoom >= 8)
+                Button {
+                    zoom = max(1, zoom / 1.5)
+                } label: {
+                    Image(systemName: "minus.magnifyingglass")
+                }
+                .buttonStyle(.borderless).disabled(zoom <= 1)
+                Button {
+                    showFullScreen = true
+                } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                }
+                .buttonStyle(.borderless)
+                HistoryExportMenu(viewModel: viewModel)
+            }
+            .padding(8)
+        }
+        .sheet(isPresented: $showFullScreen) {
+            SignalHistoryView(viewModel: viewModel)
+                .frame(minWidth: 900, minHeight: 520)
+        }
         .background(Color(nsColor: .controlBackgroundColor))
         .accessibilityElement(children: .ignore)
         .accessibilityChartDescriptor(

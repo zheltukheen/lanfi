@@ -2,7 +2,7 @@ import SwiftUI
 
 struct InterfacesView: View {
     @ObservedObject var interfaces: InterfacesViewModel
-    @State private var showInactive = false
+    @State private var showInactive = true
 
     private var activeInterfaces: [SystemInterface] {
         interfaces.report.interfaces.filter { item in
@@ -41,11 +41,9 @@ struct InterfacesView: View {
                                     .font(.caption.bold())
                                 Spacer()
                             }
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.primary)
                         }
                         .padding(10)
-                        .background(Color.secondary.opacity(0.05))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                 }
             }

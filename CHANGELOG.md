@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.2.0 — 2026-10-29
+
+### UI and workflows
+- Network context menu: copy cell, copy visible row, copy BSSID; targets fixed.
+- Spectrum shows all bands with 2.4/5/6 GHz labels and channel ticks; band
+  picker removed. Top-band filter is shared by Spectrum and History.
+- Spectrum/History: zoom, fullscreen, PNG/SVG/CSV export.
+- Vendor icons in the vendor column.
+- Raw Data: Network fields / Information elements switch; more fields.
+- Smooth expand/collapse animation in Raw Data.
+- Inactive interfaces visible by default without the grey disclosure panel.
+- Diagnostics buttons enlarged; speed test moved above checks and enlarged.
+- All text selectable where SwiftUI supports it.
+- External tools menu: LinkLiar, Wireshark, Airtool, iPerf3, networkQuality.
+- English source localization template and localization docs.
+
+### Version
+- 4.2.0 (build 44).
+
+
 ## 4.1.0 — 2026-10-27
 
 ### License

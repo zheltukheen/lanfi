@@ -8,9 +8,21 @@ enum TableCellStyle {
 final class WiFiTableCellView: NSTableCellView {
     static let identifier = NSUserInterfaceItemIdentifier("WiFiTextCell")
 
+    private var edgeConstraint: NSLayoutConstraint?
+    private var iconConstraint: NSLayoutConstraint?
+
+    private let vendorIcon: NSImageView = {
+        let view = NSImageView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.imageScaling = .scaleProportionallyDown
+        view.isHidden = true
+        return view
+    }()
+
     private let textFieldLabel: NSTextField = {
         let tf = NSTextField()
         tf.isEditable = false
+        tf.isSelectable = true
         tf.isBordered = false
         tf.drawsBackground = false
         tf.lineBreakMode = .byTruncatingTail
@@ -29,12 +41,19 @@ final class WiFiTableCellView: NSTableCellView {
     }
 
     private func setupUI() {
+        addSubview(vendorIcon)
         addSubview(textFieldLabel)
         textField = textFieldLabel
 
+        edgeConstraint = textFieldLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6)
+        iconConstraint = textFieldLabel.leadingAnchor.constraint(equalTo: vendorIcon.trailingAnchor, constant: 5)
         NSLayoutConstraint.activate([
+            vendorIcon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            vendorIcon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            vendorIcon.widthAnchor.constraint(equalToConstant: 15),
+            vendorIcon.heightAnchor.constraint(equalToConstant: 15),
             textFieldLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            textFieldLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            edgeConstraint!,
             textFieldLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
         ])
     }
@@ -44,8 +63,20 @@ final class WiFiTableCellView: NSTableCellView {
         isConnected: Bool,
         alignment: NSTextAlignment,
         highlightConnected: Bool,
-        style: TableCellStyle = .standard
+        style: TableCellStyle = .standard,
+        vendor: String? = nil
     ) {
+        if let symbol = VendorIconProvider.symbol(for: vendor) {
+            vendorIcon.image = NSImage(systemSymbolName: symbol, accessibilityDescription: vendor)
+            vendorIcon.contentTintColor = .secondaryLabelColor
+            vendorIcon.isHidden = false
+            edgeConstraint?.isActive = false
+            iconConstraint?.isActive = true
+        } else {
+            vendorIcon.isHidden = true
+            iconConstraint?.isActive = false
+            edgeConstraint?.isActive = true
+        }
         textFieldLabel.stringValue = text
         textFieldLabel.toolTip = text
         textFieldLabel.setAccessibilityLabel(text)

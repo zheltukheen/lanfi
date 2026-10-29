@@ -157,6 +157,26 @@ struct LanFiCommands: Commands {
                 openWindow(id: "survey")
             }
             .keyboardShortcut("m", modifiers: [.command, .shift])
+
+            Menu("External Tools") {
+                Button("LinkLiar — MAC address spoofer…") {
+                    NSWorkspace.shared.open(URL(string: "https://github.com/halo/LinkLiar/releases")!)
+                }
+                Button("Wireshark…") {
+                    NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
+                }
+                Button("Airtool…") {
+                    NSWorkspace.shared.open(URL(string: "https://www.intuitibits.com/products/airtool/")!)
+                }
+                Button("iPerf3…") {
+                    NSWorkspace.shared.open(URL(string: "https://iperf.fr/iperf-download.php")!)
+                }
+                Divider()
+                Button("Run Network Quality Test") {
+                    uiState.selectedBottomTab = 6
+                    Task { await diagnostics.run() }
+                }
+            }
         }
 
         CommandMenu("Data") {
