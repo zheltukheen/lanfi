@@ -82,15 +82,25 @@ enum ControllerService {
             var channel: Int?
             var txPower: Int?
             var utilization: Int?
+            var supportedChannels: [Int] = []
             if let radios = row["radio_table_stats"] as? [[String: Any]], let radio = radios.first {
                 channel = radio["channel"] as? Int
                 txPower = radio["tx_power"] as? Int
                 utilization = (radio["cu_total"] as? Int) ?? (radio["cu_self_rx"] as? Int)
             }
+            if let radios = row["radio_table"] as? [[String: Any]], let radio = radios.first {
+                supportedChannels =
+                    (radio["channels"] as? [Int])
+                    ?? (radio["supported_channels"] as? [Int])
+                    ?? (radio["allowed_channels"] as? [Int])
+                    ?? []
+                if channel == nil { channel = radio["channel"] as? Int }
+            }
             let clients = (row["num_sta"] as? Int) ?? (row["clientCount"] as? Int)
             return ControllerAccessPoint(
                 id: id, name: name, mac: mac, model: model, ip: ip,
-                channel: channel, clients: clients, txPower: txPower, utilization: utilization
+                channel: channel, clients: clients, txPower: txPower, utilization: utilization,
+                supportedChannels: supportedChannels
             )
         }
     }

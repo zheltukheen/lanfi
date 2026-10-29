@@ -68,6 +68,9 @@ struct ControllersSettingsView: View {
                         TableColumn("Clients") { Text($0.clients.map(String.init) ?? "—") }.width(55)
                         TableColumn("TX") { Text($0.txPower.map { "\($0) dBm" } ?? "—") }.width(65)
                         TableColumn("Util.") { Text($0.utilization.map { "\($0)%" } ?? "—") }.width(55)
+                        TableColumn("Channels") {
+                            Text($0.supportedChannels.isEmpty ? "—" : "\($0.supportedChannels.count)")
+                        }.width(65)
                     }
                 } else {
                     Text("Add a UniFi or Meraki controller account.")

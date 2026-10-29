@@ -120,6 +120,23 @@ struct NetworkModel: Identifiable, Equatable, Codable {
 
     var bandLabel: String { band.label }
 
+    /// Channels advertised in the AP's Country IE (IE 7), if present.
+    var countryIEChannels: [Int] {
+        var channels: [Int] = []
+        for element in informationElements where element.name == "Country" {
+            for line in element.detailLines {
+                guard let range = line.range(of: "Country Info: Channels ") else { continue }
+                let suffix = line[range.upperBound...]
+                let parts = suffix.components(separatedBy: " to ")
+                guard parts.count == 2, let first = Int(parts[0]),
+                    let last = Int(parts[1].split(separator: ":").first ?? "")
+                else { continue }
+                channels.append(contentsOf: first...max(first, last))
+            }
+        }
+        return Array(Set(channels)).sorted()
+    }
+
     /// Model / model number advertised in WPS or vendor information elements.
     var routerModel: String? {
         for element in informationElements {

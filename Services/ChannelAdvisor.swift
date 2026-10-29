@@ -14,8 +14,21 @@ enum ChannelAdvisor {
         let currentIsDFS = current?.isDFS ?? false
         let model = network.routerModel
 
-        let compatible = candidates.filter { supports($0, generation: network.generation) }
+        var compatible = candidates.filter { supports($0, generation: network.generation) }
         guard !compatible.isEmpty else { return nil }
+
+        let countryChannels = network.countryIEChannels
+        if !countryChannels.isEmpty {
+            let filtered = compatible.filter { countryChannels.contains($0.channel) }
+            if !filtered.isEmpty { compatible = filtered }
+        } else {
+            let regulatory = RegulatoryDatabase.channels(countryCode: network.countryCode, band: network.band)
+            if !regulatory.isEmpty {
+                let allowed = Set(regulatory.map(\.channel))
+                let filtered = compatible.filter { allowed.contains($0.channel) }
+                if !filtered.isEmpty { compatible = filtered }
+            }
+        }
 
         // If the router is already on a non-DFS channel, do not suggest a DFS
         // channel: many routers/regions block it and the user would lose the AP.
