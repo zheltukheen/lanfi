@@ -1,5 +1,24 @@
 # Changelog
 
+## 4.3.0 — 2026-10-29
+
+### Fixes
+- Spectrum vertical scale no longer clips labels at the top; both charts zoom
+  in and out (0.5×–4×/8×).
+- Band filters moved from the toolbar into the left filter sidebar; they are
+  shared by table, Spectrum and History.
+- Spectrum/History full-screen uses dedicated windows and no longer nests
+  sheets; the window opens full-screen and can be toggled.
+- Network table security is parsed from RSN/WPA information elements instead
+  of CoreWLAN support masks (WPA2/WPA3/OWE/transition/PMF).
+- Removed the redundant Raw Data “Network fields” tab.
+- Vendor icons, toolbar status/survey action and PCAP search/JSON/Wireshark
+  controls completed.
+
+### Version
+- 4.3.0 (build 45).
+
+
 ## 4.2.0 — 2026-10-29
 
 ### UI and workflows

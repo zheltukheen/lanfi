@@ -93,6 +93,16 @@ struct LanFiApp: App {
         }
         .windowResizability(.contentSize)
 
+        Window("Spectrum", id: "spectrum") {
+            SpectrumView(viewModel: viewModel, isFullScreen: true)
+                .frame(minWidth: 1100, minHeight: 650)
+        }
+
+        Window("History", id: "history") {
+            SignalHistoryView(viewModel: viewModel, isFullScreen: true)
+                .frame(minWidth: 1100, minHeight: 650)
+        }
+
         Window("LanFi Help", id: "help") {
             HelpView()
                 .environment(\.lanFiHighContrast, highContrast)

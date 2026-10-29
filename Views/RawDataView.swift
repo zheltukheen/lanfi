@@ -4,7 +4,6 @@ import AppKit
 struct RawDataView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var expandedRows: Set<String> = []
-    @State private var showFields = false
 
     var body: some View {
         ZStack {
@@ -14,32 +13,18 @@ struct RawDataView: View {
             if viewModel.selectedNetworkIds.count > 1 {
                 MultiNetworkComparisonView(viewModel: viewModel)
             } else if let network = viewModel.selectedNetwork {
-                VStack(spacing: 0) {
-                    Picker("", selection: $showFields) {
-                        Text("Network fields").tag(true)
-                        Text("Information elements").tag(false)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .padding(8)
-
-                    if showFields {
-                        RawNetworkFieldsView(network: network)
-                    } else {
-                        ZStack(alignment: .topTrailing) {
-                            RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
-                                .onChange(of: viewModel.selectedNetworkId) { _ in
-                                    expandedRows.removeAll()
-                                }
-                            Button {
-                                copyAll(network.informationElements)
-                            } label: {
-                                Label("Copy All IEs", systemImage: "doc.on.doc")
-                            }
-                            .controlSize(.small)
-                            .padding(8)
+                ZStack(alignment: .topTrailing) {
+                    RawDataTableView(elements: network.informationElements, expandedIds: $expandedRows)
+                        .onChange(of: viewModel.selectedNetworkId) { _ in
+                            expandedRows.removeAll()
                         }
+                    Button {
+                        copyAll(network.informationElements)
+                    } label: {
+                        Label("Copy All IEs", systemImage: "doc.on.doc")
                     }
+                    .controlSize(.small)
+                    .padding(8)
                 }
             } else {
                 VStack(spacing: 16) {

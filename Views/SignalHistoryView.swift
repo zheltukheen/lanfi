@@ -13,7 +13,8 @@ struct SignalHistoryView: View {
     @State private var hoverLocation: CGPoint? = nil
     @State private var hoverIndex: Int? = nil
     @State private var zoom = 1.0
-    @State private var showFullScreen = false
+    @Environment(\.openWindow) private var openWindow
+    var isFullScreen = false
 
     // Константы масштаба
     private let minDbm: Double = -100
@@ -169,24 +170,29 @@ struct SignalHistoryView: View {
                 }
                 .buttonStyle(.borderless).disabled(zoom >= 8)
                 Button {
-                    zoom = max(1, zoom / 1.5)
+                    zoom = max(0.5, zoom / 1.5)
                 } label: {
                     Image(systemName: "minus.magnifyingglass")
                 }
-                .buttonStyle(.borderless).disabled(zoom <= 1)
-                Button {
-                    showFullScreen = true
-                } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                .buttonStyle(.borderless).disabled(zoom <= 0.5)
+                if isFullScreen {
+                    Button {
+                        NSApp.keyWindow?.toggleFullScreen(nil)
+                    } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    }
+                    .buttonStyle(.borderless)
+                } else {
+                    Button {
+                        openWindow(id: "history")
+                    } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    }
+                    .buttonStyle(.borderless)
                 }
-                .buttonStyle(.borderless)
                 HistoryExportMenu(viewModel: viewModel)
             }
             .padding(8)
-        }
-        .sheet(isPresented: $showFullScreen) {
-            SignalHistoryView(viewModel: viewModel)
-                .frame(minWidth: 900, minHeight: 520)
         }
         .background(Color(nsColor: .controlBackgroundColor))
         .accessibilityElement(children: .ignore)
@@ -207,6 +213,12 @@ struct SignalHistoryView: View {
                 maxDomain: maxDomain
             )
         )
+        .onAppear {
+            guard isFullScreen else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                NSApp.keyWindow?.toggleFullScreen(nil)
+            }
+        }
         .accessibilityLabel("Signal history for \(chartNetworks.count) networks")
         .accessibilityValue(
             viewModel.selectedNetworkId.flatMap { id in

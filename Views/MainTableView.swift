@@ -509,20 +509,6 @@ struct ToolbarView: View {
                 .help("Settings & Monitoring Control")
             }
 
-            // 2. Band / generation filters
-            if showBands {
-                HStack(spacing: 4) {
-                    BandFilterChip(title: "2.4", color: .blue, isOn: $viewModel.filterBand24)
-                        .help("Show 2.4 GHz networks")
-                    BandFilterChip(title: "5", color: .purple, isOn: $viewModel.filterBand5)
-                        .help("Show 5 GHz networks")
-                    BandFilterChip(title: "6", color: .teal, isOn: $viewModel.filterBand6)
-                        .help("Show 6 GHz networks")
-                    BandFilterChip(title: "7", color: .green, isOn: $viewModel.filterWiFi7)
-                        .help("Show Wi-Fi 7 / 802.11be networks")
-                }
-            }
-
             // 3. Search
             if showSearch {
                 HStack {
@@ -539,6 +525,17 @@ struct ToolbarView: View {
             }
 
             Spacer()
+            if let connected = viewModel.connectedNetwork {
+                HStack(spacing: 5) {
+                    Image(systemName: "wifi").font(.caption2).foregroundColor(.green)
+                    Text(connected.displayName).font(.caption2).lineLimit(1)
+                    Text("\(connected.signal) dBm").font(.caption2).foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.10))
+                .clipShape(Capsule())
+            }
             Text("\(viewModel.networks.count) networks")
                 .font(.caption2)
                 .foregroundColor(.secondary)

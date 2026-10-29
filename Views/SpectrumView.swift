@@ -5,9 +5,10 @@ struct SpectrumView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
     @State private var zoom = 1.0
-    @State private var showFullScreen = false
+    @Environment(\.openWindow) private var openWindow
+    var isFullScreen = false
 
-    private let plotInsets = EdgeInsets(top: 36, leading: 44, bottom: 34, trailing: 16)
+    private let plotInsets = EdgeInsets(top: 52, leading: 44, bottom: 34, trailing: 16)
     private let domain: ClosedRange<Double> = 0...3.35
 
     private var displayDomain: ClosedRange<Double> {
@@ -89,17 +90,26 @@ struct SpectrumView: View {
                         }
                         .buttonStyle(.borderless).disabled(zoom >= 4)
                         Button {
-                            zoom = max(1, zoom / 1.25)
+                            zoom = max(0.5, zoom / 1.25)
                         } label: {
                             Image(systemName: "minus.magnifyingglass")
                         }
-                        .buttonStyle(.borderless).disabled(zoom <= 1)
-                        Button {
-                            showFullScreen = true
-                        } label: {
-                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .buttonStyle(.borderless).disabled(zoom <= 0.5)
+                        if isFullScreen {
+                            Button {
+                                NSApp.keyWindow?.toggleFullScreen(nil)
+                            } label: {
+                                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            }
+                            .buttonStyle(.borderless)
+                        } else {
+                            Button {
+                                openWindow(id: "spectrum")
+                            } label: {
+                                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless)
                     }
                     .padding(.horizontal, 10)
                     .padding(.top, 6)
@@ -107,9 +117,11 @@ struct SpectrumView: View {
             }
         }
         .onChange(of: viewModel.networks.count) { _ in }
-        .sheet(isPresented: $showFullScreen) {
-            SpectrumView(viewModel: viewModel)
-                .frame(minWidth: 900, minHeight: 520)
+        .onAppear {
+            guard isFullScreen else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                NSApp.keyWindow?.toggleFullScreen(nil)
+            }
         }
     }
 
@@ -139,8 +151,8 @@ struct SpectrumView: View {
     }
 
     private func yPosition(dbm: Double, plotRect: CGRect) -> CGFloat {
-        let clamped = max(-100, min(-20, dbm))
-        let normalized = (clamped + 20) / 80
+        let clamped = max(-100, min(-10, dbm))
+        let normalized = (clamped + 10) / 90
         return plotRect.minY + CGFloat(normalized) * plotRect.height
     }
 
