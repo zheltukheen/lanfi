@@ -703,6 +703,9 @@ struct NetworkInspectorView: View {
                                 metrics: metrics,
                                 recommendation: viewModel.analysis.bestChannel(for: network.band)
                             )
+                            if let advice = viewModel.channelAdvice(for: network) {
+                                ChannelAdviceSection(advice: advice)
+                            }
                             HistoryInspectorSection(network: network, viewModel: viewModel)
                             UtilizationInspectorSection(network: network, viewModel: viewModel)
                             ProximityBeaconInspectorSection(network: network)
@@ -1177,6 +1180,49 @@ struct QualityInspectorSection: View {
             }
             .padding(.vertical, 6)
             .padding(.horizontal, 8)
+        }
+    }
+}
+
+struct ChannelAdviceSection: View {
+    let advice: ChannelAdvice
+
+    var body: some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Current ch \(advice.currentChannel) · \(advice.currentWidthMHz) MHz")
+                        .font(.caption)
+                    Spacer()
+                    if let score = advice.currentScore {
+                        Text("\(score)/100").font(.caption2).foregroundColor(.secondary)
+                    }
+                }
+                if advice.shouldChange, let target = advice.recommendation {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .foregroundColor(.orange)
+                        Text("Change to channel \(target.channel) · \(target.widthMHz) MHz")
+                            .font(.caption.bold())
+                        Spacer()
+                        Text("\(target.score)/100").font(.caption.bold()).foregroundColor(.green)
+                    }
+                    if target.isDFS {
+                        Label("DFS channel — verify router/region support", systemImage: "exclamationmark.triangle")
+                            .font(.caption2).foregroundColor(.orange)
+                    }
+                } else {
+                    Label("Keep current channel", systemImage: "checkmark.circle.fill")
+                        .font(.caption.bold()).foregroundColor(.green)
+                }
+                Text(advice.reason).font(.caption2).foregroundColor(.secondary)
+                if let model = advice.routerModel {
+                    Text("Router model: \(model)").font(.caption2).monospaced().textSelection(.enabled)
+                }
+            }
+            .padding(4)
+        } label: {
+            Label("Channel recommendation", systemImage: "wand.and.stars")
         }
     }
 }
