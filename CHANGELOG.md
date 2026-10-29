@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.4.1 — 2026-10-29
+
+### Fixed
+- Spectrum capabilities are refreshed on each scan, so switching CoreWLAN
+  interfaces (including external adapters) updates the available channel lanes.
+
+### Version
+- 4.4.1 (build 47).
+
+
 ## 4.4.0 — 2026-10-29
 
 ### Spectrum
