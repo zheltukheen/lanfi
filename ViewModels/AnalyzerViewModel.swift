@@ -223,6 +223,7 @@ class AnalyzerViewModel: ObservableObject {
 
     func refresh() {
         guard !isScanning, loadedSession == nil else { return }
+        supportedChannels = SpectrumCapabilities.current()
         isScanning = true
 
         let currentBSSID = CWWiFiClient.shared().interface()?.bssid()?.uppercased()
