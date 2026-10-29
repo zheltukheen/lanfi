@@ -225,6 +225,7 @@ struct MainTableView: View {
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowOfflineCapture)) { _ in
             showingOfflineCapture = true
         }
+        .textSelection(.enabled)
         .onAppear {
             if !viewModel.isLocationAuthorized {
                 viewModel.requestLocationAuthorization()

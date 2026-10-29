@@ -16,8 +16,8 @@ struct DiagnosticsView: View {
                 if let report = diagnostics.report {
                     scoreStrip(report)
                     snapshotStrip(report.snapshot)
-                    checkGrid(report)
                     throughputSection
+                    checkGrid(report)
                     historyStrip
                 } else {
                     emptyState
@@ -68,7 +68,7 @@ struct DiagnosticsView: View {
                 }
             }
             .buttonStyle(.borderedProminent)
-            .controlSize(.small)
+            .controlSize(.regular)
             .disabled(diagnostics.isRunning)
 
             Button {
@@ -77,7 +77,7 @@ struct DiagnosticsView: View {
                 Image(systemName: "doc.on.doc")
             }
             .buttonStyle(.bordered)
-            .controlSize(.small)
+            .controlSize(.regular)
             .help("Copy diagnostics report")
             .accessibilityLabel("Copy diagnostics report")
             .disabled(diagnostics.report == nil)
@@ -92,7 +92,7 @@ struct DiagnosticsView: View {
                 Image(systemName: "square.and.arrow.down")
             }
             .buttonStyle(.bordered)
-            .controlSize(.small)
+            .controlSize(.regular)
             .help("Export diagnostics bundle")
             .accessibilityLabel("Export diagnostics bundle")
         }
@@ -229,12 +229,14 @@ struct DiagnosticsView: View {
                     runThroughput()
                 } label: {
                     if throughputRunning {
-                        ProgressView().controlSize(.small)
+                        ProgressView().controlSize(.regular)
                     } else {
-                        Text("Run speed test")
+                        Label("Run speed test", systemImage: "speedometer")
+                            .font(.callout.bold())
                     }
                 }
-                .controlSize(.small)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .disabled(throughputRunning)
             }
             if let throughput {

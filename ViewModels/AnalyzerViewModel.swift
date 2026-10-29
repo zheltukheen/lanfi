@@ -1038,10 +1038,20 @@ class AnalyzerViewModel: ObservableObject {
     /// Charts show everything for 0/1 selected networks, and only the selection
     /// when the user has deliberately selected two or more.
     var chartNetworks: [NetworkModel] {
-        if selectedNetworkIds.count >= 2 {
-            return networks.filter { selectedNetworkIds.contains($0.id) }
+        let selected =
+            selectedNetworkIds.count >= 2
+            ? networks.filter { selectedNetworkIds.contains($0.id) }
+            : networks
+        return selected.filter { network in
+            switch network.band {
+            case .band24: guard filterBand24 else { return false }
+            case .band5: guard filterBand5 else { return false }
+            case .band6: guard filterBand6 else { return false }
+            case .unknown: break
+            }
+            if !filterWiFi7 && network.generation == .mode11be { return false }
+            return true
         }
-        return networks
     }
 
     var selectedNetworks: [NetworkModel] {

@@ -50,10 +50,16 @@ struct WiFiTableView: NSViewRepresentable {
         tableView.setAccessibilityLabel("Wi-Fi networks")
 
         let rowMenu = NSMenu()
-        rowMenu.addItem(
-            NSMenuItem(title: "Копировать SSID", action: #selector(Coordinator.copySSID), keyEquivalent: "c"))
-        rowMenu.addItem(
-            NSMenuItem(title: "Копировать BSSID", action: #selector(Coordinator.copyBSSID), keyEquivalent: ""))
+        let copyCell = NSMenuItem(
+            title: "Копировать ячейку", action: #selector(Coordinator.copyCell), keyEquivalent: "c")
+        let copyRow = NSMenuItem(
+            title: "Копировать строку", action: #selector(Coordinator.copyRow), keyEquivalent: "")
+        let copyBSSID = NSMenuItem(
+            title: "Копировать BSSID", action: #selector(Coordinator.copyBSSID), keyEquivalent: "")
+        for item in [copyCell, copyRow, copyBSSID] {
+            item.target = context.coordinator
+            rowMenu.addItem(item)
+        }
         tableView.menu = rowMenu
 
         scrollView.documentView = tableView
@@ -292,7 +298,8 @@ struct WiFiTableView: NSViewRepresentable {
                 text: text,
                 isConnected: isConnected,
                 alignment: alignment,
-                highlightConnected: parent.viewModel.highlightConnectedNetworks
+                highlightConnected: parent.viewModel.highlightConnectedNetworks,
+                vendor: colId == ColumnId.vendor.rawValue ? network.vendor : nil
             )
             return cellView
         }
@@ -602,16 +609,42 @@ struct WiFiTableView: NSViewRepresentable {
             return tableView.tableColumns[index].identifier.rawValue
         }
 
-        @objc func copySSID() { copyToClipboard(keyPath: \.ssid) }
-        @objc func copyBSSID() { copyToClipboard(keyPath: \.bssid) }
+        @objc func copyBSSID() {
+            guard let row = clickedNetworkRow(), let net = row.network else { return }
+            copyToPasteboard(net.bssid)
+        }
 
-        private func copyToClipboard(keyPath: KeyPath<NetworkModel, String>) {
-            guard let row = tableView?.clickedRow,
-                row >= 0,
-                row < parent.viewModel.tableRows.count,
-                let net = parent.viewModel.tableRows[row].network
+        @objc func copyCell() {
+            guard let row = clickedNetworkRow(),
+                let tableView,
+                tableView.clickedColumn >= 0,
+                tableView.clickedColumn < tableView.tableColumns.count,
+                let net = row.network
             else { return }
-            let string = net[keyPath: keyPath]
+            let column = tableView.tableColumns[tableView.clickedColumn]
+            copyToPasteboard(parent.viewModel.textForColumn(id: column.identifier.rawValue, net: net))
+        }
+
+        @objc func copyRow() {
+            guard let net = clickedNetworkRow()?.network else { return }
+            let columns = parent.viewModel.columnDefinitions
+                .sorted { $0.order < $1.order }
+                .filter { $0.isVisible }
+            let text = columns.map { column in
+                "\(column.displayTitle): \(parent.viewModel.textForColumn(id: column.id, net: net))"
+            }.joined(separator: "\n")
+            copyToPasteboard(text)
+        }
+
+        private func clickedNetworkRow() -> NetworkTableRow? {
+            guard let tableView else { return nil }
+            let row = tableView.clickedRow >= 0 ? tableView.clickedRow : tableView.selectedRow
+            guard row >= 0, row < parent.viewModel.tableRows.count else { return nil }
+            return parent.viewModel.tableRows[row]
+        }
+
+        private func copyToPasteboard(_ string: String) {
+            guard !string.isEmpty else { return }
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(string, forType: .string)
         }
