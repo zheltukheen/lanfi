@@ -11,6 +11,8 @@ struct OfflineCaptureView: View {
     @State private var clients: [CapturedClient] = []
     @State private var showingClients = false
     @State private var selectedBeaconId: String?
+    @State private var searchText = ""
+    @State private var currentURL: URL?
 
     init(initialURL: URL? = nil) {
         self.initialURL = initialURL
@@ -69,14 +71,25 @@ struct OfflineCaptureView: View {
                         Text("· \(beacons.count) BSSIDs · \(clients.count) clients").font(.caption).foregroundColor(
                             .secondary)
                         Spacer()
+                        TextField("Filter SSID/BSSID", text: $searchText)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 180)
+                        Button("Open in Wireshark…") { openInWireshark() }
+                            .controlSize(.small)
                         Button("Clients…") { showingClients = true }
                             .controlSize(.small)
                             .disabled(clients.isEmpty)
-                        Button("Export CSV…") { exportCSV() }
-                            .controlSize(.small)
+                        Menu {
+                            Button("CSV…") { exportCSV() }
+                            Button("JSON…") { exportJSON() }
+                        } label: {
+                            Label("Export", systemImage: "square.and.arrow.up")
+                        }
+                        .menuStyle(.borderlessButton)
+                        .fixedSize()
                     }
                     .padding(10)
-                    Table(beacons, selection: $selectedBeaconId) {
+                    Table(filteredBeacons, selection: $selectedBeaconId) {
                         TableColumn("SSID", value: \.ssid)
                         TableColumn("BSSID", value: \.bssid)
                         TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(40)
@@ -169,6 +182,7 @@ struct OfflineCaptureView: View {
         clients = []
         Task {
             do {
+                currentURL = url
                 let data = try Data(contentsOf: url)
                 let parsed = try await Task.detached(priority: .userInitiated) {
                     try PcapAnalyzer.parse(data: data)
@@ -192,8 +206,46 @@ struct OfflineCaptureView: View {
         }
     }
 
+    private var filteredBeacons: [CapturedBeacon] {
+        let term = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !term.isEmpty else { return beacons }
+        return beacons.filter {
+            $0.ssid.localizedCaseInsensitiveContains(term)
+                || $0.bssid.localizedCaseInsensitiveContains(term)
+        }
+    }
+
     private var selectedBeacon: CapturedBeacon? {
         beacons.first { $0.id == selectedBeaconId }
+    }
+
+    private func openInWireshark() {
+        guard let url = currentURL else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func exportJSON() {
+        let payload: [String: Any] = [
+            "generator": "LanFi",
+            "bssids": beacons.count,
+            "clients": clients.count,
+            "networks": beacons.map { beacon in
+                [
+                    "ssid": beacon.ssid, "bssid": beacon.bssid,
+                    "channel": beacon.channel as Any, "rssi": beacon.rssi as Any,
+                    "security": beacon.security, "isEHT": beacon.isEHT,
+                    "ieCount": beacon.informationElements.count,
+                    "clientCount": beacon.clientCount as Any,
+                ]
+            },
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys])
+        else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "LanFi-Capture.json"
+        panel.allowedContentTypes = [.json]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? data.write(to: url, options: .atomic)
     }
 
     private func copyIEs(_ beacon: CapturedBeacon) {

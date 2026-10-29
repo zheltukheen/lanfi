@@ -19,6 +19,7 @@ struct SidebarFilterView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     sortCard
+                    bandFilters
                     automaticRules
                     ForEach(viewModel.filterColumns) { category in
                         let options = viewModel.sidebarOptions(for: category)
@@ -134,6 +135,25 @@ struct SidebarFilterView: View {
                 )
             }
             .menuStyle(.borderlessButton)
+        }
+        .padding(9)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 9)
+                .stroke(Color.secondary.opacity(0.10), lineWidth: 1)
+        )
+    }
+
+    private var bandFilters: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text("Bands").font(.caption.bold())
+            HStack(spacing: 5) {
+                BandFilterChip(title: "2.4", color: .blue, isOn: $viewModel.filterBand24)
+                BandFilterChip(title: "5", color: .purple, isOn: $viewModel.filterBand5)
+                BandFilterChip(title: "6", color: .teal, isOn: $viewModel.filterBand6)
+                BandFilterChip(title: "7", color: .green, isOn: $viewModel.filterWiFi7)
+            }
         }
         .padding(9)
         .background(Color(nsColor: .controlBackgroundColor))

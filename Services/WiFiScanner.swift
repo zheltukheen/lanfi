@@ -60,7 +60,7 @@ actor WiFiScanner {
         let band = mapBand(network.wlanChannel?.channelBand)
         let channelWidthMHz = mapChannelWidth(network.wlanChannel?.channelWidth)
         let generation = mapGeneration(network)
-        let security = securityDescription(for: network)
+        let rawSecurity = securityDescription(for: network)
         let vendor = bssid.isEmpty ? "-" : OUIParser.vendor(for: bssid)
         let mode = network.ibss ? "IBSS" : "Infrastructure"
 
@@ -75,6 +75,8 @@ actor WiFiScanner {
         let centerFrequency = centerFrequency(channel: channelNumber, band: band)
         let rateEstimate = estimateRates(generation: generation, widthMHz: channelWidthMHz)
         let parsedIE = InformationElementParser.parse(ieData)
+        let securityInfo = SecurityParser.parse(ieData)
+        let security = securityInfo?.label ?? rawSecurity
         let beaconAirtime = estimateBeaconAirtime(beaconInterval: beaconInterval, beaconRate: rateEstimate.beaconRate)
 
         let id = makeStableId(
@@ -115,7 +117,7 @@ actor WiFiScanner {
             type: mode,
             wps: parsedIE.wpsSummary ?? "Unknown",
             wpsEnabled: parsedIE.wpsEnabled,
-            pmfRequired: parsedIE.pmfRequired,
+            pmfRequired: securityInfo?.pmfRequired ?? parsedIE.pmfRequired,
             ieCount: parsedIE.ieCount,
             ieTotalLength: ieTotalLength,
             ratesEstimated: rateEstimate.isEstimated,
