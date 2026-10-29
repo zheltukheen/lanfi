@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.6.1 — 2026-10-29
+
+### Fixed
+- Controller-supported channel plans are cached by AP MAC and consumed by the
+  channel advisor before Country IE/regulatory fallback.
+- Channel advisor source precedence: controller → Country IE → wireless-regdb →
+  generation.
+
+### Version
+- 4.6.1 (build 50).
+
+
 ## 4.6.0 — 2026-10-29
 
 ### Channel capability providers

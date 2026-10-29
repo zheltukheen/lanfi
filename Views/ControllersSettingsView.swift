@@ -97,6 +97,9 @@ struct ControllersSettingsView: View {
         Task {
             do {
                 let result = try await ControllerService.fetchAccessPoints(account)
+                for ap in result {
+                    ChannelPlanCache.update(mac: ap.mac, channels: ap.supportedChannels)
+                }
                 await MainActor.run {
                     loading = false
                     aps = result
