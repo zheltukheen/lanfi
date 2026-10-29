@@ -130,9 +130,11 @@ class AnalyzerViewModel: ObservableObject {
     @Published var filterBand24 = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var filterBand5 = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var filterBand6 = true { didSet { requestFilterUpdate(); savePreferences() } }
+    @Published var filterOther = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var filterWiFi7 = true { didSet { requestFilterUpdate(); savePreferences() } }
     @Published var minSignalThreshold: Double = -100 { didSet { requestFilterUpdate(); savePreferences() } }
-    @Published var searchText: String = ""  // Обрабатывается через debounce в init
+    @Published var searchText: String = ""
+    @Published private(set) var supportedChannels: [SupportedChannel] = []  // Обрабатывается через debounce в init
 
     @Published var removeAfterInterval: NetworkRemovalInterval = .twoMinutes {
         didSet { requestFilterUpdate(); savePreferences() }
@@ -164,6 +166,7 @@ class AnalyzerViewModel: ObservableObject {
         workspaceProfiles = workspaceProfileStore.load()
         expressionColumns = expressionColumnStore.load()
         appendExpressionColumnDefinitions()
+        supportedChannels = SpectrumCapabilities.current()
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
@@ -429,6 +432,7 @@ class AnalyzerViewModel: ObservableObject {
             if !filterBand24 && net.band == .band24 { return false }
             if !filterBand5 && net.band == .band5 { return false }
             if !filterBand6 && net.band == .band6 { return false }
+            if !filterOther && net.band == .unknown { return false }
             if !filterWiFi7 && net.generation == .mode11be { return false }
             if Double(net.signal) < minSignalThreshold { return false }
 
@@ -842,7 +846,7 @@ class AnalyzerViewModel: ObservableObject {
 
     var hasActiveFilters: Bool {
         !searchText.isEmpty
-            || !filterBand24 || !filterBand5 || !filterBand6 || !filterWiFi7
+            || !filterBand24 || !filterBand5 || !filterBand6 || !filterOther || !filterWiFi7
             || minSignalThreshold > -100
             || !quickFilters.isEmpty
             || activeFilterId != nil
@@ -853,6 +857,7 @@ class AnalyzerViewModel: ObservableObject {
         filterBand24 = true
         filterBand5 = true
         filterBand6 = true
+        filterOther = true
         filterWiFi7 = true
         minSignalThreshold = -100
         clearQuickFilters()
@@ -1047,7 +1052,7 @@ class AnalyzerViewModel: ObservableObject {
             case .band24: guard filterBand24 else { return false }
             case .band5: guard filterBand5 else { return false }
             case .band6: guard filterBand6 else { return false }
-            case .unknown: break
+            case .unknown: guard filterOther else { return false }
             }
             if !filterWiFi7 && network.generation == .mode11be { return false }
             return true
@@ -1085,7 +1090,7 @@ class AnalyzerViewModel: ObservableObject {
         FilterProfile.capture(
             name: name, searchText: searchText,
             band24: filterBand24, band5: filterBand5, band6: filterBand6,
-            wifi7: filterWiFi7,
+            other: filterOther, wifi7: filterWiFi7,
             minSignal: minSignalThreshold, groupMode: groupMode,
             signalUnit: signalDisplayMode
         )
@@ -1096,6 +1101,7 @@ class AnalyzerViewModel: ObservableObject {
         filterBand24 = profile.band24
         filterBand5 = profile.band5
         filterBand6 = profile.band6
+        filterOther = profile.other ?? true
         filterWiFi7 = profile.wifi7 ?? true
         minSignalThreshold = profile.minSignal
         if let mode = NetworkGroupMode(rawValue: profile.groupMode) {
@@ -1389,6 +1395,9 @@ class AnalyzerViewModel: ObservableObject {
         if defaults.object(forKey: "LanFi.filterBand6") != nil {
             filterBand6 = defaults.bool(forKey: "LanFi.filterBand6")
         }
+        if defaults.object(forKey: "LanFi.filterOther") != nil {
+            filterOther = defaults.bool(forKey: "LanFi.filterOther")
+        }
         if defaults.object(forKey: "LanFi.filterWiFi7") != nil {
             filterWiFi7 = defaults.bool(forKey: "LanFi.filterWiFi7")
         }
@@ -1427,6 +1436,7 @@ class AnalyzerViewModel: ObservableObject {
         defaults.set(filterBand24, forKey: "LanFi.filterBand24")
         defaults.set(filterBand5, forKey: "LanFi.filterBand5")
         defaults.set(filterBand6, forKey: "LanFi.filterBand6")
+        defaults.set(filterOther, forKey: "LanFi.filterOther")
         defaults.set(filterWiFi7, forKey: "LanFi.filterWiFi7")
         defaults.set(minSignalThreshold, forKey: "LanFi.minSignal")
         defaults.set(removeAfterInterval.rawValue, forKey: "LanFi.removeAfter")

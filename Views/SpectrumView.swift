@@ -9,11 +9,13 @@ struct SpectrumView: View {
     var isFullScreen = false
 
     private let plotInsets = EdgeInsets(top: 52, leading: 44, bottom: 34, trailing: 16)
-    private let domain: ClosedRange<Double> = 0...3.35
+    private var baseDomain: ClosedRange<Double> {
+        0...(max(lanes.last?.end ?? 1, 1) + 0.19)
+    }
 
     private var displayDomain: ClosedRange<Double> {
-        let center = (domain.lowerBound + domain.upperBound) / 2
-        let half = (domain.upperBound - domain.lowerBound) / (2 * max(zoom, 1))
+        let center = (baseDomain.lowerBound + baseDomain.upperBound) / 2
+        let half = (baseDomain.upperBound - baseDomain.lowerBound) / (2 * max(zoom, 1))
         return (center - half)...(center + half)
     }
 
@@ -33,16 +35,51 @@ struct SpectrumView: View {
         let ticks: [Int]
     }
 
-    private let lanes: [BandLane] = [
-        BandLane(
-            band: .band24, start: 0, end: 1.0, minChannel: 1, maxChannel: 14, label: "2.4 GHz", ticks: [1, 6, 11, 14]),
-        BandLane(
-            band: .band5, start: 1.08, end: 2.08, minChannel: 36, maxChannel: 165, label: "5 GHz",
-            ticks: [36, 52, 100, 149, 165]),
-        BandLane(
-            band: .band6, start: 2.16, end: 3.16, minChannel: 1, maxChannel: 233, label: "6 GHz",
-            ticks: [1, 37, 69, 117, 233]),
-    ]
+    private var lanes: [BandLane] {
+        let supported = viewModel.supportedChannels
+        let orderedBands: [WiFiBand] = [.band24, .band5, .band6, .unknown]
+        var result: [BandLane] = []
+        var position = 0.0
+        for band in orderedBands {
+            let supportedChannels = supported.filter { $0.band == band }.map(\.channel).sorted()
+            let visibleChannels = networks.filter { $0.band == band }.map(\.channel).sorted()
+            let channels = Array(Set(supportedChannels + visibleChannels)).sorted()
+            guard !channels.isEmpty else { continue }
+            let start = position
+            let end = position + 1.0
+            let ticks = tickChannels(channels)
+            result.append(
+                BandLane(
+                    band: band,
+                    start: start,
+                    end: end,
+                    minChannel: Double(channels.first ?? 0),
+                    maxChannel: Double(channels.last ?? 0),
+                    label: bandLabel(band),
+                    ticks: ticks
+                )
+            )
+            position = end + 0.08
+        }
+        return result
+    }
+
+    private func tickChannels(_ channels: [Int]) -> [Int] {
+        guard channels.count > 9 else { return channels }
+        let step = max(1, channels.count / 8)
+        var ticks = stride(from: 0, to: channels.count, by: step).map { channels[$0] }
+        if !ticks.contains(channels.last!) { ticks.append(channels.last!) }
+        return ticks
+    }
+
+    private func bandLabel(_ band: WiFiBand) -> String {
+        switch band {
+        case .band24: return "2.4 GHz"
+        case .band5: return "5 GHz"
+        case .band6: return "6 GHz"
+        case .unknown: return "Other"
+        }
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -147,7 +184,8 @@ struct SpectrumView: View {
     }
 
     private func xForValue(_ value: Double, plotRect: CGRect) -> CGFloat {
-        plotRect.minX + CGFloat((value - domain.lowerBound) / (domain.upperBound - domain.lowerBound)) * plotRect.width
+        plotRect.minX + CGFloat(
+            (value - displayDomain.lowerBound) / (displayDomain.upperBound - displayDomain.lowerBound)) * plotRect.width
     }
 
     private func yPosition(dbm: Double, plotRect: CGRect) -> CGFloat {

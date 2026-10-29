@@ -153,6 +153,7 @@ struct SidebarFilterView: View {
                 BandFilterChip(title: "5", color: .purple, isOn: $viewModel.filterBand5)
                 BandFilterChip(title: "6", color: .teal, isOn: $viewModel.filterBand6)
                 BandFilterChip(title: "7", color: .green, isOn: $viewModel.filterWiFi7)
+                BandFilterChip(title: "Other", color: .gray, isOn: $viewModel.filterOther)
             }
         }
         .padding(9)
