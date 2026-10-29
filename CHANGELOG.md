@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.7.0 — 2026-10-29
+
+### UI
+- Primary toolbar buttons for Capture, Diagnostics, Survey and Tools; a
+  compact Actions menu replaces them when the window is narrow.
+- Rich right-click menu on networks: header with model/band/channel, quality,
+  signal/noise/SNR, Show Details, Spectrum, History, Channel recommendation,
+  copy actions.
+- Capture moved to a main-window tab with channel selection, profiles,
+  triggers, BPF, auto-open in Wireshark and Wireshark action.
+- Removed paid Airtool link; clean-room capture workflow lives in LanFi.
+- Human-readable tool names and grouped tool menu.
+
+### Version
+- 4.7.0 (build 52).
+
+
 ## 4.6.2 — 2026-10-29
 
 ### Fixed

@@ -47,7 +47,8 @@ struct MainTableView: View {
                 showInspector: $uiState.showInspector,
                 customIntervalText: $uiState.customIntervalText,
                 showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert,
-                showingLiveCapture: $showingLiveCapture
+                showingLiveCapture: $showingLiveCapture,
+                selectedBottomTab: $uiState.selectedBottomTab
             )
 
             // 2. CONTENT AREA
@@ -180,6 +181,7 @@ struct MainTableView: View {
                             case 4: SpectrumView(viewModel: viewModel)
                             case 5: SignalHistoryView(viewModel: viewModel)
                             case 6: DiagnosticsView(diagnostics: diagnostics)
+                            case 7: LiveCaptureView(viewModel: viewModel, embedded: true)
                             default: InsightsView(viewModel: viewModel)
                             }
                         }
@@ -224,6 +226,12 @@ struct MainTableView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowOfflineCapture)) { _ in
             showingOfflineCapture = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiSelectBottomTab)) { note in
+            if let tab = note.userInfo?["tab"] as? Int { uiState.selectedBottomTab = tab }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowInspector)) { _ in
+            uiState.showInspector = true
         }
         .textSelection(.enabled)
         .onAppear {
@@ -304,6 +312,13 @@ struct BottomPanelTabs: View {
                     icon: "stethoscope",
                     isSelected: selectedTab == 6,
                     action: { selectedTab = 6 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "Capture",
+                    icon: "record.circle",
+                    isSelected: selectedTab == 7,
+                    action: { selectedTab = 7 }
                 )
             }
 
@@ -404,11 +419,102 @@ struct ToolbarView: View {
     @Binding var customIntervalText: String
     @Binding var showingCustomIntervalAlert: Bool
     @Binding var showingLiveCapture: Bool
+    @Binding var selectedBottomTab: Int
     @FocusState private var isSearchFocused: Bool
     @AppStorage("LanFi.toolbar.bands") private var showBands = true
     @AppStorage("LanFi.toolbar.search") private var showSearch = true
     @AppStorage("LanFi.toolbar.export") private var showExport = true
     @AppStorage("LanFi.toolbar.capture") private var showCapture = true
+
+    private var primaryToolbarActions: some View {
+        HStack(spacing: 10) {
+            Button {
+                selectedBottomTab = 7
+            } label: {
+                Label("Capture", systemImage: "record.circle").font(.caption)
+            }
+            .buttonStyle(.borderless)
+            .help("Packet capture")
+            .accessibilityLabel("Open packet capture")
+
+            Button {
+                selectedBottomTab = 6
+            } label: {
+                Image(systemName: "stethoscope")
+            }
+            .buttonStyle(.borderless)
+            .help("Diagnostics")
+            .accessibilityLabel("Open diagnostics")
+
+            Button {
+                openWindow(id: "survey")
+            } label: {
+                Image(systemName: "map")
+            }
+            .buttonStyle(.borderless)
+            .help("Site Survey")
+            .accessibilityLabel("Open Site Survey")
+
+            Menu {
+                toolMenuItems
+            } label: {
+                Label("Tools", systemImage: "wrench.and.screwdriver").font(.caption)
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Network tools")
+        }
+    }
+
+    private var compactToolbarActions: some View {
+        Menu {
+            Button("Packet Capture") { selectedBottomTab = 7 }
+            Button("Diagnostics") { selectedBottomTab = 6 }
+            Button("Site Survey") { openWindow(id: "survey") }
+            Divider()
+            toolMenuItems
+        } label: {
+            Label("Actions", systemImage: "ellipsis.circle").font(.caption)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+    }
+
+    @ViewBuilder
+    private var toolMenuItems: some View {
+        Button("Live Capture (PCAP)…") { showingLiveCapture = true }
+        Button("Analyze Packet Capture…") {
+            NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
+        }
+        Button("Remote Sensors…") {
+            NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
+        }
+        Divider()
+        ForEach(
+            ["Wi-Fi", "Network", "DNS", "LAN", "RF", "AP", "Wireless", "Security", "Throughput", "Advanced"],
+            id: \.self
+        ) { category in
+            let tools = ToolCatalog.all.filter { $0.category == category }
+            if !tools.isEmpty {
+                Menu(category) {
+                    ForEach(tools) { tool in
+                        Button {
+                            openWindow(id: "tool", value: tool.id)
+                        } label: {
+                            Label(tool.title, systemImage: tool.icon)
+                        }
+                    }
+                }
+            }
+        }
+        Divider()
+        Button("LinkLiar — MAC spoofer…") {
+            NSWorkspace.shared.open(URL(string: "https://github.com/halo/LinkLiar/releases")!)
+        }
+        Button("Wireshark…") {
+            NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
+        }
+    }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -544,62 +650,10 @@ struct ToolbarView: View {
             // 4. Right Controls
             HStack(spacing: 12) {
 
-                Button {
-                    openWindow(id: "survey")
-                } label: {
-                    Image(systemName: "map")
+                ViewThatFits(in: .horizontal) {
+                    primaryToolbarActions
+                    compactToolbarActions
                 }
-                .buttonStyle(.borderless)
-                .help("Site Survey")
-                .accessibilityLabel("Open Site Survey")
-
-                Menu {
-                    Button("Site Survey") { openWindow(id: "survey") }
-                    Button("Live Capture (PCAP)…") { showingLiveCapture = true }
-                    Button("Analyze Packet Capture…") {
-                        NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
-                    }
-                    Button("Remote Sensors…") {
-                        NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
-                    }
-                    Divider()
-                    ForEach(
-                        [
-                            "Wi-Fi", "Network", "DNS", "LAN", "RF", "AP", "Wireless", "Security", "Throughput",
-                            "Advanced",
-                        ], id: \.self
-                    ) { category in
-                        let tools = ToolCatalog.all.filter { $0.category == category }
-                        if !tools.isEmpty {
-                            Menu(category) {
-                                ForEach(tools) { tool in
-                                    Button {
-                                        openWindow(id: "tool", value: tool.id)
-                                    } label: {
-                                        Label(tool.title, systemImage: tool.icon)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Divider()
-                    Button("LinkLiar — MAC spoofer…") {
-                        NSWorkspace.shared.open(URL(string: "https://github.com/halo/LinkLiar/releases")!)
-                    }
-                    Button("Wireshark…") {
-                        NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
-                    }
-                    Button("Airtool…") {
-                        NSWorkspace.shared.open(URL(string: "https://www.intuitibits.com/products/airtool/")!)
-                    }
-                } label: {
-                    Label("Tools", systemImage: "wrench.and.screwdriver")
-                        .font(.caption)
-                }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                .help("Network tools")
-                .accessibilityLabel("Network tools")
 
                 // Export
                 if showExport {
@@ -676,6 +730,8 @@ extension Notification.Name {
     static let lanfiShowLiveCapture = Notification.Name("LanFi.showLiveCapture")
     static let lanfiShowRemoteSensors = Notification.Name("LanFi.showRemoteSensors")
     static let lanfiShowOfflineCapture = Notification.Name("LanFi.showOfflineCapture")
+    static let lanfiSelectBottomTab = Notification.Name("LanFi.selectBottomTab")
+    static let lanfiShowInspector = Notification.Name("LanFi.showInspector")
 }
 
 // MARK: - Subviews

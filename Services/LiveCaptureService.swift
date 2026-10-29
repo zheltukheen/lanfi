@@ -1,3 +1,4 @@
+import CoreWLAN
 import Darwin
 import Foundation
 
@@ -8,6 +9,7 @@ struct LiveCaptureOptions: Equatable {
     let monitorMode: Bool
     var filter: String = ""
     var startDelay: Int = 0
+    var channel: Int? = nil
 
     var isWiFi: Bool { interfaceName == "en0" || monitorMode }
 }
@@ -85,6 +87,14 @@ enum LiveCaptureService {
 
     static func capture(_ options: LiveCaptureOptions) async throws -> URL {
         try validate(options)
+        if let channel = options.channel, options.monitorMode {
+            let interface = CWWiFiClient.shared().interface(withName: options.interfaceName)
+            if let cwChannel = interface?.supportedWLANChannels()?.first(where: {
+                $0.channelNumber == channel
+            }) {
+                try? interface?.setWLANChannel(cwChannel)
+            }
+        }
         guard captureLock.try() else { throw LiveCaptureError.captureInProgress }
         defer { captureLock.unlock() }
         let errorURL = URL(fileURLWithPath: options.outputURL.path + ".tcpdump.log")

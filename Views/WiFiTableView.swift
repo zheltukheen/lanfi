@@ -50,16 +50,8 @@ struct WiFiTableView: NSViewRepresentable {
         tableView.setAccessibilityLabel("Wi-Fi networks")
 
         let rowMenu = NSMenu()
-        let copyCell = NSMenuItem(
-            title: "Копировать ячейку", action: #selector(Coordinator.copyCell), keyEquivalent: "c")
-        let copyRow = NSMenuItem(
-            title: "Копировать строку", action: #selector(Coordinator.copyRow), keyEquivalent: "")
-        let copyBSSID = NSMenuItem(
-            title: "Копировать BSSID", action: #selector(Coordinator.copyBSSID), keyEquivalent: "")
-        for item in [copyCell, copyRow, copyBSSID] {
-            item.target = context.coordinator
-            rowMenu.addItem(item)
-        }
+        rowMenu.delegate = context.coordinator
+        context.coordinator.rowMenu = rowMenu
         tableView.menu = rowMenu
 
         scrollView.documentView = tableView
@@ -208,6 +200,7 @@ struct WiFiTableView: NSViewRepresentable {
     class Coordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate {
         var parent: WiFiTableView
         weak var tableView: NSTableView?
+        var rowMenu: NSMenu?
 
         var isProgrammaticUpdate = false
         var isUpdatingSelection = false
@@ -388,6 +381,10 @@ struct WiFiTableView: NSViewRepresentable {
         }
 
         func menuNeedsUpdate(_ menu: NSMenu) {
+            if menu === rowMenu {
+                buildRowMenu(menu)
+                return
+            }
             menu.removeAllItems()
             let clickedId = currentClickedColumnId()
             let clickedDef = clickedId.flatMap { id in
@@ -607,6 +604,64 @@ struct WiFiTableView: NSViewRepresentable {
             }
             guard index >= 0, index < tableView.tableColumns.count else { return nil }
             return tableView.tableColumns[index].identifier.rawValue
+        }
+
+        private func buildRowMenu(_ menu: NSMenu) {
+            menu.removeAllItems()
+            guard let row = clickedNetworkRow(), let net = row.network else { return }
+            let header = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+            header.attributedTitle = NSAttributedString(
+                string: "\(net.displaySSID)  ·  \(net.band.label)  ·  ch \(net.channel) / \(net.channelWidthLabel) MHz",
+                attributes: [.font: NSFont.boldSystemFont(ofSize: 13), .foregroundColor: NSColor.labelColor]
+            )
+            header.isEnabled = false
+            menu.addItem(header)
+            let metrics = parent.viewModel.metrics(for: net)
+            let detail = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+            detail.attributedTitle = NSAttributedString(
+                string:
+                    "\(net.signal) dBm  ·  noise \(net.noise.map(String.init) ?? "—")  ·  SNR \(net.snr.map(String.init) ?? "—")  ·  quality \(metrics?.qualityScore ?? 0)",
+                attributes: [.font: NSFont.systemFont(ofSize: 10), .foregroundColor: NSColor.secondaryLabelColor]
+            )
+            detail.isEnabled = false
+            menu.addItem(detail)
+            menu.addItem(.separator())
+
+            addItem(menu, "Show details", #selector(showDetails))
+            addItem(menu, "Show in Spectrum", #selector(showInSpectrum))
+            addItem(menu, "Show in History", #selector(showInHistory))
+            addItem(menu, "Channel recommendation", #selector(showDetails))
+            menu.addItem(.separator())
+            addItem(menu, "Copy cell", #selector(copyCell), key: "c")
+            addItem(menu, "Copy row", #selector(copyRow))
+            addItem(menu, "Copy BSSID", #selector(copyBSSID))
+            addItem(menu, "Copy network report", #selector(copyRow))
+        }
+
+        private func addItem(_ menu: NSMenu, _ title: String, _ action: Selector, key: String = "") {
+            let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+            item.target = self
+            menu.addItem(item)
+        }
+
+        private func selectClickedNetwork() {
+            guard let net = clickedNetworkRow()?.network else { return }
+            parent.viewModel.setSelection(ids: [net.id], primary: net.id)
+        }
+
+        @objc private func showDetails() {
+            selectClickedNetwork()
+            NotificationCenter.default.post(name: .lanfiShowInspector, object: nil)
+        }
+
+        @objc private func showInSpectrum() {
+            selectClickedNetwork()
+            NotificationCenter.default.post(name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": 4])
+        }
+
+        @objc private func showInHistory() {
+            selectClickedNetwork()
+            NotificationCenter.default.post(name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": 5])
         }
 
         @objc func copyBSSID() {
