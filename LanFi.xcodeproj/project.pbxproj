@@ -146,6 +146,7 @@
 		A1EA44C383DF9D487D307F1A /* AppSmokeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFFCF374FF5324414579E8 /* AppSmokeTest.swift */; };
 		A2800C92267706A97DD5D63D /* RemoteSensorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70BE8CC2AA6D732B20760EEF /* RemoteSensorsView.swift */; };
 		A2A53095E37B7FFC20EB01E0 /* DiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687874D5350B989C31061197 /* DiagnosticsTests.swift */; };
+		A3D49E7898C0C40F21B9C532 /* ChannelPlanCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3BE0D95B38EF723C184BBA /* ChannelPlanCache.swift */; };
 		A44F9B79064E345C33C3B3B6 /* CrashLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BE013AC1ED9D3DAC0682A2 /* CrashLogger.swift */; };
 		A61C02BDA38BFA33DDF0688B /* ChannelAdvisor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F7FD8DC2C9014E7B632E79 /* ChannelAdvisor.swift */; };
 		A8069A49C53DABB0DB253387 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9EF9C5F85D2F561B74DB852E /* InfoPlist.strings */; };
@@ -214,6 +215,7 @@
 		EEFE937D6AB642E5E8C9B79F /* PcapExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648FEFFCCE62F69288760DDB /* PcapExporter.swift */; };
 		F040C7AF4481DEB7B6AEC400 /* RemoteCaptureSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFFB67F76B8A47EF37241BC /* RemoteCaptureSheet.swift */; };
 		F10DC9BE92DD6E2326F6288E /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
+		F13799AB4E48198F6B293552 /* ChannelPlanCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3BE0D95B38EF723C184BBA /* ChannelPlanCache.swift */; };
 		F39348DD63B10E4FE0F01F55 /* RemoteSensorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7B5A874EDD3200AC7A13DC /* RemoteSensorTests.swift */; };
 		F4B2F4CD35B47D5F78296312 /* WorkspaceProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BCA72D82C2713F7B3D5662 /* WorkspaceProfileTests.swift */; };
 		F4E56876A99F3BCA3B288785 /* WorkspaceProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0210E421B752F2AADB894B /* WorkspaceProfile.swift */; };
@@ -322,6 +324,7 @@
 		AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHistoryView.swift; sourceTree = "<group>"; };
 		AB9A82DDBC473A667972DDA7 /* ScanReportExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReportExporter.swift; sourceTree = "<group>"; };
 		AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNameDetector.swift; sourceTree = "<group>"; };
+		AE3BE0D95B38EF723C184BBA /* ChannelPlanCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelPlanCache.swift; sourceTree = "<group>"; };
 		B30088737EFBE639B958CD4D /* VendorSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VendorSettingsView.swift; sourceTree = "<group>"; };
 		B357096E62EE2FD11AF81A62 /* ColumnCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnCatalogTests.swift; sourceTree = "<group>"; };
 		B4322DE958F9E2353026A60F /* OfflineCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCaptureView.swift; sourceTree = "<group>"; };
@@ -472,6 +475,7 @@
 				AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */,
 				13EFFCF374FF5324414579E8 /* AppSmokeTest.swift */,
 				88F7FD8DC2C9014E7B632E79 /* ChannelAdvisor.swift */,
+				AE3BE0D95B38EF723C184BBA /* ChannelPlanCache.swift */,
 				2D856BE9B63CC2E3655BA90B /* ControllerService.swift */,
 				D3BE013AC1ED9D3DAC0682A2 /* CrashLogger.swift */,
 				C76248B0F388B144C54301AC /* DeepLink.swift */,
@@ -780,6 +784,7 @@
 				A0FAEEA3E4014438A877F95D /* ChannelAdvice.swift in Sources */,
 				B8D3B07F49B95240AAF3FBCE /* ChannelAdvisor.swift in Sources */,
 				C6D74F44060E0955D2B706E0 /* ChannelAdvisorTests.swift in Sources */,
+				A3D49E7898C0C40F21B9C532 /* ChannelPlanCache.swift in Sources */,
 				877CDE2973A9DF0380ABA1C5 /* ColoringRule.swift in Sources */,
 				2545D0F386B2A16F28C59E1F /* ColoringRuleTests.swift in Sources */,
 				5F2033806533879194D749C7 /* ColumnCatalog.swift in Sources */,
@@ -884,6 +889,7 @@
 				3300F5462E3F8BD355E15B9D /* CaptureProfile.swift in Sources */,
 				344FE21349A05A1CBFCF6448 /* ChannelAdvice.swift in Sources */,
 				A61C02BDA38BFA33DDF0688B /* ChannelAdvisor.swift in Sources */,
+				F13799AB4E48198F6B293552 /* ChannelPlanCache.swift in Sources */,
 				E26E21AEBE9A0A22988C7317 /* ColorRulesSettingsView.swift in Sources */,
 				2581330ADC04E4923E342CE2 /* ColoringRule.swift in Sources */,
 				19E7CD11A9ACDA42D4E3416D /* ColumnCatalog.swift in Sources */,
@@ -1091,13 +1097,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 4.6.0;
+				MARKETING_VERSION = 4.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
@@ -1207,13 +1213,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 4.6.0;
+				MARKETING_VERSION = 4.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};

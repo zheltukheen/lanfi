@@ -17,16 +17,23 @@ enum ChannelAdvisor {
         var compatible = candidates.filter { supports($0, generation: network.generation) }
         guard !compatible.isEmpty else { return nil }
 
-        let countryChannels = network.countryIEChannels
-        if !countryChannels.isEmpty {
-            let filtered = compatible.filter { countryChannels.contains($0.channel) }
+        let controllerChannels = ChannelPlanCache.channels(for: network.bssid)
+        if !controllerChannels.isEmpty {
+            let allowed = Set(controllerChannels)
+            let filtered = compatible.filter { allowed.contains($0.channel) }
             if !filtered.isEmpty { compatible = filtered }
         } else {
-            let regulatory = RegulatoryDatabase.channels(countryCode: network.countryCode, band: network.band)
-            if !regulatory.isEmpty {
-                let allowed = Set(regulatory.map(\.channel))
-                let filtered = compatible.filter { allowed.contains($0.channel) }
+            let countryChannels = network.countryIEChannels
+            if !countryChannels.isEmpty {
+                let filtered = compatible.filter { countryChannels.contains($0.channel) }
                 if !filtered.isEmpty { compatible = filtered }
+            } else {
+                let regulatory = RegulatoryDatabase.channels(countryCode: network.countryCode, band: network.band)
+                if !regulatory.isEmpty {
+                    let allowed = Set(regulatory.map(\.channel))
+                    let filtered = compatible.filter { allowed.contains($0.channel) }
+                    if !filtered.isEmpty { compatible = filtered }
+                }
             }
         }
 
