@@ -398,6 +398,7 @@ struct TabButton: View {
 struct ToolbarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.openWindow) private var openWindow
     @Binding var showSidebar: Bool
     @Binding var showInspector: Bool
     @Binding var customIntervalText: String
@@ -541,7 +542,64 @@ struct ToolbarView: View {
                 .foregroundColor(.secondary)
 
             // 4. Right Controls
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
+
+                Button {
+                    openWindow(id: "survey")
+                } label: {
+                    Image(systemName: "map")
+                }
+                .buttonStyle(.borderless)
+                .help("Site Survey")
+                .accessibilityLabel("Open Site Survey")
+
+                Menu {
+                    Button("Site Survey") { openWindow(id: "survey") }
+                    Button("Live Capture (PCAP)…") { showingLiveCapture = true }
+                    Button("Analyze Packet Capture…") {
+                        NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
+                    }
+                    Button("Remote Sensors…") {
+                        NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
+                    }
+                    Divider()
+                    ForEach(
+                        [
+                            "Wi-Fi", "Network", "DNS", "LAN", "RF", "AP", "Wireless", "Security", "Throughput",
+                            "Advanced",
+                        ], id: \.self
+                    ) { category in
+                        let tools = ToolCatalog.all.filter { $0.category == category }
+                        if !tools.isEmpty {
+                            Menu(category) {
+                                ForEach(tools) { tool in
+                                    Button {
+                                        openWindow(id: "tool", value: tool.id)
+                                    } label: {
+                                        Label(tool.title, systemImage: tool.icon)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Divider()
+                    Button("LinkLiar — MAC spoofer…") {
+                        NSWorkspace.shared.open(URL(string: "https://github.com/halo/LinkLiar/releases")!)
+                    }
+                    Button("Wireshark…") {
+                        NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
+                    }
+                    Button("Airtool…") {
+                        NSWorkspace.shared.open(URL(string: "https://www.intuitibits.com/products/airtool/")!)
+                    }
+                } label: {
+                    Label("Tools", systemImage: "wrench.and.screwdriver")
+                        .font(.caption)
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("Network tools")
+                .accessibilityLabel("Network tools")
 
                 // Export
                 if showExport {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.6.2 — 2026-10-29
+
+### Fixed
+- Visible **Tools** menu in the main toolbar with grouped network tools,
+  Site Survey, capture, remote sensors and external tools.
+- Tool windows open from the toolbar and can be full-screened.
+
+### Version
+- 4.6.2 (build 51).
+
+
 ## 4.6.1 — 2026-10-29
 
 ### Fixed
