@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.4.0 — 2026-10-29
+
+### Spectrum
+- Spectrum lanes are generated from CoreWLAN `supportedWLANChannels()`
+  instead of hard-coded 2.4/5/6 ranges, including an Other lane for future bands.
+- Available channels are sampled per adapter capability; lanes adapt to the
+  active Wi-Fi interface.
+- Band filters include an explicit Other filter and are persisted in filter
+  profiles.
+
+### Version
+- 4.4.0 (build 46).
+
+
 ## 4.3.0 — 2026-10-29
 
 ### Fixes

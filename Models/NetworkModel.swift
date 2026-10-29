@@ -11,7 +11,7 @@ enum WiFiBand: Int, Codable, Hashable, CaseIterable {
         case .band24: return "2.4GHz"
         case .band5: return "5GHz"
         case .band6: return "6GHz"
-        case .unknown: return "-"
+        case .unknown: return "Other"
         }
     }
 
