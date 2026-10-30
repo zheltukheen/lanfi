@@ -138,7 +138,11 @@ struct ProtocolsView: View {
                     coverageCard("Wi-Fi 7", value: "\(coverage.wiFi7Count)", tint: .blue)
                     coverageCard("PMF", value: "\(coverage.pmfCount)", tint: .green)
                     coverageCard("WPS", value: "\(coverage.wpsCount)", tint: coverage.wpsCount > 0 ? .orange : .green)
-                    coverageCard("Open", value: "\(coverage.openCount)", tint: coverage.openCount > 0 ? .red : .green)
+                    coverageCard(
+                        "Open networks",
+                        value: "\(coverage.openCount)",
+                        tint: coverage.openCount > 0 ? .red : .green
+                    )
                 }
 
                 HStack(alignment: .top, spacing: 14) {
@@ -183,7 +187,7 @@ struct ProtocolsView: View {
         }
     }
 
-    private func coverageCard(_ title: String, value: String, tint: Color) -> some View {
+    private func coverageCard(_ title: LocalizedStringKey, value: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(.caption2)
@@ -200,8 +204,8 @@ struct ProtocolsView: View {
     }
 
     private func distributionCard(
-        title: String,
-        subtitle: String,
+        title: LocalizedStringKey,
+        subtitle: LocalizedStringKey,
         values: [String: Int],
         tint: Color
     ) -> some View {

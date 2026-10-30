@@ -156,7 +156,7 @@ struct RemoteSensorsView: View {
                     if isScanning {
                         ProgressView().controlSize(.small)
                     }
-                    Button("Scan") { scan(selected) }
+                    Button("Scan Remote") { scan(selected) }
                         .buttonStyle(.borderedProminent)
                         .disabled(isScanning)
                     Button("Capture…") { showingRemoteCapture = true }

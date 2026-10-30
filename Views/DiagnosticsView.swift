@@ -126,7 +126,7 @@ struct DiagnosticsView: View {
         Divider().frame(height: 26).padding(.horizontal, 8)
     }
 
-    private func snapshotItem(_ title: String, value: String, icon: String) -> some View {
+    private func snapshotItem(_ title: LocalizedStringKey, value: String, icon: String) -> some View {
         HStack(spacing: 5) {
             Image(systemName: icon)
                 .font(.caption2)
@@ -259,7 +259,7 @@ struct DiagnosticsView: View {
         }
     }
 
-    private func metric(_ title: String, _ value: String) -> some View {
+    private func metric(_ title: LocalizedStringKey, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(title).font(.caption2).foregroundColor(.secondary)
             Text(value).font(.caption.bold())

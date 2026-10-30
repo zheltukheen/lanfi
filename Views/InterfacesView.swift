@@ -130,7 +130,7 @@ struct InterfacesView: View {
     private var summary: some View {
         HStack(spacing: 9) {
             summaryCard("Interfaces", "\(interfaces.report.interfaces.count)", tint: .accentColor)
-            summaryCard("Up", "\(interfaces.report.upCount)", tint: .green)
+            summaryCard("Interfaces Up", "\(interfaces.report.upCount)", tint: .green)
             summaryCard("Primary", interfaces.report.primaryInterface ?? "—", tint: .blue)
             summaryCard("Tunnels / VPN", "\(interfaces.report.tunnelCount)", tint: .purple)
             summaryCard("Router", interfaces.report.router ?? "—", tint: .orange)
