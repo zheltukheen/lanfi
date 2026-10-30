@@ -10,6 +10,7 @@ struct OfflineCaptureView: View {
     @State private var isParsing = false
     @State private var clients: [CapturedClient] = []
     @State private var showingClients = false
+    @State private var showingMLO = false
     @State private var selectedBeaconId: String?
     @State private var searchText = ""
     @State private var currentURL: URL?
@@ -79,6 +80,9 @@ struct OfflineCaptureView: View {
                         Button("Clients…") { showingClients = true }
                             .controlSize(.small)
                             .disabled(clients.isEmpty)
+                        Button("MLO…") { showingMLO = true }
+                            .controlSize(.small)
+                            .disabled(mloGroups.isEmpty)
                         Menu {
                             Button("CSV…") { exportCSV() }
                             Button("JSON…") { exportJSON() }
@@ -160,6 +164,79 @@ struct OfflineCaptureView: View {
             .padding(14)
             .frame(width: 560, height: 380)
         }
+        .sheet(isPresented: $showingMLO) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("MLO groups").font(.headline)
+                    Spacer()
+                    Button("Close") { showingMLO = false }
+                }
+                if mloGroups.isEmpty {
+                    Text("No Multi-Link elements found in this capture.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(mloGroups) { group in
+                                GroupBox {
+                                    VStack(spacing: 0) {
+                                        ForEach(group.links) { link in
+                                            HStack(spacing: 8) {
+                                                Text(link.linkID.map { "Link \($0)" } ?? "Link ?")
+                                                    .font(.caption2)
+                                                    .foregroundColor(.secondary)
+                                                    .frame(width: 50, alignment: .leading)
+                                                Text(link.bssid ?? "—")
+                                                    .font(.caption2.monospaced())
+                                                Spacer()
+                                                Text(link.channel.map { "ch \($0)" } ?? "—")
+                                                    .font(.caption2)
+                                                    .foregroundColor(.secondary)
+                                                    .frame(width: 46, alignment: .trailing)
+                                                Text(link.rssi.map { "\($0) dBm" } ?? "—")
+                                                    .font(.caption2)
+                                                    .foregroundColor(.secondary)
+                                                    .frame(width: 64, alignment: .trailing)
+                                                Text(link.seenInCapture ? "Captured" : "Not in capture")
+                                                    .font(.caption2)
+                                                    .foregroundColor(link.seenInCapture ? .green : .orange)
+                                                    .frame(width: 86, alignment: .trailing)
+                                            }
+                                            .padding(.vertical, 3)
+                                            if link.id != group.links.last?.id { Divider() }
+                                        }
+                                    }
+                                    .padding(4)
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Text("AP MLD \(group.apMLD)")
+                                            .font(.caption.bold().monospaced())
+                                        Text(group.ssid)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                        Text(
+                                            "\(group.capturedLinkCount) of \(group.links.count) links captured"
+                                        )
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(4)
+                    }
+                }
+            }
+            .padding(14)
+            .frame(width: 640, height: 420)
+        }
+    }
+
+    private var mloGroups: [MLOGroup] {
+        MLOGroupAssembler.assemble(beacons: beacons)
     }
 
     private func open() {
@@ -236,6 +313,21 @@ struct OfflineCaptureView: View {
                     "security": beacon.security, "isEHT": beacon.isEHT,
                     "ieCount": beacon.informationElements.count,
                     "clientCount": beacon.clientCount as Any,
+                ]
+            },
+            "mloGroups": mloGroups.map { group in
+                [
+                    "apMLD": group.apMLD,
+                    "ssid": group.ssid,
+                    "links": group.links.map { link in
+                        [
+                            "linkID": link.linkID as Any,
+                            "bssid": link.bssid as Any,
+                            "channel": link.channel as Any,
+                            "rssi": link.rssi as Any,
+                            "seenInCapture": link.seenInCapture,
+                        ]
+                    },
                 ]
             },
         ]

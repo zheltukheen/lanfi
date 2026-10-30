@@ -13,6 +13,15 @@
   "Security modes", "Bands", "Link rate", "Download", "Upload", "Latency" and
   "Responsiveness" are actually localized (they were always shown in English).
 
+### Added
+- Complete MLO link sets in offline capture analysis: beacons sharing one AP
+  MLD are merged into MLO groups with per-link BSSID, channel, RSSI and a
+  captured/not-captured flag (new MLO… sheet and `mloGroups` in JSON export).
+
+### Fixed
+- Per-STA Profile BSSID in the Multi-Link element was read one byte early
+  (the STA Info Length octet was mistaken for the first MAC byte).
+
 ## 4.8.0 — 2026-10-30
 
 ### Spectrum

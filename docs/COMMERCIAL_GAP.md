@@ -48,8 +48,8 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - External USB Wi-Fi adapter measurement path beyond interfaces exposed by
   CoreWLAN.
 - Hardware spectrum analyzer integration (WLAN Pi, Wi-Spy, etc.).
-- Full per-link MLO BSSID sets (AP MLD and link IDs are decoded; BSSID sets
-  need a dedicated monitor-capture parser).
+- Full per-link MLO BSSID sets in live scans (macOS scan APIs do not report
+  them; offline captures now assemble complete link sets per AP MLD).
 - Manual VoiceOver audit of every remaining screen (chart descriptors and key
   controls are covered).
 
@@ -195,7 +195,7 @@ A credible commercial competitor in 2026 needs all of the following:
 - [x] Signed auto-updating distribution (Sparkle); notarization still pending
 - [x] Grouping, annotations, saved sessions and column profiles
 - [x] PCAP/PCAPNG export and offline capture analysis
-- [~] AP names, EHT/320 MHz and Multi-Link element decoding (per-link BSSID sets pending)
+- [x] AP names, EHT/320 MHz and Multi-Link decoding incl. per-link BSSID sets from captures
 - [x] Russian UI and dynamic technical localization; VoiceOver chart descriptors
 - [x] IDW survey heatmap with walls, PDF reports and SSH remote sensors
 

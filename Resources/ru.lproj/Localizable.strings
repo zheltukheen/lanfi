@@ -497,3 +497,9 @@
 "Upload" = "Отдача";
 "Latency" = "Задержка";
 "Responsiveness" = "Отзывчивость";
+"MLO groups" = "MLO-группы";
+"AP MLD" = "AP MLD";
+"Captured" = "В захвате";
+"Not in capture" = "Нет в захвате";
+"No Multi-Link elements found in this capture." = "В этом захвате нет элементов Multi-Link.";
+"\(group.capturedLinkCount) of \(group.links.count) links captured" = "В захвате \(group.capturedLinkCount) из \(group.links.count) линков";

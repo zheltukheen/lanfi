@@ -48,6 +48,8 @@ enum TechnicalLocalizer {
         ("channel width", "ширина канала"),
         ("link set", "набор линков"),
         ("monitor capture", "monitor-захват"),
+        ("MLO groups", "MLO-группы"),
+        ("Offline packet analysis", "Офлайн-анализ пакетов"),
         ("offline capture analysis", "офлайн-анализ захвата"),
         ("Wi-Fi link", "Wi-Fi линк"),
         ("gateway", "шлюз"),
