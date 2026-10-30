@@ -5,6 +5,7 @@ struct SpectrumView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
     @State private var zoom = 1.0
+    @State private var hoverPoint: CGPoint?
     @Environment(\.openWindow) private var openWindow
     var isFullScreen = false
 
@@ -94,6 +95,7 @@ struct SpectrumView: View {
 
                 Canvas { context, _ in
                     drawGridAndAxis(context: context, plotRect: plotRect)
+                    context.clip(to: Path(plotRect))
                     let sorted = networks.sorted { lhs, rhs in
                         if lhs.id == viewModel.selectedNetworkId { return false }
                         if rhs.id == viewModel.selectedNetworkId { return true }
@@ -113,13 +115,39 @@ struct SpectrumView: View {
                             selectNetworkAt(location: value.location, plotRect: plotRect)
                         }
                 )
+                .onContinuousHover { phase in
+                    switch phase {
+                    case .active(let location):
+                        hoverPoint = location
+                    case .ended:
+                        hoverPoint = nil
+                    }
+                }
+                .overlay(alignment: .bottomLeading) {
+                    if let hoverPoint, plotRect.contains(hoverPoint) {
+                        hoverReadout(at: hoverPoint, plotRect: plotRect)
+                    }
+                }
                 .overlay(alignment: .topLeading) {
                     HStack(spacing: 10) {
-                        Text("All bands · \(networks.count) networks")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("All bands · \(networks.count) networks")
+                                .font(.caption2)
+                            Text(bandSummary)
+                                .font(.system(size: 9))
+                                .foregroundColor(.secondary)
+                        }
                         Spacer()
                         SpectrumExportMenu(viewModel: viewModel, networks: networks)
+                        Button {
+                            NotificationCenter.default.post(
+                                name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": 7]
+                            )
+                        } label: {
+                            Image(systemName: "record.circle")
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Packet capture")
                         Button {
                             zoom = min(4, zoom * 1.25)
                         } label: {
@@ -151,6 +179,11 @@ struct SpectrumView: View {
                     .padding(.horizontal, 10)
                     .padding(.top, 6)
                 }
+                .overlay(alignment: .bottomTrailing) {
+                    if let selected = networks.first(where: { $0.id == viewModel.selectedNetworkId }) {
+                        selectedReadout(selected)
+                    }
+                }
             }
         }
         .onChange(of: viewModel.networks.count) { _ in }
@@ -160,6 +193,58 @@ struct SpectrumView: View {
                 NSApp.keyWindow?.toggleFullScreen(nil)
             }
         }
+    }
+
+    private var bandSummary: String {
+        let counts = Dictionary(grouping: networks, by: \.band).mapValues(\.count)
+        let parts = [WiFiBand.band24, .band5, .band6, .unknown].compactMap { band -> String? in
+            guard let count = counts[band], count > 0 else { return nil }
+            return "\(bandLabel(band)) \(count)"
+        }
+        let noise = networks.compactMap(\.noise).min()
+        let noiseText = noise.map { " · noise \($0) dBm" } ?? ""
+        return parts.joined(separator: " · ") + noiseText
+    }
+
+    private func hoverReadout(at point: CGPoint, plotRect: CGRect) -> some View {
+        let value =
+            displayDomain.lowerBound
+            + Double((point.x - plotRect.minX) / max(plotRect.width, 1))
+            * (displayDomain.upperBound - displayDomain.lowerBound)
+        guard let lane = lanes.first(where: { value >= $0.start && value <= $0.end }) else {
+            return AnyView(EmptyView())
+        }
+        let t = (value - lane.start) / max(lane.end - lane.start, 0.001)
+        let channel = Int((lane.minChannel + t * (lane.maxChannel - lane.minChannel)).rounded())
+        let dbm = -10 - Double((point.y - plotRect.minY) / max(plotRect.height, 1)) * 90
+        return AnyView(
+            Text("\(lane.label) · ch \(channel) · \(Int(dbm.rounded())) dBm")
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+                .padding(8)
+        )
+    }
+
+    private func selectedReadout(_ network: NetworkModel) -> some View {
+        HStack(spacing: 7) {
+            Circle().fill(viewModel.colorFor(networkId: network.id)).frame(width: 7, height: 7)
+            Text(network.displaySSID).font(.caption.bold()).lineLimit(1)
+            Text("ch \(network.channel) · \(network.channelWidthLabel) MHz")
+                .font(.caption2).foregroundColor(.secondary)
+            Text("\(network.signal) dBm").font(.caption2)
+            Text("SNR \(network.snr.map(String.init) ?? "—")").font(.caption2).foregroundColor(.secondary)
+            if let util = network.channelUtilization {
+                Text("util \(util)%").font(.caption2).foregroundColor(.secondary)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 7))
+        .padding(8)
     }
 
     private func lane(for network: NetworkModel) -> BandLane? {
