@@ -147,4 +147,21 @@ final class MultiLinkProfileTests: XCTestCase {
         XCTAssertTrue(element.summary.contains("links 1") || element.summary.contains("link 1"))
         XCTAssertTrue(element.detailLines.contains { $0.contains("Per-STA profile link IDs") })
     }
+
+    func testPerSTAProfileReadsMACAfterSTAInfoLength() throws {
+        // Per-STA Profile: STA Control (link 1, MAC present), STA Info Length = 7, then MAC.
+        let payload: [UInt8] = [
+            107, 0x00, 0x00, 0x10, 0x00,
+            0x08, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00,
+            0x00, 0x09, 0x21, 0x00, 0x07, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
+        ]
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name.contains("Multi-Link") })
+        XCTAssertTrue(
+            element.detailLines.contains("Link 1 BSSID: 11:22:33:44:55:66"),
+            "detailLines: \(element.detailLines)"
+        )
+    }
 }

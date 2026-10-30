@@ -461,3 +461,9 @@
 "Upload" = "Upload";
 "Latency" = "Latency";
 "Responsiveness" = "Responsiveness";
+"MLO groups" = "MLO groups";
+"AP MLD" = "AP MLD";
+"Captured" = "Captured";
+"Not in capture" = "Not in capture";
+"No Multi-Link elements found in this capture." = "No Multi-Link elements found in this capture.";
+"\(group.capturedLinkCount) of \(group.links.count) links captured" = "\(group.capturedLinkCount) of \(group.links.count) links captured";

@@ -630,9 +630,11 @@ struct InformationElementParser {
                                 | (UInt16(data[data.startIndex + offset + 1]) << 8)
                             let linkID = Int(staControl & 0x000F)
                             links.append(linkID)
-                            if staControl & 0x0020 != 0, subLength >= 8 {
+                            // STA Info starts with its own length octet; the MAC
+                            // address (when advertised) follows it.
+                            if staControl & 0x0020 != 0, subLength >= 9 {
                                 let mac = (0..<6).map {
-                                    String(format: "%02X", data[data.startIndex + offset + 2 + $0])
+                                    String(format: "%02X", data[data.startIndex + offset + 3 + $0])
                                 }.joined(separator: ":")
                                 details.append("Link \(linkID) BSSID: \(mac)")
                             }

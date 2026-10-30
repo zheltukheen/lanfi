@@ -182,8 +182,8 @@ enum ProtocolAnalyzer {
                 label: "Multi-link operation",
                 value: mloElement ? "ML IE decoded" : "Not exposed by CoreWLAN",
                 detail: mloElement
-                    ? "Multi-Link element present; full link set requires offline capture analysis"
-                    : "macOS scan APIs do not report MLO link sets; monitor-mode capture and offline analysis are required",
+                    ? "Multi-Link element present; open a monitor capture in Offline packet analysis for the full link set (MLO groups)"
+                    : "macOS scan APIs do not report MLO link sets; capture beacons in monitor mode and open them in Offline packet analysis",
                 status: mloElement ? .info : .unknown
             ),
             ProtocolFact(

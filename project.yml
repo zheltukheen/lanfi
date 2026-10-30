@@ -97,6 +97,7 @@ targets:
       - path: Models/ExpressionColumn.swift
       - path: Models/SurveyAccessPoint.swift
       - path: Models/MLOInfo.swift
+      - path: Models/MLOGroup.swift
       - path: Models/SupportedChannel.swift
       - path: Models/ChannelAdvice.swift
       - path: Services/ChannelAdvisor.swift
