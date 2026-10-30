@@ -610,8 +610,9 @@ struct WiFiTableView: NSViewRepresentable {
             menu.removeAllItems()
             guard let row = clickedNetworkRow(), let net = row.network else { return }
             let header = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+            let model = net.routerModel ?? net.apName ?? net.vendor
             header.attributedTitle = NSAttributedString(
-                string: "\(net.displaySSID)  ·  \(net.band.label)  ·  ch \(net.channel) / \(net.channelWidthLabel) MHz",
+                string: "\(model)  ·  \(net.displaySSID)",
                 attributes: [.font: NSFont.boldSystemFont(ofSize: 13), .foregroundColor: NSColor.labelColor]
             )
             header.isEnabled = false

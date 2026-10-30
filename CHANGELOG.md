@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.8.0 — 2026-10-30
+
+### Spectrum
+- Clip network polygons to the plot so channel 1 shapes no longer spill into
+  the left ruler.
+- Added a live hover readout (band/channel/dBm), selected-network summary,
+  band counts and noise floor.
+- Added a Capture shortcut in the Spectrum header.
+
+### Context menu
+- Rich network menu header now includes model/AP name, SSID, band, channel,
+  width, security, signal, noise, SNR and quality.
+
+### Version
+- 4.8.0 (build 53).
+
+
 ## 4.7.0 — 2026-10-29
 
 ### UI
