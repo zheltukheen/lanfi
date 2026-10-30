@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.10.0 — 2026-10-30
 
 ### Added
 - Wi-Fi 7 preamble puncturing: the EHT Operation element now decodes the
