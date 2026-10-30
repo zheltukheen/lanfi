@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Removed 33 duplicate keys from the Russian localization; duplicate `.strings`
+  keys have undefined lookup behavior and could show the wrong translation.
+- Disambiguated colliding Russian translations: open-network count
+  ("Open networks"), interface count ("Interfaces Up") and the remote-sensor
+  scan button ("Scan Remote") now use their own keys.
+- Protocol coverage/distribution cards and diagnostics snapshot/throughput
+  labels now render through `LocalizedStringKey`, so "PHY generations",
+  "Security modes", "Bands", "Link rate", "Download", "Upload", "Latency" and
+  "Responsiveness" are actually localized (they were always shown in English).
+
 ## 4.8.0 — 2026-10-30
 
 ### Spectrum

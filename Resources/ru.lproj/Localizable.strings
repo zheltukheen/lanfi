@@ -9,7 +9,6 @@
 "Primary" = "Основной";
 "Router" = "Шлюз";
 "DNS" = "DNS";
-"Up" = "Активны";
 "Refresh" = "Обновить";
 "No interfaces found" = "Интерфейсы не найдены";
 "Scan Again" = "Сканировать снова";
@@ -138,7 +137,6 @@
 "Wi-Fi 7" = "Wi-Fi 7";
 "6 GHz" = "6 ГГц";
 "PMF" = "PMF";
-"Open" = "Открытые";
 "WPS" = "WPS";
 "Channel quality" = "Качество канала";
 "Best 5 GHz: channel" = "Лучший 5 ГГц: канал";
@@ -169,16 +167,9 @@
 "Network format" = "Формат сети";
 "Vendor & capabilities" = "Вендор и возможности";
 "Protocol blocks" = "Блоки протоколов";
-"Channel quality" = "Качество канала";
 
 /* Protocol blocks */
-"Radio & PHY" = "Радио и PHY";
 "Wi-Fi 7 & MLO" = "Wi-Fi 7 и MLO";
-"Security & trust" = "Безопасность";
-"Spectrum & airtime" = "Спектр и эфир";
-"Roaming & mobility" = "Роуминг и мобильность";
-"Network format" = "Формат сети";
-"Vendor & capabilities" = "Вендор и возможности";
 "802.11 generation, band and channel plan" = "Поколение 802.11, диапазон и план каналов";
 "EHT capabilities, 320 MHz and multi-link visibility" = "EHT, 320 МГц и видимость multi-link";
 "WPA mode, PMF, WPS and authentication" = "WPA, PMF, WPS и аутентификация";
@@ -187,13 +178,11 @@
 "Infrastructure, hidden, IBSS and client load" = "Инфраструктура, скрытые сети, IBSS и нагрузка";
 "OUI, HT/VHT/HE and vendor information elements" = "OUI, HT/VHT/HE и vendor IE";
 "PHY generation" = "Поколение PHY";
-"Band" = "Диапазон";
 "Channel / width" = "Канал / ширина";
 "Estimated PHY rate" = "Оценка PHY-скорости";
 "Spatial streams" = "Пространственные потоки";
 "Regulatory domain" = "Регуляторный домен";
 "Detected capabilities" = "Обнаруженные возможности";
-"Security mode" = "Режим безопасности";
 "Management frame protection" = "Защита management-кадров";
 "Wi-Fi Protected Setup" = "Wi-Fi Protected Setup";
 "WPS details" = "Детали WPS";
@@ -205,20 +194,16 @@
 "802.11v BSS Transition" = "802.11v BSS Transition";
 "Target Wake Time" = "Target Wake Time";
 "Signal / noise" = "Сигнал / шум";
-"SNR" = "SNR";
 "Channel utilization" = "Загрузка канала";
 "Congestion score" = "Оценка загруженности";
 "Co-channel / overlap" = "Соседние / перекрытие";
-"Network format" = "Формат сети";
 "SSID visibility" = "Видимость SSID";
 "Reported type" = "Тип сети";
 "Associated stations" = "Подключённые станции";
-"BSSID" = "BSSID";
 "Information elements" = "Information elements";
 "Vendor elements" = "Vendor elements";
 "Country" = "Страна";
 "Capability IEs" = "Capability IE";
-"Vendor" = "Вендор";
 "Access point name" = "Имя точки доступа";
 "Wi-Fi 7 / EHT" = "Wi-Fi 7 / EHT";
 "EHT information elements" = "EHT information elements";
@@ -240,20 +225,14 @@
 "Disabled" = "Выключено";
 "Supported" = "Поддерживается";
 "Not supported" = "Не поддерживается";
-"Protocol blocks" = "Блоки протоколов";
-"Select a network to inspect its protocol blocks" = "Выберите сеть, чтобы увидеть блоки протоколов";
 "All \(coverage.networkCount) visible networks are summarised here. Select a row to inspect one network in seven protocol blocks." = "Здесь собраны все \(coverage.networkCount) видимых сетей. Выберите строку, чтобы разобрать одну сеть по семи блокам.";
-"Wi-Fi 7 & MLO" = "Wi-Fi 7 и MLO";
 
 /* Interfaces */
-"Interfaces" = "Интерфейсы";
-"Type" = "Тип";
 "MAC" = "MAC";
 "IPv4" = "IPv4";
 "IPv6" = "IPv6";
 "MTU / speed" = "MTU / скорость";
 "Traffic" = "Трафик";
-"Security" = "Безопасность";
 "Errors" = "Ошибки";
 "Up" = "Активен";
 "Down" = "Выключен";
@@ -294,7 +273,6 @@
 "Add sensor" = "Добавить сенсор";
 "Edit sensor" = "Изменить сенсор";
 "Delete sensor" = "Удалить сенсор";
-"Scan" = "Сканировать";
 "No remote scan yet" = "Удалённого скана пока нет";
 "The sensor must have Remote Login enabled and your SSH key authorized." = "На сенсоре должен быть включён Remote Login, а ваш SSH-ключ — авторизован.";
 "Add a remote sensor" = "Добавьте удалённый сенсор";
@@ -302,9 +280,7 @@
 "No sensors" = "Нет сенсоров";
 "SSID" = "SSID";
 "Ch" = "Кан.";
-"Width" = "Ширина";
 "RSSI" = "RSSI";
-"SNR" = "SNR";
 "PHY" = "PHY";
 "Name" = "Имя";
 "Host" = "Хост";
@@ -345,12 +321,10 @@
 "Filters" = "Фильтры";
 "Panels" = "Панели";
 "Survey" = "Survey";
-"Diagnostics" = "Диагностика";
 "Scan" = "Скан";
 "Show Interfaces" = "Показать интерфейсы";
 "Resume Live" = "Вернуться к живому скану";
 "Saved locally on this Mac" = "Сохранено локально на этом Mac";
-"Min Signal" = "Мин. сигнал";
 "Signal Unit:" = "Единица сигнала:";
 "Remove inactive after:" = "Удалять неактивные через:";
 "LanFi scores every network, recommends the quietest channels and audits security." = "LanFi оценивает каждую сеть, рекомендует свободные каналы и проверяет безопасность.";
@@ -359,7 +333,6 @@
 "Grouped by" = "Группировка";
 "Updated" = "Обновлено";
 "Score" = "Оценка";
-"Channel" = "Канал";
 "Channel occupancy" = "Загрузка каналов";
 "No network selected" = "Сеть не выбрана";
 "Hidden" = "Скрытая";
@@ -373,13 +346,11 @@
 "Local network" = "Локальная сеть";
 "Internet" = "Интернет";
 "Performance" = "Производительность";
-"Security" = "Безопасность";
 "WPA3 Transition" = "WPA3 Transition";
 "WPA3 Personal" = "WPA3 Personal";
 "WPA2 Personal" = "WPA2 Personal";
 "WPA3 Enterprise" = "WPA3 Enterprise";
 "WPA2 Enterprise" = "WPA2 Enterprise";
-"6 GHz" = "6 ГГц";
 "5 GHz" = "5 ГГц";
 "2.4 GHz" = "2,4 ГГц";
 "Not run yet" = "Ещё не запускалось";
@@ -432,7 +403,6 @@
 "From BSS Load when the AP exposes it" = "Из BSS Load, если AP его передаёт";
 "Preferred scanning channels and AFC may apply" = "Могут применяться preferred scanning channels и AFC";
 "Speeds up roaming between access points" = "Ускоряет роуминг между точками доступа";
-"Wi-Fi link, gateway, DNS, HTTPS and latency" = "Wi-Fi, шлюз, DNS, HTTPS и задержка";
 "Full link set requires offline capture analysis" = "Для полного link set нужен офлайн-анализ захвата";
 "CoreWLAN width:" = "Ширина CoreWLAN:";
 
@@ -489,9 +459,6 @@
 "Client / site" = "Клиент / объект";
 "Plan width in metres" = "Ширина плана в метрах";
 "Notes" = "Заметки";
-"Offline packet analysis" = "Офлайн-анализ пакетов";
-"Clients" = "Клиенты";
-"Information elements" = "Information elements";
 "Copy IEs" = "Копировать IE";
 "Scan USB Hardware" = "Сканировать USB";
 "Detected hardware" = "Обнаруженное оборудование";
@@ -516,3 +483,17 @@
 
 "High contrast mode" = "Режим высокой контрастности";
 "Increases contrast and border weight for low-vision use." = "Повышает контраст и толщину границ для слабовидящих.";
+"Open networks" = "Открытые";
+"PHY generations" = "Поколения PHY";
+"Highest advertised 802.11 mode" = "Старший заявленный режим 802.11";
+"Security modes" = "Режимы безопасности";
+"Networks by advertised security" = "Сети по заявленной безопасности";
+"Bands" = "Диапазоны";
+"Observed spectrum" = "Наблюдаемый спектр";
+"Interfaces Up" = "Активны";
+"Scan Remote" = "Сканировать";
+"Link rate" = "Скорость соединения";
+"Download" = "Загрузка";
+"Upload" = "Отдача";
+"Latency" = "Задержка";
+"Responsiveness" = "Отзывчивость";

@@ -447,3 +447,17 @@
 "Not visible to the built-in Wi-Fi radio. Requires a dedicated 802.15.4 adapter; LanFi does not emulate that data." = "Not visible to the built-in Wi-Fi radio. Requires a dedicated 802.15.4 adapter; LanFi does not emulate that data.";
 "High contrast mode" = "High contrast mode";
 "Increases contrast and border weight for low-vision use." = "Increases contrast and border weight for low-vision use.";
+"Open networks" = "Open";
+"PHY generations" = "PHY generations";
+"Highest advertised 802.11 mode" = "Highest advertised 802.11 mode";
+"Security modes" = "Security modes";
+"Networks by advertised security" = "Networks by advertised security";
+"Bands" = "Bands";
+"Observed spectrum" = "Observed spectrum";
+"Interfaces Up" = "Up";
+"Scan Remote" = "Scan";
+"Link rate" = "Link rate";
+"Download" = "Download";
+"Upload" = "Upload";
+"Latency" = "Latency";
+"Responsiveness" = "Responsiveness";
