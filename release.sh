@@ -59,10 +59,10 @@ version, build = sys.argv[1], sys.argv[2]
 path = Path("project.yml")
 text = path.read_text(encoding="utf-8")
 text, version_count = re.subn(
-    r'(?m)^(\\s*MARKETING_VERSION:\\s*).*$', rf'\\g<1>"{version}"', text
+    r'(?m)^(\s*MARKETING_VERSION:\s*).*$', rf'\g<1>"{version}"', text
 )
 text, build_count = re.subn(
-    r'(?m)^(\\s*CURRENT_PROJECT_VERSION:\\s*).*$', rf'\\g<1>"{build}"', text
+    r'(?m)^(\s*CURRENT_PROJECT_VERSION:\s*).*$', rf'\g<1>"{build}"', text
 )
 if version_count != 1 or build_count != 1:
     raise SystemExit("Could not update version fields in project.yml")
