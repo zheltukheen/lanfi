@@ -503,3 +503,6 @@
 "Not in capture" = "Нет в захвате";
 "No Multi-Link elements found in this capture." = "В этом захвате нет элементов Multi-Link.";
 "\(group.capturedLinkCount) of \(group.links.count) links captured" = "В захвате \(group.capturedLinkCount) из \(group.links.count) линков";
+"Puncturing" = "Панктуринг";
+"Preamble puncturing" = "Панктуринг преамбулы";
+"Update automatically (weekly)" = "Обновлять автоматически (раз в неделю)";

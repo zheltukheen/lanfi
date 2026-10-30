@@ -34,6 +34,7 @@ struct LanFiCLI {
             case "pcap":
                 try requireFile(arguments, index: 1) { url in
                     let beacons = try PcapAnalyzer.parse(data: Data(contentsOf: url))
+                    let mloGroups = MLOGroupAssembler.assemble(beacons: beacons)
                     if arguments.contains("--json") {
                         let rows = beacons.map {
                             [
@@ -42,10 +43,31 @@ struct LanFiCLI {
                                 "security": $0.security,
                             ] as [String: Any]
                         }
-                        printJSON(rows)
+                        let groups = mloGroups.map { group in
+                            [
+                                "apMLD": group.apMLD,
+                                "ssid": group.ssid,
+                                "links": group.links.map { link in
+                                    [
+                                        "linkID": link.linkID as Any,
+                                        "bssid": link.bssid as Any,
+                                        "channel": link.channel as Any,
+                                        "rssi": link.rssi as Any,
+                                        "seenInCapture": link.seenInCapture,
+                                    ]
+                                },
+                            ]
+                        }
+                        printJSON(["networks": rows, "mloGroups": groups])
                     } else {
                         for beacon in beacons {
                             print("\(beacon.ssid)\t\(beacon.bssid)\tch \(beacon.channel.map(String.init) ?? "-")\t\(beacon.rssi.map { "\($0) dBm" } ?? "-")\t\(beacon.security)")
+                        }
+                        for group in mloGroups {
+                            let links = group.links.map {
+                                "link \($0.linkID.map(String.init) ?? "?"): \($0.bssid ?? "unknown")"
+                            }.joined(separator: ", ")
+                            print("MLO \(group.apMLD) (\(group.ssid)): \(links)")
                         }
                     }
                 }
@@ -82,6 +104,8 @@ struct LanFiCLI {
               lanfi-cli summary <scan.json> [--json]
               lanfi-cli protocols <scan.json>
               lanfi-cli pcap <capture.pcap|pcapng> [--json]
+                --json prints {"networks": [...], "mloGroups": [...]} with
+                complete Multi-Link Operation link sets assembled per AP MLD.
               lanfi-cli help
             """
         )

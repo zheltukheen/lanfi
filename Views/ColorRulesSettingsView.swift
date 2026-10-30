@@ -63,6 +63,7 @@ struct ColorRulesSettingsView: View {
                 } label: {
                     Image(systemName: "trash")
                 }
+                .accessibilityLabel("Delete coloring rule")
                 .buttonStyle(.borderless)
             }
             HStack(spacing: 6) {

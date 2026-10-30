@@ -36,7 +36,16 @@ final class ColumnCatalogTests: XCTestCase {
             clients: 7,
             stations: 8,
             wpsEnabled: true,
-            pmfRequired: true
+            pmfRequired: true,
+            informationElements: [
+                InformationElement(
+                    id: "eht-op", elementId: 255, length: 11,
+                    name: "Extension: EHT Operation",
+                    summary: "EHT Operation · 160 MHz · punctured 2",
+                    detailLines: ["Punctured subchannels: 2 (of 8)"],
+                    rawHex: ""
+                )
+            ]
         )
         let report = NetworkAnalyzer.analyze(networks: [network])
         let formatter = NetworkColumnFormatter(

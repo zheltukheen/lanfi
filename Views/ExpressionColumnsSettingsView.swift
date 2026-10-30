@@ -24,6 +24,7 @@ struct ExpressionColumnsSettingsView: View {
                             } label: {
                                 Image(systemName: "trash")
                             }
+                            .accessibilityLabel("Delete expression column")
                             .buttonStyle(.borderless)
                         }
                         TextField("Template, e.g. {ssid} · {signal} dBm", text: templateBinding(index))

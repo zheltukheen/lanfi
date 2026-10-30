@@ -22,4 +22,23 @@ final class OUIUpdaterTests: XCTestCase {
         OUIParser.removeOverride(prefix)
         XCTAssertNotEqual(OUIParser.vendor(for: "A1:B2:C3:00:00:01"), "Lab Vendor")
     }
+
+    func testAutoUpdateRequiresOptIn() {
+        let now = Date()
+        XCTAssertFalse(
+            OUIUpdater.shouldAutoUpdate(now: now, lastUpdated: nil, isEnabled: false),
+            "Disabled by default: no network call without opt-in"
+        )
+        XCTAssertTrue(
+            OUIUpdater.shouldAutoUpdate(now: now, lastUpdated: nil, isEnabled: true)
+        )
+    }
+
+    func testAutoUpdateRunsWhenDatabaseIsStale() {
+        let now = Date()
+        let fresh = now.addingTimeInterval(-OUIUpdater.autoUpdateInterval + 60)
+        let stale = now.addingTimeInterval(-OUIUpdater.autoUpdateInterval - 60)
+        XCTAssertFalse(OUIUpdater.shouldAutoUpdate(now: now, lastUpdated: fresh, isEnabled: true))
+        XCTAssertTrue(OUIUpdater.shouldAutoUpdate(now: now, lastUpdated: stale, isEnabled: true))
+    }
 }

@@ -12,6 +12,36 @@ enum OUIUpdater {
         (try? FileManager.default.attributesOfItem(atPath: customDatabaseURL.path)[.modificationDate]) as? Date
     }
 
+    // MARK: - Scheduled auto-update (opt-in)
+
+    static let autoUpdateDefaultsKey = "LanFi.autoUpdateOUI"
+    static let autoUpdateInterval: TimeInterval = 7 * 24 * 60 * 60
+
+    static var isAutoUpdateEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: autoUpdateDefaultsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: autoUpdateDefaultsKey) }
+    }
+
+    /// Pure decision logic: enabled, and the database is missing or older than
+    /// a week. Separated from the network call so it is testable.
+    static func shouldAutoUpdate(
+        now: Date, lastUpdated: Date?, isEnabled: Bool
+    ) -> Bool {
+        guard isEnabled else { return false }
+        guard let lastUpdated else { return true }
+        return now.timeIntervalSince(lastUpdated) > autoUpdateInterval
+    }
+
+    /// Background check, safe to call on every app activation: no-ops unless
+    /// the user opted in and the database is stale. Errors are swallowed so a
+    /// network failure never surfaces outside the settings UI.
+    static func runScheduledUpdateIfNeeded(now: Date = Date()) async {
+        guard
+            shouldAutoUpdate(now: now, lastUpdated: lastUpdated, isEnabled: isAutoUpdateEnabled)
+        else { return }
+        _ = try? await update()
+    }
+
     static func update() async throws -> Date {
         var request = URLRequest(url: remoteURL)
         request.timeoutInterval = 60

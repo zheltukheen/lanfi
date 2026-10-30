@@ -90,6 +90,7 @@ struct CustomFiltersView: View {
                         Image(systemName: "trash")
                     }
                     .help("Delete filter")
+                    .accessibilityLabel("Delete filter")
                 }
             }
             .buttonStyle(.borderless)
@@ -197,6 +198,7 @@ struct CustomFiltersView: View {
                             Image(systemName: "minus.circle")
                         }
                         .buttonStyle(.borderless)
+                        .accessibilityLabel("Remove condition")
                     } else {
                         Text(rule.field.title).font(.caption.bold())
                         Text(rule.op.title).font(.caption).foregroundColor(.secondary)

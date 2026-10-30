@@ -36,6 +36,7 @@ enum ColumnId: String, CaseIterable, Codable {
     case networkName
     case noise
     case protectionMode
+    case puncturing
     case quality
     case snr
     case security
@@ -82,6 +83,7 @@ enum ColumnId: String, CaseIterable, Codable {
         case .networkName: return String(localized: "Network Name")
         case .noise: return String(localized: "Noise")
         case .protectionMode: return String(localized: "Protection Mode")
+        case .puncturing: return String(localized: "Puncturing")
         case .quality: return String(localized: "Quality")
         case .snr: return String(localized: "SNR")
         case .security: return String(localized: "Security")
@@ -130,6 +132,8 @@ enum ColumnId: String, CaseIterable, Codable {
             return 120
         case .protectionMode:
             return 160
+        case .puncturing:
+            return 90
         }
     }
 
@@ -166,7 +170,7 @@ enum ColumnId: String, CaseIterable, Codable {
         .protectionMode, .beaconInterval, .beaconRate, .beaconAirtime, .wideChannel,
         .centerFrequency, .basicRates, .minRate, .minBasicRate,
         .maxBasicRate, .amendments, .annotations, .apName, .count, .ieCount,
-        .ieTotalLength, .type, .beaconMode,
+        .ieTotalLength, .type, .beaconMode, .puncturing,
     ]
 }
 

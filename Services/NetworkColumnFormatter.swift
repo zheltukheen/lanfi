@@ -57,6 +57,7 @@ struct NetworkColumnFormatter {
         case .networkName: return annotation(for: network)?.displayAlias ?? network.displaySSID
         case .noise: return network.noiseLabel
         case .protectionMode: return network.protectionMode ?? "-"
+        case .puncturing: return EHTPuncturing.parse(elements: network.informationElements)?.columnLabel ?? "-"
         case .quality: return metrics(for: network)?.qualityScore.description ?? "-"
         case .security: return network.security
         case .seen: return "\(network.seen)"
@@ -159,6 +160,11 @@ struct NetworkColumnFormatter {
             return compareOptional(first.uptimeSeconds, second.uptimeSeconds)
         case .vendor:
             return compareText(first.vendor, second.vendor)
+        case .puncturing:
+            return compareText(
+                EHTPuncturing.parse(elements: first.informationElements)?.columnLabel ?? "",
+                EHTPuncturing.parse(elements: second.informationElements)?.columnLabel ?? ""
+            )
         case .wideChannel:
             return (first.channelWidthMHz >= 80 ? 1 : 0) < (second.channelWidthMHz >= 80 ? 1 : 0)
         }

@@ -12,7 +12,7 @@ audit with remediation. The remaining gap to paid desktop tools is mostly
 
 | Product | Positioning | Notable capabilities | Typical price |
 | --- | --- | --- | --- |
-| **LanFi** | Free, open-source, privacy-first macOS analyzer | Quality/congestion scores, ranked 2.4/5/6 GHz channels, security audit, IE decoding, CSV/JSON, menu bar, 58k-prefix OUI DB | Free (MIT) |
+| **LanFi** | Free, open-source, privacy-first macOS analyzer | Quality/congestion scores, ranked 2.4/5/6 GHz channels, security audit, IE decoding (incl. Wi-Fi 7 puncturing), CSV/JSON, menu bar, 58k-prefix OUI DB with opt-in auto-update, 5 languages | Free (MIT) |
 | **WiFi Explorer Pro 3** (macOS) | Prosumer/IT analyzer | 950+ fields, grouping and column profiles, remote sensors (SSH/WLAN Pi), PCAP/PCAPNG, hardware spectrum, MLO/Wi-Fi 7 details, AP-name detection, vendor DB updates, 5 languages, notarized | ~$100–150 one-time |
 | **WiFi Explorer** (macOS) | Mainstream Mac analyzer | Fast scan, filters, details, 6 GHz, clean native UI, notarized | ~$20 one-time |
 | **NetSpot** | Heatmaps/site surveys | Floor-plan import, walking surveys, heatmaps, reports | Free tier; ~$19/mo or ~$179 one-time |
@@ -40,7 +40,9 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 **At parity**
 - Native CoreWLAN scan, 6 GHz/Wi-Fi 7 generation detection, IE decoder,
   spectrum/history charts, filters, configurable columns, menu bar extra,
-  universal build, tests/CI.
+  universal build, tests/CI, 5 languages.
+- Wi-Fi 7 detail depth: MLO link sets in captures and preamble-puncturing
+  decoding in EHT Operation.
 
 **Behind paid tools / external**
 - Notarized builds (only an Apple Development identity is available; no Apple
@@ -50,8 +52,9 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - Hardware spectrum analyzer integration (WLAN Pi, Wi-Spy, etc.).
 - Full per-link MLO BSSID sets in live scans (macOS scan APIs do not report
   them; offline captures now assemble complete link sets per AP MLD).
-- Manual VoiceOver audit of every remaining screen (chart descriptors and key
-  controls are covered).
+- Manual VoiceOver audit of every remaining screen (icon-only buttons now
+  carry accessibility labels and chart descriptors/key controls are covered;
+  a hands-on VoiceOver pass is still open).
 
 ## Delivered in 2.7
 

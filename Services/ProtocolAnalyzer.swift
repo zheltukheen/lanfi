@@ -162,6 +162,27 @@ enum ProtocolAnalyzer {
         let reports320 =
             network.channelWidthMHz >= 320
             || (ehtOperation?.summary.localizedCaseInsensitiveContains("320 MHz") ?? false)
+        let puncturing = EHTPuncturing.parse(elements: network.informationElements)
+        let puncturingValue: String
+        let puncturingDetail: String
+        let puncturingStatus: ProtocolFactStatus
+        if let puncturing, puncturing.bitmapPresent {
+            if puncturing.puncturedSubchannels.isEmpty {
+                puncturingValue = "None"
+                puncturingDetail = "Disabled subchannel bitmap present, no subchannels punctured"
+                puncturingStatus = .good
+            } else {
+                puncturingValue = puncturing.puncturedSubchannels.map(String.init).joined(separator: ", ")
+                puncturingDetail =
+                    "Punctured 20 MHz subchannels (from lowest frequency, of "
+                    + "\(puncturing.validSubchannelCount)); AP avoids them due to interference"
+                puncturingStatus = .info
+            }
+        } else {
+            puncturingValue = "Not reported"
+            puncturingDetail = "EHT Operation carries no disabled subchannel bitmap"
+            puncturingStatus = .unknown
+        }
         var facts: [ProtocolFact] = [
             ProtocolFact(
                 id: "wifi7",
@@ -194,6 +215,13 @@ enum ProtocolAnalyzer {
                     ? "EHT Operation or CoreWLAN reports 320 MHz"
                     : "CoreWLAN width: \(network.channelWidthLabel) MHz",
                 status: reports320 ? .good : .unknown
+            ),
+            ProtocolFact(
+                id: "puncturing",
+                label: "Preamble puncturing",
+                value: puncturingValue,
+                detail: puncturingDetail,
+                status: puncturingStatus
             ),
         ]
         if network.band == .band6 {

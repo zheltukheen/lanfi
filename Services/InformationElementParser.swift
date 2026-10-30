@@ -652,24 +652,52 @@ struct InformationElementParser {
     }
 
     private static func decodeEhtOperation(_ data: Data) -> (name: String, summary: String, detailLines: [String]) {
-        guard data.count >= 6 else {
+        guard data.count >= 2 else {
             return (
                 name: "Extension: EHT Operation",
                 summary: "EHT Operation (truncated)",
                 detailLines: ["EHT Operation: \(hexString(data))"]
             )
         }
-        let widthCode = data[5] & 0x07
-        let widths = [0: "20 MHz", 1: "40 MHz", 2: "80 MHz", 3: "160 MHz", 4: "320 MHz"]
-        let width = widths[Int(widthCode)] ?? "reserved"
-        return (
-            name: "Extension: EHT Operation",
-            summary: "EHT Operation · \(width)",
-            detailLines: [
-                "EHT Operation: channel width \(width)",
-                "EHT Operation parameters: 0x\(String(format: "%02X", data[0]))",
-            ]
-        )
+        let params = data[0]
+        let infoPresent = params & 0x01 != 0
+        let bitmapPresent = params & 0x02 != 0
+        var details = [
+            "EHT Operation parameters: 0x\(String(format: "%02X", params))"
+        ]
+        if params & 0x04 != 0 { details.append("Default PE duration: 16 µs") }
+        if params & 0x40 != 0 { details.append("MCS 15: disabled") }
+
+        var summary = "EHT Operation"
+        var widthName = ""
+        if infoPresent, data.count >= 8 {
+            let widthCode = data[5] & 0x07
+            let widths = [0: "20 MHz", 1: "40 MHz", 2: "80 MHz", 3: "160 MHz", 4: "320 MHz"]
+            widthName = widths[Int(widthCode)] ?? "reserved"
+            details.append("EHT Operation channel width \(widthName)")
+            details.append("Channel center segment 0: \(data[6])")
+            details.append("Channel center segment 1: \(data[7])")
+            if bitmapPresent, data.count >= 10 {
+                let bitmap = UInt16(data[8]) | (UInt16(data[9]) << 8)
+                details.append("Disabled subchannel bitmap: 0x\(String(format: "%04X", bitmap))")
+                let widthsPerCode = EHTPuncturing.subchannelsPerWidth
+                let validCount =
+                    widthsPerCode.indices.contains(Int(widthCode)) ? widthsPerCode[Int(widthCode)] : 0
+                let punctured = (0..<validCount).filter { bitmap & (1 << $0) != 0 }.map { $0 + 1 }
+                let puncturedText =
+                    punctured.isEmpty ? "none" : punctured.map(String.init).joined(separator: ", ")
+                details.append(
+                    "Punctured subchannels: \(puncturedText) (of \(validCount))"
+                )
+                if !punctured.isEmpty {
+                    summary += " · punctured \(punctured.map(String.init).joined(separator: ","))"
+                }
+            } else if bitmapPresent {
+                details.append("Disabled subchannel bitmap: truncated")
+            }
+        }
+        summary = widthName.isEmpty ? "\(summary) (no operation info)" : "\(summary) · \(widthName)"
+        return (name: "Extension: EHT Operation", summary: summary, detailLines: details)
     }
 
     private static func decodeHeCapabilities(_ data: Data) -> (summary: String, detailLines: [String]) {

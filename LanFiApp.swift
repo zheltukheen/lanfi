@@ -67,6 +67,9 @@ struct LanFiApp: App {
                         if viewModel.isLocationAuthorized {
                             viewModel.refresh()
                         }
+
+                        // Opt-in weekly vendor database refresh; no-ops unless enabled and stale.
+                        Task { await OUIUpdater.runScheduledUpdateIfNeeded() }
                     }
                 }
         }
