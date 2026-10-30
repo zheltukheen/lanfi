@@ -15,6 +15,7 @@ struct SurveyView: View {
     @State private var show3DFloors = false
     @State private var calibrating = false
     @State private var calibrationPoints: [SurveyPoint] = []
+    @StateObject private var heatGridCache = HeatGridCache()
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -253,6 +254,17 @@ struct SurveyView: View {
         } else {
             GeometryReader { geo in
                 let rect = fittedRect(in: geo.size)
+                let cell: CGFloat = 6
+                let columns = max(1, Int(rect.width / cell))
+                let rows = max(1, Int(rect.height / cell))
+                let heatGrid = heatGridCache.grid(
+                    columns: columns, rows: rows,
+                    key: heatGridKey(columns: columns, rows: rows)
+                ) { column, row in
+                    let nx = (Double(column) * Double(cell) + Double(cell) / 2) / Double(rect.width)
+                    let ny = (Double(row) * Double(cell) + Double(cell) / 2) / Double(rect.height)
+                    return estimateRSSI(nx: nx, ny: ny)
+                }
                 ZStack(alignment: .topLeading) {
                     Color(nsColor: .underPageBackgroundColor)
                     if let image = survey.floorPlanImage {
@@ -263,7 +275,7 @@ struct SurveyView: View {
                             .position(x: rect.midX, y: rect.midY)
                     }
                     Canvas { context, _ in
-                        drawInterpolatedHeat(context: context, rect: rect)
+                        drawHeatGrid(context: context, rect: rect, grid: heatGrid, cell: cell)
                         for sample in displayedSamples {
                             let point = CGPoint(
                                 x: rect.minX + sample.x * rect.width,
@@ -417,27 +429,60 @@ struct SurveyView: View {
         roomMode = false
     }
 
-    private func drawPredictiveHeat(context: GraphicsContext, rect: CGRect) {
-        let cell: CGFloat = 6
-        let width = survey.project.planWidthMeters ?? 30
-        var y = rect.minY
-        while y < rect.maxY {
-            var x = rect.minX
-            while x < rect.maxX {
-                let nx = Double((x - rect.minX) / rect.width)
-                let ny = Double((y - rect.minY) / rect.height)
-                if let rssi = SurveyPredictor.estimate(
-                    x: nx, y: ny, accessPoints: survey.accessPoints,
-                    walls: survey.walls, obstacles: survey.obstacles, planWidthMeters: width
-                ) {
-                    context.fill(
-                        Path(CGRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5)),
-                        with: .color(heatColor(rssi).opacity(0.42))
-                    )
-                }
-                x += cell
+    /// Interpolates one grid cell. Predictive mode (placed access points)
+    /// takes precedence over measured samples, matching the previous
+    /// drawing behaviour.
+    private func estimateRSSI(nx: Double, ny: Double) -> Int? {
+        if predictiveMode && !survey.accessPoints.isEmpty {
+            let width = survey.project.planWidthMeters ?? 30
+            return SurveyPredictor.estimate(
+                x: nx, y: ny, accessPoints: survey.accessPoints,
+                walls: survey.walls, obstacles: survey.obstacles, planWidthMeters: width
+            )
+        }
+        guard !displayedSamples.isEmpty else { return nil }
+        return SurveyInterpolator.estimate(
+            x: nx, y: ny, samples: displayedSamples, walls: survey.walls,
+            obstacles: survey.obstacles
+        )
+    }
+
+    /// Fingerprint of everything that invalidates the interpolated grid:
+    /// mode, cell geometry and the identity of samples, walls and rooms.
+    private func heatGridKey(columns: Int, rows: Int) -> String {
+        var parts = [
+            "\(columns)x\(rows)",
+            "w:\(survey.walls.count):\(survey.walls.map(\.id.uuidString).joined(separator: ","))",
+            "o:\(survey.obstacles.count):\(survey.obstacles.map(\.id.uuidString).joined(separator: ","))",
+        ]
+        if predictiveMode && !survey.accessPoints.isEmpty {
+            parts.append("predictive")
+            parts.append("ap:\(survey.accessPoints.map(\.id.uuidString).joined(separator: ","))")
+            parts.append("plan:\(survey.project.planWidthMeters ?? 30)")
+        } else {
+            parts.append("measured")
+            parts.append("s:\(displayedSamples.map(\.id.uuidString).joined(separator: ","))")
+        }
+        return parts.joined(separator: "|")
+    }
+
+    private func drawHeatGrid(
+        context: GraphicsContext, rect: CGRect, grid: HeatGridCache.Grid, cell: CGFloat
+    ) {
+        let opacity = predictiveMode && !survey.accessPoints.isEmpty ? 0.42 : 0.46
+        for row in 0..<grid.rows {
+            for column in 0..<grid.columns {
+                guard let rssi = grid.cells[row * grid.columns + column] else { continue }
+                context.fill(
+                    Path(
+                        CGRect(
+                            x: rect.minX + CGFloat(column) * cell,
+                            y: rect.minY + CGFloat(row) * cell,
+                            width: cell + 0.5, height: cell + 0.5
+                        )),
+                    with: .color(heatColor(rssi).opacity(opacity))
+                )
             }
-            y += cell
         }
     }
 
@@ -511,35 +556,6 @@ struct SurveyView: View {
         return CGRect(x: (size.width - width) / 2, y: (size.height - height) / 2, width: width, height: height)
     }
 
-    private func drawInterpolatedHeat(context: GraphicsContext, rect: CGRect) {
-        if predictiveMode && !survey.accessPoints.isEmpty {
-            drawPredictiveHeat(context: context, rect: rect)
-            return
-        }
-        guard !displayedSamples.isEmpty else { return }
-        let cell: CGFloat = 6
-        var y = rect.minY
-        while y < rect.maxY {
-            var x = rect.minX
-            while x < rect.maxX {
-                let nx = Double((x - rect.minX) / rect.width)
-                let ny = Double((y - rect.minY) / rect.height)
-                if let rssi = SurveyInterpolator.estimate(
-                    x: nx, y: ny, samples: displayedSamples, walls: survey.walls,
-                    obstacles: survey.obstacles
-                ) {
-                    let color = heatColor(rssi)
-                    context.fill(
-                        Path(CGRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5)),
-                        with: .color(color.opacity(0.46))
-                    )
-                }
-                x += cell
-            }
-            y += cell
-        }
-    }
-
     private func drawSample(context: GraphicsContext, at point: CGPoint, rssi: Int) {
         let color = heatColor(rssi)
         context.fill(
@@ -577,11 +593,7 @@ struct SurveyView: View {
     }
 
     private func heatColor(_ rssi: Int) -> Color {
-        switch rssi {
-        case (-50)...: return .green
-        case (-65)...: return .yellow
-        case (-78)...: return .orange
-        default: return .red
-        }
+        let (r, g, b) = HeatPalette.rgb(Double(rssi))
+        return Color(red: r, green: g, blue: b)
     }
 }

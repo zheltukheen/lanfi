@@ -60,6 +60,10 @@ class AnalyzerViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var isScanning = false
 
+    /// When true the auto-refresh timer keeps running but skips scans, so
+    /// the table stays frozen without tearing down the scanning loop.
+    @Published var isAutoScanPaused = false
+
     // MARK: - Color Logic
 
     /// Глобальный генератор цвета для сети, чтобы во всех графах он был одинаковым
@@ -205,7 +209,8 @@ class AnalyzerViewModel: ObservableObject {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.refresh()
+                guard let self, !self.isAutoScanPaused else { return }
+                self.refresh()
             }
         }
         timer?.tolerance = max(0.2, refreshInterval * 0.1)
