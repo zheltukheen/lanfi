@@ -38,6 +38,7 @@ struct ControllersSettingsView: View {
                     } label: {
                         Image(systemName: "trash")
                     }
+                    .accessibilityLabel("Delete controller account")
                     .disabled(selected == nil)
                 }
                 .buttonStyle(.borderless)

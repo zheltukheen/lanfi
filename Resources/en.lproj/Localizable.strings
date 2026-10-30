@@ -467,3 +467,6 @@
 "Not in capture" = "Not in capture";
 "No Multi-Link elements found in this capture." = "No Multi-Link elements found in this capture.";
 "\(group.capturedLinkCount) of \(group.links.count) links captured" = "\(group.capturedLinkCount) of \(group.links.count) links captured";
+"Puncturing" = "Puncturing";
+"Preamble puncturing" = "Preamble puncturing";
+"Update automatically (weekly)" = "Update automatically (weekly)";

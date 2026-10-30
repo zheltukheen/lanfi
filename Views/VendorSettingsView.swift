@@ -247,6 +247,7 @@ private struct VendorSettingsView: View {
     @State private var status: String?
     @State private var errorMessage: String?
     @State private var lastUpdated = OUIUpdater.lastUpdated
+    @State private var autoUpdate = OUIUpdater.isAutoUpdateEnabled
 
     var body: some View {
         Form {
@@ -255,6 +256,10 @@ private struct VendorSettingsView: View {
                     Text(lastUpdated.map { $0.formatted(date: .abbreviated, time: .shortened) } ?? "Bundled only")
                         .foregroundColor(.secondary)
                 }
+                Toggle("Update automatically (weekly)", isOn: $autoUpdate)
+                    .onChange(of: autoUpdate) { newValue in
+                        OUIUpdater.isAutoUpdateEnabled = newValue
+                    }
                 HStack {
                     Button {
                         updateDatabase()

@@ -111,6 +111,36 @@ final class EHTInformationElementTests: XCTestCase {
         XCTAssertTrue(element.summary.contains("320 MHz"))
     }
 
+    func testEhtOperationDecodesPuncturingBitmap() throws {
+        // params = info present | bitmap present, control width=2 (80 MHz),
+        // CCFS0=42, CCFS1=42, bitmap 0x0005: bits 0 and 2 punctured.
+        let payload: [UInt8] = [106, 0x03, 0, 0, 0, 0, 0x02, 0x2A, 0x2A, 0x05, 0x00]
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name.contains("EHT Operation") })
+        XCTAssertTrue(element.summary.contains("80 MHz"), element.summary)
+        XCTAssertTrue(element.summary.contains("punctured"), element.summary)
+        XCTAssertTrue(
+            element.detailLines.contains { $0.contains("Punctured subchannels: 1, 3 (of 4)") },
+            "\(element.detailLines)"
+        )
+        XCTAssertTrue(
+            element.detailLines.contains { $0.contains("Channel center segment 0: 42") },
+            "\(element.detailLines)"
+        )
+    }
+
+    func testEhtOperationWithoutBitmapReportsNone() throws {
+        let payload: [UInt8] = [106, 0x01, 0, 0, 0, 0, 0x02, 0x2A, 0x2A]
+        var data = Data([255, UInt8(payload.count)])
+        data.append(contentsOf: payload)
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name.contains("EHT Operation") })
+        XCTAssertFalse(element.summary.contains("punctured"))
+        XCTAssertFalse(element.detailLines.contains { $0.contains("Punctured subchannels") })
+    }
+
     func testEhtCapabilitiesIsDecoded() throws {
         let payload: [UInt8] = [108] + Array(repeating: 0, count: 11)
         var data = Data([255, UInt8(payload.count)])

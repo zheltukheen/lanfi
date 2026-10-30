@@ -634,7 +634,7 @@ struct ToolbarView: View {
             Spacer()
             if let connected = viewModel.connectedNetwork {
                 HStack(spacing: 5) {
-                    Image(systemName: "wifi").font(.caption2).foregroundColor(.green)
+                    Image(systemName: "wifi").font(.caption2).foregroundColor(.green).accessibilityHidden(true)
                     Text(connected.displayName).font(.caption2).lineLimit(1)
                     Text("\(connected.signal) dBm").font(.caption2).foregroundColor(.secondary)
                 }

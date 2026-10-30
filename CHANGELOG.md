@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Wi-Fi 7 preamble puncturing: the EHT Operation element now decodes the
+  Disabled Subchannel Bitmap and reports which 20 MHz subchannels are
+  punctured (new "Puncturing" column, inspector detail and analyzer fact).
+- `lanfi-cli pcap --json` now includes `mloGroups` with per-link BSSID,
+  channel and RSSI, and prints MLO group lines in text mode.
+- Opt-in automatic OUI vendor database update: when enabled in Vendor
+  settings, the app refreshes the vendor list weekly in the background
+  (default off; the app's first and only network request).
+- German, French and Simplified Chinese localizations (application is now
+  available in 5 languages, matching WiFi Explorer Pro).
+- Accessibility labels on the remaining icon-only buttons (delete filter,
+  remove condition, delete sensor, delete coloring rule, delete expression
+  column, delete controller account) and the decorative Wi-Fi indicator is
+  hidden from VoiceOver.
+
 ## 4.9.0 — 2026-10-30
 
 ### Added

@@ -2,7 +2,9 @@
 
 LanFi uses standard `.lproj/Localizable.strings` files. English source keys live in
 `Resources/en.lproj/Localizable.strings`; Russian is in
-`Resources/ru.lproj/Localizable.strings`.
+`Resources/ru.lproj/Localizable.strings`. German, French and Simplified Chinese
+live alongside in `de.lproj`, `fr.lproj` and `zh-Hans.lproj`; all five locales
+are declared in `CFBundleLocalizations` in `project.yml`.
 
 ## Add a language
 

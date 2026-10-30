@@ -53,6 +53,7 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
+        CFBundleLocalizations: [en, ru, de, fr, zh-Hans]
         NSHumanReadableCopyright: "© 2026 LanFi Contributors"
         NSLocationUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
         NSLocationWhenInUseUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
@@ -98,6 +99,7 @@ targets:
       - path: Models/SurveyAccessPoint.swift
       - path: Models/MLOInfo.swift
       - path: Models/MLOGroup.swift
+      - path: Models/EHTPuncturing.swift
       - path: Models/SupportedChannel.swift
       - path: Models/ChannelAdvice.swift
       - path: Services/ChannelAdvisor.swift
@@ -146,6 +148,9 @@ targets:
       - CLI
       - Models/NetworkModel.swift
       - Models/ProtocolProfile.swift
+      - Models/MLOInfo.swift
+      - Models/MLOGroup.swift
+      - Models/EHTPuncturing.swift
       - Services/NetworkAnalyzer.swift
       - Services/ProtocolAnalyzer.swift
       - Services/PcapAnalyzer.swift
