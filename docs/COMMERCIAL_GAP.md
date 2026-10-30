@@ -50,6 +50,10 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 - External USB Wi-Fi adapter measurement path beyond interfaces exposed by
   CoreWLAN.
 - Hardware spectrum analyzer integration (WLAN Pi, Wi-Spy, etc.).
+  Partially delivered after 4.10: RF Explorer live sweeps over USB-serial,
+  Wi-Spy USB detection + Chanalyzer CSV import. Raw Wi-Spy USB reading
+  still requires a user-space driver that cannot be validated without
+  the hardware.
 - Full per-link MLO BSSID sets in live scans (macOS scan APIs do not report
   them; offline captures now assemble complete link sets per AP MLD).
 - Manual VoiceOver audit of every remaining screen (icon-only buttons now

@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Hardware spectrum window (Tools → Hardware Spectrum, ⇧⌘Y): live RF
+  sweeps from an RF Explorer analyzer over its USB-serial port (official
+  UART protocol: `#C2-F:` config, `$S/$s/$z` sweep packets), with
+  max-hold, peak marker, Wi-Fi channel guides and CSV export.
+- Wi-Spy device detection over USB (I/O Registry): the app reports the
+  connected MetaGeek model; Chanalyzer CSV traces import into the
+  hardware spectrum view.
+- Spectrum CSV import: Chanalyzer exports and any frequency/dBm table.
+- Toolbar: band quick-filter chips (2.4/5/6 GHz — the toolbar toggle in
+  settings was wired but never rendered), pause/resume auto-scan button,
+  and a Hardware Spectrum shortcut.
+- Survey heatmap: continuous red→green palette replaces the four hard
+  bins, and the interpolated grid is memoised — hover and layout redraws
+  no longer re-run IDW interpolation over every cell.
+
 ## 4.10.0 — 2026-10-30
 
 ### Added

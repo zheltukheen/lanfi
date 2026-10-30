@@ -455,6 +455,15 @@ struct ToolbarView: View {
             .help("Site Survey")
             .accessibilityLabel("Open Site Survey")
 
+            Button {
+                openWindow(id: "hardware-spectrum")
+            } label: {
+                Image(systemName: "waveform.path.ecg")
+            }
+            .buttonStyle(.borderless)
+            .help("Hardware Spectrum")
+            .accessibilityLabel("Open hardware spectrum")
+
             Menu {
                 toolMenuItems
             } label: {
@@ -471,6 +480,7 @@ struct ToolbarView: View {
             Button("Packet Capture") { selectedBottomTab = 7 }
             Button("Diagnostics") { selectedBottomTab = 6 }
             Button("Site Survey") { openWindow(id: "survey") }
+            Button("Hardware Spectrum") { openWindow(id: "hardware-spectrum") }
             Divider()
             toolMenuItems
         } label: {
@@ -551,6 +561,19 @@ struct ToolbarView: View {
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
 
+                // A2. Пауза/возобновление автопересканирования
+                Button(action: { viewModel.isAutoScanPaused.toggle() }) {
+                    Image(systemName: viewModel.isAutoScanPaused ? "play.fill" : "pause.fill")
+                        .foregroundColor(viewModel.isAutoScanPaused ? .accentColor : .primary)
+                }
+                .help(viewModel.isAutoScanPaused ? "Resume Auto-Scan" : "Pause Auto-Scan")
+                .accessibilityLabel(viewModel.isAutoScanPaused ? "Resume auto-scan" : "Pause auto-scan")
+                .buttonStyle(.borderless)
+                .frame(width: 36, height: 28)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .cornerRadius(6)
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
+
                 // B. Меню Настроек (Шестеренка) - унифицированный стиль
                 Menu {
                     // Секция 1: Мониторинг
@@ -614,6 +637,15 @@ struct ToolbarView: View {
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
                 .help("Settings & Monitoring Control")
+
+                // Band quick-filter chips (setting lives in toolbar preferences)
+                if showBands {
+                    HStack(spacing: 6) {
+                        BandFilterChip(title: "2.4", color: .green, isOn: $viewModel.filterBand24)
+                        BandFilterChip(title: "5", color: .blue, isOn: $viewModel.filterBand5)
+                        BandFilterChip(title: "6", color: .purple, isOn: $viewModel.filterBand6)
+                    }
+                }
             }
 
             // 3. Search

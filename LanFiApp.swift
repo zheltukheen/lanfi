@@ -107,6 +107,11 @@ struct LanFiApp: App {
                 .frame(minWidth: 1100, minHeight: 650)
         }
 
+        Window("Hardware Spectrum", id: "hardware-spectrum") {
+            HardwareSpectrumView()
+                .frame(minWidth: 900, minHeight: 520)
+        }
+
         Window("History", id: "history") {
             SignalHistoryView(viewModel: viewModel, isFullScreen: true)
                 .frame(minWidth: 1100, minHeight: 650)

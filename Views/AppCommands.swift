@@ -146,6 +146,11 @@ struct LanFiCommands: Commands {
                 NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
             }
 
+            Button("Hardware Spectrum…") {
+                openWindow(id: "hardware-spectrum")
+            }
+            .keyboardShortcut("y", modifiers: [.command, .shift])
+
             Divider()
 
             Button("Run Network Diagnostics") {
