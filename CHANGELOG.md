@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.11.0 — 2026-10-31
 
 ### Added
 - Hardware spectrum window (Tools → Hardware Spectrum, ⇧⌘Y): live RF
