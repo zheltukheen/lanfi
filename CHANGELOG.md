@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.11.1 — 2026-10-31
+
+### Fixed
+- Removed the duplicate band quick-filter chips from the toolbar: the
+  sidebar filter panel already carries the same 2.4/5/6/Wi-Fi 7/Other
+  chips, so the toolbar copies were redundant (and the toolbar "Band
+  chips" preference is gone with them).
+
 ## 4.11.0 — 2026-10-31
 
 ### Added
