@@ -106,7 +106,6 @@ private struct GeneralSettingsView: View {
             }
 
             Section("Toolbar") {
-                Toggle("Band chips", isOn: binding("LanFi.toolbar.bands", default: true))
                 Toggle("Search field", isOn: binding("LanFi.toolbar.search", default: true))
                 Toggle("Export menu", isOn: binding("LanFi.toolbar.export", default: true))
                 Toggle("Live capture button", isOn: binding("LanFi.toolbar.capture", default: true))

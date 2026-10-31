@@ -421,7 +421,6 @@ struct ToolbarView: View {
     @Binding var showingLiveCapture: Bool
     @Binding var selectedBottomTab: Int
     @FocusState private var isSearchFocused: Bool
-    @AppStorage("LanFi.toolbar.bands") private var showBands = true
     @AppStorage("LanFi.toolbar.search") private var showSearch = true
     @AppStorage("LanFi.toolbar.export") private var showExport = true
     @AppStorage("LanFi.toolbar.capture") private var showCapture = true
@@ -637,15 +636,6 @@ struct ToolbarView: View {
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
                 .help("Settings & Monitoring Control")
-
-                // Band quick-filter chips (setting lives in toolbar preferences)
-                if showBands {
-                    HStack(spacing: 6) {
-                        BandFilterChip(title: "2.4", color: .green, isOn: $viewModel.filterBand24)
-                        BandFilterChip(title: "5", color: .blue, isOn: $viewModel.filterBand5)
-                        BandFilterChip(title: "6", color: .purple, isOn: $viewModel.filterBand6)
-                    }
-                }
             }
 
             // 3. Search
