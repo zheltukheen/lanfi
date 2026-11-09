@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LanFi — анализатор Wi‑Fi для Mac</title>
+  <meta name="description" content="LanFi — бесплатный анализатор Wi‑Fi для macOS на CoreWLAN: оценка качества сетей, рекомендации каналов, аудит безопасности, протоколы, диагностика и тепловая карта. Без аккаунтов и телеметрии.">
+  <link rel="canonical" href="https://zheltukheen.github.io/lanfi/">
+  <meta property="og:title" content="LanFi — анализатор Wi‑Fi для Mac">
+  <meta property="og:description" content="Оценка качества каждой сети, рекомендации свободных каналов и аудит безопасности — нативно, локально и без телеметрии.">
+  <meta property="og:url" content="https://zheltukheen.github.io/lanfi/">
+  <meta property="og:site_name" content="LanFi">
+  <meta property="og:locale" content="ru">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://zheltukheen.github.io/lanfi/assets/lanfi-main.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LanFi — анализатор Wi‑Fi для Mac">
+  <meta name="twitter:description" content="Оценка качества каждой сети, рекомендации свободных каналов и аудит безопасности — нативно, локально и без телеметрии.">
+  <meta name="twitter:image" content="https://zheltukheen.github.io/lanfi/assets/lanfi-main.webp">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="preload" href="assets/fonts/inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Перейти к содержимому</a>
+  <div class="site-canvas">
+    <main id="content">
+      <section class="hero" id="top">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <img class="app-icon" src="assets/lanfi-icon.png" alt="Иконка LanFi" width="126" height="126" fetchpriority="high" decoding="async">
+            <div class="hero-requirements" aria-label="Системные требования">
+              <span class="eyebrow">macOS&nbsp;13 и&nbsp;новее</span>
+              <span class="eyebrow">Apple&nbsp;Silicon и&nbsp;Intel</span>
+            </div>
+            <h1>Встречайте LanFi.</h1>
+            <div class="hero-description">
+              <p class="section-description">Нативный <span class="hl">анализатор Wi‑Fi</span> для&nbsp;Mac на&nbsp;<span class="hl">CoreWLAN</span>. Оценивает качество каждой сети, подсказывает свободный канал и&nbsp;проверяет безопасность — без&nbsp;Electron, аккаунтов и&nbsp;телеметрии.</p>
+              <p class="section-description hl">При первом запуске понадобится доступ к&nbsp;геолокации.</p>
+            </div>
+            <div class="hero-actions">
+              <a class="button button-primary button-large" href="https://github.com/zheltukheen/lanfi/releases/latest">Скачать для&nbsp;Mac</a>
+              <a class="button button-secondary button-large" href="https://github.com/zheltukheen/lanfi">
+                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.91-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.95c.85 0 1.69.12 2.49.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.25 10.25 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z"></path></svg>
+                GitHub
+              </a>
+            </div>
+          </div>
+          <div class="demo-frame">
+            <div class="demo-shot">
+              <img src="assets/lanfi-main.webp" alt="Окно LanFi: список сетей, инспектор с оценкой качества и дашборд Insights с рекомендациями каналов" width="2880" height="1900" decoding="async">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider" aria-hidden="true"></div>
+
+      <section class="section" aria-labelledby="analysis-title">
+        <div class="container">
+          <div class="section-heading section-heading--center">
+            <p class="eyebrow">Анализ</p>
+            <h2 id="analysis-title">Не столбцы, а&nbsp;диагноз.</h2>
+            <p class="section-description">Каждая сеть получает оценку от&nbsp;0 до&nbsp;100 по&nbsp;сигналу, шуму, загруженности эфира и&nbsp;безопасности. LanFi сам решает, какие веса применить, и&nbsp;объясняет, что именно тянет сеть вниз.</p>
+          </div>
+
+          <div class="demo-grid">
+            <article class="demo-card" data-reveal>
+              <div class="demo-card-copy">
+                <h3>Оценка 0–100</h3>
+                <p class="card-description">Сигнал, SNR, перекрытие каналов, утилизация и&nbsp;безопасность складываются в&nbsp;одну цифру. Недостающие метрики убираются, а&nbsp;оставшиеся веса пересчитываются — оценка остаётся честной.</p>
+              </div>
+              <div class="demo-card-media">
+                <div class="ui-panel" aria-hidden="true">
+                  <div class="ui-panel-head">
+                    <span class="ui-ssid">AX552</span>
+                    <span class="ui-badge">−51 dBm</span>
+                  </div>
+                  <div class="ui-quality">
+                    <span class="ui-quality-score">72</span>
+                    <span class="ui-quality-track"><i style="width:72%"></i></span>
+                    <span class="ui-quality-state">Good</span>
+                  </div>
+                  <div class="ui-row"><span>Signal</span><span class="ui-bar"><i style="width:99%"></i></span><b>99</b></div>
+                  <div class="ui-row"><span>SNR</span><span class="ui-bar"><i style="width:100%"></i></span><b>100</b></div>
+                  <div class="ui-row"><span>Congestion</span><span class="ui-bar"><i class="is-low" style="width:4%"></i></span><b>0</b></div>
+                  <div class="ui-row"><span>Security</span><span class="ui-bar"><i style="width:88%"></i></span><b>88</b></div>
+                  <div class="ui-note"><span>19 overlapping</span><span>6 co-channel</span></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="demo-card" data-reveal>
+              <div class="demo-card-copy">
+                <h3>Тихий канал</h3>
+                <p class="card-description">Для каждого диапазона — ранжированный список каналов, включая 20, 40 и&nbsp;80&nbsp;МГц. Перекрытие, загруженность и&nbsp;DFS учитываются, чтобы совет работал в&nbsp;реальном эфире.</p>
+              </div>
+              <div class="demo-card-media">
+                <div class="ui-panel" aria-hidden="true">
+                  <div class="ui-panel-head">
+                    <span class="ui-ssid">Channel quality</span>
+                    <span class="ui-badge">all bands</span>
+                  </div>
+                  <div class="ui-channel">
+                    <span class="ui-band">2.4 GHz</span>
+                    <b>Ch&nbsp;1</b>
+                    <span class="ui-width">20 MHz</span>
+                    <em class="is-bad">0</em>
+                  </div>
+                  <div class="ui-channel">
+                    <span class="ui-band">5 GHz</span>
+                    <b>Ch&nbsp;100</b>
+                    <span class="ui-width">80 MHz</span>
+                    <em class="is-good">100</em>
+                  </div>
+                  <div class="ui-channel">
+                    <span class="ui-band">6 GHz</span>
+                    <b>Ch&nbsp;37</b>
+                    <span class="ui-width">160 MHz</span>
+                    <em class="is-good">94</em>
+                  </div>
+                  <div class="ui-note"><span>9 overlap · 2.4 GHz</span><span>DFS · 5 GHz</span></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="security-title">
+        <div class="container">
+          <div class="section-heading section-heading--center">
+            <p class="eyebrow">Аудит</p>
+            <h2 id="security-title">Видно, что не&nbsp;так — и&nbsp;что делать.</h2>
+            <p class="section-description">Открытые сети, WEP, устаревший WPA, WPS и&nbsp;отсутствие защиты управляющих кадров получают уровень серьёзности и&nbsp;подсказку по&nbsp;исправлению. Блоки протоколов показывают PHY, безопасность, роуминг и&nbsp;эфир по&nbsp;каждой сети — без чтения сырых кадров.</p>
+          </div>
+
+          <figure class="showcase" data-reveal>
+            <div class="showcase-shot">
+              <img src="assets/lanfi-protocols.webp" alt="LanFi: блоки протоколов сети AX552 с предупреждениями безопасности и деталями WPS и PMF" width="2880" height="1900" loading="lazy" decoding="async">
+            </div>
+            <figcaption class="showcase-caption">
+              <span><b>5</b> предупреждений безопасности</span>
+              <span><b>WPS</b> включён</span>
+              <span><b>PMF</b> не требуется</span>
+              <span><b>802.11ax</b> · 40 МГц</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="path-title">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Диагностика</p>
+            <h2 id="path-title">Весь путь, а&nbsp;не&nbsp;только эфир.</h2>
+            <p class="section-description">LanFi проверяет Wi‑Fi, адреса, шлюз, DNS, captive portal, HTTPS и&nbsp;задержку до&nbsp;интернета. Смотрит все интерфейсы Mac, а&nbsp;не&nbsp;только беспроводной, и&nbsp;строит тепловую карту помещения по&nbsp;замерам.</p>
+          </div>
+
+          <div class="path-grid">
+            <article class="path-card" data-reveal>
+              <div class="path-card-copy">
+                <h3>Диагностика в&nbsp;один запуск</h3>
+                <p class="card-description">Ссылка, шлюз, DNS, перехват портала, HTTPS и&nbsp;задержка — с&nbsp;понятным «прошло» или «внимание» и&nbsp;историей мониторинга каждые 60&nbsp;секунд.</p>
+              </div>
+              <div class="path-card-media">
+                <img src="assets/lanfi-diagnostics.webp" alt="LanFi: экран диагностики с проверками Wi‑Fi, шлюза, DNS, задержки и captive portal" width="2880" height="1900" loading="lazy" decoding="async">
+              </div>
+            </article>
+
+            <article class="path-card" data-reveal>
+              <div class="path-card-copy">
+                <h3>Все интерфейсы Mac</h3>
+                <p class="card-description">Ethernet, VPN, мосты и&nbsp;петля: адреса, MTU, скорость, трафик и&nbsp;состояние обновляются в&nbsp;одном списке — удобно, когда проблема не&nbsp;в&nbsp;радио.</p>
+              </div>
+              <div class="path-card-media">
+                <img src="assets/lanfi-interfaces.webp" alt="LanFi: список сетевых интерфейсов Mac с адресами, трафиком и статусом" width="1600" height="1055" loading="lazy" decoding="async">
+              </div>
+            </article>
+
+            <article class="path-card path-card--wide" data-reveal>
+              <div class="path-card-copy">
+                <h3>Тепловая карта помещения</h3>
+                <p class="card-description">Импортируйте план, отметьте точки замера RSSI и&nbsp;расставьте стены. Интерполяция покажет, где сигнал проваливается, а&nbsp;отчёт сохранится в&nbsp;PDF.</p>
+              </div>
+              <div class="path-card-media path-card-media--survey">
+                <img src="assets/lanfi-survey.webp" alt="LanFi: тепловая карта помещения с планом офиса, стенами и цветовой шкалой RSSI" width="1600" height="1212" loading="lazy" decoding="async">
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="details-title">
+        <div class="container">
+          <div class="section-heading section-heading--center">
+            <p class="eyebrow">Больше возможностей</p>
+            <h2 id="details-title">Продуман в&nbsp;деталях.</h2>
+            <p class="section-description">От&nbsp;нативного интерфейса и&nbsp;офлайн‑базы производителей до&nbsp;CLI и&nbsp;удалённых сенсоров — каждая деталь помогает понять сеть быстрее.</p>
+          </div>
+
+          <div class="details-grid">
+            <article class="details-card details-card--featured" data-reveal>
+              <div class="details-card-copy">
+                <h3>Нативно на&nbsp;Swift</h3>
+                <p class="card-description">SwiftUI и&nbsp;AppKit без Electron: таблица на&nbsp;NSTableView, графики на&nbsp;Swift Charts и&nbsp;Canvas, сканирование вне главного потока.</p>
+              </div>
+              <div class="details-card-media">
+                <img class="details-icon" src="assets/lanfi-icon.png" alt="" width="150" height="150" loading="lazy" decoding="async" aria-hidden="true">
+              </div>
+            </article>
+
+            <article class="details-card details-card--zinc" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5a15 15 0 0 1 19 0M5.5 12a10.5 10.5 0 0 1 13 0M8.5 15.5a6 6 0 0 1 7 0"></path><circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none"></circle></svg>
+              <div class="details-card-compact-copy">
+                <h3>Только публичные API</h3>
+                <p class="card-description">CWWiFiClient и&nbsp;CWNetwork вместо приватных фреймворков и&nbsp;разбора вывода airport.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--slate" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.3 3 8.1 7.5 9.5 4.5-1.4 7.5-5.2 7.5-9.5V6L12 3Z"></path><path d="m8.8 12 2.2 2.2 4.2-4.4"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Без телеметрии</h3>
+                <p class="card-description">Ни аналитики, ни аккаунтов, ни облака. Наружу — только проверка обновлений и&nbsp;диагностика по&nbsp;вашему запросу.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--mist" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="7.5" ry="3"></ellipse><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>58 000 префиксов OUI</h3>
+                <p class="card-description">Офлайн‑база IEEE и&nbsp;Wireshark с&nbsp;поиском по&nbsp;самому длинному префиксу; рандомизированные MAC распознаются.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--olive" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"></path><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>CSV, JSON и&nbsp;PCAP</h3>
+                <p class="card-description">Выгрузка скана, синтетический beacon‑pcap для Wireshark и&nbsp;разбор готовых pcap/pcapng офлайн.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--mist" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"></rect><circle cx="9.5" cy="12" r="2.6"></circle><path d="M14.5 9.5h3.5M14.5 12h3.5M14.5 14.5h3.5"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Живой захват PCAP</h3>
+                <p class="card-description">Запись трафика в&nbsp;реальном времени прямо из&nbsp;приложения — готовый файл открывается в&nbsp;Wireshark.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--stone" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2.5"></rect><path d="M3 8h18M7 12h5M7 15h3"></path><path d="M8 21h8"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Меню‑бар под рукой</h3>
+                <p class="card-description">Качество текущей связи и&nbsp;быстрый доступ к&nbsp;сканированию прямо из&nbsp;строки меню.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--mauve" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v14H6.5A2.5 2.5 0 0 0 4 20.5V6.5Z"></path><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H19v2H6.5"></path><path d="M9 8h6"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Сканы и&nbsp;пометки</h3>
+                <p class="card-description">Сохраняйте сессии, псевдонимы, теги и&nbsp;заметки по&nbsp;сетям — всё остаётся только на&nbsp;вашем Mac.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--gray" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"></path><path d="M20 4v4h-4"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Обновления Sparkle</h3>
+                <p class="card-description">Подписанный appcast в&nbsp;GitHub Releases: обновление без ручной переустановки.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--neutral" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"></rect><path d="m7 9 3 3-3 3M12.5 15H17"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>CLI и&nbsp;URL‑схема</h3>
+                <p class="card-description">lanfi-cli summary scan.json и&nbsp;ссылки вида lanfi://tab/protocols — для скриптов и&nbsp;автоматизации.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--taupe" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2"></rect><rect x="3" y="14" width="18" height="6" rx="2"></rect><path d="M7 7.5h.01M7 17h.01"></path><path d="M11 7.5h6M11 17h6"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Удалённые сенсоры</h3>
+                <p class="card-description">Скан с&nbsp;другого Mac по&nbsp;SSH с&nbsp;авторизованным ключом — для точек, куда не&nbsp;дотянуться.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--mauve" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.3 2.3 3.5 5.3 3.5 8.5S14.3 18.2 12 20.5c-2.3-2.3-3.5-5.3-3.5-8.5S9.7 5.8 12 3.5Z"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Пять языков</h3>
+                <p class="card-description">Английский, немецкий, французский, русский и&nbsp;упрощённый китайский интерфейс.</p>
+              </div>
+            </article>
+
+            <article class="details-card details-card--slate" data-reveal>
+              <svg class="details-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"></path></svg>
+              <div class="details-card-compact-copy">
+                <h3>Тёмная и&nbsp;светлая</h3>
+                <p class="card-description">Интерфейс следует системной теме, а&nbsp;графики и&nbsp;таблица остаются читаемыми в&nbsp;обеих.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section final-cta" aria-labelledby="cta-title">
+        <div class="container final-cta-inner">
+          <img class="final-cta-icon" src="assets/lanfi-icon.png" alt="" width="126" height="126" loading="lazy" decoding="async" aria-hidden="true">
+          <div class="final-cta-copy">
+            <h2 id="cta-title">Попробуйте LanFi<br>на&nbsp;своём Mac.</h2>
+            <p class="section-description">Скачайте образ или поставьте через Homebrew — аккаунт не&nbsp;нужен, телеметрии нет. Сборки ad‑hoc, поэтому при&nbsp;первом запуске может понадобиться «Открыть» из&nbsp;контекстного меню.</p>
+          </div>
+          <div class="final-actions">
+            <a class="button button-primary button-large" href="https://github.com/zheltukheen/lanfi/releases/latest">Скачать для&nbsp;Mac</a>
+            <a class="button button-secondary button-large" href="https://github.com/zheltukheen/lanfi">
+              <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.91-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.95c.85 0 1.69.12 2.49.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.25 10.25 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z"></path></svg>
+              GitHub
+            </a>
+          </div>
+          <div class="install-grid">
+            <article class="install-card">
+              <h3>Образ .dmg</h3>
+              <p>Скачайте, перенесите LanFi в&nbsp;«Программы» и&nbsp;разрешите доступ к&nbsp;геолокации — без него macOS скрывает имена сетей.</p>
+              <p class="install-meta">Универсальная сборка · SHA‑256 в&nbsp;релизе</p>
+              <a class="install-link" href="https://github.com/zheltukheen/lanfi/releases/latest">
+                Скачать .dmg
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11m0 0 4-4m-4 4-4-4"></path><path d="M5 19h14"></path></svg>
+              </a>
+            </article>
+            <article class="install-card">
+              <h3>Homebrew</h3>
+              <p>Если Homebrew уже установлен — три команды в&nbsp;терминале.</p>
+              <pre class="install-code"><code>brew tap zheltukheen/lanfi \
+  https://github.com/zheltukheen/lanfi
+brew trust zheltukheen/lanfi
+brew install --cask lanfi</code></pre>
+            </article>
+          </div>
+          <p class="final-requirement">Требуется macOS&nbsp;13+ · Apple&nbsp;Silicon и&nbsp;Intel · FSL‑1.1‑ALv2</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-main">
+          <div class="footer-group">
+            <h2 class="footer-heading">Проект</h2>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi">GitHub</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/releases/latest">Релизы</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/issues">Проблемы</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/pulls">Pull requests</a>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-heading">Документы</h2>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi#readme">README</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/blob/main/PRIVACY.md">Конфиденциальность</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/blob/main/LICENSE">Лицензия</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/blob/main/CHANGELOG.md">Изменения</a>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-heading">Установка</h2>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/releases/latest">Скачать .dmg</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi#install">Homebrew</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi#cli-and-automation">CLI</a>
+            <a class="footer-link" href="https://github.com/zheltukheen/lanfi/blob/main/docs/DISTRIBUTION.md">Подпись и нотаризация</a>
+          </div>
+          <div class="footer-group footer-group--author">
+            <img class="footer-wordmark" src="assets/lanfi-icon.png" alt="" width="43" height="43" loading="lazy" decoding="async" aria-hidden="true">
+            <a class="footer-link" href="https://github.com/zheltukheen">Автор</a>
+          </div>
+        </div>
+        <div class="footer-legal">
+          <p><span>LanFi</span> — 2025–2026, zheltukheen и&nbsp;участники проекта.</p>
+          <p>Apple, Mac и&nbsp;macOS — товарные знаки Apple Inc. Wi‑Fi, WPA2 и&nbsp;WPA3 — товарные знаки соответствующих владельцев. LanFi — независимый проект и&nbsp;не&nbsp;связан с&nbsp;Apple и&nbsp;Wi‑Fi Alliance.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>
