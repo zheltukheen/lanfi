@@ -26,6 +26,18 @@
                 toolkit.select(tool)
             }
 
+            if let hostFlag = arguments.firstIndex(of: "--host"),
+                arguments.index(after: hostFlag) < arguments.endIndex
+            {
+                let host = arguments[arguments.index(after: hostFlag)]
+                toolkit.ping.host = host
+                toolkit.dns.host = host
+                toolkit.portScan.host = host
+                toolkit.traceroute.host = host
+                toolkit.ssl.host = host
+                toolkit.pathCheck.target = "\(host):443"
+            }
+
             openWindow(id: "toolkit")
 
             if arguments.contains("--run") {

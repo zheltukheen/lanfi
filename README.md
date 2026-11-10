@@ -58,6 +58,10 @@ surfaced with severity and remediation hints.
 
 ![LanFi network diagnostics](docs/images/lanfi-diagnostics.webp)
 
+![LanFi Network Toolkit — Ping](docs/images/lanfi-toolkit-ping.webp)
+
+![LanFi Internet Check verdict](docs/images/lanfi-toolkit-internet.webp)
+
 ![LanFi system network interfaces](docs/images/lanfi-interfaces.webp)
 
 ![LanFi live packet capture](docs/images/lanfi-live-capture.webp)

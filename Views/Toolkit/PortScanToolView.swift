@@ -155,7 +155,7 @@ struct PortScanToolView: View {
                             .lineLimit(1)
                     }
                 }
-                .frame(height: min(CGFloat(model.results.count) * 24 + 28, 520))
+                .frame(height: min(CGFloat(model.results.count) * 26 + 40, 560))
             }
         }
     }
@@ -185,6 +185,9 @@ struct PortScanToolView: View {
                 }
                 Divider()
                 Text("A closed port answered with a refusal; a filtered port did not answer before the timeout.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("A transparent proxy can accept every connection; this scan reports the TCP handshake, not the service behind it.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
