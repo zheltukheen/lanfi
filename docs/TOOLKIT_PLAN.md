@@ -164,8 +164,8 @@ Notarization and/or sandboxed Mac App Store split; privacy manifest.
 - [x] Internet Check verdict and path diagram.
 - [x] Ping, Traceroute, DNS Lookup, Port Scan, Path Check, SSL Certificate,
       Subnet Calculator and Speed Test screens.
-- [ ] MTR (needs a repeating traceroute engine).
-- [ ] Speed-test history and scheduling.
-- [ ] Uptime Monitor, LAN Scanner, Whois, GeoIP, DNS Propagation, iperf3,
-      Visual Traceroute.
-- [ ] Localisation of the new toolkit strings in five languages.
+- [x] MTR (repeated traceroute with per-hop loss/jitter).
+- [x] Speed-test history and hourly/6h/daily scheduling.
+- [x] Uptime Monitor, LAN Scanner and iperf3 client.
+- [x] Localisation of the toolkit strings in five languages.
+- [ ] Whois, GeoIP, DNS Propagation and Visual Traceroute remain planned.

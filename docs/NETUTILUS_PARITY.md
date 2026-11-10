@@ -32,11 +32,12 @@ the main reason "add the missing tools" is not a UI-only project.
 
 ## Coverage matrix
 
-> **Update 2026-11-10:** the first toolkit tranche shipped Ping, Traceroute,
-> DNS Lookup, Port Scan, Path Check, SSL Certificate, Subnet Calculator, the
-> Internet Check verdict and a Speed Test screen. The matrix below is the
-> pre-implementation gap analysis; see [`TOOLKIT_PLAN.md`](TOOLKIT_PLAN.md) for
-> what is wired in the app today.
+> **Update 2026-11-11:** the toolkit now also ships MTR, Uptime Monitor, LAN
+> Scanner with Network Guard, iperf3, speed-test history/scheduling and
+> five-language localisation. Remaining: Whois, GeoIP, DNS Propagation, Visual
+> Traceroute, notarization and a sandboxed MAS build. The matrix below is the
+> original gap analysis; see [`TOOLKIT_PHASE2_PLAN.md`](TOOLKIT_PHASE2_PLAN.md)
+> for current status.
 
 Status legend: **Ahead** — LanFi has more than Netutilus; **Parity** — comparable;
 **Partial** — some real implementation, missing the product surface; **Wrapper** —

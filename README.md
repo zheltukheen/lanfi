@@ -46,7 +46,8 @@ surfaced with severity and remediation hints.
 | Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), all BSD interface analysis, live PCAP capture, remote SSH sensors, column profiles, search, filters, menu bar extra |
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
-| Toolkit | One window with a grouped sidebar: Internet Check verdict, native ICMP/TCP ping, traceroute, DNS lookup, port scan, path check, SSL certificate, subnet calculator, speed test and network monitor |
+| Toolkit | One window with a grouped sidebar: Internet Check verdict, native ICMP/TCP ping, traceroute, MTR, DNS lookup, port scan, path check, SSL certificate, subnet calculator, iperf3, speed-test history/schedule and network monitor |
+| Monitoring | Uptime Monitor for HTTP/TCP targets with notifications and menu-bar status; LAN Scanner with ARP/ICMP/TCP, Bonjour names, OUI vendors, open ports and Network Guard |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
 | Survey | Floor-plan import, click-to-sample RSSI and a heatmap overlay (survey-lite) |
 | Vendors | 58k-prefix offline OUI database from IEEE and Wireshark, with 24/28/36-bit longest-prefix matching ([sources](docs/VENDOR_DATA.md)) |
@@ -61,6 +62,8 @@ surfaced with severity and remediation hints.
 ![LanFi Network Toolkit — Ping](docs/images/lanfi-toolkit-ping.webp)
 
 ![LanFi Internet Check verdict](docs/images/lanfi-toolkit-internet.webp)
+
+![LanFi Uptime Monitor](docs/images/lanfi-toolkit-uptime.webp)
 
 ![LanFi system network interfaces](docs/images/lanfi-interfaces.webp)
 
@@ -187,18 +190,23 @@ The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-Delivered through 2.3: protocol blocks, all-interface analysis, diagnostics
+Delivered through 4.11: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column
 profiles, multi-select, synthetic + live + offline PCAP/PCAPNG, IDW survey
 heatmaps with walls and PDF reports, SSH remote sensors with polling, AP-name
 detection, EHT/320 MHz and Multi-Link IE decoding, menu-bar alerts, vendor DB
 updates, filter profiles, CLI, URL scheme, Sparkle, Homebrew cask, expanded
-localization and VoiceOver chart descriptors.
+localization and VoiceOver chart descriptors, plus the Network Toolkit
+(verdicts, ping, traceroute, MTR, DNS, ports, SSL, subnet, iperf3, speed-test
+history, Uptime Monitor and LAN Scanner).
 
 Remaining outside the shipped code: actual Apple notarization (no Developer
 Program account/Developer ID certificate), hardware spectrum analyzer
 integration, full per-link MLO BSSID sets, external USB adapter measurement
-beyond CoreWLAN, and a manual VoiceOver audit of the remaining screens.
+beyond CoreWLAN, and a manual VoiceOver audit of the remaining screens. The
+toolkit still has Whois, GeoIP, DNS Propagation and Visual Traceroute marked
+as planned; running LAN Scanner needs Local Network permission for MAC,
+vendor and TCP results.
 Multi-select comparison/bulk edit, dynamic technical localization,
 PCAPNG/offline analysis, vendor DB updates, CLI, URL automation, alerts,
 survey reports and app-wide settings are implemented.
@@ -301,9 +309,16 @@ Network Tools and Monitoring. Wi-Fi Analyzer and Wi-Fi Networks hand back to the
 main window.
 
 The toolkit uses its own probe layer: unprivileged ICMP and TCP ping, DNS over
-UDP, a bounded TCP port scanner, TLS chain inspection and a traceroute runner.
-No shell commands are parsed for ping or DNS; traceroute still uses the setuid
-system binary. Deep link: `lanfi://toolkit/ping`.
+UDP, a bounded TCP port scanner, TLS chain inspection, a traceroute runner and
+an iperf3 JSON client. No shell commands are parsed for ping or DNS; traceroute
+still uses the setuid system binary. Deep link: `lanfi://toolkit/ping`.
+
+MTR repeats traceroute and aggregates loss/jitter per hop. Uptime Monitor keeps
+seven days of HTTP/TCP checks, notifies you on down/recovery and reports status
+in the same menu bar as Wi-Fi alerts. LAN Scanner prefers the ARP table, falls
+back to an ICMP/TCP sweep when macOS hides it, adds Bonjour names and OUI
+vendors, and Network Guard flags new devices. Network Monitor links to the
+Interfaces tab instead of duplicating it.
 
 ## Offline capture analysis
 
