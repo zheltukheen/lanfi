@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.12.1 — 2026-11-11
 
 ### Changed
 - The Tools menu and its dropdown are gone. The main toolbar opens the Network
