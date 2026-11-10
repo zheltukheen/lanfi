@@ -38,7 +38,7 @@ enum DeepLink: Equatable {
                 let tool = ToolboxTool.allCases.first(where: {
                     $0.rawValue.lowercased() == raw.lowercased()
                 })
-            else { return .toolkit(.internetCheck) }
+            else { return .toolkit(.wifiAnalyzer) }
             return .toolkit(tool)
         default:
             return nil

@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 final class ToolkitViewModel: ObservableObject {
-    @Published var selection: ToolboxTool = .internetCheck
+    @Published var selection: ToolboxTool = .wifiAnalyzer
 
     let ping = PingToolModel()
     let dns = DNSToolModel()

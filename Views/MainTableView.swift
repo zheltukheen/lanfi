@@ -8,8 +8,6 @@ import AppKit
 struct MainTableView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @EnvironmentObject var uiState: AppUIState
-    @EnvironmentObject var diagnostics: DiagnosticsViewModel
-    @EnvironmentObject var interfaces: InterfacesViewModel
     @EnvironmentObject var toolkit: ToolkitViewModel
     @EnvironmentObject var uptime: UptimeMonitor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -179,11 +177,9 @@ struct MainTableView: View {
 
                             switch uiState.selectedBottomTab {
                             case 1: ProtocolsView(viewModel: viewModel)
-                            case 2: InterfacesView(interfaces: interfaces)
                             case 3: RawDataView(viewModel: viewModel)
                             case 4: SpectrumView(viewModel: viewModel)
                             case 5: SignalHistoryView(viewModel: viewModel)
-                            case 6: DiagnosticsView(diagnostics: diagnostics)
                             case 7: LiveCaptureView(viewModel: viewModel, embedded: true)
                             default: InsightsView(viewModel: viewModel)
                             }
@@ -286,13 +282,6 @@ struct BottomPanelTabs: View {
                 )
                 Divider().frame(height: 18)
                 TabButton(
-                    title: "Interfaces",
-                    icon: "network",
-                    isSelected: selectedTab == 2,
-                    action: { selectedTab = 2 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
                     title: "Raw Data",
                     icon: "list.bullet.rectangle",
                     isSelected: selectedTab == 3,
@@ -315,17 +304,6 @@ struct BottomPanelTabs: View {
                     icon: "clock.arrow.circlepath",
                     isSelected: selectedTab == 5,
                     action: { selectedTab = 5 }
-                )
-            }
-
-            groupDivider
-
-            TabGroup("TROUBLESHOOT") {
-                TabButton(
-                    title: "Diagnostics",
-                    icon: "stethoscope",
-                    isSelected: selectedTab == 6,
-                    action: { selectedTab = 6 }
                 )
                 Divider().frame(height: 18)
                 TabButton(
@@ -451,7 +429,9 @@ struct ToolbarView: View {
             .accessibilityLabel("Open packet capture")
 
             Button {
-                selectedBottomTab = 6
+                NotificationCenter.default.post(
+                    name: .lanfiShowToolkit, object: nil,
+                    userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
             } label: {
                 Image(systemName: "stethoscope")
             }
@@ -491,7 +471,11 @@ struct ToolbarView: View {
     private var compactToolbarActions: some View {
         Menu {
             Button("Packet Capture") { selectedBottomTab = 7 }
-            Button("Diagnostics") { selectedBottomTab = 6 }
+            Button("Diagnostics") {
+                NotificationCenter.default.post(
+                    name: .lanfiShowToolkit, object: nil,
+                    userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
+            }
             Button("Site Survey") { openWindow(id: "survey") }
             Button("Hardware Spectrum") { openWindow(id: "hardware-spectrum") }
             Divider()
@@ -506,14 +490,6 @@ struct ToolbarView: View {
     @ViewBuilder
     private var toolMenuItems: some View {
         Button("Network Toolkit…") { openWindow(id: "toolkit") }
-        Divider()
-        Button("Live Capture (PCAP)…") { showingLiveCapture = true }
-        Button("Analyze Packet Capture…") {
-            NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
-        }
-        Button("Remote Sensors…") {
-            NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
-        }
         Divider()
         ForEach(
             ["Wi-Fi", "Network", "DNS", "LAN", "RF", "AP", "Wireless", "Security", "Throughput", "Advanced"],

@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 struct NetworkToolkitView: View {
@@ -22,10 +21,6 @@ struct NetworkToolkitView: View {
     private var sidebar: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
-                mainScreenRow
-                Divider()
-                    .padding(.vertical, 6)
-
                 ForEach(ToolboxSection.allCases) { section in
                     Text(section.title)
                         .font(.caption2.weight(.semibold))
@@ -45,45 +40,6 @@ struct NetworkToolkitView: View {
         }
         .frame(width: 228)
         .background(Color(nsColor: .windowBackgroundColor))
-    }
-
-    private var mainScreenRow: some View {
-        Button {
-            openMainWindow(tab: nil)
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "macwindow")
-                    .font(.system(size: 12))
-                    .frame(width: 17)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Main screen")
-                        .font(.callout.weight(.medium))
-                    Text("Wi-Fi analyzer")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                Spacer(minLength: 4)
-                Image(systemName: "arrow.up.forward")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 9)
-            .padding(.vertical, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 6))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .help("Open the Wi-Fi analyzer")
-    }
-
-    private func openMainWindow(tab: Int?) {
-        if let tab {
-            NotificationCenter.default.post(
-                name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": tab])
-        }
-        openWindow(id: "main")
-        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func toolRow(_ tool: ToolboxTool) -> some View {
@@ -148,16 +104,16 @@ struct NetworkToolkitView: View {
         case .subnetCalculator:
             SubnetToolView(model: toolkit.subnet)
         case .networkMonitor:
-            NetworkMonitorLinkToolView(interfaces: interfaces) {
-                openMainWindow(tab: 2)
-            }
+            InterfacesView(interfaces: interfaces)
         case .uptimeMonitor:
             UptimeToolView(monitor: uptime)
         case .lanScanner:
             LANScannerToolView(model: toolkit.lanScanner)
         case .iperf3:
             Iperf3ToolView(model: toolkit.iperf3)
-        case .wifiAnalyzer, .wifiNetworks:
+        case .wifiAnalyzer:
+            WiFiAnalyzerToolView()
+        case .wifiNetworks:
             WiFiRedirectToolView(tool: toolkit.selection)
         case .dnsPropagation, .whois, .geoIP:
             ComingSoonToolView(tool: toolkit.selection)

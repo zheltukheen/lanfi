@@ -67,7 +67,6 @@
 		342C3649806ECE78FDD894D1 /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1002A4F0143646CB9EF6A42 /* ScanSession.swift */; };
 		344FE21349A05A1CBFCF6448 /* ChannelAdvice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B626DBBCAAC7E3EBB83FA60 /* ChannelAdvice.swift */; };
 		34B1A6F55C55DB959BBDFD8C /* UptimeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191AA4ADCC07F10B59651B20 /* UptimeStore.swift */; };
-		34C9C7FEF8899C4EA99C2BD1 /* NetworkMonitorLinkToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9591AA5701D825E94DFFC79 /* NetworkMonitorLinkToolView.swift */; };
 		36741811B010D4857679F8B0 /* CustomFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 316ECB1DC40C877C4B2DCFF9 /* CustomFiltersView.swift */; };
 		36CCF81CFAABABCAB8B15790 /* TracerouteParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 729AB52895155D669A07EAD7 /* TracerouteParser.swift */; };
 		36E8CD8BB18DE144C7BE11F5 /* RemoteSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C730C160F41F0275FA430A /* RemoteSensor.swift */; };
@@ -171,6 +170,7 @@
 		8AD0CBD725E54883423BCDAA /* regulatory-db.txt in Resources */ = {isa = PBXBuildFile; fileRef = 24966FF5F20AF49466E3ADD9 /* regulatory-db.txt */; };
 		8B0F8B4FB2B47AD30395BC27 /* SurveyInterpolatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45627167C818FDD5684C1E /* SurveyInterpolatorTests.swift */; };
 		8B1AAE821D6B11F615B069DF /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54545FDFE743E9E0AD7B4553 /* DiagnosticsView.swift */; };
+		8B616A7B57315A539584136C /* WiFiAnalyzerToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1276FCABCF183CD4FC5E27DA /* WiFiAnalyzerToolView.swift */; };
 		8B67657B7459B959B53D1553 /* MLOInspectorSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13691D6C047BB346F9BB2E3 /* MLOInspectorSection.swift */; };
 		8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F284D3055FA72E1197279C47 /* AppUIState.swift */; };
 		8DCE38CEE664F1FB68528685 /* MTRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DDA493E56FB165F3DF48F5 /* MTRServiceTests.swift */; };
@@ -340,6 +340,7 @@
 		11965C1682B2CF5DCB38E8D6 /* VendorIconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VendorIconProvider.swift; sourceTree = "<group>"; };
 		1231751D684779D89F4286E5 /* Iperf3Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Iperf3Tests.swift; sourceTree = "<group>"; };
 		1251DE186EB932AAE19DEFA7 /* ToolkitComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolkitComponents.swift; sourceTree = "<group>"; };
+		1276FCABCF183CD4FC5E27DA /* WiFiAnalyzerToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiAnalyzerToolView.swift; sourceTree = "<group>"; };
 		13EFFCF374FF5324414579E8 /* AppSmokeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTest.swift; sourceTree = "<group>"; };
 		169DFDE71C23DE4F36B21AA5 /* Iperf3Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Iperf3Models.swift; sourceTree = "<group>"; };
 		171ED0A7F5F82CDE0D3FEEFF /* NetworkGroupingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkGroupingTests.swift; sourceTree = "<group>"; };
@@ -553,7 +554,6 @@
 		F6C6645AA65DB8E7B56F2786 /* DiagnosticsVerdictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsVerdictTests.swift; sourceTree = "<group>"; };
 		F6F919A1EA58AF3FF1CE71D2 /* SpectrumCapabilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrumCapabilitiesTests.swift; sourceTree = "<group>"; };
 		F7C7744EF29C51E908F9D722 /* SSLToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSLToolView.swift; sourceTree = "<group>"; };
-		F9591AA5701D825E94DFFC79 /* NetworkMonitorLinkToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitorLinkToolView.swift; sourceTree = "<group>"; };
 		F99ADA3B851F094D80D3EE09 /* HardwareInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareInventory.swift; sourceTree = "<group>"; };
 		FA6717F3D2A20C1A2107FC19 /* SidebarFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFilterView.swift; sourceTree = "<group>"; };
 		FBBCB97B25338A19AF78881E /* ColumnProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnProfile.swift; sourceTree = "<group>"; };
@@ -673,7 +673,6 @@
 				AF440E691083D6D871BBC117 /* Iperf3ToolView.swift */,
 				D4B07DC9641D64FC92A865A5 /* LANScannerToolView.swift */,
 				DF9C4E45B43D82722584E0AF /* MTRToolView.swift */,
-				F9591AA5701D825E94DFFC79 /* NetworkMonitorLinkToolView.swift */,
 				878C3D00DCC61F31B58541CF /* NetworkToolkitView.swift */,
 				B955D3C8FDC4AB82F57A42EF /* PathCheckToolView.swift */,
 				698DBB6C759F71B1B359E535 /* PingToolView.swift */,
@@ -685,6 +684,7 @@
 				C3B5CC2CBB9EBE29F3970FF3 /* ToolkitSnapshot.swift */,
 				33B8C209FF5612CB53DF29AC /* TracerouteToolView.swift */,
 				E4A8309AFC53A2198E6D9955 /* UptimeToolView.swift */,
+				1276FCABCF183CD4FC5E27DA /* WiFiAnalyzerToolView.swift */,
 			);
 			path = Toolkit;
 			sourceTree = "<group>";
@@ -1272,7 +1272,6 @@
 				5EFE518555377023C5EF85AE /* NetworkGrouping.swift in Sources */,
 				5FCEA597822C995A0A1ADBCD /* NetworkInspectorSections.swift in Sources */,
 				60B784BD118E53F1658524C7 /* NetworkModel.swift in Sources */,
-				34C9C7FEF8899C4EA99C2BD1 /* NetworkMonitorLinkToolView.swift in Sources */,
 				ED0D23CFEA21B57090367FB5 /* NetworkToolkitView.swift in Sources */,
 				C2BA409446C06082FD4B574C /* OUIParser.swift in Sources */,
 				4B92ACAD1C392D0A716CB9E7 /* OUIUpdater.swift in Sources */,
@@ -1346,6 +1345,7 @@
 				54E27AF49AD4E0BEB0DBA3C5 /* UptimeToolView.swift in Sources */,
 				AD62130D04DBCF6B89354155 /* VendorIconProvider.swift in Sources */,
 				92B9A07247F99B7B2D6F003C /* VendorSettingsView.swift in Sources */,
+				8B616A7B57315A539584136C /* WiFiAnalyzerToolView.swift in Sources */,
 				9E163D0F01C427902FC8A9FA /* WiFiScanner.swift in Sources */,
 				F6F5BA6DE53C47BD40D2F569 /* WiFiTableView.swift in Sources */,
 				67BBECD552AC8143903EBB2A /* WispyDetector.swift in Sources */,
