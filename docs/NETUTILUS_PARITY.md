@@ -32,6 +32,12 @@ the main reason "add the missing tools" is not a UI-only project.
 
 ## Coverage matrix
 
+> **Update 2026-11-10:** the first toolkit tranche shipped Ping, Traceroute,
+> DNS Lookup, Port Scan, Path Check, SSL Certificate, Subnet Calculator, the
+> Internet Check verdict and a Speed Test screen. The matrix below is the
+> pre-implementation gap analysis; see [`TOOLKIT_PLAN.md`](TOOLKIT_PLAN.md) for
+> what is wired in the app today.
+
 Status legend: **Ahead** — LanFi has more than Netutilus; **Parity** — comparable;
 **Partial** — some real implementation, missing the product surface; **Wrapper** —
 only an external command, no parsed result; **Absent** — nothing shipped.
@@ -63,9 +69,9 @@ Summary: **2 ahead, 1 at parity, 6 partial, 3 wrappers, 8 absent.**
 
 Two caveats on this matrix:
 
-- `ToolConsoleView` exists as a window (`LanFiApp` `WindowGroup(id: "tool")`) but
-  no menu item, command or deep link opens it. The `ping`, `traceroute`, `mtr`,
-  `nmap` and `iperf3` catalogue entries are effectively unreachable today.
+- `ToolConsoleView` is reachable from the toolbar **Tools** menu, but it only
+  runs a binary and prints raw text. The `ping`, `traceroute`, `mtr`, `nmap` and
+  `iperf3` entries have no parsed result table and no history.
 - Netutilus's free tier is broader than its Pro tier. LanFi's diagnostics cover
   the *checks* of Internet Check but not its **one-line verdict**, which is the
   actual product.
@@ -190,8 +196,8 @@ chain that starts from "my Wi-Fi is bad":
 1. **Internet Check verdict** — connects LanFi's RF evidence to provider
    attribution. Neither Netutilus nor WiFi Explorer has LanFi's radio data, so
    this is the one place where parity becomes differentiation.
-2. **Ping + Traceroute + MTR**, native and charted — replaces the unreachable
-   Tool Console and is the everyday workflow.
+2. **Ping + Traceroute + MTR**, native and charted — replaces the raw Tool
+   Console and is the everyday workflow.
 3. **DNS Lookup + Path Check + Port Scan + SSL** — share the Phase 0 probe layer;
    cheap once the core exists.
 4. **Uptime Monitor** with menu-bar status — closest thing to a paid feature and

@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Network Toolkit window (Tools → Network Toolkit…, ⇧⌘T): grouped sidebar
+  with Internet Check, Ping, Traceroute, Speed Test, DNS Lookup, SSL
+  Certificate, Port Scan, Path Check, Subnet Calculator and Network Monitor.
+- Native probe layer behind the toolkit: unprivileged ICMP and TCP ping,
+  a UDP DNS client with A/AAAA/MX/TXT/NS/SOA/CNAME/SRV/CAA records, a
+  bounded-concurrency TCP port scanner, TLS chain inspection, and a
+  traceroute runner/parser. 49 new headless tests.
+- Internet Check now returns a plain-language verdict — Wi-Fi, router,
+  provider, DNS or web — with a path diagram and supporting checks.
+- Speed Test shows a bufferbloat grade derived from Apple's responsiveness.
+- Deep link `lanfi://toolkit/<tool>` for opening a named tool.
+
 ## 4.11.1 — 2026-10-31
 
 ### Fixed
