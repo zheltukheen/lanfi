@@ -154,8 +154,7 @@ final class DNSMessageTests: XCTestCase {
             XCTAssertEqual(error as? DNSMessageError, .identifierMismatch)
         }
 
-        XCTAssertThrowsError(try DNSMessage.parseResponse(responseData(answers: [], count: 0, rcode: 3)))
-        { error in
+        XCTAssertThrowsError(try DNSMessage.parseResponse(responseData(answers: [], count: 0, rcode: 3))) { error in
             XCTAssertEqual(error as? DNSMessageError, .serverFailure(3))
         }
     }
