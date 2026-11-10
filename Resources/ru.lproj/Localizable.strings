@@ -714,3 +714,34 @@
 
 /* Network Toolkit path */
 "Web" = "Веб";
+
+/* Network Toolkit Wi-Fi workspace */
+"No active Wi-Fi association" = "Нет активного Wi-Fi-подключения";
+"Not connected" = "Не подключено";
+"Open full analyzer" = "Открыть полный анализатор";
+"Scan, quality, channels and the Wi-Fi tools that used to sit in the Tools menu." = "Сканирование, качество, каналы и Wi-Fi-инструменты, которые раньше были в меню «Инструменты».";
+"Select a connected network" = "Выберите подключённую сеть";
+"Show Internet Check" = "Открыть проверку интернета";
+"Show Network Monitor" = "Открыть монитор сети";
+"Signal, SNR, congestion and security" = "Сигнал, SNR, загруженность и безопасность";
+"The full analyzer table and inspectors will be embedded here in the next step." = "Полная таблица анализатора и инспекторы появятся здесь на следующем шаге.";
+"Waiting for a scan" = "Ожидание сканирования";
+"Waiting for the first scan…" = "Ожидание первого сканирования…";
+"Wi-Fi Analyzer" = "Анализатор Wi-Fi";
+"Wi-Fi Networks" = "Wi-Fi сети";
+
+/* Network Toolkit Wi-Fi workspace labels */
+"Connected" = "Подключено";
+"5 GHz advice" = "Совет для 5 ГГц";
+"Wi-Fi tools" = "Инструменты Wi-Fi";
+"Site Survey" = "Обследование площадки";
+"Floor plan, samples and heatmap" = "План помещения, замеры и тепловая карта";
+"Hardware Spectrum" = "Аппаратный спектр";
+"RF Explorer and CSV traces" = "RF Explorer и CSV-трейсы";
+"Live Capture" = "Живой захват";
+"PCAP with BPF filters" = "PCAP с BPF-фильтрами";
+"Analyze Capture" = "Анализ захвата";
+"Offline pcap and pcapng" = "Офлайн pcap и pcapng";
+"Remote Sensors" = "Удалённые сенсоры";
+"Scan Macs over SSH" = "Сканирование Mac по SSH";
+"visible" = "видимых";

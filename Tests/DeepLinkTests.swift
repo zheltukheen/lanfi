@@ -12,7 +12,7 @@ final class DeepLinkTests: XCTestCase {
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://diagnostics/run")!), .runDiagnostics)
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://toolkit/ping")!), .toolkit(.ping))
         XCTAssertEqual(
-            DeepLink.parse(URL(string: "lanfi://toolkit/unknown")!), .toolkit(.internetCheck))
+            DeepLink.parse(URL(string: "lanfi://toolkit/unknown")!), .toolkit(.wifiAnalyzer))
         XCTAssertEqual(
             DeepLink.parse(URL(string: "lanfi://toolkit/uptimeMonitor")!),
             .toolkit(.uptimeMonitor))

@@ -51,13 +51,27 @@ struct LanFiApp: App {
                     guard let link = DeepLink.parse(url) else { return }
                     switch link {
                     case .tab(let index):
-                        uiState.selectedBottomTab = index
+                        if index == 2 {
+                            NotificationCenter.default.post(
+                                name: .lanfiShowToolkit, object: nil,
+                                userInfo: ["tool": ToolboxTool.networkMonitor.rawValue])
+                        } else if index == 6 {
+                            NotificationCenter.default.post(
+                                name: .lanfiShowToolkit, object: nil,
+                                userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
+                        } else {
+                            uiState.selectedBottomTab = index
+                        }
                     case .interfaces:
-                        uiState.selectedBottomTab = 2
+                        NotificationCenter.default.post(
+                            name: .lanfiShowToolkit, object: nil,
+                            userInfo: ["tool": ToolboxTool.networkMonitor.rawValue])
                     case .search(let query):
                         viewModel.searchText = query
                     case .runDiagnostics:
-                        uiState.selectedBottomTab = 6
+                        NotificationCenter.default.post(
+                            name: .lanfiShowToolkit, object: nil,
+                            userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
                         Task { await diagnostics.run() }
                     case .toolkit(let tool):
                         NotificationCenter.default.post(
@@ -85,8 +99,6 @@ struct LanFiApp: App {
             LanFiCommands(
                 viewModel: viewModel,
                 uiState: uiState,
-                diagnostics: diagnostics,
-                interfaces: interfaces,
                 updater: updater
             )
         }
@@ -122,8 +134,11 @@ struct LanFiApp: App {
 
         Window("Network Toolkit", id: "toolkit") {
             NetworkToolkitView(toolkit: toolkit)
+                .environmentObject(viewModel)
+                .environmentObject(uiState)
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
+                .environmentObject(survey)
                 .environmentObject(uptime)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)

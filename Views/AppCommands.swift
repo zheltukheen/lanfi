@@ -6,8 +6,6 @@ struct LanFiCommands: Commands {
 
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var uiState: AppUIState
-    @ObservedObject var diagnostics: DiagnosticsViewModel
-    @ObservedObject var interfaces: InterfacesViewModel
     @ObservedObject var updater: UpdaterController
 
     var body: some Commands {
@@ -109,11 +107,9 @@ struct LanFiCommands: Commands {
             Picker("Bottom Panel", selection: $uiState.selectedBottomTab) {
                 Text("Overview").tag(0)
                 Text("Profile").tag(1)
-                Text("Interfaces").tag(2)
                 Text("Raw Data").tag(3)
                 Text("Spectrum").tag(4)
                 Text("History").tag(5)
-                Text("Diagnostics").tag(6)
                 Text("Capture").tag(7)
             }
 
@@ -121,16 +117,24 @@ struct LanFiCommands: Commands {
                 .keyboardShortcut("1", modifiers: [.command])
             Button("Show Profile") { uiState.selectedBottomTab = 1 }
                 .keyboardShortcut("2", modifiers: [.command])
-            Button("Show Interfaces") { uiState.selectedBottomTab = 2 }
-                .keyboardShortcut("3", modifiers: [.command])
+            Button("Show Network Monitor") {
+                NotificationCenter.default.post(
+                    name: .lanfiShowToolkit, object: nil,
+                    userInfo: ["tool": ToolboxTool.networkMonitor.rawValue])
+            }
+            .keyboardShortcut("3", modifiers: [.command])
             Button("Show Raw Data") { uiState.selectedBottomTab = 3 }
                 .keyboardShortcut("4", modifiers: [.command])
             Button("Show Spectrum") { uiState.selectedBottomTab = 4 }
                 .keyboardShortcut("5", modifiers: [.command])
             Button("Show History") { uiState.selectedBottomTab = 5 }
                 .keyboardShortcut("6", modifiers: [.command])
-            Button("Show Diagnostics") { uiState.selectedBottomTab = 6 }
-                .keyboardShortcut("7", modifiers: [.command])
+            Button("Show Internet Check") {
+                NotificationCenter.default.post(
+                    name: .lanfiShowToolkit, object: nil,
+                    userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
+            }
+            .keyboardShortcut("7", modifiers: [.command])
         }
 
         CommandMenu("Tools") {
@@ -138,57 +142,6 @@ struct LanFiCommands: Commands {
                 openWindow(id: "toolkit")
             }
             .keyboardShortcut("t", modifiers: [.command, .shift])
-
-            Divider()
-
-            Button("Live Capture (PCAP)…") {
-                NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
-            }
-            .keyboardShortcut("p", modifiers: [.command, .shift])
-
-            Button("Analyze Packet Capture…") {
-                NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
-            }
-            Button("Remote Sensors…") {
-                NotificationCenter.default.post(name: .lanfiShowRemoteSensors, object: nil)
-            }
-
-            Button("Hardware Spectrum…") {
-                openWindow(id: "hardware-spectrum")
-            }
-            .keyboardShortcut("y", modifiers: [.command, .shift])
-
-            Divider()
-
-            Button("Run Network Diagnostics") {
-                Task { await diagnostics.run() }
-            }
-            .keyboardShortcut("d", modifiers: [.command, .shift])
-            Toggle("Monitor Diagnostics Every 60 s", isOn: $diagnostics.autoMonitor)
-
-            Button("Open Site Survey") {
-                openWindow(id: "survey")
-            }
-            .keyboardShortcut("m", modifiers: [.command, .shift])
-
-            Menu("External Tools") {
-                Button("LinkLiar — MAC address spoofer…") {
-                    NSWorkspace.shared.open(URL(string: "https://github.com/halo/LinkLiar/releases")!)
-                }
-                Button("Wireshark…") {
-                    NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
-                }
-                Button("iPerf3…") {
-                    NotificationCenter.default.post(
-                        name: .lanfiShowToolkit, object: nil,
-                        userInfo: ["tool": ToolboxTool.iperf3.rawValue])
-                }
-                Divider()
-                Button("Run Network Quality Test") {
-                    uiState.selectedBottomTab = 6
-                    Task { await diagnostics.run() }
-                }
-            }
         }
 
         CommandMenu("Data") {

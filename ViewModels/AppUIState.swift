@@ -7,7 +7,7 @@ final class AppUIState: ObservableObject {
     @Published var customIntervalText: String = ""
     @Published var showingCustomIntervalAlert: Bool = false
 
-    private static let tabLayoutVersion = 4
+    private static let tabLayoutVersion = 5
 
     init() {
         let defaults = UserDefaults.standard
@@ -34,6 +34,14 @@ final class AppUIState: ObservableObject {
             defaults.set(mapped, forKey: "LanFi.bottomTab")
         } else if defaults.object(forKey: "LanFi.bottomTab") != nil {
             selectedBottomTab = defaults.integer(forKey: "LanFi.bottomTab")
+        }
+
+        // 5.0: Interfaces and Diagnostics moved into the Network Toolkit.
+        if layoutVersion < 5 {
+            if selectedBottomTab == 2 || selectedBottomTab == 6 {
+                selectedBottomTab = 0
+            }
+            defaults.set(Self.tabLayoutVersion, forKey: "LanFi.tabLayoutVersion")
         }
     }
 

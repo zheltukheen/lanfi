@@ -677,3 +677,34 @@
 
 /* Network Toolkit path */
 "Web" = "网页";
+
+/* Network Toolkit Wi-Fi workspace */
+"No active Wi-Fi association" = "没有活动的 Wi-Fi 连接";
+"Not connected" = "未连接";
+"Open full analyzer" = "打开完整分析器";
+"Scan, quality, channels and the Wi-Fi tools that used to sit in the Tools menu." = "扫描、质量、信道以及原先位于“工具”菜单中的 Wi-Fi 工具。";
+"Select a connected network" = "选择已连接的网络";
+"Show Internet Check" = "显示互联网检查";
+"Show Network Monitor" = "显示网络监控器";
+"Signal, SNR, congestion and security" = "信号、信噪比、拥塞和安全";
+"The full analyzer table and inspectors will be embedded here in the next step." = "完整分析器表格和检查器将在下一步嵌入此处。";
+"Waiting for a scan" = "等待扫描";
+"Waiting for the first scan…" = "等待首次扫描…";
+"Wi-Fi Analyzer" = "Wi-Fi 分析器";
+"Wi-Fi Networks" = "Wi-Fi 网络";
+
+/* Network Toolkit Wi-Fi workspace labels */
+"Connected" = "已连接";
+"5 GHz advice" = "5 GHz 建议";
+"Wi-Fi tools" = "Wi-Fi 工具";
+"Site Survey" = "现场勘测";
+"Floor plan, samples and heatmap" = "平面图、采样和热力图";
+"Hardware Spectrum" = "硬件频谱";
+"RF Explorer and CSV traces" = "RF Explorer 与 CSV 轨迹";
+"Live Capture" = "实时抓包";
+"PCAP with BPF filters" = "带 BPF 过滤器的 PCAP";
+"Analyze Capture" = "分析抓包";
+"Offline pcap and pcapng" = "离线 pcap 和 pcapng";
+"Remote Sensors" = "远程传感器";
+"Scan Macs over SSH" = "通过 SSH 扫描 Mac";
+"visible" = "可见";

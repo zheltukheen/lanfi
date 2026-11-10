@@ -677,3 +677,34 @@
 
 /* Network Toolkit path */
 "Web" = "Web";
+
+/* Network Toolkit Wi-Fi workspace */
+"No active Wi-Fi association" = "Keine aktive WLAN-Verbindung";
+"Not connected" = "Nicht verbunden";
+"Open full analyzer" = "Vollständigen Analyzer öffnen";
+"Scan, quality, channels and the Wi-Fi tools that used to sit in the Tools menu." = "Scan, Qualität, Kanäle und die Wi-Fi-Werkzeuge, die früher im Menü „Tools“ lagen.";
+"Select a connected network" = "Verbundenes Netzwerk auswählen";
+"Show Internet Check" = "Internetprüfung anzeigen";
+"Show Network Monitor" = "Netzwerkmonitor anzeigen";
+"Signal, SNR, congestion and security" = "Signal, SNR, Auslastung und Sicherheit";
+"The full analyzer table and inspectors will be embedded here in the next step." = "Die vollständige Analyzer-Tabelle und Inspektoren werden hier im nächsten Schritt eingebettet.";
+"Waiting for a scan" = "Warten auf Scan";
+"Waiting for the first scan…" = "Warten auf den ersten Scan…";
+"Wi-Fi Analyzer" = "Wi-Fi-Analyzer";
+"Wi-Fi Networks" = "Wi-Fi-Netzwerke";
+
+/* Network Toolkit Wi-Fi workspace labels */
+"Connected" = "Verbunden";
+"5 GHz advice" = "5-GHz-Empfehlung";
+"Wi-Fi tools" = "Wi-Fi-Werkzeuge";
+"Site Survey" = "Standortvermessung";
+"Floor plan, samples and heatmap" = "Grundriss, Messpunkte und Heatmap";
+"Hardware Spectrum" = "Hardware-Spektrum";
+"RF Explorer and CSV traces" = "RF Explorer und CSV-Traces";
+"Live Capture" = "Live-Aufzeichnung";
+"PCAP with BPF filters" = "PCAP mit BPF-Filtern";
+"Analyze Capture" = "Aufzeichnung analysieren";
+"Offline pcap and pcapng" = "Offline-PCAP und PCAPNG";
+"Remote Sensors" = "Remote-Sensoren";
+"Scan Macs over SSH" = "Macs per SSH scannen";
+"visible" = "sichtbar";
