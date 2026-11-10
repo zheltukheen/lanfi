@@ -157,6 +157,7 @@ cat <<EOF
 Release ${TAG} pushed. GitHub Actions will lint, test, build and publish.
 
   Always latest:  https://github.com/${REPO}/releases/latest/download/LanFi.dmg
+  Short link:     https://zheltukheen.github.io/lanfi/download
   Pinned build:   https://github.com/${REPO}/releases/download/${TAG}/LanFi-${VERSION}.dmg
   Release page:   https://github.com/${REPO}/releases/tag/${TAG}
 EOF

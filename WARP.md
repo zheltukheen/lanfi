@@ -178,6 +178,8 @@ permission.
   always resolves to the newest build. The versioned files
   (`LanFi-<version>.dmg` in `releases/download/v<version>/`) stay immutable and
   are what Sparkle, the Homebrew cask and pinned downloads use.
+- `https://zheltukheen.github.io/lanfi/download` (`site/download/index.html`) is
+  the short, version-free landing link; it forwards to the always-latest DMG.
 - `./release.sh X.Y.Z` runs lint + XCTest (skip with `--skip-tests`), updates
   `project.yml`, regenerates the project, commits, pushes and tags.
 
