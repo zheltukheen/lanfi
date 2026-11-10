@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- The Tools menu and its dropdown are gone. The main toolbar opens the Network
+  Toolkit directly, and the toolkit command lives under Layout (⇧⌘T).
+- Site Survey, Hardware Spectrum, Live Capture, offline capture analysis,
+  Remote Sensors and the specialised system tools now live inside the toolkit
+  as sheets or embedded screens; their separate Tool/Survey/Spectrum windows
+  and the old toolbar submenu were removed.
+- Advanced Tools joins Network Tools and embeds the previous ToolConsole
+  instead of opening a Tool window. LinkLiar and Wireshark are links there.
+- The duplicate live-capture toolbar button was removed; Capture is a single
+  control.
+
+### Fixed
+- Site Survey sheets now request enough space and the heatmap takes the
+  remaining height instead of being clipped by the window.
+
 ## 4.12.0 — 2026-11-11
 
 ### Added

@@ -35,7 +35,7 @@ One new window, not a rebuild of the analyzer window:
 
 - `NetworkToolkitView` — `NavigationSplitView` with the grouped sidebar.
 - `ToolboxTool` — one enum for id, title, icon, section, availability.
-- Opened from **Tools → Network Toolkit…** and `lanfi://toolkit/<tool>`.
+- Opened from the main toolbar, **Layout → Network Toolkit** and `lanfi://toolkit/<tool>`.
 - Wi-Fi Analyzer / Wi-Fi Networks rows open the existing main window instead of
   duplicating the analyzer.
 - Network Monitor embeds the existing `InterfacesView`.

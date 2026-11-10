@@ -110,6 +110,10 @@ they will be reported as not run rather than skipped silently.
 - [x] Sidebar: Wi-Fi first with Wi-Fi Analyzer selected, Monitoring next,
       Network Monitor embedded, network tabs removed from the main window,
       Wi-Fi tool actions moved into the Wi-Fi workspace.
+- [x] Toolbar opens the toolkit directly (no Tools dropdown); Site Survey,
+      Spectrum, Capture, offline analysis, Remote Sensors and Advanced Tools
+      are embedded sheets/screens. Legacy Tool/Survey/Spectrum windows and the
+      duplicate capture control were removed.
 - [x] MTR service + table, 4 tests.
 - [x] Speed history store, hourly/6h/daily schedule, history table, 4 tests.
 - [x] Uptime Monitor models/store/checker/notifier, menu-bar status, 4 tests.
