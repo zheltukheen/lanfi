@@ -99,6 +99,10 @@ targets:
       - path: Models/SurveyAccessPoint.swift
       - path: Models/MLOInfo.swift
       - path: Models/MLOGroup.swift
+      - path: Models/ToolkitModels.swift
+      - path: Models/SubnetCalculator.swift
+      - path: Models/PortSpec.swift
+      - path: Services/Toolkit/DNSMessage.swift
       - path: Models/EHTPuncturing.swift
       - path: Models/SpectrumSweep.swift
       - path: Models/SupportedChannel.swift
