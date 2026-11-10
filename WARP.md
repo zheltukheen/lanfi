@@ -216,9 +216,9 @@ transitions/stores, LAN ARP/subnet/guard logic, speed history and iperf3 JSON.
 - Stable download links: every release also uploads `LanFi.dmg`, `LanFi.zip`,
   `LanFi-CLI.zip`, `LanFi.sha256` and `LanFi.version` under constant names, so
   `https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg`
-  always resolves to the newest build. The versioned files
-  (`LanFi-<version>.dmg` in `releases/download/v<version>/`) stay immutable and
-  are what Sparkle, the Homebrew cask and pinned downloads use.
+  always resolves to the newest build. The same unversioned asset names
+  (`LanFi.dmg`, `LanFi.zip`, `LanFi-CLI.zip`) live inside each tagged release,
+  so pinned URLs stay immutable without a second set of versioned files.
 - `https://zheltukheen.github.io/lanfi/download` (`site/download/index.html`) is
   the short, version-free landing link; it forwards to the always-latest DMG.
 - `./release.sh X.Y.Z` runs lint + XCTest (skip with `--skip-tests`), updates

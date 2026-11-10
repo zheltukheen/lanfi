@@ -45,17 +45,18 @@ def main() -> int:
 {section}
 
 ### Install
-1. Download `LanFi-{version}.dmg` (or the `.zip`).
+1. Download `LanFi.dmg` (or `LanFi.zip`).
 2. Drag LanFi to Applications.
 3. Open LanFi and allow Location Services when prompted — macOS requires it to reveal SSIDs/BSSIDs.
 4. If Gatekeeper blocks the ad-hoc signed build, right-click the app and choose Open.
 
 The always-latest build lives at
 <https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg>
-(`LanFi.zip` for the archive). Pinned builds use the versioned names below.
+(`LanFi.zip` for the archive). The same unversioned names are used inside each
+tagged release.
 
 ### Verify
-The SHA-256 checksums are attached as `LanFi-{version}.sha256`.
+The SHA-256 checksums are attached as `LanFi.sha256`.
 """
 
     output = pathlib.Path(os.environ.get("OUTPUT", "release_notes.md"))

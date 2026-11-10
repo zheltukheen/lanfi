@@ -88,10 +88,10 @@ Download the latest build directly:
 - **ZIP** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.zip
 - **CLI** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi-CLI.zip
 
-Those three links always point at the newest release. Every release also keeps
-a versioned, never-changing copy such as
-`https://github.com/zheltukheen/lanfi/releases/download/v4.11.1/LanFi-4.11.1.dmg`
-for pinning. Browse everything in
+Those three links always point at the newest release. Every tagged release
+keeps the same unversioned names, for example
+`https://github.com/zheltukheen/lanfi/releases/download/v4.12.0/LanFi.dmg`,
+which stays immutable for pinning. Browse everything in
 [Releases](https://github.com/zheltukheen/lanfi/releases).
 
 Drag **LanFi** to Applications, and launch it.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tag a release: bump project.yml, verify (lint + tests), commit, tag and push.
 # The pushed tag triggers .github/workflows/release.yml, which lints, tests,
-# builds, publishes the versioned artifacts and refreshes the always-latest
+# builds, publishes the unversioned artifacts and refreshes the always-latest
 # aliases (LanFi.dmg / LanFi.zip in the newest release).
 set -euo pipefail
 
@@ -158,6 +158,6 @@ Release ${TAG} pushed. GitHub Actions will lint, test, build and publish.
 
   Always latest:  https://github.com/${REPO}/releases/latest/download/LanFi.dmg
   Short link:     https://zheltukheen.github.io/lanfi/download
-  Pinned build:   https://github.com/${REPO}/releases/download/${TAG}/LanFi-${VERSION}.dmg
+  Pinned build:   https://github.com/${REPO}/releases/download/${TAG}/LanFi.dmg
   Release page:   https://github.com/${REPO}/releases/tag/${TAG}
 EOF
