@@ -155,9 +155,11 @@ struct NetworkToolkitView: View {
             UptimeToolView(monitor: uptime)
         case .lanScanner:
             LANScannerToolView(model: toolkit.lanScanner)
+        case .iperf3:
+            Iperf3ToolView(model: toolkit.iperf3)
         case .wifiAnalyzer, .wifiNetworks:
             WiFiRedirectToolView(tool: toolkit.selection)
-        case .dnsPropagation, .whois, .geoIP, .iperf3:
+        case .dnsPropagation, .whois, .geoIP:
             ComingSoonToolView(tool: toolkit.selection)
         }
     }

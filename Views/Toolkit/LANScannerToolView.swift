@@ -73,8 +73,8 @@ struct LANScannerToolView: View {
     }
 
     private var statusText: String {
-        if model.isScanning { return "Scanning…" }
-        guard let result = model.result else { return "Ready" }
+        if model.isScanning { return String(localized: "Scanning…") }
+        guard let result = model.result else { return String(localized: "Ready") }
         let open = result.devices.reduce(0) { $0 + $1.openPorts.count }
         return "\(result.devices.count) devices · \(open) open ports"
     }

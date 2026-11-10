@@ -11,6 +11,7 @@ struct MainTableView: View {
     @EnvironmentObject var diagnostics: DiagnosticsViewModel
     @EnvironmentObject var interfaces: InterfacesViewModel
     @EnvironmentObject var toolkit: ToolkitViewModel
+    @EnvironmentObject var uptime: UptimeMonitor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openWindow) private var openWindow
 
@@ -249,7 +250,7 @@ struct MainTableView: View {
                 viewModel.requestLocationAuthorization()
             }
             #if DEBUG
-                ToolkitSnapshot.captureIfRequested(toolkit: toolkit, openWindow: openWindow)
+                ToolkitSnapshot.captureIfRequested(toolkit: toolkit, uptime: uptime, openWindow: openWindow)
             #endif
         }
     }

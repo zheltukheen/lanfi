@@ -58,8 +58,8 @@ struct TracerouteToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Tracing…" }
-        guard let report = model.result else { return "Ready" }
+        if model.isRunning { return String(localized: "Tracing…") }
+        guard let report = model.result else { return String(localized: "Ready") }
         if report.reachedTarget {
             return "Reached target · \(report.hops.count) hops"
         }
@@ -125,7 +125,7 @@ struct TracerouteToolView: View {
                     }
                     .width(100)
                     TableColumn("Status") { hop in
-                        Text(hop.timedOut ? "No reply" : "Reply")
+                        Text(hop.timedOut ? String(localized: "No reply") : String(localized: "Reply"))
                             .font(.caption)
                             .foregroundColor(hop.timedOut ? .orange : .secondary)
                     }

@@ -8,8 +8,8 @@ enum UptimeTargetKind: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .http: return "HTTP / HTTPS"
-        case .tcp: return "TCP port"
+        case .http: return String(localized: "HTTP / HTTPS")
+        case .tcp: return String(localized: "TCP port")
         }
     }
 }

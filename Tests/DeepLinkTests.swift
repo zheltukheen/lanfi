@@ -13,6 +13,12 @@ final class DeepLinkTests: XCTestCase {
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://toolkit/ping")!), .toolkit(.ping))
         XCTAssertEqual(
             DeepLink.parse(URL(string: "lanfi://toolkit/unknown")!), .toolkit(.internetCheck))
+        XCTAssertEqual(
+            DeepLink.parse(URL(string: "lanfi://toolkit/uptimeMonitor")!),
+            .toolkit(.uptimeMonitor))
+        XCTAssertEqual(
+            DeepLink.parse(URL(string: "lanfi://toolkit/lanScanner")!),
+            .toolkit(.lanScanner))
     }
 
     func testRejectsOtherSchemes() {

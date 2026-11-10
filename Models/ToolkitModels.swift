@@ -145,16 +145,16 @@ enum DNSRecordType: UInt16, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .a: return "A"
-        case .ns: return "NS"
-        case .cname: return "CNAME"
-        case .soa: return "SOA"
-        case .ptr: return "PTR"
-        case .mx: return "MX"
-        case .txt: return "TXT"
-        case .aaaa: return "AAAA"
-        case .srv: return "SRV"
-        case .caa: return "CAA"
+        case .a: return String(localized: "A")
+        case .ns: return String(localized: "NS")
+        case .cname: return String(localized: "CNAME")
+        case .soa: return String(localized: "SOA")
+        case .ptr: return String(localized: "PTR")
+        case .mx: return String(localized: "MX")
+        case .txt: return String(localized: "TXT")
+        case .aaaa: return String(localized: "AAAA")
+        case .srv: return String(localized: "SRV")
+        case .caa: return String(localized: "CAA")
         }
     }
 
@@ -304,7 +304,13 @@ enum PortState: String, CaseIterable, Sendable {
     case closed
     case filtered
 
-    var label: String { rawValue.capitalized }
+    var label: String {
+        switch self {
+        case .open: return String(localized: "Open")
+        case .closed: return String(localized: "Closed")
+        case .filtered: return String(localized: "Filtered")
+        }
+    }
 }
 
 struct PortScanResult: Identifiable, Equatable, Sendable {
@@ -343,30 +349,34 @@ enum DiagnosticVerdict: String, Equatable, Sendable {
 
     var title: String {
         switch self {
-        case .healthy: return "Everything looks fine"
-        case .localNetwork: return "Most likely your Wi-Fi"
-        case .router: return "Most likely your router"
-        case .provider: return "Most likely your provider"
-        case .dns: return "Most likely DNS"
-        case .web: return "Most likely the website"
+        case .healthy: return String(localized: "Everything looks fine")
+        case .localNetwork: return String(localized: "Most likely your Wi-Fi")
+        case .router: return String(localized: "Most likely your router")
+        case .provider: return String(localized: "Most likely your provider")
+        case .dns: return String(localized: "Most likely DNS")
+        case .web: return String(localized: "Most likely the website")
         }
     }
 
     var detail: String {
         switch self {
         case .healthy:
-            return "This Mac, the Wi-Fi, the router, DNS and the web all answer normally."
+            return String(localized: "This Mac, the Wi-Fi, the router, DNS and the web all answer normally.")
         case .localNetwork:
-            return "The Wi-Fi link is weak or has no address. Move closer to the router, or reconnect."
+            return String(
+                localized: "The Wi-Fi link is weak or has no address. Move closer to the router, or reconnect.")
         case .router:
-            return "The Wi-Fi link is fine, but the router does not answer. Reboot it and check the cable."
+            return String(
+                localized: "The Wi-Fi link is fine, but the router does not answer. Reboot it and check the cable.")
         case .provider:
             return
                 "The router answers, but packets are lost or delayed past it. This is usually the line or the provider."
         case .dns:
-            return "The connection works, but name resolution fails. Check the DNS servers."
+            return String(localized: "The connection works, but name resolution fails. Check the DNS servers.")
         case .web:
-            return "DNS and the router are fine, but the web check fails. The site or an upstream service is down."
+            return String(
+                localized:
+                    "DNS and the router are fine, but the web check fails. The site or an upstream service is down.")
         }
     }
 

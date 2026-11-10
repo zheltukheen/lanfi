@@ -25,7 +25,7 @@ struct ToolkitCard<Content: View>: View {
 }
 
 struct ToolkitSectionLabel: View {
-    let text: String
+    let text: LocalizedStringKey
 
     var body: some View {
         Text(text)
@@ -96,7 +96,7 @@ struct ToolkitStateDot: View {
 // MARK: - Metrics
 
 struct ToolkitMetric: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     var tint: Color = .primary
 
@@ -119,8 +119,8 @@ struct ToolkitMetric: View {
 
 struct ToolkitEmptyState: View {
     let icon: String
-    let title: String
-    let message: String
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
 
     var body: some View {
         VStack(spacing: 9) {

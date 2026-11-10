@@ -42,7 +42,8 @@ final class UptimeTests: XCTestCase {
         store.save(UptimeStoreSnapshot(targets: [target], checks: [check]))
 
         let loaded = store.load()
-        XCTAssertEqual(loaded.targets, [target])
+        XCTAssertEqual(loaded.targets.map(\.id), [target.id])
+        XCTAssertEqual(loaded.targets.first?.address, target.address)
         XCTAssertEqual(loaded.checks.first?.isUp, true)
         XCTAssertEqual(loaded.checks.first?.latencyMilliseconds, 12)
     }

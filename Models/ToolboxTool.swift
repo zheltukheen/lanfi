@@ -10,10 +10,10 @@ enum ToolboxSection: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .diagnostics: return "Diagnostics"
-        case .dnsDomains: return "DNS & Domains"
-        case .networkTools: return "Network Tools"
-        case .monitoring: return "Monitoring"
+        case .diagnostics: return String(localized: "Diagnostics")
+        case .dnsDomains: return String(localized: "DNS & Domains")
+        case .networkTools: return String(localized: "Network Tools")
+        case .monitoring: return String(localized: "Monitoring")
         }
     }
 }
@@ -46,25 +46,25 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     var title: String {
         switch self {
-        case .internetCheck: return "Internet Check"
-        case .ping: return "Ping"
-        case .traceroute: return "Traceroute"
-        case .mtr: return "MTR"
-        case .speedTest: return "Speed Test"
-        case .dnsLookup: return "DNS Lookup"
-        case .dnsPropagation: return "DNS Propagation"
-        case .whois: return "Whois"
-        case .geoIP: return "GeoIP"
-        case .sslCertificate: return "SSL Certificate"
-        case .portScan: return "Port Scan"
-        case .pathCheck: return "Path Check"
-        case .subnetCalculator: return "Subnet Calculator"
-        case .iperf3: return "iperf3"
-        case .networkMonitor: return "Network Monitor"
-        case .uptimeMonitor: return "Uptime Monitor"
-        case .lanScanner: return "LAN Scanner"
-        case .wifiAnalyzer: return "Wi-Fi Analyzer"
-        case .wifiNetworks: return "Wi-Fi Networks"
+        case .internetCheck: return String(localized: "Internet Check")
+        case .ping: return String(localized: "Ping")
+        case .traceroute: return String(localized: "Traceroute")
+        case .mtr: return String(localized: "MTR")
+        case .speedTest: return String(localized: "Speed Test")
+        case .dnsLookup: return String(localized: "DNS Lookup")
+        case .dnsPropagation: return String(localized: "DNS Propagation")
+        case .whois: return String(localized: "Whois")
+        case .geoIP: return String(localized: "GeoIP")
+        case .sslCertificate: return String(localized: "SSL Certificate")
+        case .portScan: return String(localized: "Port Scan")
+        case .pathCheck: return String(localized: "Path Check")
+        case .subnetCalculator: return String(localized: "Subnet Calculator")
+        case .iperf3: return String(localized: "iperf3")
+        case .networkMonitor: return String(localized: "Network Monitor")
+        case .uptimeMonitor: return String(localized: "Uptime Monitor")
+        case .lanScanner: return String(localized: "LAN Scanner")
+        case .wifiAnalyzer: return String(localized: "Wi-Fi Analyzer")
+        case .wifiNetworks: return String(localized: "Wi-Fi Networks")
         }
     }
 
@@ -112,23 +112,23 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         switch self {
         case .internetCheck, .ping, .traceroute, .mtr, .speedTest, .dnsLookup,
             .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
-            .uptimeMonitor, .lanScanner, .wifiAnalyzer, .wifiNetworks:
+            .uptimeMonitor, .lanScanner, .iperf3, .wifiAnalyzer, .wifiNetworks:
             return true
-        case .dnsPropagation, .whois, .geoIP, .iperf3:
+        case .dnsPropagation, .whois, .geoIP:
             return false
         }
     }
 
     var plannedDetail: String {
         switch self {
-        case .mtr: return "Continuous per-hop loss and jitter."
-        case .dnsPropagation: return "Check a record across public resolvers."
-        case .whois: return "Domain, IP and AS registration data."
-        case .geoIP: return "City, country, provider and AS for an address."
-        case .iperf3: return "Throughput against your own iperf3 server."
-        case .uptimeMonitor: return "Scheduled checks, alerts and outage history."
-        case .lanScanner: return "ARP and Bonjour discovery with vendor, ports and alerts."
-        default: return "Planned for a later phase."
+        case .mtr: return String(localized: "Continuous per-hop loss and jitter.")
+        case .dnsPropagation: return String(localized: "Check a record across public resolvers.")
+        case .whois: return String(localized: "Domain, IP and AS registration data.")
+        case .geoIP: return String(localized: "City, country, provider and AS for an address.")
+        case .iperf3: return String(localized: "Throughput against your own iperf3 server.")
+        case .uptimeMonitor: return String(localized: "Scheduled checks, alerts and outage history.")
+        case .lanScanner: return String(localized: "ARP and Bonjour discovery with vendor, ports and alerts.")
+        default: return String(localized: "Planned for a later phase.")
         }
     }
 }

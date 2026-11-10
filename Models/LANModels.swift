@@ -87,9 +87,9 @@ struct LANDevice: Identifiable, Equatable, Sendable {
     var id: String { "\(ip)-\(mac ?? "")" }
     var displayName: String {
         if let hostname { return hostname }
-        if isThisMac { return "This Mac" }
-        if isGateway { return "Router" }
-        return vendor ?? "Unknown device"
+        if isThisMac { return String(localized: "This Mac") }
+        if isGateway { return String(localized: "Router") }
+        return vendor ?? String(localized: "Unknown device")
     }
 }
 
