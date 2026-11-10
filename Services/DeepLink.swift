@@ -5,6 +5,7 @@ enum DeepLink: Equatable {
     case search(String)
     case runDiagnostics
     case interfaces
+    case toolkit(ToolboxTool)
 
     static func parse(_ url: URL) -> DeepLink? {
         guard url.scheme?.lowercased() == "lanfi" else { return nil }
@@ -32,6 +33,11 @@ enum DeepLink: Equatable {
             return path.first?.lowercased() == "run" ? .runDiagnostics : nil
         case "interfaces":
             return .interfaces
+        case "toolkit":
+            guard let raw = path.first,
+                let tool = ToolboxTool(rawValue: raw.lowercased())
+            else { return .toolkit(.internetCheck) }
+            return .toolkit(tool)
         default:
             return nil
         }

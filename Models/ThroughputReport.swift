@@ -66,3 +66,29 @@ enum ThroughputTester {
         )
     }
 }
+
+extension ThroughputReport {
+    /// Apple's responsiveness (round trips per minute under load) mapped to a
+    /// bufferbloat grade. Higher is better.
+    var bufferbloatGrade: String? {
+        guard let responsiveness else { return nil }
+        switch responsiveness {
+        case 1000...: return "A"
+        case 500..<1000: return "B"
+        case 200..<500: return "C"
+        case 100..<200: return "D"
+        default: return "F"
+        }
+    }
+
+    var bufferbloatLabel: String? {
+        guard let grade = bufferbloatGrade else { return nil }
+        switch grade {
+        case "A": return "A · Excellent"
+        case "B": return "B · Good"
+        case "C": return "C · Fair"
+        case "D": return "D · Poor"
+        default: return "F · Bad"
+        }
+    }
+}

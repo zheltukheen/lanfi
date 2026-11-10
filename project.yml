@@ -103,6 +103,14 @@ targets:
       - path: Models/SubnetCalculator.swift
       - path: Models/PortSpec.swift
       - path: Services/Toolkit/DNSMessage.swift
+      - path: Services/Toolkit/PingService.swift
+      - path: Services/Toolkit/DNSClient.swift
+      - path: Services/Toolkit/PortScanner.swift
+      - path: Services/Toolkit/TLSCertificateInspector.swift
+      - path: Services/Toolkit/TracerouteParser.swift
+      - path: Services/Toolkit/TracerouteRunner.swift
+      - path: Models/DiagnosticsVerdict.swift
+      - path: Models/ToolboxTool.swift
       - path: Models/EHTPuncturing.swift
       - path: Models/SpectrumSweep.swift
       - path: Models/SupportedChannel.swift

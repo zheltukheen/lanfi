@@ -361,7 +361,8 @@ enum DiagnosticVerdict: String, Equatable, Sendable {
         case .router:
             return "The Wi-Fi link is fine, but the router does not answer. Reboot it and check the cable."
         case .provider:
-            return "The router answers, but packets are lost or delayed past it. This is usually the line or the provider."
+            return
+                "The router answers, but packets are lost or delayed past it. This is usually the line or the provider."
         case .dns:
             return "The connection works, but name resolution fails. Check the DNS servers."
         case .web:

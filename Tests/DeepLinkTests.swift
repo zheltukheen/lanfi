@@ -10,6 +10,9 @@ final class DeepLinkTests: XCTestCase {
     func testParsesSearchAndDiagnostics() {
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://search?q=AX55")!), .search("AX55"))
         XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://diagnostics/run")!), .runDiagnostics)
+        XCTAssertEqual(DeepLink.parse(URL(string: "lanfi://toolkit/ping")!), .toolkit(.ping))
+        XCTAssertEqual(
+            DeepLink.parse(URL(string: "lanfi://toolkit/unknown")!), .toolkit(.internetCheck))
     }
 
     func testRejectsOtherSchemes() {

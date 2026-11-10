@@ -10,7 +10,9 @@ struct MainTableView: View {
     @EnvironmentObject var uiState: AppUIState
     @EnvironmentObject var diagnostics: DiagnosticsViewModel
     @EnvironmentObject var interfaces: InterfacesViewModel
+    @EnvironmentObject var toolkit: ToolkitViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.openWindow) private var openWindow
 
     // UI State
     @State private var isResizingPanels = false
@@ -233,11 +235,22 @@ struct MainTableView: View {
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowInspector)) { _ in
             uiState.showInspector = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowToolkit)) { note in
+            if let raw = note.userInfo?["tool"] as? String,
+                let tool = ToolboxTool(rawValue: raw)
+            {
+                toolkit.select(tool)
+            }
+            openWindow(id: "toolkit")
+        }
         .textSelection(.enabled)
         .onAppear {
             if !viewModel.isLocationAuthorized {
                 viewModel.requestLocationAuthorization()
             }
+            #if DEBUG
+                ToolkitSnapshot.captureIfRequested(toolkit: toolkit, openWindow: openWindow)
+            #endif
         }
     }
 }
@@ -491,6 +504,8 @@ struct ToolbarView: View {
 
     @ViewBuilder
     private var toolMenuItems: some View {
+        Button("Network Toolkit…") { openWindow(id: "toolkit") }
+        Divider()
         Button("Live Capture (PCAP)…") { showingLiveCapture = true }
         Button("Analyze Packet Capture…") {
             NotificationCenter.default.post(name: .lanfiShowOfflineCapture, object: nil)
@@ -754,6 +769,7 @@ extension Notification.Name {
     static let lanfiShowOfflineCapture = Notification.Name("LanFi.showOfflineCapture")
     static let lanfiSelectBottomTab = Notification.Name("LanFi.selectBottomTab")
     static let lanfiShowInspector = Notification.Name("LanFi.showInspector")
+    static let lanfiShowToolkit = Notification.Name("LanFi.showToolkit")
 }
 
 // MARK: - Subviews

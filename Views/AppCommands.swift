@@ -134,6 +134,13 @@ struct LanFiCommands: Commands {
         }
 
         CommandMenu("Tools") {
+            Button("Network Toolkit…") {
+                openWindow(id: "toolkit")
+            }
+            .keyboardShortcut("t", modifiers: [.command, .shift])
+
+            Divider()
+
             Button("Live Capture (PCAP)…") {
                 NotificationCenter.default.post(name: .lanfiShowLiveCapture, object: nil)
             }

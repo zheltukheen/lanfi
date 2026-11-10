@@ -23,18 +23,18 @@ enum DNSMessage {
         let labels = try encodeLabels(name)
         var writer = ByteWriter()
         writer.u16(id)
-        writer.u16(0x0100) // recursion desired
-        writer.u16(1) // QDCOUNT
-        writer.u16(0) // ANCOUNT
-        writer.u16(0) // NSCOUNT
-        writer.u16(0) // ARCOUNT
+        writer.u16(0x0100)  // recursion desired
+        writer.u16(1)  // QDCOUNT
+        writer.u16(0)  // ANCOUNT
+        writer.u16(0)  // NSCOUNT
+        writer.u16(0)  // ARCOUNT
         for label in labels {
             writer.u8(UInt8(label.count))
             writer.bytes(label)
         }
         writer.u8(0)
         writer.u16(type.rawValue)
-        writer.u16(1) // IN
+        writer.u16(1)  // IN
         return writer.data
     }
 

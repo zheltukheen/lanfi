@@ -20,6 +20,7 @@ struct LanFiApp: App {
     @StateObject private var updater = UpdaterController()
     @StateObject private var survey = SurveyViewModel()
     @StateObject private var interfaces = InterfacesViewModel()
+    @StateObject private var toolkit = ToolkitViewModel()
     @AppStorage("LanFi.highContrast") private var highContrast = false
     @AppStorage("LanFi.appearance") private var appearance = "system"
 
@@ -41,6 +42,7 @@ struct LanFiApp: App {
                 .environmentObject(uiState)
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
+                .environmentObject(toolkit)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
                 .onOpenURL { url in
@@ -55,6 +57,10 @@ struct LanFiApp: App {
                     case .runDiagnostics:
                         uiState.selectedBottomTab = 6
                         Task { await diagnostics.run() }
+                    case .toolkit(let tool):
+                        NotificationCenter.default.post(
+                            name: .lanfiShowToolkit, object: nil,
+                            userInfo: ["tool": tool.rawValue])
                     }
                     NSApp.activate(ignoringOtherApps: true)
                 }
@@ -111,6 +117,15 @@ struct LanFiApp: App {
             HardwareSpectrumView()
                 .frame(minWidth: 900, minHeight: 520)
         }
+
+        Window("Network Toolkit", id: "toolkit") {
+            NetworkToolkitView(toolkit: toolkit)
+                .environmentObject(diagnostics)
+                .environmentObject(interfaces)
+                .environment(\.lanFiHighContrast, highContrast)
+                .preferredColorScheme(preferredAppearance)
+        }
+        .defaultSize(width: 1180, height: 760)
 
         Window("History", id: "history") {
             SignalHistoryView(viewModel: viewModel, isFullScreen: true)

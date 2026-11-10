@@ -12,5 +12,7 @@ final class ThroughputTests: XCTestCase {
         XCTAssertEqual(report.uploadMbps ?? 0, 101.2, accuracy: 0.1)
         XCTAssertEqual(report.latencyMilliseconds ?? 0, 12.4, accuracy: 0.1)
         XCTAssertTrue(report.summary.contains("523 Mbps"))
+        XCTAssertEqual(report.bufferbloatGrade, "B")
+        XCTAssertEqual(report.bufferbloatLabel, "B · Good")
     }
 }
