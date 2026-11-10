@@ -71,9 +71,19 @@ surfaced with severity and remediation hints.
 
 ## Install
 
-Download the latest `.dmg` or `.zip` from
-[Releases](https://github.com/zheltukheen/lanfi/releases/latest), drag **LanFi** to
-Applications, and launch it.
+Download the latest build directly:
+
+- **DMG** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg
+- **ZIP** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.zip
+- **CLI** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi-CLI.zip
+
+Those three links always point at the newest release. Every release also keeps
+a versioned, never-changing copy such as
+`https://github.com/zheltukheen/lanfi/releases/download/v4.11.1/LanFi-4.11.1.dmg`
+for pinning. Browse everything in
+[Releases](https://github.com/zheltukheen/lanfi/releases).
+
+Drag **LanFi** to Applications, and launch it.
 
 The current builds are **ad-hoc signed, not notarized**. If Gatekeeper warns,
 right-click the app → **Open**, or allow it in

@@ -50,6 +50,10 @@ def main() -> int:
 3. Open LanFi and allow Location Services when prompted — macOS requires it to reveal SSIDs/BSSIDs.
 4. If Gatekeeper blocks the ad-hoc signed build, right-click the app and choose Open.
 
+The always-latest build lives at
+<https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg>
+(`LanFi.zip` for the archive). Pinned builds use the versioned names below.
+
 ### Verify
 The SHA-256 checksums are attached as `LanFi-{version}.sha256`.
 """

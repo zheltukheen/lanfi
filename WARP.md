@@ -172,8 +172,14 @@ permission.
 - Release (`.github/workflows/release.yml`) is triggered by `v*` tags: verifies
   the tag against `project.yml`, tests, builds, packages ZIP + DMG + SHA-256,
   and publishes notes from `CHANGELOG.md`.
-- `./release.sh X.Y.Z` updates `project.yml`, regenerates the project, commits,
-  pushes and tags.
+- Stable download links: every release also uploads `LanFi.dmg`, `LanFi.zip`,
+  `LanFi-CLI.zip`, `LanFi.sha256` and `LanFi.version` under constant names, so
+  `https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg`
+  always resolves to the newest build. The versioned files
+  (`LanFi-<version>.dmg` in `releases/download/v<version>/`) stay immutable and
+  are what Sparkle, the Homebrew cask and pinned downloads use.
+- `./release.sh X.Y.Z` runs lint + XCTest (skip with `--skip-tests`), updates
+  `project.yml`, regenerates the project, commits, pushes and tags.
 
 ## Constraints
 

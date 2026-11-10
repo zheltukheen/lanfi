@@ -144,6 +144,19 @@ jobs:
           zip -q "LanFi-CLI-${VERSION}.zip" cli/lanfi-cli
           shasum -a 256 "LanFi-CLI-${VERSION}.zip" >> "LanFi-${VERSION}.sha256"
 
+      - name: Stable download aliases
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p build/dist/stable
+          cp "build/dist/LanFi-${VERSION}.dmg" build/dist/stable/LanFi.dmg
+          cp "build/dist/LanFi-${VERSION}.zip" build/dist/stable/LanFi.zip
+          cp "build/dist/LanFi-CLI-${VERSION}.zip" build/dist/stable/LanFi-CLI.zip
+          cd build/dist/stable
+          shasum -a 256 LanFi.dmg LanFi.zip LanFi-CLI.zip > LanFi.sha256
+          printf '%s\n' "${VERSION}" > LanFi.version
+          cat LanFi.sha256 LanFi.version
+
       - name: Generate release notes
         run: python3 scripts/release_notes.py
 
@@ -206,4 +219,9 @@ jobs:
             build/dist/LanFi-*.zip
             build/dist/LanFi-*.dmg
             build/dist/LanFi-*.sha256
+            build/dist/stable/LanFi.dmg
+            build/dist/stable/LanFi.zip
+            build/dist/stable/LanFi-CLI.zip
+            build/dist/stable/LanFi.sha256
+            build/dist/stable/LanFi.version
             build/dist/appcast.xml
