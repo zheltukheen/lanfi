@@ -708,3 +708,11 @@
 "Remote Sensors" = "远程传感器";
 "Scan Macs over SSH" = "通过 SSH 扫描 Mac";
 "visible" = "可见";
+
+/* Network Toolkit advanced tools */
+"Advanced Tools" = "高级工具";
+"External tools" = "外部工具";
+"Network Toolkit" = "网络工具包";
+"Tool" = "工具";
+"Wireshark…" = "Wireshark…";
+"LinkLiar — MAC address spoofer…" = "LinkLiar — MAC 地址伪装工具…";

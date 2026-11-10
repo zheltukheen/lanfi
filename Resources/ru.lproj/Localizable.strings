@@ -745,3 +745,11 @@
 "Remote Sensors" = "Удалённые сенсоры";
 "Scan Macs over SSH" = "Сканирование Mac по SSH";
 "visible" = "видимых";
+
+/* Network Toolkit advanced tools */
+"Advanced Tools" = "Дополнительные инструменты";
+"External tools" = "Внешние инструменты";
+"Network Toolkit" = "Сетевой тулкит";
+"Tool" = "Инструмент";
+"Wireshark…" = "Wireshark…";
+"LinkLiar — MAC address spoofer…" = "LinkLiar — спуфер MAC-адреса…";

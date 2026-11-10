@@ -67,6 +67,13 @@ struct LanFiCommands: Commands {
         }
 
         CommandMenu("Layout") {
+            Button("Network Toolkit") {
+                openWindow(id: "toolkit")
+            }
+            .keyboardShortcut("t", modifiers: [.command, .shift])
+
+            Divider()
+
             Picker("Group By", selection: $viewModel.groupMode) {
                 ForEach(NetworkGroupMode.allCases) { mode in
                     Text(mode.title).tag(mode)
@@ -135,13 +142,6 @@ struct LanFiCommands: Commands {
                     userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
             }
             .keyboardShortcut("7", modifiers: [.command])
-        }
-
-        CommandMenu("Tools") {
-            Button("Network Toolkit…") {
-                openWindow(id: "toolkit")
-            }
-            .keyboardShortcut("t", modifiers: [.command, .shift])
         }
 
         CommandMenu("Data") {

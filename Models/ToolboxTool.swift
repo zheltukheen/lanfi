@@ -37,6 +37,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case pathCheck
     case subnetCalculator
     case iperf3
+    case advancedTools
 
     case networkMonitor
     case uptimeMonitor
@@ -62,6 +63,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .pathCheck: return String(localized: "Path Check")
         case .subnetCalculator: return String(localized: "Subnet Calculator")
         case .iperf3: return String(localized: "iperf3")
+        case .advancedTools: return String(localized: "Advanced Tools")
         case .networkMonitor: return String(localized: "Network Monitor")
         case .uptimeMonitor: return String(localized: "Uptime Monitor")
         case .lanScanner: return String(localized: "LAN Scanner")
@@ -86,6 +88,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .pathCheck: return "arrow.triangle.branch"
         case .subnetCalculator: return "number"
         case .iperf3: return "arrow.up.arrow.down"
+        case .advancedTools: return "terminal"
         case .networkMonitor: return "waveform.path.ecg"
         case .uptimeMonitor: return "clock.badge.checkmark"
         case .lanScanner: return "desktopcomputer"
@@ -100,7 +103,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
             return .diagnostics
         case .dnsLookup, .dnsPropagation, .whois, .geoIP, .sslCertificate:
             return .dnsDomains
-        case .portScan, .pathCheck, .subnetCalculator, .iperf3:
+        case .portScan, .pathCheck, .subnetCalculator, .iperf3, .advancedTools:
             return .networkTools
         case .wifiAnalyzer, .wifiNetworks:
             return .wifi
@@ -116,7 +119,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         switch self {
         case .internetCheck, .ping, .traceroute, .mtr, .speedTest, .dnsLookup,
             .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
-            .uptimeMonitor, .lanScanner, .iperf3, .wifiAnalyzer, .wifiNetworks:
+            .uptimeMonitor, .lanScanner, .iperf3, .advancedTools, .wifiAnalyzer, .wifiNetworks:
             return true
         case .dnsPropagation, .whois, .geoIP:
             return false
