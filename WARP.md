@@ -182,6 +182,9 @@ permission.
   the short, version-free landing link; it forwards to the always-latest DMG.
 - `./release.sh X.Y.Z` runs lint + XCTest (skip with `--skip-tests`), updates
   `project.yml`, regenerates the project, commits, pushes and tags.
+- `scripts/make_icon.swift` redraws the icon master (1024², CoreGraphics) and
+  rewrites the full `AppIcon.appiconset` plus `docs/images/lanfi-icon.png` and
+  `site/assets/lanfi-icon.png`; `--preview` writes `build/icon-preview.png`.
 
 ## Constraints
 
