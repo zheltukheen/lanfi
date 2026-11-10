@@ -14,6 +14,22 @@
   provider, DNS or web — with a path diagram and supporting checks.
 - Speed Test shows a bufferbloat grade derived from Apple's responsiveness.
 - Deep link `lanfi://toolkit/<tool>` for opening a named tool.
+- MTR: repeated traceroute with per-hop loss, last/avg/best/worst and jitter.
+- Speed Test: persisted 50-run history and an hourly, 6-hour or daily schedule.
+- Uptime Monitor: HTTP/HTTPS and TCP targets, seven-day history, outage
+  counts, UserNotifications on down/recovery and status in the existing menu
+  bar. No second menu-bar item.
+- LAN Scanner: ARP when macOS exposes it, plus an ICMP/TCP fallback, Bonjour
+  host names, OUI vendors, open ports and Network Guard for new devices.
+- iperf3 client: upload/download/bidirectional runs against your own server,
+  parsed from iperf3 JSON with an install hint when the binary is missing.
+- Sidebar: Main screen is the first item and Monitoring is the first section;
+  Network Monitor links to the existing Interfaces tab, Diagnostics links to
+  the toolkit Speed Test/Internet Check, and duplicate raw network tools were
+  removed from the external-tool catalogue.
+- Toolkit static strings are localised in English, Russian, German, French and
+  Simplified Chinese (669 keys per language, no duplicates).
+- 20 new headless tests (244 total).
 
 ## 4.11.1 — 2026-10-31
 

@@ -85,9 +85,14 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Views/RawDataView.swift` — expandable IE table.
 - `Models/ToolboxTool.swift` — toolkit catalogue and sidebar sections.
 - `Models/ToolkitModels.swift` — probe value types, DNS records, verdicts.
+- `Models/MTRModels.swift`, `SpeedTestHistory.swift`, `UptimeModels.swift`,
+  `LANModels.swift`, `Iperf3Models.swift` — monitoring and toolkit data.
 - `Services/Toolkit/` — native probe layer: `DNSMessage`, `DNSClient`,
-  `PingService`, `PortScanner`, `TLSCertificateInspector`, `TracerouteRunner`
-  and `TracerouteParser`. Pure codecs/parsers must stay testable headless.
+  `PingService`, `PortScanner`, `TLSCertificateInspector`, `TracerouteRunner`,
+  `TracerouteParser`, `MTRService`, `LANScannerService`, `BonjourDiscovery`.
+  Pure codecs/parsers must stay testable headless.
+- `Services/UptimeMonitor.swift`, `UptimeStore.swift` — scheduled HTTP/TCP
+  checks, transitions, UserNotifications and seven-day history.
 - `Views/Toolkit/` — the Network Toolkit window, grouped custom sidebar and
   per-tool screens.
 - `ViewModels/ToolkitViewModel.swift` — per-tool state and cancellation.
@@ -120,6 +125,10 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   (`0` Insights, `1` Spectrum, `2` History, `3` Protocols, `4` Interfaces,
   `5` Raw Data, `6` Diagnostics).
 - `LanFi.groupMode` — none/SSID/band/vendor/security grouping.
+- `LanFi.speedTestSchedule`, `LanFi.lanGuardEnabled` — toolkit schedules/guard.
+- `speed-tests.json`, `uptime.json`, `lan-guard.json` live under
+  `~/Library/Application Support/LanFi/` (50 speed runs, seven days of uptime
+  checks, known LAN device keys).
 - Session, annotation and survey files live under
   `~/Library/Application Support/LanFi/{Sessions,annotations.json,Surveys}`.
 - Window frame is managed by SwiftUI/AppKit.
@@ -170,13 +179,21 @@ so tests never touch the network. ICMP uses the unprivileged `SOCK_DGRAM` socket
 (`IP_TTL` is ignored there, so traceroute uses `/usr/sbin/traceroute`, which is
 setuid root on macOS). Deep link: `lanfi://toolkit/<tool>`.
 
+Uptime Monitor reuses the existing `MenuBarExtra` and `UserNotifications`;
+there is no second menu-bar item. LAN Scanner prefers `/usr/sbin/arp`, but macOS
+can hide the ARP table from a non-privileged child process until Local Network
+access is granted. It then falls back to an ICMP/TCP sweep, so IP/port results
+still work; MAC, vendor and TCP probes need that permission. Bonjour browsing
+requires the `NSBonjourServices` entries in `Info.plist`.
+
 ## Testing
 
 `LanFiTests` compiles `NetworkModel`, `NetworkAnalyzer`,
 `InformationElementParser` and `OUIParser` directly (no app host, no
 CoreWLAN), so tests run headless. Add pure-logic tests for scoring, overlap,
 recommendations, parsing and export DTOs. Avoid UI tests that require Location
-permission.
+permission. Toolkit tests cover DNS wire parsing, MTR aggregation, uptime
+transitions/stores, LAN ARP/subnet/guard logic, speed history and iperf3 JSON.
 
 ## Automation and release
 
