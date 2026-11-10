@@ -1,6 +1,6 @@
 import Foundation
 
-struct ThroughputReport: Equatable {
+struct ThroughputReport: Codable, Equatable {
     let downloadMbps: Double?
     let uploadMbps: Double?
     let latencyMilliseconds: Double?

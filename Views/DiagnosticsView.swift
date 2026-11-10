@@ -2,9 +2,6 @@ import SwiftUI
 
 struct DiagnosticsView: View {
     @ObservedObject var diagnostics: DiagnosticsViewModel
-    @State private var throughput: ThroughputReport?
-    @State private var throughputRunning = false
-    @State private var throughputError: String?
 
     private let columns = [GridItem(.adaptive(minimum: 230), spacing: 10)]
 
@@ -16,7 +13,7 @@ struct DiagnosticsView: View {
                 if let report = diagnostics.report {
                     scoreStrip(report)
                     snapshotStrip(report.snapshot)
-                    throughputSection
+                    speedTestLink
                     checkGrid(report)
                     historyStrip
                 } else {
@@ -70,6 +67,16 @@ struct DiagnosticsView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.regular)
             .disabled(diagnostics.isRunning)
+
+            Button {
+                openToolkit(.internetCheck)
+            } label: {
+                Image(systemName: "stethoscope")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .help("Open the Internet Check verdict")
+            .accessibilityLabel("Open Internet Check verdict")
 
             Button {
                 diagnostics.copyReport()
@@ -219,72 +226,30 @@ struct DiagnosticsView: View {
         )
     }
 
-    private var throughputSection: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack {
-                Text("Throughput")
+    private var speedTestLink: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "speedometer")
+                .foregroundColor(.accentColor)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Speed Test")
                     .font(.caption.bold())
-                Spacer()
-                Button {
-                    runThroughput()
-                } label: {
-                    if throughputRunning {
-                        ProgressView().controlSize(.regular)
-                    } else {
-                        Label("Run speed test", systemImage: "speedometer")
-                            .font(.callout.bold())
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(throughputRunning)
-            }
-            if let throughput {
-                HStack(spacing: 16) {
-                    metric("Download", throughput.downloadMbps.map { String(format: "%.0f Mbps", $0) } ?? "—")
-                    metric("Upload", throughput.uploadMbps.map { String(format: "%.0f Mbps", $0) } ?? "—")
-                    metric("Latency", throughput.latencyMilliseconds.map { String(format: "%.0f ms", $0) } ?? "—")
-                    metric("Responsiveness", throughput.responsiveness.map { String(format: "%.0f", $0) } ?? "—")
-                }
-                .padding(8)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else if let throughputError {
-                Text(throughputError).font(.caption).foregroundColor(.red)
-            } else {
-                Text("Runs Apple networkQuality; it uploads/downloads test traffic for up to 20 seconds.")
+                Text("Download, upload, bufferbloat and history are in Network Toolkit.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
+            Spacer()
+            Button("Open") { openToolkit(.speedTest) }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
         }
+        .padding(9)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private func metric(_ title: LocalizedStringKey, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(title).font(.caption2).foregroundColor(.secondary)
-            Text(value).font(.caption.bold())
-        }
-    }
-
-    private func runThroughput() {
-        throughputRunning = true
-        throughputError = nil
-        Task {
-            do {
-                let report = try await Task.detached(priority: .userInitiated) {
-                    try await ThroughputTester.run()
-                }.value
-                await MainActor.run {
-                    throughputRunning = false
-                    throughput = report
-                }
-            } catch {
-                await MainActor.run {
-                    throughputRunning = false
-                    throughputError = error.localizedDescription
-                }
-            }
-        }
+    private func openToolkit(_ tool: ToolboxTool) {
+        NotificationCenter.default.post(
+            name: .lanfiShowToolkit, object: nil, userInfo: ["tool": tool.rawValue])
     }
 
     private var historyStrip: some View {

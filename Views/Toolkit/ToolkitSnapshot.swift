@@ -44,7 +44,17 @@
                 run(toolkit.selection, toolkit: toolkit)
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+            let delay: TimeInterval
+            if let delayFlag = arguments.firstIndex(of: "--delay"),
+                arguments.index(after: delayFlag) < arguments.endIndex,
+                let value = TimeInterval(arguments[arguments.index(after: delayFlag)])
+            {
+                delay = value
+            } else {
+                delay = 7
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 guard
                     let window = NSApp.windows.first(where: {
                         $0.title == "Network Toolkit" || $0.identifier?.rawValue == "toolkit"
@@ -86,6 +96,7 @@
             case .pathCheck: toolkit.pathCheck.run()
             case .subnetCalculator: toolkit.subnet.calculate()
             case .speedTest: toolkit.speedTest.run()
+            case .lanScanner: toolkit.lanScanner.scan()
             default: break
             }
         }

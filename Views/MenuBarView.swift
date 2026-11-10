@@ -4,6 +4,7 @@ import AppKit
 struct MenuBarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var diagnostics: DiagnosticsViewModel
+    @ObservedObject var uptime: UptimeMonitor
     @Environment(\.openWindow) private var openWindow
 
     private var statusColor: Color {
@@ -97,6 +98,24 @@ struct MenuBarView: View {
                 }
                 .controlSize(.mini)
                 .disabled(diagnostics.isRunning)
+            }
+
+            if !uptime.targets.isEmpty {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(uptime.downCount > 0 ? Color.red : Color.green)
+                        .frame(width: 7, height: 7)
+                    Text(
+                        uptime.downCount > 0
+                            ? "\(uptime.downCount) uptime target\(uptime.downCount == 1 ? "" : "s") down"
+                            : "Uptime: all \(uptime.targets.count) up"
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    Spacer()
+                    Button("Open") { openWindow(id: "toolkit") }
+                        .controlSize(.mini)
+                }
             }
 
             if let best = viewModel.analysis.bestChannel(for: .band5) {

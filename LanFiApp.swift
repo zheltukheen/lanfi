@@ -21,6 +21,7 @@ struct LanFiApp: App {
     @StateObject private var survey = SurveyViewModel()
     @StateObject private var interfaces = InterfacesViewModel()
     @StateObject private var toolkit = ToolkitViewModel()
+    @StateObject private var uptime = UptimeMonitor()
     @AppStorage("LanFi.highContrast") private var highContrast = false
     @AppStorage("LanFi.appearance") private var appearance = "system"
 
@@ -43,6 +44,7 @@ struct LanFiApp: App {
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
                 .environmentObject(toolkit)
+                .environmentObject(uptime)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
                 .onOpenURL { url in
@@ -122,6 +124,7 @@ struct LanFiApp: App {
             NetworkToolkitView(toolkit: toolkit)
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
+                .environmentObject(uptime)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
         }
@@ -149,9 +152,11 @@ struct LanFiApp: App {
         }
 
         MenuBarExtra {
-            MenuBarView(viewModel: viewModel, diagnostics: diagnostics)
+            MenuBarView(viewModel: viewModel, diagnostics: diagnostics, uptime: uptime)
         } label: {
-            Label("LanFi", systemImage: "wifi")
+            Label(
+                "LanFi",
+                systemImage: uptime.downCount > 0 ? "exclamationmark.triangle" : "wifi")
         }
         .menuBarExtraStyle(.window)
     }

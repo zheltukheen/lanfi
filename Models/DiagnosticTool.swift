@@ -13,6 +13,9 @@ struct DiagnosticTool: Identifiable, Hashable {
     var command: String { candidates.joined(separator: " / ") }
 }
 
+/// Specialised system tools that stay outside the Network Toolkit. General
+/// network tools (ping, traceroute, DNS, ports, iperf3…) live in the toolkit
+/// so there is one home and one parser for each.
 enum ToolCatalog {
     static let all: [DiagnosticTool] = [
         DiagnosticTool(
@@ -20,60 +23,6 @@ enum ToolCatalog {
             description: "Apple Wi-Fi diagnostics: RSSI, noise, rate and channel.",
             candidates: ["/usr/bin/wdutil"], arguments: ["info"],
             installHint: nil
-        ),
-        DiagnosticTool(
-            id: "networkQuality", title: "networkQuality", icon: "speedometer", category: "Network",
-            description: "Apple network quality: download, upload, latency and responsiveness.",
-            candidates: ["/usr/bin/networkQuality"], arguments: ["-v"],
-            installHint: nil
-        ),
-        DiagnosticTool(
-            id: "ping", title: "ping", icon: "dot.radiowaves.left.and.right", category: "Network",
-            description: "Latency, jitter and loss to a host.",
-            candidates: ["/sbin/ping"], arguments: ["-c", "10", "1.1.1.1"],
-            installHint: nil
-        ),
-        DiagnosticTool(
-            id: "traceroute", title: "traceroute", icon: "point.3.connected.trianglepath.dotted", category: "Network",
-            description: "Path and per-hop latency to a host.",
-            candidates: ["/usr/sbin/traceroute"], arguments: ["-m", "20", "1.1.1.1"],
-            installHint: nil
-        ),
-        DiagnosticTool(
-            id: "mtr", title: "mtr", icon: "chart.line.uptrend.xyaxis", category: "Network",
-            description: "Combined ping/traceroute with loss and jitter per hop.",
-            candidates: ["/usr/local/bin/mtr", "/opt/homebrew/bin/mtr"], arguments: ["-rwc", "10", "1.1.1.1"],
-            installHint: "brew install mtr"
-        ),
-        DiagnosticTool(
-            id: "dig", title: "dig", icon: "globe", category: "DNS",
-            description: "DNS query time, answer and resolver status.",
-            candidates: ["/usr/bin/dig"], arguments: ["+stats", "example.com"],
-            installHint: nil
-        ),
-        DiagnosticTool(
-            id: "dscacheutil", title: "dscacheutil", icon: "server.rack", category: "DNS",
-            description: "macOS Directory Service cache lookup.",
-            candidates: ["/usr/bin/dscacheutil"], arguments: ["-q", "host", "-a", "name", "example.com"],
-            installHint: nil
-        ),
-        DiagnosticTool(
-            id: "arp", title: "arp -a", icon: "desktopcomputer", category: "LAN",
-            description: "Neighbour table: local IP and MAC addresses.",
-            candidates: ["/usr/sbin/arp"], arguments: ["-a"],
-            installHint: nil
-        ),
-        DiagnosticTool(
-            id: "nmap", title: "nmap", icon: "network", category: "LAN",
-            description: "LAN discovery and open-port scan.",
-            candidates: ["/usr/local/bin/nmap", "/opt/homebrew/bin/nmap"], arguments: ["-sn", "192.168.1.0/24"],
-            installHint: "brew install nmap"
-        ),
-        DiagnosticTool(
-            id: "blueutil", title: "blueutil", icon: "antenna.radiowaves.left.and.right", category: "Wireless",
-            description: "Bluetooth radio state and coexistence inspection.",
-            candidates: ["/usr/local/bin/blueutil", "/opt/homebrew/bin/blueutil"], arguments: ["-p"],
-            installHint: "brew install blueutil"
         ),
         DiagnosticTool(
             id: "airport", title: "airport -I", icon: "airplane", category: "Wi-Fi",
@@ -86,6 +35,12 @@ enum ToolCatalog {
             installHint: "Legacy airport utility is unavailable on this macOS; use wdutil."
         ),
         DiagnosticTool(
+            id: "blueutil", title: "blueutil", icon: "antenna.radiowaves.left.and.right", category: "Wireless",
+            description: "Bluetooth radio state and coexistence inspection.",
+            candidates: ["/usr/local/bin/blueutil", "/opt/homebrew/bin/blueutil"], arguments: ["-p"],
+            installHint: "brew install blueutil"
+        ),
+        DiagnosticTool(
             id: "captive", title: "Captive portal check", icon: "lock.shield", category: "Security",
             description: "Detect captive portal/authentication interception.",
             candidates: ["/usr/bin/curl"],
@@ -94,12 +49,6 @@ enum ToolCatalog {
                 "http://captive.apple.com/hotspot-detect.html",
             ],
             installHint: nil
-        ),
-        DiagnosticTool(
-            id: "iperf3", title: "iperf3", icon: "arrow.up.arrow.down", category: "Throughput",
-            description: "Throughput to your own iperf3 server.",
-            candidates: ["/usr/local/bin/iperf3", "/opt/homebrew/bin/iperf3"], arguments: ["-c", "192.168.1.10"],
-            installHint: "brew install iperf3"
         ),
         DiagnosticTool(
             id: "hostapd_cli", title: "hostapd_cli", icon: "antenna.radiowaves.left.and.right", category: "AP",
