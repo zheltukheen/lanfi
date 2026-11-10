@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.12.0 — 2026-11-11
 
 ### Added
 - Network Toolkit window (Tools → Network Toolkit…, ⇧⌘T): grouped sidebar
