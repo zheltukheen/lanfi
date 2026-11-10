@@ -27,7 +27,7 @@ let stem = CGRect(x: 296, y: 300, width: 128, height: 500)   // y from the top
 let foot = CGRect(x: 296, y: 672, width: 400, height: 128)
 let cornerRadius: CGFloat = 64
 
-let wifiCentre = CGPoint(x: 620, y: 352)
+let wifiCentre = CGPoint(x: 562, y: 414)
 let wifiRadii: [CGFloat] = [86, 152, 218]
 let wifiStroke: CGFloat = 38
 let wifiDotRadius: CGFloat = 34
@@ -35,7 +35,7 @@ let wifiOpacity: [CGFloat] = [1.0, 0.82, 0.64]
 
 /// Tiny raster sizes turn three arcs into mush, so they get one bolder arc.
 func compactArtwork() -> ([CGFloat], CGFloat, CGFloat) {
-    ([120], 50, 40)
+    ([124], 58, 42)
 }
 
 func makeIcon(margin: CGFloat, pixels: Int, compact: Bool = false) -> NSBitmapImageRep {
@@ -97,20 +97,22 @@ func makeIcon(margin: CGFloat, pixels: Int, compact: Bool = false) -> NSBitmapIm
                 roundedRect: top(rect), cornerWidth: cornerRadius,
                 cornerHeight: cornerRadius, transform: nil))
     }
+    let radii = compact ? compactArtwork().0 : wifiRadii
+    let stroke = compact ? compactArtwork().1 : wifiStroke
+    let dotRadius = compact ? compactArtwork().2 : wifiDotRadius
+
     let centre = top(wifiCentre)
     context.addEllipse(
         in: CGRect(
-            x: centre.x - wifiDotRadius, y: centre.y - wifiDotRadius,
-            width: wifiDotRadius * 2, height: wifiDotRadius * 2))
+            x: centre.x - dotRadius, y: centre.y - dotRadius,
+            width: dotRadius * 2, height: dotRadius * 2))
     context.fillPath()
 
-    let radii = compact ? compactArtwork().0 : wifiRadii
-    let stroke = compact ? compactArtwork().1 : wifiStroke
     for (index, radius) in radii.enumerated() {
         let arc = CGMutablePath()
         arc.addArc(
             center: centre, radius: radius,
-            startAngle: 45 * .pi / 180, endAngle: 135 * .pi / 180,
+            startAngle: 0, endAngle: 90 * .pi / 180,
             clockwise: false)
         context.setAlpha(wifiOpacity[min(index, wifiOpacity.count - 1)])
         context.setStrokeColor(NSColor.white.cgColor)
