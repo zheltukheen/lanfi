@@ -23,10 +23,10 @@ enum SpeedTestSchedule: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .off: return "Off"
-        case .hourly: return "Every hour"
-        case .everySixHours: return "Every 6 hours"
-        case .daily: return "Once a day"
+        case .off: return String(localized: "Off")
+        case .hourly: return String(localized: "Every hour")
+        case .everySixHours: return String(localized: "Every 6 hours")
+        case .daily: return String(localized: "Once a day")
         }
     }
 

@@ -35,7 +35,9 @@ enum DeepLink: Equatable {
             return .interfaces
         case "toolkit":
             guard let raw = path.first,
-                let tool = ToolboxTool(rawValue: raw.lowercased())
+                let tool = ToolboxTool.allCases.first(where: {
+                    $0.rawValue.lowercased() == raw.lowercased()
+                })
             else { return .toolkit(.internetCheck) }
             return .toolkit(tool)
         default:

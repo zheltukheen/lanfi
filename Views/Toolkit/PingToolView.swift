@@ -85,8 +85,8 @@ struct PingToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Pinging…" }
-        guard let stats = model.statistics else { return "Ready" }
+        if model.isRunning { return String(localized: "Pinging…") }
+        guard let stats = model.statistics else { return String(localized: "Ready") }
         return "\(stats.received)/\(stats.transmitted) replies · \(Int(stats.packetLossPercent))% loss"
     }
 
@@ -169,9 +169,12 @@ struct PingToolView: View {
                     }
                     .width(110)
                     TableColumn("Status") { sample in
-                        Text(sample.succeeded ? "Reply" : (sample.error ?? "No reply"))
-                            .font(.caption)
-                            .foregroundColor(sample.succeeded ? .secondary : .orange)
+                        Text(
+                            sample.succeeded
+                                ? String(localized: "Reply") : (sample.error ?? String(localized: "No reply"))
+                        )
+                        .font(.caption)
+                        .foregroundColor(sample.succeeded ? .secondary : .orange)
                     }
                 }
                 .frame(height: min(CGFloat(stats.samples.count) * 24 + 28, 230))

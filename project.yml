@@ -57,7 +57,15 @@ targets:
         NSHumanReadableCopyright: "© 2026 LanFi Contributors"
         NSLocationUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
         NSLocationWhenInUseUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
-        NSLocalNetworkUsageDescription: "LanFi connects to remote sensors on your local network over SSH when you ask it to."
+        NSLocalNetworkUsageDescription: "LanFi scans your local network for the LAN Scanner and connects to remote sensors over SSH when you ask it to."
+        NSBonjourServices:
+          - _http._tcp
+          - _https._tcp
+          - _ssh._tcp
+          - _smb._tcp
+          - _airplay._tcp
+          - _ipp._tcp
+          - _printer._tcp
         CFBundleURLTypes:
           - CFBundleURLName: ru.zheltukheen.LanFi
             CFBundleURLSchemes:
@@ -111,6 +119,7 @@ targets:
       - path: Services/Toolkit/TracerouteRunner.swift
       - path: Models/MTRModels.swift
       - path: Models/SpeedTestHistory.swift
+      - path: Models/Iperf3Models.swift
       - path: Models/UptimeModels.swift
       - path: Models/LANModels.swift
       - path: Services/UptimeStore.swift

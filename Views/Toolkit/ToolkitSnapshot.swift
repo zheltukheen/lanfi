@@ -10,6 +10,7 @@
     enum ToolkitSnapshot {
         static func captureIfRequested(
             toolkit: ToolkitViewModel,
+            uptime: UptimeMonitor,
             openWindow: OpenWindowAction
         ) {
             let arguments = ProcessInfo.processInfo.arguments
@@ -36,6 +37,19 @@
                 toolkit.traceroute.host = host
                 toolkit.ssl.host = host
                 toolkit.pathCheck.target = "\(host):443"
+            }
+
+            if arguments.contains("--uptime-demo") {
+                if !uptime.targets.contains(where: {
+                    $0.address.hasPrefix("https://example.com")
+                }),
+                    let target = UptimeTarget.make(
+                        name: "API Server", address: "https://example.com", kind: .http,
+                        intervalMinutes: 5)
+                {
+                    uptime.add(target, checkImmediately: false)
+                    Task { await uptime.checkNow(target.id) }
+                }
             }
 
             openWindow(id: "toolkit")
@@ -96,7 +110,12 @@
             case .pathCheck: toolkit.pathCheck.run()
             case .subnetCalculator: toolkit.subnet.calculate()
             case .speedTest: toolkit.speedTest.run()
+            case .mtr:
+                toolkit.mtr.maxHops = 6
+                toolkit.mtr.rounds = 3
+                toolkit.mtr.run()
             case .lanScanner: toolkit.lanScanner.scan()
+            case .iperf3: toolkit.iperf3.run()
             default: break
             }
         }

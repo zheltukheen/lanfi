@@ -63,7 +63,7 @@ struct SpeedTestToolView: View {
 
     private var statusText: String {
         if model.isRunning { return "Testing…" }
-        guard let report = model.report else { return "Ready" }
+        guard let report = model.report else { return String(localized: "Ready") }
         return report.summary
     }
 
@@ -188,7 +188,7 @@ struct SpeedTestToolView: View {
                         }
                         .width(60)
                     }
-                    .frame(height: min(CGFloat(model.history.count) * 24 + 30, 220))
+                    .frame(height: min(CGFloat(model.history.count) * 24 + 46, 240))
                 }
             }
         }

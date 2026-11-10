@@ -162,7 +162,8 @@ struct UptimeToolView: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 6) {
                     ToolkitStatusPill(
-                        text: state.isUp.map { $0 ? "Up" : "Down" } ?? "No checks",
+                        text: state.isUp.map { $0 ? String(localized: "Up") : String(localized: "Down") }
+                            ?? String(localized: "No checks"),
                         tone: tone(for: state.isUp))
                     Toggle(
                         "Enabled",
@@ -202,6 +203,8 @@ struct UptimeToolView: View {
                     Label("Check Now", systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(.bordered)
+                .controlSize(.small)
+                .fixedSize()
                 .disabled(monitor.isChecking)
             }
         }
@@ -239,6 +242,11 @@ struct UptimeToolView: View {
                                     y: .value("Latency", latency)
                                 )
                                 .interpolationMethod(.monotone)
+                                PointMark(
+                                    x: .value("Time", check.at),
+                                    y: .value("Latency", latency)
+                                )
+                                .symbolSize(18)
                             }
                             if !check.isUp {
                                 PointMark(
@@ -293,7 +301,7 @@ struct UptimeToolView: View {
                                 Circle()
                                     .fill(check.isUp ? Color.green : Color.red)
                                     .frame(width: 6, height: 6)
-                                Text(check.isUp ? "Up" : "Down")
+                                Text(check.isUp ? String(localized: "Up") : String(localized: "Down"))
                                     .font(.caption)
                             }
                         }
@@ -331,9 +339,9 @@ enum UptimePeriod: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .day: return "Day"
-        case .week: return "Week"
-        case .month: return "Month"
+        case .day: return String(localized: "Day")
+        case .week: return String(localized: "Week")
+        case .month: return String(localized: "Month")
         }
     }
 

@@ -52,8 +52,8 @@ struct SSLToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Handshaking…" }
-        guard let report = model.report else { return "Ready" }
+        if model.isRunning { return String(localized: "Handshaking…") }
+        guard let report = model.report else { return String(localized: "Ready") }
         if report.expired { return "Expired" }
         return report.trusted ? "Trusted" : "Untrusted"
     }

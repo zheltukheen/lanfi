@@ -45,8 +45,8 @@ struct PathCheckToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Connecting…" }
-        guard let outcome = model.outcome else { return "Ready" }
+        if model.isRunning { return String(localized: "Connecting…") }
+        guard let outcome = model.outcome else { return String(localized: "Ready") }
         switch outcome {
         case .open: return "Reachable"
         case .closed: return "Refused"

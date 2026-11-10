@@ -86,8 +86,8 @@ struct PortScanToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Scanning…" }
-        guard !model.results.isEmpty else { return "Ready" }
+        if model.isRunning { return String(localized: "Scanning…") }
+        guard !model.results.isEmpty else { return String(localized: "Ready") }
         return "\(model.openCount) open · \(model.closedCount) closed · \(model.filteredCount) filtered"
     }
 

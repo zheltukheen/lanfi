@@ -85,8 +85,8 @@ struct DNSToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Resolving…" }
-        guard let result = model.result else { return "Ready" }
+        if model.isRunning { return String(localized: "Resolving…") }
+        guard let result = model.result else { return String(localized: "Ready") }
         return "\(result.records.count) records · \(result.milliseconds) ms"
     }
 

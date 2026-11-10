@@ -198,27 +198,27 @@ struct InternetCheckToolView: View {
                 || check("ipv4", in: report)?.status == .fail ? .fail : .pass
         return [
             PathNode(
-                title: "This Mac",
+                title: String(localized: "This Mac"),
                 value: report.snapshot.ssid ?? "Wi-Fi",
                 status: thisMacStatus,
                 icon: "laptopcomputer"),
             PathNode(
-                title: "Router",
+                title: String(localized: "Router"),
                 value: check("gateway", in: report)?.value ?? "—",
                 status: check("gateway", in: report)?.status ?? .pending,
                 icon: "wifi.router"),
             PathNode(
-                title: "Internet",
+                title: String(localized: "Internet"),
                 value: check("latency", in: report)?.value ?? "—",
                 status: check("latency", in: report)?.status ?? .pending,
                 icon: "globe"),
             PathNode(
-                title: "DNS",
+                title: String(localized: "DNS"),
                 value: check("dns", in: report)?.value ?? "—",
                 status: check("dns", in: report)?.status ?? .pending,
                 icon: "server.rack"),
             PathNode(
-                title: "Web",
+                title: String(localized: "Web"),
                 value: check("internet", in: report)?.value ?? "—",
                 status: check("internet", in: report)?.status ?? .pending,
                 icon: "safari"),

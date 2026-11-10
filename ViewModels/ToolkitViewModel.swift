@@ -14,6 +14,7 @@ final class ToolkitViewModel: ObservableObject {
     let subnet = SubnetToolModel()
     let pathCheck = PathCheckToolModel()
     let lanScanner = LANScannerToolModel()
+    let iperf3 = Iperf3ToolModel()
     let speedTest = SpeedTestToolModel()
 
     func select(_ tool: ToolboxTool) {
@@ -434,6 +435,67 @@ final class PathCheckToolModel: ObservableObject {
         outcome = nil
         errorMessage = nil
         isRunning = false
+    }
+}
+
+// MARK: - iperf3
+
+@MainActor
+final class Iperf3ToolModel: ObservableObject {
+    @Published var host = "192.168.1.10"
+    @Published var portText = "5201"
+    @Published var duration = 10
+    @Published var direction: Iperf3Direction = .upload
+    @Published private(set) var report: Iperf3Report?
+    @Published private(set) var isRunning = false
+    @Published var errorMessage: String?
+
+    private var task: Task<Void, Never>?
+
+    var isInstalled: Bool { Iperf3Runner.locate() != nil }
+
+    func run() {
+        guard !isRunning else { return }
+        guard let target = ToolTarget.parse(host), let port = UInt16(portText), port > 0 else {
+            errorMessage = "Enter a host and a port between 1 and 65535."
+            return
+        }
+        errorMessage = nil
+        report = nil
+        isRunning = true
+        let duration = duration
+        let direction = direction
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let measured = try await Iperf3Runner().run(
+                    host: target.host,
+                    port: port,
+                    durationSeconds: duration,
+                    direction: direction
+                )
+                if Task.isCancelled { return }
+                self.report = measured
+            } catch is CancellationError {
+                // Keep whatever the user already has.
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+            self.isRunning = false
+            self.task = nil
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+        isRunning = false
+    }
+
+    func clear() {
+        stop()
+        report = nil
+        errorMessage = nil
     }
 }
 

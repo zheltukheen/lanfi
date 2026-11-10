@@ -71,7 +71,7 @@ struct MTRToolView: View {
         if model.isRunning {
             return "Round \(model.report?.rounds ?? 0)/\(model.rounds)"
         }
-        guard let report = model.report else { return "Ready" }
+        guard let report = model.report else { return String(localized: "Ready") }
         return "\(report.rounds) rounds · \(report.hops.count) hops"
     }
 
@@ -167,7 +167,7 @@ struct MTRToolView: View {
                     }
                     .width(72)
                 }
-                .frame(height: min(CGFloat(report.hops.count) * 26 + 40, 460))
+                .frame(height: min(CGFloat(report.hops.count) * 26 + 52, 500))
             }
         }
     }

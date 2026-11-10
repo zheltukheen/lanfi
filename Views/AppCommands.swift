@@ -179,7 +179,9 @@ struct LanFiCommands: Commands {
                     NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
                 }
                 Button("iPerf3…") {
-                    NSWorkspace.shared.open(URL(string: "https://iperf.fr/iperf-download.php")!)
+                    NotificationCenter.default.post(
+                        name: .lanfiShowToolkit, object: nil,
+                        userInfo: ["tool": ToolboxTool.iperf3.rawValue])
                 }
                 Divider()
                 Button("Run Network Quality Test") {
