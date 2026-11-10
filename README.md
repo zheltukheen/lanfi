@@ -73,6 +73,7 @@ surfaced with severity and remediation hints.
 
 Download the latest build directly:
 
+- **Short link** — https://zheltukheen.github.io/lanfi/download
 - **DMG** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg
 - **ZIP** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.zip
 - **CLI** — https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi-CLI.zip
