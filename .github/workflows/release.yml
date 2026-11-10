@@ -117,15 +117,6 @@ jobs:
         if: env.HAS_SIGNING == 'true'
         run: ./scripts/notarize.sh dmg "build/dist/LanFi-${GITHUB_REF_NAME#v}.dmg"
 
-      - name: Checksums
-        run: |
-          set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          cd build/dist
-          shasum -a 256 "LanFi-${VERSION}.zip" > "LanFi-${VERSION}.sha256"
-          shasum -a 256 "LanFi-${VERSION}.dmg" >> "LanFi-${VERSION}.sha256"
-          cat "LanFi-${VERSION}.sha256"
-
       - name: Build CLI
         run: |
           set -euo pipefail
@@ -142,7 +133,6 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           cd build/dist
           zip -q "LanFi-CLI-${VERSION}.zip" cli/lanfi-cli
-          shasum -a 256 "LanFi-CLI-${VERSION}.zip" >> "LanFi-${VERSION}.sha256"
 
       - name: Stable download aliases
         run: |
@@ -187,7 +177,7 @@ jobs:
           python3 scripts/make_appcast.py \
             --version "$VERSION" \
             --build "$BUILD" \
-            --url "https://github.com/zheltukheen/lanfi/releases/download/v${VERSION}/LanFi-${VERSION}.zip" \
+            --url "https://github.com/zheltukheen/lanfi/releases/download/v${VERSION}/LanFi.zip" \
             --signature "$SIGNATURE" \
             --length "$LENGTH" \
             --notes release_notes.md \
@@ -216,9 +206,6 @@ jobs:
           generate_release_notes: false
           body_path: release_notes.md
           files: |
-            build/dist/LanFi-*.zip
-            build/dist/LanFi-*.dmg
-            build/dist/LanFi-*.sha256
             build/dist/stable/LanFi.dmg
             build/dist/stable/LanFi.zip
             build/dist/stable/LanFi-CLI.zip
