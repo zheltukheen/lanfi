@@ -1,9 +1,12 @@
+import AppKit
 import SwiftUI
 
 struct NetworkToolkitView: View {
     @ObservedObject var toolkit: ToolkitViewModel
     @EnvironmentObject private var diagnostics: DiagnosticsViewModel
     @EnvironmentObject private var interfaces: InterfacesViewModel
+    @EnvironmentObject private var uptime: UptimeMonitor
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         HStack(spacing: 0) {
@@ -19,6 +22,10 @@ struct NetworkToolkitView: View {
     private var sidebar: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
+                mainScreenRow
+                Divider()
+                    .padding(.vertical, 6)
+
                 ForEach(ToolboxSection.allCases) { section in
                     Text(section.title)
                         .font(.caption2.weight(.semibold))
@@ -38,6 +45,45 @@ struct NetworkToolkitView: View {
         }
         .frame(width: 228)
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var mainScreenRow: some View {
+        Button {
+            openMainWindow(tab: nil)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "macwindow")
+                    .font(.system(size: 12))
+                    .frame(width: 17)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Main screen")
+                        .font(.callout.weight(.medium))
+                    Text("Wi-Fi analyzer")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer(minLength: 4)
+                Image(systemName: "arrow.up.forward")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 6))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Open the Wi-Fi analyzer")
+    }
+
+    private func openMainWindow(tab: Int?) {
+        if let tab {
+            NotificationCenter.default.post(
+                name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": tab])
+        }
+        openWindow(id: "main")
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func toolRow(_ tool: ToolboxTool) -> some View {
@@ -87,6 +133,8 @@ struct NetworkToolkitView: View {
             PingToolView(model: toolkit.ping)
         case .traceroute:
             TracerouteToolView(model: toolkit.traceroute)
+        case .mtr:
+            MTRToolView(model: toolkit.mtr)
         case .speedTest:
             SpeedTestToolView(model: toolkit.speedTest)
         case .dnsLookup:
@@ -100,10 +148,16 @@ struct NetworkToolkitView: View {
         case .subnetCalculator:
             SubnetToolView(model: toolkit.subnet)
         case .networkMonitor:
-            InterfacesView(interfaces: interfaces)
+            NetworkMonitorLinkToolView(interfaces: interfaces) {
+                openMainWindow(tab: 2)
+            }
+        case .uptimeMonitor:
+            UptimeToolView(monitor: uptime)
+        case .lanScanner:
+            LANScannerToolView(model: toolkit.lanScanner)
         case .wifiAnalyzer, .wifiNetworks:
             WiFiRedirectToolView(tool: toolkit.selection)
-        case .mtr, .dnsPropagation, .whois, .geoIP, .iperf3, .uptimeMonitor, .lanScanner:
+        case .dnsPropagation, .whois, .geoIP, .iperf3:
             ComingSoonToolView(tool: toolkit.selection)
         }
     }

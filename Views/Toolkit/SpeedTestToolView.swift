@@ -21,6 +21,7 @@ struct SpeedTestToolView: View {
                             "Download, upload, latency and responsiveness from Apple's networkQuality. It uses real test traffic for up to 20 seconds."
                     )
                 }
+                historySection
             }
             .padding(18)
         }
@@ -35,6 +36,16 @@ struct SpeedTestToolView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
+                Picker("Schedule", selection: $model.schedule) {
+                    ForEach(SpeedTestSchedule.allCases) { schedule in
+                        Text(schedule.title).tag(schedule)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 150)
+                Text(nextRunText)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
                 if model.isRunning {
                     ProgressView()
                         .controlSize(.small)
@@ -104,6 +115,81 @@ struct SpeedTestToolView: View {
                 Text(report.testedAt.formatted(date: .omitted, time: .standard))
                     .font(.caption2)
                     .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private var nextRunText: String {
+        guard model.schedule != .off else { return "Schedule off" }
+        guard let nextRun = model.nextRun else { return "Runs at the next check" }
+        return nextRun.formatted(date: .abbreviated, time: .shortened)
+    }
+
+    private var historySection: some View {
+        ToolkitCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    ToolkitSectionLabel(text: "History")
+                    Spacer()
+                    Button("Clear") { model.clearHistory() }
+                        .buttonStyle(.borderless)
+                        .font(.caption2)
+                        .disabled(model.history.isEmpty)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 6)
+
+                if model.history.isEmpty {
+                    Text("Scheduled and manual tests land here.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 14)
+                } else {
+                    Table(model.newestFirst) {
+                        TableColumn("When") { measurement in
+                            Text(
+                                measurement.testedAt.formatted(
+                                    date: .abbreviated, time: .shortened)
+                            )
+                            .font(.caption2)
+                        }
+                        TableColumn("Down") { measurement in
+                            Text(
+                                measurement.report.downloadMbps.map {
+                                    String(format: "%.0f Mbps", $0)
+                                } ?? "—"
+                            )
+                            .font(.caption.monospacedDigit())
+                        }
+                        .width(90)
+                        TableColumn("Up") { measurement in
+                            Text(
+                                measurement.report.uploadMbps.map {
+                                    String(format: "%.0f Mbps", $0)
+                                } ?? "—"
+                            )
+                            .font(.caption.monospacedDigit())
+                        }
+                        .width(90)
+                        TableColumn("Latency") { measurement in
+                            Text(
+                                measurement.report.latencyMilliseconds.map {
+                                    String(format: "%.0f ms", $0)
+                                } ?? "—"
+                            )
+                            .font(.caption.monospacedDigit())
+                        }
+                        .width(80)
+                        TableColumn("Grade") { measurement in
+                            Text(measurement.bufferbloatGrade ?? "—")
+                                .font(.caption.bold())
+                        }
+                        .width(60)
+                    }
+                    .frame(height: min(CGFloat(model.history.count) * 24 + 30, 220))
+                }
             }
         }
     }

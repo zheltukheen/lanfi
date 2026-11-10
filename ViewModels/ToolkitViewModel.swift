@@ -9,9 +9,11 @@ final class ToolkitViewModel: ObservableObject {
     let dns = DNSToolModel()
     let portScan = PortScanToolModel()
     let traceroute = TracerouteToolModel()
+    let mtr = MTRToolModel()
     let ssl = SSLToolModel()
     let subnet = SubnetToolModel()
     let pathCheck = PathCheckToolModel()
+    let lanScanner = LANScannerToolModel()
     let speedTest = SpeedTestToolModel()
 
     func select(_ tool: ToolboxTool) {
@@ -273,6 +275,66 @@ final class TracerouteToolModel: ObservableObject {
     }
 }
 
+// MARK: - MTR
+
+@MainActor
+final class MTRToolModel: ObservableObject {
+    @Published var host = "1.1.1.1"
+    @Published var rounds = 10
+    @Published var maxHops = 20
+    @Published private(set) var report: MTRReport?
+    @Published private(set) var isRunning = false
+    @Published var errorMessage: String?
+
+    private var task: Task<Void, Never>?
+
+    func run() {
+        guard !isRunning else { return }
+        guard let target = ToolTarget.parse(host) else {
+            errorMessage = "Enter a host name or address."
+            return
+        }
+        errorMessage = nil
+        report = nil
+        isRunning = true
+        let totalRounds = rounds
+        let hops = maxHops
+        let service = MTRService(runner: SystemTracerouteRunner())
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let result = try await service.run(
+                    host: target.host, rounds: totalRounds, maxHops: hops, waitSeconds: 1
+                ) { update in
+                    Task { @MainActor [weak self] in
+                        self?.report = update
+                    }
+                }
+                if Task.isCancelled { return }
+                self.report = result
+            } catch is CancellationError {
+                // Keep the last partial report.
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+            self.isRunning = false
+            self.task = nil
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+        isRunning = false
+    }
+
+    func clear() {
+        stop()
+        report = nil
+        errorMessage = nil
+    }
+}
+
 // MARK: - TLS
 
 @MainActor
@@ -375,15 +437,141 @@ final class PathCheckToolModel: ObservableObject {
     }
 }
 
+// MARK: - LAN scanner
+
+@MainActor
+final class LANScannerToolModel: ObservableObject {
+    @Published private(set) var result: LANScanResult?
+    @Published private(set) var isScanning = false
+    @Published var errorMessage: String?
+    @Published private(set) var newMACs: Set<String> = []
+    @Published var guardEnabled: Bool {
+        didSet {
+            defaults.set(guardEnabled, forKey: Self.guardKey)
+            if guardEnabled, let result {
+                knownMACs.formUnion(result.devices.map { $0.mac ?? $0.ip })
+                guardStore.save(knownMACs)
+            } else if !guardEnabled {
+                newMACs = []
+            }
+        }
+    }
+
+    private static let guardKey = "LanFi.lanGuardEnabled"
+    private let defaults = UserDefaults.standard
+    private let guardStore = LANGuardStore()
+    private let notifier: any UserNotifying
+    private var knownMACs: Set<String>
+    private var task: Task<Void, Never>?
+
+    init(notifier: any UserNotifying = SystemUserNotifier()) {
+        self.notifier = notifier
+        knownMACs = guardStore.load()
+        guardEnabled = defaults.bool(forKey: Self.guardKey)
+    }
+
+    var devices: [LANDevice] { result?.devices ?? [] }
+
+    var selectedSubnet: String { result?.subnet ?? "Not scanned" }
+
+    func scan() {
+        guard !isScanning else { return }
+        isScanning = true
+        errorMessage = nil
+        let known = knownMACs
+        let guarding = guardEnabled
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let scan = try await LANScannerService().scan(
+                    knownMACs: known, guardEnabled: guarding)
+                if Task.isCancelled { return }
+                self.result = scan
+                self.applyGuard(scan)
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+            self.isScanning = false
+            self.task = nil
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+        isScanning = false
+    }
+
+    func clear() {
+        stop()
+        result = nil
+        newMACs = []
+        errorMessage = nil
+    }
+
+    private func applyGuard(_ scan: LANScanResult) {
+        guard guardEnabled else { return }
+        let seen = Set(scan.devices.map { $0.mac ?? $0.ip })
+        if knownMACs.isEmpty {
+            knownMACs = seen
+            guardStore.save(knownMACs)
+            return
+        }
+        let new = seen.subtracting(knownMACs)
+        newMACs = new
+        if !new.isEmpty {
+            let names = scan.devices
+                .filter { device in new.contains(device.mac ?? device.ip) }
+                .map(\.displayName)
+                .prefix(3)
+                .joined(separator: ", ")
+            Task {
+                await notifier.notify(
+                    title: "New device on \(scan.subnet)", body: names)
+            }
+        }
+        knownMACs.formUnion(seen)
+        guardStore.save(knownMACs)
+    }
+}
+
 // MARK: - Speed test
 
 @MainActor
 final class SpeedTestToolModel: ObservableObject {
     @Published private(set) var report: ThroughputReport?
+    @Published private(set) var history: [ThroughputMeasurement] = []
+    @Published var schedule: SpeedTestSchedule {
+        didSet {
+            defaults.set(schedule.rawValue, forKey: Self.scheduleKey)
+            startScheduler()
+        }
+    }
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
 
+    private static let scheduleKey = "LanFi.speedTestSchedule"
+    private let historyStore = ThroughputHistoryStore()
+    private let defaults = UserDefaults.standard
     private var task: Task<Void, Never>?
+    private var scheduleTask: Task<Void, Never>?
+
+    init() {
+        schedule =
+            SpeedTestSchedule(rawValue: defaults.string(forKey: Self.scheduleKey) ?? "") ?? .off
+        let loaded = historyStore.load()
+        history = loaded
+        report = loaded.last?.report
+        startScheduler()
+    }
+
+    var nextRun: Date? {
+        schedule.nextRun(after: history.last?.testedAt)
+    }
+
+    var newestFirst: [ThroughputMeasurement] {
+        Array(history.reversed())
+    }
 
     func run() {
         guard !isRunning else { return }
@@ -396,6 +584,7 @@ final class SpeedTestToolModel: ObservableObject {
                     try await ThroughputTester.run()
                 }.value
                 self.report = measured
+                self.record(measured)
             } catch {
                 self.errorMessage = error.localizedDescription
             }
@@ -410,5 +599,40 @@ final class SpeedTestToolModel: ObservableObject {
         report = nil
         errorMessage = nil
         isRunning = false
+    }
+
+    func clearHistory() {
+        history.removeAll()
+        historyStore.clear()
+        report = nil
+    }
+
+    private func record(_ report: ThroughputReport) {
+        history.append(ThroughputMeasurement(report: report))
+        if history.count > 50 {
+            history.removeFirst(history.count - 50)
+        }
+        historyStore.save(history)
+    }
+
+    private func startScheduler() {
+        scheduleTask?.cancel()
+        scheduleTask = nil
+        guard schedule != .off else { return }
+        scheduleTask = Task { [weak self] in
+            guard let self else { return }
+            while !Task.isCancelled {
+                if !self.isRunning,
+                    self.schedule.isDue(lastRun: self.history.last?.testedAt)
+                {
+                    self.run()
+                }
+                do {
+                    try await Task.sleep(nanoseconds: 60_000_000_000)
+                } catch {
+                    break
+                }
+            }
+        }
     }
 }

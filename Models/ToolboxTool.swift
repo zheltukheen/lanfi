@@ -1,10 +1,10 @@
 import Foundation
 
 enum ToolboxSection: String, CaseIterable, Identifiable, Sendable {
+    case monitoring
     case diagnostics
     case dnsDomains
     case networkTools
-    case monitoring
 
     var id: String { rawValue }
 
@@ -110,11 +110,11 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     /// without pretending the screen works.
     var isAvailable: Bool {
         switch self {
-        case .internetCheck, .ping, .traceroute, .speedTest, .dnsLookup, .sslCertificate,
-            .portScan, .pathCheck, .subnetCalculator, .networkMonitor, .wifiAnalyzer,
-            .wifiNetworks:
+        case .internetCheck, .ping, .traceroute, .mtr, .speedTest, .dnsLookup,
+            .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
+            .uptimeMonitor, .lanScanner, .wifiAnalyzer, .wifiNetworks:
             return true
-        case .mtr, .dnsPropagation, .whois, .geoIP, .iperf3, .uptimeMonitor, .lanScanner:
+        case .dnsPropagation, .whois, .geoIP, .iperf3:
             return false
         }
     }

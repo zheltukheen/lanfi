@@ -187,9 +187,11 @@ struct PortScanToolView: View {
                 Text("A closed port answered with a refusal; a filtered port did not answer before the timeout.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
-                Text("A transparent proxy can accept every connection; this scan reports the TCP handshake, not the service behind it.")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                Text(
+                    "A transparent proxy can accept every connection; this scan reports the TCP handshake, not the service behind it."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
         }
     }

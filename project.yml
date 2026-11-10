@@ -109,6 +109,13 @@ targets:
       - path: Services/Toolkit/TLSCertificateInspector.swift
       - path: Services/Toolkit/TracerouteParser.swift
       - path: Services/Toolkit/TracerouteRunner.swift
+      - path: Models/MTRModels.swift
+      - path: Models/SpeedTestHistory.swift
+      - path: Models/UptimeModels.swift
+      - path: Models/LANModels.swift
+      - path: Services/UptimeStore.swift
+      - path: Services/UptimeMonitor.swift
+      - path: Services/Toolkit/MTRService.swift
       - path: Models/DiagnosticsVerdict.swift
       - path: Models/ToolboxTool.swift
       - path: Models/EHTPuncturing.swift
