@@ -148,6 +148,7 @@
 		78604E7198404854FAFAAC04 /* LiveCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */; };
 		7A99F757611D6FF4702810D9 /* APNameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */; };
 		7B8CF056CAC5E29030087A73 /* ControllerAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940A429CB546B3B174C60EBF /* ControllerAccount.swift */; };
+		7DD4A0254E02FB40179E6B10 /* AdvancedToolsToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE67D7355D69631220105BE /* AdvancedToolsToolView.swift */; };
 		7E1F49B4BC32C652B2C77D87 /* MLOGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A4DB36EA958667955490A3 /* MLOGroup.swift */; };
 		7E6147FE9D9AFB5740A46200 /* ToolkitSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B5CC2CBB9EBE29F3970FF3 /* ToolkitSnapshot.swift */; };
 		7E86F33BEB7E0B99459EA55D /* SpectrumCSVImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3069D30FD19122DAF9D8F /* SpectrumCSVImporter.swift */; };
@@ -377,6 +378,7 @@
 		39C73E82C9496C0462E8ED4F /* CustomFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFilterTests.swift; sourceTree = "<group>"; };
 		3AB4E05EC2FC66B20C543DF6 /* LiveCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCaptureView.swift; sourceTree = "<group>"; };
 		3B9E828DDC3DC17337CAD13F /* RFExplorerProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFExplorerProtocolTests.swift; sourceTree = "<group>"; };
+		3DE67D7355D69631220105BE /* AdvancedToolsToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedToolsToolView.swift; sourceTree = "<group>"; };
 		3E8AD8AE18BE59654726CA6C /* ThroughputReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThroughputReport.swift; sourceTree = "<group>"; };
 		428D72EDF823DCE30C895CE4 /* ToolConsoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolConsoleView.swift; sourceTree = "<group>"; };
 		42AF16EAB78D222560E62C6D /* TracerouteParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerouteParserTests.swift; sourceTree = "<group>"; };
@@ -667,6 +669,7 @@
 		5B51D2680CEC0D294BF76E17 /* Toolkit */ = {
 			isa = PBXGroup;
 			children = (
+				3DE67D7355D69631220105BE /* AdvancedToolsToolView.swift */,
 				458D2D465F37BF2169D972DE /* ComingSoonToolView.swift */,
 				BAD17B0E1A270DC164318263 /* DNSToolView.swift */,
 				0B33DEDC0596C8B7E1CB2260 /* InternetCheckToolView.swift */,
@@ -1193,6 +1196,7 @@
 			files = (
 				BDEBC62FEE192FF66E0ABDF9 /* APNameDetector.swift in Sources */,
 				6A7C88EE8C26FF996905B925 /* AboutView.swift in Sources */,
+				7DD4A0254E02FB40179E6B10 /* AdvancedToolsToolView.swift in Sources */,
 				5EE7172570E8A9EFB461DCB6 /* AnalyzerViewModel.swift in Sources */,
 				02F564797A4737ABA1C62CD4 /* AppCommands.swift in Sources */,
 				A1EA44C383DF9D487D307F1A /* AppSmokeTest.swift in Sources */,

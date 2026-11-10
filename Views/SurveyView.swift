@@ -35,8 +35,10 @@ struct SurveyView: View {
             toolbar
             Divider()
             content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
         }
-        .frame(minWidth: 900, minHeight: 650)
+        .frame(minWidth: 760, minHeight: 560)
         .background(Color(nsColor: .windowBackgroundColor))
         .sheet(isPresented: $showReportSettings) {
             SurveyReportSettingsView(survey: survey)

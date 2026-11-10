@@ -108,7 +108,6 @@ private struct GeneralSettingsView: View {
             Section("Toolbar") {
                 Toggle("Search field", isOn: binding("LanFi.toolbar.search", default: true))
                 Toggle("Export menu", isOn: binding("LanFi.toolbar.export", default: true))
-                Toggle("Live capture button", isOn: binding("LanFi.toolbar.capture", default: true))
             }
 
             Section("Display") {

@@ -103,12 +103,6 @@ struct LanFiApp: App {
             )
         }
 
-        Window("Site Survey", id: "survey") {
-            SurveyView(analyzer: viewModel, survey: survey)
-                .environment(\.lanFiHighContrast, highContrast)
-                .preferredColorScheme(preferredAppearance)
-        }
-
         Window("About LanFi", id: "about") {
             AboutView()
                 .environment(\.lanFiHighContrast, highContrast)
@@ -116,20 +110,9 @@ struct LanFiApp: App {
         }
         .windowResizability(.contentSize)
 
-        WindowGroup("Tool", id: "tool", for: String.self) { $toolID in
-            ToolConsoleView(toolID: toolID ?? "custom")
-                .frame(minWidth: 800, minHeight: 520)
-        }
-        .defaultSize(width: 1000, height: 700)
-
         Window("Spectrum", id: "spectrum") {
             SpectrumView(viewModel: viewModel, isFullScreen: true)
                 .frame(minWidth: 1100, minHeight: 650)
-        }
-
-        Window("Hardware Spectrum", id: "hardware-spectrum") {
-            HardwareSpectrumView()
-                .frame(minWidth: 900, minHeight: 520)
         }
 
         Window("Network Toolkit", id: "toolkit") {

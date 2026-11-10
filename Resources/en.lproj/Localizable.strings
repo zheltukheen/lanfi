@@ -709,3 +709,11 @@
 "Remote Sensors" = "Remote Sensors";
 "Scan Macs over SSH" = "Scan Macs over SSH";
 "visible" = "visible";
+
+/* Network Toolkit advanced tools */
+"Advanced Tools" = "Advanced Tools";
+"External tools" = "External tools";
+"Network Toolkit" = "Network Toolkit";
+"Tool" = "Tool";
+"Wireshark…" = "Wireshark…";
+"LinkLiar — MAC address spoofer…" = "LinkLiar — MAC address spoofer…";

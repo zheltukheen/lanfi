@@ -15,9 +15,6 @@ struct MainTableView: View {
 
     // UI State
     @State private var isResizingPanels = false
-    @State private var showingLiveCapture = false
-    @State private var showingRemoteSensors = false
-    @State private var showingOfflineCapture = false
 
     // Resizable Panels State
     @State private var inspectorBaseWidth: CGFloat = 300
@@ -48,7 +45,6 @@ struct MainTableView: View {
                 showInspector: $uiState.showInspector,
                 customIntervalText: $uiState.customIntervalText,
                 showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert,
-                showingLiveCapture: $showingLiveCapture,
                 selectedBottomTab: $uiState.selectedBottomTab
             )
 
@@ -208,24 +204,6 @@ struct MainTableView: View {
             }
         }
         // Запрос прав при появлении
-        .sheet(isPresented: $showingLiveCapture) {
-            LiveCaptureView(viewModel: viewModel)
-        }
-        .sheet(isPresented: $showingRemoteSensors) {
-            RemoteSensorsView()
-        }
-        .sheet(isPresented: $showingOfflineCapture) {
-            OfflineCaptureView()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowLiveCapture)) { _ in
-            showingLiveCapture = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowRemoteSensors)) { _ in
-            showingRemoteSensors = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowOfflineCapture)) { _ in
-            showingOfflineCapture = true
-        }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiSelectBottomTab)) { note in
             if let tab = note.userInfo?["tab"] as? Int { uiState.selectedBottomTab = tab }
         }
@@ -410,12 +388,10 @@ struct ToolbarView: View {
     @Binding var showInspector: Bool
     @Binding var customIntervalText: String
     @Binding var showingCustomIntervalAlert: Bool
-    @Binding var showingLiveCapture: Bool
     @Binding var selectedBottomTab: Int
     @FocusState private var isSearchFocused: Bool
     @AppStorage("LanFi.toolbar.search") private var showSearch = true
     @AppStorage("LanFi.toolbar.export") private var showExport = true
-    @AppStorage("LanFi.toolbar.capture") private var showCapture = true
 
     private var primaryToolbarActions: some View {
         HStack(spacing: 10) {
@@ -440,80 +416,46 @@ struct ToolbarView: View {
             .accessibilityLabel("Open diagnostics")
 
             Button {
-                openWindow(id: "survey")
+                openWindow(id: "toolkit")
             } label: {
-                Image(systemName: "map")
+                Label("Network Toolkit", systemImage: "wrench.and.screwdriver").font(.caption)
             }
             .buttonStyle(.borderless)
-            .help("Site Survey")
-            .accessibilityLabel("Open Site Survey")
-
-            Button {
-                openWindow(id: "hardware-spectrum")
-            } label: {
-                Image(systemName: "waveform.path.ecg")
-            }
-            .buttonStyle(.borderless)
-            .help("Hardware Spectrum")
-            .accessibilityLabel("Open hardware spectrum")
-
-            Menu {
-                toolMenuItems
-            } label: {
-                Label("Tools", systemImage: "wrench.and.screwdriver").font(.caption)
-            }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .help("Network tools")
+            .help("Network Toolkit")
+            .accessibilityLabel("Open Network Toolkit")
         }
     }
 
     private var compactToolbarActions: some View {
-        Menu {
-            Button("Packet Capture") { selectedBottomTab = 7 }
-            Button("Diagnostics") {
+        HStack(spacing: 10) {
+            Button {
+                selectedBottomTab = 7
+            } label: {
+                Image(systemName: "record.circle")
+            }
+            .buttonStyle(.borderless)
+            .help("Packet capture")
+            .accessibilityLabel("Open packet capture")
+
+            Button {
                 NotificationCenter.default.post(
                     name: .lanfiShowToolkit, object: nil,
                     userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
+            } label: {
+                Image(systemName: "stethoscope")
             }
-            Button("Site Survey") { openWindow(id: "survey") }
-            Button("Hardware Spectrum") { openWindow(id: "hardware-spectrum") }
-            Divider()
-            toolMenuItems
-        } label: {
-            Label("Actions", systemImage: "ellipsis.circle").font(.caption)
-        }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
-    }
+            .buttonStyle(.borderless)
+            .help("Diagnostics")
+            .accessibilityLabel("Open diagnostics")
 
-    @ViewBuilder
-    private var toolMenuItems: some View {
-        Button("Network Toolkit…") { openWindow(id: "toolkit") }
-        Divider()
-        ForEach(
-            ["Wi-Fi", "Network", "DNS", "LAN", "RF", "AP", "Wireless", "Security", "Throughput", "Advanced"],
-            id: \.self
-        ) { category in
-            let tools = ToolCatalog.all.filter { $0.category == category }
-            if !tools.isEmpty {
-                Menu(category) {
-                    ForEach(tools) { tool in
-                        Button {
-                            openWindow(id: "tool", value: tool.id)
-                        } label: {
-                            Label(tool.title, systemImage: tool.icon)
-                        }
-                    }
-                }
+            Button {
+                openWindow(id: "toolkit")
+            } label: {
+                Image(systemName: "wrench.and.screwdriver")
             }
-        }
-        Divider()
-        Button("LinkLiar — MAC spoofer…") {
-            NSWorkspace.shared.open(URL(string: "https://github.com/halo/LinkLiar/releases")!)
-        }
-        Button("Wireshark…") {
-            NSWorkspace.shared.open(URL(string: "https://www.wireshark.org/download.html")!)
+            .buttonStyle(.borderless)
+            .help("Network Toolkit")
+            .accessibilityLabel("Open Network Toolkit")
         }
     }
 
@@ -674,10 +616,6 @@ struct ToolbarView: View {
                     Menu {
                         Button("Export CSV…") { viewModel.exportCSV() }
                         Button("Export JSON…") { viewModel.exportJSON() }
-                        if showCapture {
-                            Divider()
-                            Button("Live Capture (PCAP)…") { showingLiveCapture = true }
-                        }
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
@@ -686,17 +624,6 @@ struct ToolbarView: View {
                     .help("Export scan results")
                     .accessibilityLabel("Export scan results")
                 }
-                if showCapture {
-                    Button {
-                        showingLiveCapture = true
-                    } label: {
-                        Image(systemName: "dot.radiowaves.left.and.right")
-                    }
-                    .buttonStyle(.borderless)
-                    .help("Live packet capture")
-                    .accessibilityLabel("Live packet capture")
-                }
-
                 // Inspector Toggle
                 Button(action: {
                     if reduceMotion {
@@ -741,9 +668,6 @@ struct ToolbarView: View {
 
 extension Notification.Name {
     static let lanfiFocusSearch = Notification.Name("LanFi.focusSearch")
-    static let lanfiShowLiveCapture = Notification.Name("LanFi.showLiveCapture")
-    static let lanfiShowRemoteSensors = Notification.Name("LanFi.showRemoteSensors")
-    static let lanfiShowOfflineCapture = Notification.Name("LanFi.showOfflineCapture")
     static let lanfiSelectBottomTab = Notification.Name("LanFi.selectBottomTab")
     static let lanfiShowInspector = Notification.Name("LanFi.showInspector")
     static let lanfiShowToolkit = Notification.Name("LanFi.showToolkit")

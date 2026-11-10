@@ -34,9 +34,11 @@ struct WiFiAnalyzerToolView: View {
         }
         .sheet(isPresented: $showingSurvey) {
             SurveyView(analyzer: analyzer, survey: survey)
+                .frame(minWidth: 1_000, minHeight: 700)
         }
         .sheet(isPresented: $showingSpectrum) {
             HardwareSpectrumView()
+                .frame(minWidth: 980, minHeight: 620)
         }
         .sheet(isPresented: $showingLiveCapture) {
             LiveCaptureView(viewModel: analyzer)

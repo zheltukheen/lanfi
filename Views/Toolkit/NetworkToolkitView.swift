@@ -111,6 +111,8 @@ struct NetworkToolkitView: View {
             LANScannerToolView(model: toolkit.lanScanner)
         case .iperf3:
             Iperf3ToolView(model: toolkit.iperf3)
+        case .advancedTools:
+            AdvancedToolsToolView()
         case .wifiAnalyzer:
             WiFiAnalyzerToolView()
         case .wifiNetworks:
