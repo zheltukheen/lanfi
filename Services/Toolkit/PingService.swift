@@ -243,9 +243,16 @@ enum TCPProbe {
                     finish(.open(milliseconds: elapsedMilliseconds(since: started)))
                 case .failed(let error):
                     finish(classify(error, started: started))
-                case .waiting:
-                    // Keep waiting until the timeout fires.
-                    break
+                case .waiting(let error):
+                    // A refused loopback/LAN port arrives as `.waiting`, not
+                    // `.failed`; report it immediately instead of waiting out
+                    // the timeout and calling the port filtered.
+                    if case .posix(let code) = error, code == .ECONNREFUSED {
+                        finish(
+                            .closed(
+                                milliseconds: elapsedMilliseconds(since: started),
+                                detail: "Connection refused"))
+                    }
                 default:
                     break
                 }
