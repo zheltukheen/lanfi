@@ -116,7 +116,7 @@ Implement in this order, one commit per tool where practical:
    bufferbloat grade and a persisted history.
 
 Phase 1 exit: the eight free tools plus Internet Check and Speed Test have
-first-class screens; no tool requires the unreachable `ToolConsoleView`.
+first-class screens; the toolkit replaces the raw external-command console.
 
 ## Phase 2 — monitoring and LAN
 
@@ -153,3 +153,19 @@ Notarization and/or sandboxed Mac App Store split; privacy manifest.
 - All new strings go through the existing localization flow; VoiceOver labels
   on icon-only controls.
 - Keep scanning and parsing off the main thread; UI state stays `@MainActor`.
+
+
+## Delivered in the first tranche
+
+- [x] Phase 0: value types, subnet/port/target parsers, DNS wire codec, ICMP
+      and TCP ping, UDP DNS client, TCP port scanner, TLS chain inspector,
+      traceroute runner and parser — 49 new headless tests.
+- [x] Toolkit window with the grouped custom sidebar and Planned badges.
+- [x] Internet Check verdict and path diagram.
+- [x] Ping, Traceroute, DNS Lookup, Port Scan, Path Check, SSL Certificate,
+      Subnet Calculator and Speed Test screens.
+- [ ] MTR (needs a repeating traceroute engine).
+- [ ] Speed-test history and scheduling.
+- [ ] Uptime Monitor, LAN Scanner, Whois, GeoIP, DNS Propagation, iperf3,
+      Visual Traceroute.
+- [ ] Localisation of the new toolkit strings in five languages.

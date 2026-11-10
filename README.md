@@ -46,6 +46,7 @@ surfaced with severity and remediation hints.
 | Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), all BSD interface analysis, live PCAP capture, remote SSH sensors, column profiles, search, filters, menu bar extra |
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
+| Toolkit | One window with a grouped sidebar: Internet Check verdict, native ICMP/TCP ping, traceroute, DNS lookup, port scan, path check, SSL certificate, subnet calculator, speed test and network monitor |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
 | Survey | Floor-plan import, click-to-sample RSSI and a heatmap overlay (survey-lite) |
 | Vendors | 58k-prefix offline OUI database from IEEE and Wireshark, with 24/28/36-bit longest-prefix matching ([sources](docs/VENDOR_DATA.md)) |
@@ -287,6 +288,18 @@ lanfi-cli pcap capture.pcapng --json
 
 Deep links: `lanfi://tab/interfaces`, `lanfi://tab/protocols`,
 `lanfi://search?q=AX55`, `lanfi://diagnostics/run`.
+
+## Network Toolkit
+
+Open **Tools → Network Toolkit…** (⇧⌘T) for the everyday network tools next to
+the Wi-Fi analyzer. The sidebar follows the job: Diagnostics, DNS & Domains,
+Network Tools and Monitoring. Wi-Fi Analyzer and Wi-Fi Networks hand back to the
+main window.
+
+The toolkit uses its own probe layer: unprivileged ICMP and TCP ping, DNS over
+UDP, a bounded TCP port scanner, TLS chain inspection and a traceroute runner.
+No shell commands are parsed for ping or DNS; traceroute still uses the setuid
+system binary. Deep link: `lanfi://toolkit/ping`.
 
 ## Offline capture analysis
 

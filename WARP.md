@@ -83,6 +83,14 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Views/SpectrumView.swift` — per-band Canvas spectrum with hit testing.
 - `Views/SignalHistoryView.swift` — Swift Charts signal history with cursor.
 - `Views/RawDataView.swift` — expandable IE table.
+- `Models/ToolboxTool.swift` — toolkit catalogue and sidebar sections.
+- `Models/ToolkitModels.swift` — probe value types, DNS records, verdicts.
+- `Services/Toolkit/` — native probe layer: `DNSMessage`, `DNSClient`,
+  `PingService`, `PortScanner`, `TLSCertificateInspector`, `TracerouteRunner`
+  and `TracerouteParser`. Pure codecs/parsers must stay testable headless.
+- `Views/Toolkit/` — the Network Toolkit window, grouped custom sidebar and
+  per-tool screens.
+- `ViewModels/ToolkitViewModel.swift` — per-tool state and cancellation.
 - `Utils/LocationManager.swift` — CLLocation authorization wrapper.
 - `Utils/OUIParser.swift` — bundled IEEE OUI lookup (randomized MAC detection).
 
@@ -148,6 +156,19 @@ uses the longest match. Refresh it with:
 ```bash
 python3 scripts/update_oui.py
 ```
+
+## Network Toolkit
+
+`Tools → Network Toolkit…` (⇧⌘T) opens `NetworkToolkitView`, a separate window
+with a custom grouped sidebar. It shares `DiagnosticsViewModel` and
+`InterfacesViewModel` with the main window. `ToolboxTool` owns the catalogue,
+`isAvailable` marks screens that are wired, and planned rows stay visible with a
+"Planned" badge.
+
+The probe layer is transport-injected: ping, port probing and TLS take protocols
+so tests never touch the network. ICMP uses the unprivileged `SOCK_DGRAM` socket
+(`IP_TTL` is ignored there, so traceroute uses `/usr/sbin/traceroute`, which is
+setuid root on macOS). Deep link: `lanfi://toolkit/<tool>`.
 
 ## Testing
 
