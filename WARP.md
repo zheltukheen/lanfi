@@ -122,8 +122,9 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `LanFi.signalUnit`, `LanFi.highlightConnected` — display options.
 - `LanFi.sortKey`, `LanFi.sortAscending` — table sort.
 - `LanFi.showSidebar`, `LanFi.showInspector`, `LanFi.bottomTab` — layout
-  (`0` Insights, `1` Spectrum, `2` History, `3` Protocols, `4` Interfaces,
-  `5` Raw Data, `6` Diagnostics).
+  (`0` Overview, `1` Profile, `3` Raw Data, `4` Spectrum, `5` History,
+  `7` Capture; `2` Interfaces and `6` Diagnostics were retired into the
+  Network Toolkit and are migrated to Overview).
 - `LanFi.groupMode` — none/SSID/band/vendor/security grouping.
 - `LanFi.speedTestSchedule`, `LanFi.lanGuardEnabled` — toolkit schedules/guard.
 - `speed-tests.json`, `uptime.json`, `lan-guard.json` live under
@@ -169,10 +170,12 @@ python3 scripts/update_oui.py
 ## Network Toolkit
 
 `Tools → Network Toolkit…` (⇧⌘T) opens `NetworkToolkitView`, a separate window
-with a custom grouped sidebar. It shares `DiagnosticsViewModel` and
-`InterfacesViewModel` with the main window. `ToolboxTool` owns the catalogue,
-`isAvailable` marks screens that are wired, and planned rows stay visible with a
-"Planned" badge.
+with a custom grouped sidebar. Wi-Fi is the top section and Wi-Fi Analyzer is
+selected by default; its workspace hosts the Wi-Fi tool sheets (Survey,
+Spectrum, Live Capture, offline analysis, Remote Sensors). The toolkit owns the
+Interfaces and Diagnostics screens now; the main window is Wi-Fi-only.
+`ToolboxTool` owns the catalogue, `isAvailable` marks wired screens, and planned
+rows stay visible with a "Planned" badge.
 
 The probe layer is transport-injected: ping, port probing and TLS take protocols
 so tests never touch the network. ICMP uses the unprivileged `SOCK_DGRAM` socket

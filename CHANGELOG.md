@@ -23,12 +23,16 @@
   host names, OUI vendors, open ports and Network Guard for new devices.
 - iperf3 client: upload/download/bidirectional runs against your own server,
   parsed from iperf3 JSON with an install hint when the binary is missing.
-- Sidebar: Main screen is the first item and Monitoring is the first section;
-  Network Monitor links to the existing Interfaces tab, Diagnostics links to
-  the toolkit Speed Test/Internet Check, and duplicate raw network tools were
-  removed from the external-tool catalogue.
+- Sidebar: Wi-Fi is the top section and Wi-Fi Analyzer is selected by default;
+  its workspace hosts Site Survey, Hardware Spectrum, Live Capture, offline
+  capture analysis and Remote Sensors. Monitoring follows, then Diagnostics,
+  DNS & Domains and Network Tools.
+- Network Monitor is now the toolkit's embedded Interfaces view; Interfaces and
+  Diagnostics were removed from the main window's bottom tabs. The Tools menu
+  keeps a single Network Toolkit entry, and Diagnostics shortcuts open the
+  toolkit.
 - Toolkit static strings are localised in English, Russian, German, French and
-  Simplified Chinese (669 keys per language, no duplicates).
+  Simplified Chinese (697 keys per language, no duplicates).
 - 20 new headless tests (244 total).
 
 ## 4.11.1 — 2026-10-31

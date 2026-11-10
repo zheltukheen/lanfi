@@ -20,13 +20,19 @@ _Builds on [`TOOLKIT_PLAN.md`](TOOLKIT_PLAN.md) and the audits in
 
 Sidebar order:
 
-1. **Main screen** (opens the Wi-Fi analyzer window)
-2. **Monitoring** — Uptime Monitor, LAN Scanner, Network Monitor (link), Wi-Fi Analyzer (link), Wi-Fi Networks (link)
-3. **Diagnostics** — Internet Check, Ping, Traceroute, MTR, Speed Test
+1. **Wi-Fi** — Wi-Fi Analyzer (selected by default), Wi-Fi Networks. The
+   analyzer workspace hosts Site Survey, Hardware Spectrum, Live Capture,
+   offline capture analysis and Remote Sensors as sheets.
+2. **Monitoring** — Uptime Monitor, LAN Scanner, Network Monitor (embedded
+   `InterfacesView`).
+3. **Diagnostics** — Internet Check, Ping, Traceroute, MTR, Speed Test.
 4. **DNS & Domains**
 5. **Network Tools**
 
-Links post `.lanfiSelectBottomTab` / open `main`, so the existing screen is reused.
+The main window is Wi-Fi-only now: its Interfaces and Diagnostics tabs were
+removed and their shortcuts open the toolkit. The full analyzer table will be
+embedded in the Wi-Fi Analyzer workspace next; until then "Open full analyzer"
+opens the existing window.
 
 ## Phase 1 polish
 
@@ -101,15 +107,16 @@ they will be reported as not run rather than skipped silently.
 
 ## Delivered
 
-- [x] Sidebar: Main screen first, Monitoring first, Network Monitor as a link,
-      Diagnostics links to the toolkit, duplicate raw tools removed.
+- [x] Sidebar: Wi-Fi first with Wi-Fi Analyzer selected, Monitoring next,
+      Network Monitor embedded, network tabs removed from the main window,
+      Wi-Fi tool actions moved into the Wi-Fi workspace.
 - [x] MTR service + table, 4 tests.
 - [x] Speed history store, hourly/6h/daily schedule, history table, 4 tests.
 - [x] Uptime Monitor models/store/checker/notifier, menu-bar status, 4 tests.
 - [x] LAN Scanner ARP/ICMP/TCP fallback, Bonjour names, OUI vendors, Network
       Guard, 4 tests.
 - [x] iperf3 JSON client + install hint, 4 tests.
-- [x] Static toolkit strings localised in five languages (669 keys each, no
+- [x] Static toolkit strings localised in five languages (697 keys each, no
       duplicates).
 - [ ] Whois, GeoIP, DNS Propagation and Visual Traceroute remain planned.
 - [ ] The macOS Local Network permission is required for LAN MAC/vendor/TCP

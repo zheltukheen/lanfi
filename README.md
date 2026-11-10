@@ -63,6 +63,8 @@ surfaced with severity and remediation hints.
 
 ![LanFi Internet Check verdict](docs/images/lanfi-toolkit-internet.webp)
 
+![LanFi Wi-Fi Analyzer workspace](docs/images/lanfi-toolkit-wifi.webp)
+
 ![LanFi Uptime Monitor](docs/images/lanfi-toolkit-uptime.webp)
 
 ![LanFi system network interfaces](docs/images/lanfi-interfaces.webp)
@@ -298,15 +300,16 @@ lanfi-cli protocols scan.json
 lanfi-cli pcap capture.pcapng --json
 ```
 
-Deep links: `lanfi://tab/interfaces`, `lanfi://tab/protocols`,
-`lanfi://search?q=AX55`, `lanfi://diagnostics/run`.
+Deep links: `lanfi://toolkit/wifiAnalyzer`, `lanfi://toolkit/networkMonitor`,
+`lanfi://search?q=AX55`, `lanfi://diagnostics/run` (opens Internet Check).
 
 ## Network Toolkit
 
 Open **Tools → Network Toolkit…** (⇧⌘T) for the everyday network tools next to
-the Wi-Fi analyzer. The sidebar follows the job: Diagnostics, DNS & Domains,
-Network Tools and Monitoring. Wi-Fi Analyzer and Wi-Fi Networks hand back to the
-main window.
+the Wi-Fi analyzer. The sidebar begins with **Wi-Fi**, where Wi-Fi Analyzer is
+selected by default: it summarises the current scan and hosts Site Survey,
+Hardware Spectrum, Live Capture, offline capture analysis and Remote Sensors.
+Monitoring, Diagnostics, DNS & Domains and Network Tools follow.
 
 The toolkit uses its own probe layer: unprivileged ICMP and TCP ping, DNS over
 UDP, a bounded TCP port scanner, TLS chain inspection, a traceroute runner and
@@ -317,8 +320,9 @@ MTR repeats traceroute and aggregates loss/jitter per hop. Uptime Monitor keeps
 seven days of HTTP/TCP checks, notifies you on down/recovery and reports status
 in the same menu bar as Wi-Fi alerts. LAN Scanner prefers the ARP table, falls
 back to an ICMP/TCP sweep when macOS hides it, adds Bonjour names and OUI
-vendors, and Network Guard flags new devices. Network Monitor links to the
-Interfaces tab instead of duplicating it.
+vendors, and Network Guard flags new devices. Network Monitor is the toolkit's
+Interfaces view; the main window no longer carries Interfaces or Diagnostics
+tabs.
 
 ## Offline capture analysis
 
