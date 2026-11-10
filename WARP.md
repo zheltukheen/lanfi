@@ -169,13 +169,16 @@ python3 scripts/update_oui.py
 
 ## Network Toolkit
 
-`Tools → Network Toolkit…` (⇧⌘T) opens `NetworkToolkitView`, a separate window
-with a custom grouped sidebar. Wi-Fi is the top section and Wi-Fi Analyzer is
+The main toolbar opens `NetworkToolkitView` directly (also
+`Layout → Network Toolkit`, ⇧⌘T); there is no Tools dropdown. The window has a
+custom grouped sidebar. Wi-Fi is the top section and Wi-Fi Analyzer is
 selected by default; its workspace hosts the Wi-Fi tool sheets (Survey,
 Spectrum, Live Capture, offline analysis, Remote Sensors). The toolkit owns the
 Interfaces and Diagnostics screens now; the main window is Wi-Fi-only.
 `ToolboxTool` owns the catalogue, `isAvailable` marks wired screens, and planned
-rows stay visible with a "Planned" badge.
+rows stay visible with a "Planned" badge. Advanced Tools embeds the
+`ToolConsoleView` in the Network Tools section; there is no separate Tool
+window.
 
 The probe layer is transport-injected: ping, port probing and TLS take protocols
 so tests never touch the network. ICMP uses the unprivileged `SOCK_DGRAM` socket

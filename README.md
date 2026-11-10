@@ -305,11 +305,12 @@ Deep links: `lanfi://toolkit/wifiAnalyzer`, `lanfi://toolkit/networkMonitor`,
 
 ## Network Toolkit
 
-Open **Tools → Network Toolkit…** (⇧⌘T) for the everyday network tools next to
-the Wi-Fi analyzer. The sidebar begins with **Wi-Fi**, where Wi-Fi Analyzer is
-selected by default: it summarises the current scan and hosts Site Survey,
-Hardware Spectrum, Live Capture, offline capture analysis and Remote Sensors.
-Monitoring, Diagnostics, DNS & Domains and Network Tools follow.
+Open the **Network Toolkit** from the main toolbar, or use
+**Layout → Network Toolkit** (⇧⌘T). The sidebar begins with **Wi-Fi**, where
+Wi-Fi Analyzer is selected by default: it summarises the current scan and hosts
+Site Survey, Hardware Spectrum, Live Capture, offline capture analysis and
+Remote Sensors as sheets. Monitoring, Diagnostics, DNS & Domains and Network
+Tools follow.
 
 The toolkit uses its own probe layer: unprivileged ICMP and TCP ping, DNS over
 UDP, a bounded TCP port scanner, TLS chain inspection, a traceroute runner and
