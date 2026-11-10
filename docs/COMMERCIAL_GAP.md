@@ -145,6 +145,11 @@ Sources: [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorer
 
 ## Prioritised roadmap
 
+> Parity with general network toolkits (Netutilus: ping, traceroute/MTR, DNS,
+> port scan, SSL, uptime monitor, LAN scanner) is a separate product-scope axis
+> and is assessed in [`NETUTILUS_PARITY.md`](NETUTILUS_PARITY.md). It is not part
+> of the analyzer roadmap below.
+
 ### 1.4 — Trust and distribution (highest impact, smallest scope)
 
 | Item | Why | Effort |
