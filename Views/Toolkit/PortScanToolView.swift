@@ -57,6 +57,29 @@ struct PortScanToolView: View {
                         Button("Scan") { model.run() }
                             .buttonStyle(.borderedProminent)
                     }
+                    ToolkitStatusPill(text: statusText, tone: statusTone)
+                }
+                HStack(spacing: 14) {
+                    Stepper(value: $model.timeout, in: 0.5...10, step: 0.5) {
+                        Text(
+                            String(
+                                format: String(localized: "Timeout: %.1f s"), model.timeout)
+                        )
+                        .font(.caption)
+                    }
+                    .fixedSize()
+                    Stepper(value: $model.concurrency, in: 1...64) {
+                        Text(
+                            String(
+                                format: String(localized: "Concurrent: %lld"),
+                                model.concurrency)
+                        )
+                        .font(.caption)
+                    }
+                    .fixedSize()
+                    Toggle("Detect service versions", isOn: $model.detectServices)
+                        .font(.caption)
+                    Spacer()
                     Button("Copy") { copy() }
                         .buttonStyle(.bordered)
                         .disabled(model.results.isEmpty)
@@ -64,23 +87,9 @@ struct PortScanToolView: View {
                         .buttonStyle(.borderless)
                         .disabled(model.results.isEmpty)
                 }
-                HStack(spacing: 18) {
-                    Stepper(value: $model.timeout, in: 0.5...10, step: 0.5) {
-                        Text("Timeout: \(String(format: "%.1f", model.timeout)) s")
-                            .font(.caption)
-                    }
-                    .fixedSize()
-                    Stepper(value: $model.concurrency, in: 1...64) {
-                        Text("Concurrent: \(model.concurrency)")
-                            .font(.caption)
-                    }
-                    .fixedSize()
-                    Spacer()
-                    Text("TCP connect only · no administrator rights")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    ToolkitStatusPill(text: statusText, tone: statusTone)
-                }
+                Text("TCP connect only · no administrator rights")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
         }
     }
@@ -88,7 +97,9 @@ struct PortScanToolView: View {
     private var statusText: String {
         if model.isRunning { return String(localized: "Scanning…") }
         guard !model.results.isEmpty else { return String(localized: "Ready") }
-        return "\(model.openCount) open · \(model.closedCount) closed · \(model.filteredCount) filtered"
+        return String(
+            format: String(localized: "%lld/%lld open"), model.openCount,
+            max(model.results.count, 1))
     }
 
     private var statusTone: ToolkitTone {
@@ -173,9 +184,17 @@ struct PortScanToolView: View {
                         HStack(alignment: .firstTextBaseline) {
                             Text("\(result.port)/tcp")
                                 .font(.caption.monospacedDigit().weight(.semibold))
-                            Text(result.service ?? "")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(result.service ?? "")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                if let detail = result.detail {
+                                    Text(detail)
+                                        .font(.caption2.monospaced())
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                }
+                            }
                             Spacer()
                             Text(ToolkitFormat.milliseconds(result.responseMilliseconds))
                                 .font(.caption2.monospacedDigit())

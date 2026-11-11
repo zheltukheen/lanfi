@@ -876,3 +876,24 @@
 "Common" = "Üblich";
 "Remote" = "Remote";
 "Databases" = "Datenbanken";
+
+/* Port scan service detection */
+"Detect service versions" = "Dienstversionen erkennen";
+"%lld open · %lld closed · %lld filtered" = "%lld offen · %lld geschlossen · %lld gefiltert";
+
+/* iperf3 history */
+"Saved servers" = "Gespeicherte Server";
+"No saved servers" = "Keine gespeicherten Server";
+"Save current server" = "Aktuellen Server speichern";
+"Use" = "Verwenden";
+"Remove" = "Entfernen";
+"Clear history" = "Verlauf löschen";
+"Direction" = "Richtung";
+"Mbps" = "Mbit/s";
+
+/* Port layout */
+"Service" = "Dienst";
+"Timeout: %.1f s" = "Timeout: %.1f s";
+"Concurrent: %lld" = "Parallel: %lld";
+"TCP connect only · no administrator rights" = "Nur TCP-Verbindung · keine Admin-Rechte";
+"%lld/%lld open" = "%lld/%lld offen";

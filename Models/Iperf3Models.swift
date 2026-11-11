@@ -1,6 +1,6 @@
 import Foundation
 
-enum Iperf3Direction: String, CaseIterable, Identifiable, Sendable {
+enum Iperf3Direction: String, CaseIterable, Identifiable, Sendable, Codable {
     case upload
     case download
     case bidirectional

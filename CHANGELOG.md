@@ -17,6 +17,8 @@
 - Speed Test Result/History tabs plus localised summary and schedule text.
 - Subnet Calculator accepts IP + netmask and has a “This Mac” network shortcut.
 - Path Check probes up to 32 ports per run, with presets and per-port results.
+- Port Scan detects HTTP/SSH/FTP/SMTP service banners and versions.
+- iperf3 stores up to 12 servers and a persisted 50-entry measurement history.
 
 ## 4.12.1 — 2026-11-11
 

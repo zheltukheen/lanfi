@@ -876,3 +876,24 @@
 "Common" = "常用";
 "Remote" = "远程";
 "Databases" = "数据库";
+
+/* Port scan service detection */
+"Detect service versions" = "检测服务版本";
+"%lld open · %lld closed · %lld filtered" = "%lld 开放 · %lld 关闭 · %lld 过滤";
+
+/* iperf3 history */
+"Saved servers" = "已保存服务器";
+"No saved servers" = "无已保存服务器";
+"Save current server" = "保存当前服务器";
+"Use" = "使用";
+"Remove" = "移除";
+"Clear history" = "清除历史";
+"Direction" = "方向";
+"Mbps" = "Mbps";
+
+/* Port layout */
+"Service" = "服务";
+"Timeout: %.1f s" = "超时：%.1f 秒";
+"Concurrent: %lld" = "并发：%lld";
+"TCP connect only · no administrator rights" = "仅 TCP 连接 · 无需管理员权限";
+"%lld/%lld open" = "%lld/%lld 开放";
