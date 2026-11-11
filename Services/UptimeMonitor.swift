@@ -12,6 +12,10 @@ struct SystemUptimeChecker: UptimeChecking {
             return await checkHTTP(target)
         case .tcp:
             return await checkTCP(target)
+        case .tls:
+            return await checkTLS(target)
+        case .dns:
+            return await checkDNS(target)
         }
     }
 
@@ -35,6 +39,63 @@ struct SystemUptimeChecker: UptimeChecking {
                 isUp: isUp,
                 latencyMilliseconds: milliseconds,
                 detail: "HTTP \(code)"
+            )
+        } catch {
+            return UptimeCheck(
+                targetID: target.id, isUp: false, detail: error.localizedDescription)
+        }
+    }
+
+    private func checkTLS(_ target: UptimeTarget) async -> UptimeCheck {
+        guard let parsed = target.tlsTarget, let port = parsed.port else {
+            return UptimeCheck(
+                targetID: target.id, isUp: false, detail: "Invalid TLS address")
+        }
+        let started = Date()
+        do {
+            let report = try await URLSessionTLSCertificateInspector().inspect(
+                host: parsed.host, port: port, timeout: 10)
+            let milliseconds = Date().timeIntervalSince(started) * 1000
+            let days = report.daysRemaining
+            let up = report.trusted && !report.expired
+            let detail =
+                report.expired
+                ? String(localized: "TLS certificate expired")
+                : report.trusted
+                    ? String(
+                        format: String(localized: "TLS trusted · %lld days left"),
+                        days ?? 0)
+                    : String(localized: "TLS certificate is not trusted")
+            return UptimeCheck(
+                targetID: target.id,
+                isUp: up,
+                latencyMilliseconds: milliseconds,
+                detail: detail
+            )
+        } catch {
+            return UptimeCheck(
+                targetID: target.id, isUp: false, detail: error.localizedDescription)
+        }
+    }
+
+    private func checkDNS(_ target: UptimeTarget) async -> UptimeCheck {
+        guard let host = target.dnsHost else {
+            return UptimeCheck(
+                targetID: target.id, isUp: false, detail: "Invalid DNS hostname")
+        }
+        let started = Date()
+        do {
+            let result = try await UDPDNSClient().lookup(
+                host: host, type: .a, resolver: .system, timeout: 8)
+            let milliseconds = Date().timeIntervalSince(started) * 1000
+            let values = result.records.map(\.value)
+            return UptimeCheck(
+                targetID: target.id,
+                isUp: !values.isEmpty,
+                latencyMilliseconds: milliseconds,
+                detail: values.isEmpty
+                    ? String(localized: "No A records")
+                    : "A \(values.prefix(2).joined(separator: ", "))"
             )
         } catch {
             return UptimeCheck(

@@ -16,6 +16,17 @@ final class UptimeTests: XCTestCase {
         XCTAssertEqual(tcp.address, "example.com:443")
         XCTAssertEqual(tcp.name, "example.com:443")
 
+        let tls = try XCTUnwrap(
+            UptimeTarget.make(
+                name: "TLS", address: "example.com", kind: .tls, intervalMinutes: 5))
+        XCTAssertEqual(tls.address, "example.com:443")
+        XCTAssertEqual(tls.tlsTarget?.port, 443)
+
+        let dns = try XCTUnwrap(
+            UptimeTarget.make(
+                name: "DNS", address: "example.com", kind: .dns, intervalMinutes: 5))
+        XCTAssertEqual(dns.address, "example.com")
+
         XCTAssertNil(
             UptimeTarget.make(name: "x", address: "example.com", kind: .tcp, intervalMinutes: 5))
         XCTAssertNil(

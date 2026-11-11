@@ -364,6 +364,24 @@ private struct UptimeAddTargetView: View {
     @State private var intervalMinutes = 5
     @State private var errorMessage: String?
 
+    private var placeholder: String {
+        switch kind {
+        case .http: return "https://example.com/health"
+        case .tcp: return "example.com:5432"
+        case .tls: return "example.com:443"
+        case .dns: return "example.com"
+        }
+    }
+
+    private var validationMessage: String {
+        switch kind {
+        case .http: return String(localized: "Enter a valid HTTP or HTTPS URL.")
+        case .tcp: return String(localized: "Enter host:port for the TCP target.")
+        case .tls: return String(localized: "Enter host[:port] for the TLS target.")
+        case .dns: return String(localized: "Enter a hostname for the DNS target.")
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Add Target")
@@ -385,11 +403,8 @@ private struct UptimeAddTargetView: View {
                 }
                 GridRow {
                     Text("Address").font(.caption).foregroundColor(.secondary)
-                    TextField(
-                        kind == .http ? "https://example.com/health" : "example.com:5432",
-                        text: $address
-                    )
-                    .textFieldStyle(.roundedBorder)
+                    TextField(placeholder, text: $address)
+                        .textFieldStyle(.roundedBorder)
                 }
                 GridRow {
                     Text("Every").font(.caption).foregroundColor(.secondary)
@@ -419,10 +434,7 @@ private struct UptimeAddTargetView: View {
                     if onAdd(name, address, kind, intervalMinutes) {
                         dismiss()
                     } else {
-                        errorMessage =
-                            kind == .http
-                            ? "Enter a valid HTTP or HTTPS URL."
-                            : "Enter host:port for the TCP target."
+                        errorMessage = validationMessage
                     }
                 }
                 .buttonStyle(.borderedProminent)

@@ -19,7 +19,7 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Path Check | Host + up to 32 ports, presets, per-port results | Done. |
 | Subnet Calculator | CIDR, IP + netmask and “This Mac” network | Done. |
 | iperf3 | Host/port/duration/direction, saved servers, persisted history | Done. |
-| Uptime Monitor | HTTP/TCP, history, notifications | Mail/DNS/SSL target types, DMARC/SPF summaries, richer outage detail. |
+| Uptime Monitor | HTTP/TCP/TLS/DNS targets, history, notifications | Done; richer mail/DMARC monitoring remains optional. |
 | Network Monitor | Overview + Routes tabs, current IPv4 route table | Done; change log remains. |
 | LAN Scanner | ARP/TCP fallback, vendor, ports, Guard, per-device service versions | Done. |
 | Internet Check | Verdict + path + detail | Quick/Full with speed, richer verdict evidence. |
@@ -37,8 +37,9 @@ already at parity, what is missing, and the order in which the gaps are closed._
    and MTR graph/stddev are done. DNS mail/reports and Speed Test tabs are
    also done; Path Check multi-port/presets and Subnet IP+mask/This Mac are
    done; Port service-version detection and iperf3 saved servers/history are
-   done; Network Monitor Routes, LAN service detection, MTR continuous and
-   Port Scan UDP are done. Remaining: Uptime mail/DNS/SSL checks.
+   done; Network Monitor Routes, LAN service detection, MTR continuous,
+   Port Scan UDP and Uptime TLS/DNS targets are done. Remaining: optional
+   mail/DMARC monitoring and the final design pass.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and
    empty states with the reference screenshots.
 

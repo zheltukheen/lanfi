@@ -3,6 +3,8 @@ import Foundation
 enum UptimeTargetKind: String, Codable, CaseIterable, Identifiable, Sendable {
     case http
     case tcp
+    case tls
+    case dns
 
     var id: String { rawValue }
 
@@ -10,6 +12,8 @@ enum UptimeTargetKind: String, Codable, CaseIterable, Identifiable, Sendable {
         switch self {
         case .http: return String(localized: "HTTP / HTTPS")
         case .tcp: return String(localized: "TCP port")
+        case .tls: return String(localized: "TLS certificate")
+        case .dns: return String(localized: "DNS record")
         }
     }
 }
@@ -67,6 +71,14 @@ struct UptimeTarget: Codable, Identifiable, Equatable, Sendable {
             guard let target = ToolTarget.parse(trimmedAddress), let port = target.port, port > 0
             else { return nil }
             normalized = "\(target.host):\(port)"
+        case .tls:
+            guard let target = ToolTarget.parse(trimmedAddress, defaultPort: 443),
+                let port = target.port, port > 0
+            else { return nil }
+            normalized = "\(target.host):\(port)"
+        case .dns:
+            guard let target = ToolTarget.parse(trimmedAddress) else { return nil }
+            normalized = target.host
         }
 
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -88,8 +100,23 @@ struct UptimeTarget: Codable, Identifiable, Equatable, Sendable {
         return ToolTarget.parse(address)
     }
 
+    var tlsTarget: ToolTarget? {
+        guard kind == .tls else { return nil }
+        return ToolTarget.parse(address)
+    }
+
+    var dnsHost: String? {
+        guard kind == .dns else { return nil }
+        return ToolTarget.parse(address)?.host
+    }
+
     var kindIcon: String {
-        kind == .http ? "globe" : "network"
+        switch kind {
+        case .http: return "globe"
+        case .tcp: return "network"
+        case .tls: return "lock.shield"
+        case .dns: return "magnifyingglass"
+        }
     }
 }
 

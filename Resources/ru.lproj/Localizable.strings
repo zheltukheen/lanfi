@@ -956,3 +956,13 @@
 
 /* UDP note */
 "TCP + UDP probes · no administrator rights" = "TCP + UDP-пробы · без прав администратора";
+
+/* Uptime TLS and DNS */
+"TLS certificate" = "TLS-сертификат";
+"DNS record" = "DNS-запись";
+"TLS certificate expired" = "TLS-сертификат истёк";
+"TLS trusted · %lld days left" = "TLS доверенный · осталось %lld дн.";
+"TLS certificate is not trusted" = "TLS-сертификат не является доверенным";
+"No A records" = "Нет A-записей";
+"Enter host[:port] for the TLS target." = "Введите host[:port] для TLS-цели.";
+"Enter a hostname for the DNS target." = "Введите имя хоста для DNS-цели.";

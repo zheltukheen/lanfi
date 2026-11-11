@@ -919,3 +919,13 @@
 
 /* UDP note */
 "TCP + UDP probes · no administrator rights" = "TCP + UDP-Sonden · keine Admin-Rechte";
+
+/* Uptime TLS and DNS */
+"TLS certificate" = "TLS-Zertifikat";
+"DNS record" = "DNS-Datensatz";
+"TLS certificate expired" = "TLS-Zertifikat abgelaufen";
+"TLS trusted · %lld days left" = "TLS vertrauenswürdig · %lld Tage übrig";
+"TLS certificate is not trusted" = "TLS-Zertifikat ist nicht vertrauenswürdig";
+"No A records" = "Keine A-Datensätze";
+"Enter host[:port] for the TLS target." = "Host[:Port] für das TLS-Ziel eingeben.";
+"Enter a hostname for the DNS target." = "Hostnamen für das DNS-Ziel eingeben.";
