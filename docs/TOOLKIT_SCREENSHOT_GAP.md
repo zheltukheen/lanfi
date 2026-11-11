@@ -16,8 +16,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | GeoIP | IP/host, My IP, city/country/ASN/ISP, map link | Done. |
 | SSL Certificate | Host/port, chain, trust, days left | Result cards and certificate detail polish. |
 | Port Scan | TCP connect, presets, service names | Service/version detection, optional UDP probes, richer presets. |
-| Path Check | One host:port | Multi-port field, presets, per-port results. |
-| Subnet Calculator | CIDR only | IP + netmask input, IPv6-friendly parsing where possible, “this Mac’s network” shortcut. |
+| Path Check | Host + up to 32 ports, presets, per-port results | Done. |
+| Subnet Calculator | CIDR, IP + netmask and “This Mac” network | Done. |
 | iperf3 | Host/port/duration/direction | Saved servers, upload/download comparison, result history. |
 | Uptime Monitor | HTTP/TCP, history, notifications | Mail/DNS/SSL target types, DMARC/SPF summaries, richer outage detail. |
 | Network Monitor | Embedded Interfaces view | Overview / Routes tabs, current route table, change log. |
@@ -35,9 +35,9 @@ already at parity, what is missing, and the order in which the gaps are closed._
 3. **Visual Traceroute**: traceroute runner + GeoIP + MapKit — done.
 4. **Depth on existing tools**: Ping continuous/presets, Traceroute options
    and MTR graph/stddev are done. DNS mail/reports and Speed Test tabs are
-   also done. Remaining: MTR continuous, Port Scan service/UDP, Path Check presets,
-   Subnet IP+mask, iperf3 saved servers, Uptime mail checks, Network Monitor
-   routes, LAN service detection.
+   also done; Path Check multi-port/presets and Subnet IP+mask/This Mac are
+   done. Remaining: MTR continuous, Port Scan service/UDP, iperf3 saved
+   servers, Uptime mail checks, Network Monitor routes, LAN service detection.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and
    empty states with the reference screenshots.
 

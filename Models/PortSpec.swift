@@ -18,11 +18,11 @@ enum PortPreset: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .common: return "Common"
-        case .web: return "Web"
-        case .mail: return "Mail"
-        case .remote: return "Remote"
-        case .databases: return "Databases"
+        case .common: return String(localized: "Common")
+        case .web: return String(localized: "Web")
+        case .mail: return String(localized: "Mail")
+        case .remote: return String(localized: "Remote")
+        case .databases: return String(localized: "Databases")
         }
     }
 

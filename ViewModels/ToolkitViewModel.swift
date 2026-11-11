@@ -697,13 +697,28 @@ final class SubnetToolModel: ObservableObject {
     @Published var errorMessage: String?
 
     func calculate() {
-        if let subnet = SubnetCalculator.parseCIDR(input) {
+        if let subnet = SubnetCalculator.parse(input) {
             result = subnet
             errorMessage = nil
         } else {
             result = nil
-            errorMessage = "Enter a valid IPv4 CIDR, for example 192.168.1.0/24."
+            errorMessage =
+                "Enter a valid IPv4 CIDR or address + netmask, for example 192.168.1.10/24."
         }
+    }
+
+    func useCurrentNetwork() {
+        let report = SystemInterfaceScanner.scan()
+        guard
+            let interface = report.interfaces.first(where: \.isPrimary),
+            let ipv4 = interface.ipv4.first,
+            let prefix = ipv4.prefixLength
+        else {
+            errorMessage = "Could not determine this Mac's IPv4 network."
+            return
+        }
+        input = "\(ipv4.address)/\(prefix)"
+        calculate()
     }
 }
 
@@ -711,38 +726,73 @@ final class SubnetToolModel: ObservableObject {
 
 @MainActor
 final class PathCheckToolModel: ObservableObject {
-    @Published var target = "example.com:443"
-    @Published private(set) var outcome: TCPProbeOutcome?
+    @Published var host = "example.com"
+    @Published var portsText = "80,443"
+    @Published private(set) var results: [PathCheckResult] = []
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
 
     private var task: Task<Void, Never>?
 
+    var reachableCount: Int { results.filter { $0.isOpen }.count }
+
+    func applyPreset(_ preset: PortPreset) {
+        portsText = preset.ports.map(String.init).joined(separator: ",")
+    }
+
     func run() {
         guard !isRunning else { return }
-        guard let parsed = ToolTarget.parse(target, defaultPort: 443), let port = parsed.port else {
-            errorMessage = "Use host:port, for example example.com:443."
+        guard let parsed = ToolTarget.parse(host) else {
+            errorMessage = "Enter a host name or address."
+            return
+        }
+        let ports: [UInt16]
+        do {
+            var parsedPorts = try PortSpec.parse(portsText)
+            if let port = parsed.port { parsedPorts.append(port) }
+            ports = Array(Set(parsedPorts)).sorted().prefix(32).map { $0 }
+        } catch {
+            errorMessage = "Enter ports like 80,443 or 1-1024."
+            return
+        }
+        guard !ports.isEmpty else {
+            errorMessage = "Enter at least one port."
             return
         }
         errorMessage = nil
-        outcome = nil
+        results = []
         isRunning = true
         task = Task { [weak self] in
             guard let self else { return }
-            let result = await TCPProbe.connect(
-                host: parsed.host, port: port, timeout: 4)
-            self.outcome = result
+            let collected = await withTaskGroup(of: PathCheckResult.self) { group in
+                for port in ports {
+                    group.addTask {
+                        let outcome = await TCPProbe.connect(
+                            host: parsed.host, port: port, timeout: 4)
+                        return PathCheckResult(port: port, outcome: outcome)
+                    }
+                }
+                var values: [PathCheckResult] = []
+                for await result in group { values.append(result) }
+                return values.sorted { $0.port < $1.port }
+            }
+            if Task.isCancelled { return }
+            self.results = collected
             self.isRunning = false
             self.task = nil
         }
     }
 
-    func clear() {
+    func stop() {
         task?.cancel()
         task = nil
-        outcome = nil
-        errorMessage = nil
         isRunning = false
+    }
+
+    func clear() {
+        stop()
+        results = []
+        errorMessage = nil
     }
 }
 

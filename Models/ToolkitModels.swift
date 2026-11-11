@@ -258,6 +258,19 @@ struct TLSCertificateReport: Equatable, Sendable {
     var expiresSoon: Bool { (daysRemaining ?? .max) <= 30 }
 }
 
+// MARK: - Path check
+
+struct PathCheckResult: Identifiable, Equatable, Sendable {
+    let port: UInt16
+    let outcome: TCPProbeOutcome
+
+    var id: UInt16 { port }
+    var isOpen: Bool {
+        if case .open = outcome { return true }
+        return false
+    }
+}
+
 // MARK: - Traceroute
 
 struct TracerouteHop: Identifiable, Equatable, Sendable {

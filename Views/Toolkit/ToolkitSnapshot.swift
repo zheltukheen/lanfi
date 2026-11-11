@@ -36,7 +36,8 @@
                 toolkit.portScan.host = host
                 toolkit.traceroute.host = host
                 toolkit.ssl.host = host
-                toolkit.pathCheck.target = "\(host):443"
+                toolkit.pathCheck.host = host
+                toolkit.pathCheck.portsText = "443"
             }
 
             if arguments.contains("--uptime-demo") {

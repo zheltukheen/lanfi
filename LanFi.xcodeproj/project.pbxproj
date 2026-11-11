@@ -171,6 +171,7 @@
 		82FD7F039A599A5858524272 /* RemoteCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C7CA890C61A76171212A69 /* RemoteCaptureTests.swift */; };
 		83287A67749A610873A49CCB /* TracerouteRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D92A094B00454CA1759F82 /* TracerouteRunnerTests.swift */; };
 		84C863C894F8B1A22F27F176 /* WhoisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEC24D260F14DF35C90E1DF /* WhoisClient.swift */; };
+		869C3F806230E10A5CBF8D28 /* SubnetCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DA98C9384F3450DF0F24F8 /* SubnetCalculatorTests.swift */; };
 		877CDE2973A9DF0380ABA1C5 /* ColoringRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3EBB0A99807D399E66153C /* ColoringRule.swift */; };
 		87A3F8DF3C411604CD051DFA /* ProximityInspectorSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21252415153EBAC66FC3BC9F /* ProximityInspectorSections.swift */; };
 		87A8252C0BA6BFF6ADBA8C5A /* SpeedTestHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7415118C8930A819E9EA9730 /* SpeedTestHistoryTests.swift */; };
@@ -491,6 +492,7 @@
 		94F61D90CA6BC930BC99DB5D /* SupportedChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedChannel.swift; sourceTree = "<group>"; };
 		956147974D465BB4F1F04B77 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		957F50461891605F6C31319B /* Survey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Survey.swift; sourceTree = "<group>"; };
+		98DA98C9384F3450DF0F24F8 /* SubnetCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubnetCalculatorTests.swift; sourceTree = "<group>"; };
 		99373C5F0562D292C28FCCB3 /* LiveClientDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveClientDiscoveryView.swift; sourceTree = "<group>"; };
 		9AA7B0F0189511DB7E761C6D /* NetworkComparisonTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkComparisonTable.swift; sourceTree = "<group>"; };
 		9BB0735CC7BCD75BA4920B4D /* PortSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortSpec.swift; sourceTree = "<group>"; };
@@ -671,6 +673,7 @@
 				192F86E002771C72C1DA379A /* SpectrumCSVImporterTests.swift */,
 				5577D1795FB80A8C6BA72A6A /* SpectrumSweepTests.swift */,
 				7415118C8930A819E9EA9730 /* SpeedTestHistoryTests.swift */,
+				98DA98C9384F3450DF0F24F8 /* SubnetCalculatorTests.swift */,
 				DE45627167C818FDD5684C1E /* SurveyInterpolatorTests.swift */,
 				0C57A1A2A3B60718A0D129A9 /* SurveyPredictorTests.swift */,
 				4DB9AFBB7E3A2B1A4067C6A3 /* SurveyReportTests.swift */,
@@ -1223,6 +1226,7 @@
 				8127B1B259EC7DD93511830B /* SpeedTestHistory.swift in Sources */,
 				87A8252C0BA6BFF6ADBA8C5A /* SpeedTestHistoryTests.swift in Sources */,
 				6EA508AC1711494258EE918B /* SubnetCalculator.swift in Sources */,
+				869C3F806230E10A5CBF8D28 /* SubnetCalculatorTests.swift in Sources */,
 				2B100A13804AAC523E34BFB1 /* SupportedChannel.swift in Sources */,
 				AE63074E60A93D7CF851D661 /* Survey.swift in Sources */,
 				45002B0662F660A63F09859A /* SurveyAccessPoint.swift in Sources */,
