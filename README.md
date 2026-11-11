@@ -46,7 +46,7 @@ surfaced with severity and remediation hints.
 | Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), all BSD interface analysis, live PCAP capture, remote SSH sensors, column profiles, search, filters, menu bar extra |
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
-| Toolkit | One window with a grouped sidebar: Internet Check verdict, native ICMP/TCP ping, traceroute, MTR, DNS lookup, port scan, path check, SSL certificate, subnet calculator, iperf3, speed-test history/schedule and network monitor |
+| Toolkit | One window with search and recents: Internet Check verdict, native ICMP/TCP ping, traceroute, visual traceroute, MTR, DNS lookup, DNS propagation, Whois/RDAP, GeoIP, port scan, path check, SSL certificate, subnet calculator, iperf3, speed-test history/schedule and network monitor |
 | Monitoring | Uptime Monitor for HTTP/TCP targets with notifications and menu-bar status; LAN Scanner with ARP/ICMP/TCP, Bonjour names, OUI vendors, open ports and Network Guard |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
 | Survey | Floor-plan import, click-to-sample RSSI and a heatmap overlay (survey-lite) |
@@ -202,9 +202,9 @@ Remaining outside the shipped code: actual Apple notarization (no Developer
 Program account/Developer ID certificate), hardware spectrum analyzer
 integration, full per-link MLO BSSID sets, external USB adapter measurement
 beyond CoreWLAN, and a manual VoiceOver audit of the remaining screens. The
-toolkit still has Whois, GeoIP, DNS Propagation and Visual Traceroute marked
-as planned; running LAN Scanner needs Local Network permission for MAC,
-vendor and TCP results.
+DNS Propagation, Whois/RDAP, GeoIP and Visual Traceroute are now implemented;
+running LAN Scanner needs Local Network permission for MAC, vendor and TCP
+results.
 Multi-select comparison/bulk edit, dynamic technical localization,
 PCAPNG/offline analysis, vendor DB updates, CLI, URL automation, alerts,
 survey reports and app-wide settings are implemented.

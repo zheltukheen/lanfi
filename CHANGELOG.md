@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Network Toolkit sidebar search and a persisted Recent list.
+- DNS Propagation across six public resolvers, with expected-value matching.
+- Whois reports over RDAP (domains and IPs), without shelling out to `whois`.
+- GeoIP lookup with hostname resolution, country flag, ASN/ISP and Maps link.
+- Visual Traceroute: MapKit route, public-hop GeoIP, per-hop RTT and list.
+- Russian localisation for the new screens; all five languages updated.
+
 ## 4.12.1 — 2026-11-11
 
 ### Changed

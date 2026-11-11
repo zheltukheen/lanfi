@@ -7,9 +7,13 @@ final class ToolkitViewModel: ObservableObject {
 
     let ping = PingToolModel()
     let dns = DNSToolModel()
+    let dnsPropagation = DNSPropagationToolModel()
+    let whois = WhoisToolModel()
+    let geoIP = GeoIPToolModel()
     let portScan = PortScanToolModel()
     let traceroute = TracerouteToolModel()
     let mtr = MTRToolModel()
+    let visualTraceroute = VisualTracerouteToolModel()
     let ssl = SSLToolModel()
     let subnet = SubnetToolModel()
     let pathCheck = PathCheckToolModel()
@@ -17,9 +21,25 @@ final class ToolkitViewModel: ObservableObject {
     let iperf3 = Iperf3ToolModel()
     let speedTest = SpeedTestToolModel()
 
+    @Published private(set) var recent: [ToolboxTool] = []
+    private let recentKey = "LanFi.toolkit.recent"
+
+    init() {
+        let raw = UserDefaults.standard.stringArray(forKey: recentKey) ?? []
+        recent = raw.compactMap(ToolboxTool.init(rawValue:)).filter(\.isAvailable)
+    }
+
     func select(_ tool: ToolboxTool) {
         guard tool.isAvailable else { return }
         selection = tool
+        record(tool)
+    }
+
+    private func record(_ tool: ToolboxTool) {
+        recent.removeAll { $0 == tool }
+        recent.insert(tool, at: 0)
+        if recent.count > 5 { recent.removeLast(recent.count - 5) }
+        UserDefaults.standard.set(recent.map(\.rawValue), forKey: recentKey)
     }
 }
 
@@ -145,6 +165,254 @@ final class DNSToolModel: ObservableObject {
         task?.cancel()
         task = nil
         result = nil
+        errorMessage = nil
+        isRunning = false
+    }
+}
+
+// MARK: - Visual traceroute
+
+@MainActor
+final class VisualTracerouteToolModel: ObservableObject {
+    enum Phase: Equatable {
+        case idle, tracing, locating
+    }
+
+    @Published var host = "example.com"
+    @Published var maxHops = 20
+    @Published private(set) var hops: [VisualTracerouteHop] = []
+    @Published private(set) var phase: Phase = .idle
+    @Published var errorMessage: String?
+
+    private var task: Task<Void, Never>?
+
+    var isRunning: Bool { phase != .idle }
+    var mappedCount: Int { hops.filter { $0.geo != nil }.count }
+
+    func run() {
+        guard !isRunning else { return }
+        guard let target = ToolTarget.parse(host) else {
+            errorMessage = "Enter a host name or address."
+            return
+        }
+        errorMessage = nil
+        hops = []
+        phase = .tracing
+        let limit = maxHops
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let report = try await SystemTracerouteRunner().trace(
+                    host: target.host, maxHops: limit, waitSeconds: 2)
+                if Task.isCancelled { return }
+                self.hops = report.hops.map { VisualTracerouteHop(hop: $0, geo: nil) }
+                self.phase = .locating
+                for index in self.hops.indices {
+                    if Task.isCancelled { return }
+                    guard let address = self.hops[index].hop.address,
+                        VisualTracerouteFilter.isPublic(address)
+                    else { continue }
+                    var geo = try? await GeoIPClient().lookup(address)
+                    if geo == nil {
+                        try? await Task.sleep(nanoseconds: 700_000_000)
+                        geo = try? await GeoIPClient().lookup(address)
+                    }
+                    if let geo {
+                        if Task.isCancelled { return }
+                        self.hops[index] = VisualTracerouteHop(
+                            hop: self.hops[index].hop, geo: geo)
+                    }
+                    try? await Task.sleep(nanoseconds: 200_000_000)
+                }
+                self.phase = .idle
+                self.task = nil
+            } catch is CancellationError {
+                self.phase = .idle
+                self.task = nil
+            } catch {
+                self.errorMessage = error.localizedDescription
+                self.phase = .idle
+                self.task = nil
+            }
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+        phase = .idle
+    }
+
+    func clear() {
+        stop()
+        hops = []
+        errorMessage = nil
+    }
+}
+
+// MARK: - DNS propagation
+
+@MainActor
+final class DNSPropagationToolModel: ObservableObject {
+    @Published var host = "example.com"
+    @Published var type: DNSRecordType = .a
+    @Published var expected = ""
+    @Published private(set) var results: [DNSPropagationResult] = []
+    @Published private(set) var isRunning = false
+    @Published var errorMessage: String?
+
+    private var task: Task<Void, Never>?
+
+    var summary: DNSPropagationSummary {
+        DNSPropagationSummary(expected: expected, results: results)
+    }
+
+    func run() {
+        guard !isRunning else { return }
+        guard let target = ToolTarget.parse(host) else {
+            errorMessage = "Enter a domain name, for example example.com."
+            return
+        }
+        errorMessage = nil
+        results = []
+        isRunning = true
+        let selectedType = type
+        let resolvers = DNSResolver.propagation
+        task = Task { [weak self] in
+            guard let self else { return }
+            let collected = await withTaskGroup(of: DNSPropagationResult.self) { group in
+                for resolver in resolvers {
+                    group.addTask {
+                        do {
+                            let lookup = try await UDPDNSClient().lookup(
+                                host: target.host,
+                                type: selectedType,
+                                resolver: resolver,
+                                timeout: 4
+                            )
+                            return DNSPropagationResult(
+                                resolver: resolver,
+                                records: lookup.records,
+                                milliseconds: lookup.milliseconds,
+                                error: nil
+                            )
+                        } catch {
+                            return DNSPropagationResult(
+                                resolver: resolver,
+                                records: [],
+                                milliseconds: 0,
+                                error: error.localizedDescription
+                            )
+                        }
+                    }
+                }
+                var values: [DNSPropagationResult] = []
+                for await result in group { values.append(result) }
+                return values
+            }
+            if Task.isCancelled { return }
+            let order = Dictionary(
+                uniqueKeysWithValues: resolvers.enumerated().map { ($1.id, $0) })
+            self.results = collected.sorted {
+                order[$0.resolver.id, default: 99] < order[$1.resolver.id, default: 99]
+            }
+            self.isRunning = false
+            self.task = nil
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+        isRunning = false
+    }
+
+    func clear() {
+        stop()
+        results = []
+        errorMessage = nil
+    }
+}
+
+// MARK: - Whois
+
+@MainActor
+final class WhoisToolModel: ObservableObject {
+    @Published var query = "example.com"
+    @Published private(set) var report: WhoisReport?
+    @Published private(set) var isRunning = false
+    @Published var errorMessage: String?
+
+    private var task: Task<Void, Never>?
+
+    func run() {
+        guard !isRunning else { return }
+        let target = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !target.isEmpty else {
+            errorMessage = "Enter a domain or IP address."
+            return
+        }
+        errorMessage = nil
+        report = nil
+        isRunning = true
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let result = try await WhoisClient().lookup(target)
+                if Task.isCancelled { return }
+                self.report = result
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+            self.isRunning = false
+            self.task = nil
+        }
+    }
+
+    func clear() {
+        task?.cancel()
+        task = nil
+        report = nil
+        errorMessage = nil
+        isRunning = false
+    }
+}
+
+// MARK: - GeoIP
+
+@MainActor
+final class GeoIPToolModel: ObservableObject {
+    @Published var query = ""
+    @Published private(set) var report: GeoIPReport?
+    @Published private(set) var isRunning = false
+    @Published var errorMessage: String?
+
+    private var task: Task<Void, Never>?
+
+    func run(myIP: Bool = false) {
+        guard !isRunning else { return }
+        let target = myIP ? nil : query
+        errorMessage = nil
+        report = nil
+        isRunning = true
+        task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let result = try await GeoIPClient().lookup(target)
+                if Task.isCancelled { return }
+                self.report = result
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+            self.isRunning = false
+            self.task = nil
+        }
+    }
+
+    func clear() {
+        task?.cancel()
+        task = nil
+        report = nil
         errorMessage = nil
         isRunning = false
     }

@@ -33,11 +33,11 @@ the main reason "add the missing tools" is not a UI-only project.
 ## Coverage matrix
 
 > **Update 2026-11-11:** the toolkit now also ships MTR, Uptime Monitor, LAN
-> Scanner with Network Guard, iperf3, speed-test history/scheduling and
-> five-language localisation. Remaining: Whois, GeoIP, DNS Propagation, Visual
-> Traceroute, notarization and a sandboxed MAS build. The matrix below is the
-> original gap analysis; see [`TOOLKIT_PHASE2_PLAN.md`](TOOLKIT_PHASE2_PLAN.md)
-> for current status.
+> Scanner with Network Guard, iperf3, speed-test history/scheduling, search and
+> recents, DNS Propagation, Whois/RDAP, GeoIP, Visual Traceroute and
+> five-language localisation. Remaining: notarization and a sandboxed MAS
+> build. The matrix below is the original gap analysis; see
+> [`TOOLKIT_SCREENSHOT_GAP.md`](TOOLKIT_SCREENSHOT_GAP.md) for current status.
 
 Status legend: **Ahead** — LanFi has more than Netutilus; **Parity** — comparable;
 **Partial** — some real implementation, missing the product surface; **Wrapper** —
@@ -125,10 +125,9 @@ and the store.
 
 ### 4. Third-party data sources and privacy
 
-Whois/RDAP, DNS propagation, GeoIP and visual traceroute need external services
-or bundled databases (GeoIP licensing + updates). `PRIVACY.md` currently promises
-only update checks and optional diagnostic requests, so each lookup needs an
-explicit opt-in and documentation.
+Whois/RDAP, DNS propagation, GeoIP and visual traceroute use external services
+(`rdap.org`, six public DNS resolvers, `ipwho.is`). They run only when the user
+presses the corresponding action, and `PRIVACY.md` now documents each request.
 
 ### 5. Localization and accessibility
 
@@ -204,10 +203,9 @@ chain that starts from "my Wi-Fi is bad":
 4. **Uptime Monitor** with menu-bar status — closest thing to a paid feature and
    reuses the existing `MenuBarExtra`.
 
-Defer **Whois, GeoIP, DNS Propagation, Visual Traceroute, LAN Scanner/Guard and
-scheduled speed tests**: standalone products with external data dependencies and
-weak synergy with Wi-Fi analysis. Revisit only if the app is repositioned as a
-general toolkit.
+**Superseded:** Whois, GeoIP, DNS Propagation, Visual Traceroute, LAN
+Scanner/Guard and scheduled speed tests have since shipped as part of the
+toolkit expansion.
 
 This subset is Phase 0 plus about 25–30 days of Phase 1–2 work — roughly
 **8 weeks**, versus 3–4 months for the full catalogue.

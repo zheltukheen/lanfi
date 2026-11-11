@@ -25,6 +25,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case ping
     case traceroute
     case mtr
+    case visualTraceroute
     case speedTest
 
     case dnsLookup
@@ -53,6 +54,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .ping: return String(localized: "Ping")
         case .traceroute: return String(localized: "Traceroute")
         case .mtr: return String(localized: "MTR")
+        case .visualTraceroute: return String(localized: "Visual Traceroute")
         case .speedTest: return String(localized: "Speed Test")
         case .dnsLookup: return String(localized: "DNS Lookup")
         case .dnsPropagation: return String(localized: "DNS Propagation")
@@ -78,6 +80,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .ping: return "dot.radiowaves.left.and.right"
         case .traceroute: return "point.3.connected.trianglepath.dotted"
         case .mtr: return "chart.line.uptrend.xyaxis"
+        case .visualTraceroute: return "map"
         case .speedTest: return "speedometer"
         case .dnsLookup: return "magnifyingglass"
         case .dnsPropagation: return "globe"
@@ -99,7 +102,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     var section: ToolboxSection {
         switch self {
-        case .internetCheck, .ping, .traceroute, .mtr, .speedTest:
+        case .internetCheck, .ping, .traceroute, .mtr, .visualTraceroute, .speedTest:
             return .diagnostics
         case .dnsLookup, .dnsPropagation, .whois, .geoIP, .sslCertificate:
             return .dnsDomains
@@ -117,12 +120,11 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     /// without pretending the screen works.
     var isAvailable: Bool {
         switch self {
-        case .internetCheck, .ping, .traceroute, .mtr, .speedTest, .dnsLookup,
+        case .internetCheck, .ping, .traceroute, .mtr, .visualTraceroute, .speedTest, .dnsLookup,
             .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
-            .uptimeMonitor, .lanScanner, .iperf3, .advancedTools, .wifiAnalyzer, .wifiNetworks:
+            .uptimeMonitor, .lanScanner, .iperf3, .advancedTools, .wifiAnalyzer, .wifiNetworks,
+            .dnsPropagation, .whois, .geoIP:
             return true
-        case .dnsPropagation, .whois, .geoIP:
-            return false
         }
     }
 

@@ -717,3 +717,74 @@
 "Tool" = "Tool";
 "Wireshark…" = "Wireshark…";
 "LinkLiar — MAC address spoofer…" = "LinkLiar — MAC address spoofer…";
+
+/* Network Toolkit search */
+"Search tools" = "Search tools";
+"Recent" = "Recent";
+"Results" = "Results";
+"No tools found" = "No tools found";
+"Clear search" = "Clear search";
+
+/* Network Toolkit data tools */
+"Check DNS propagation" = "Check DNS propagation";
+"Asks six public resolvers for the same record and shows whether they agree. Useful after changing DNS." = "Asks six public resolvers for the same record and shows whether they agree. Useful after changing DNS.";
+"Domain" = "Domain";
+"Expected value (optional)" = "Expected value (optional)";
+"Six public resolvers · each answer comes from the resolver's nearest location." = "Six public resolvers · each answer comes from the resolver's nearest location.";
+"Check" = "Check";
+"Checking…" = "Checking…";
+"Matching" = "Matching";
+"Consistent" = "Consistent";
+"Record" = "Record";
+"Resolvers" = "Resolvers";
+"Resolver" = "Resolver";
+"Value" = "Value";
+"Query time" = "Query time";
+"Look up a domain" = "Look up a domain";
+"Reads the registration over RDAP: registrar, statuses, dates, nameservers and events. No Terminal." = "Reads the registration over RDAP: registrar, statuses, dates, nameservers and events. No Terminal.";
+"Looking up…" = "Looking up…";
+"Handle: %@" = "Handle: %@";
+"Dates" = "Dates";
+"Registered" = "Registered";
+"Expires" = "Expires";
+"Last changed" = "Last changed";
+"Nameservers" = "Nameservers";
+"None reported" = "None reported";
+"Events" = "Events";
+"Event" = "Event";
+"Date" = "Date";
+"Locate an IP address" = "Locate an IP address";
+"Type an IP or hostname, or use My IP. Hostnames are resolved locally first; only the address is sent to ipwho.is." = "Type an IP or hostname, or use My IP. Hostnames are resolved locally first; only the address is sent to ipwho.is.";
+"IP address or hostname" = "IP address or hostname";
+"My IP" = "My IP";
+"Location" = "Location";
+"City" = "City";
+"Region" = "Region";
+"Continent" = "Continent";
+"ASN" = "ASN";
+"Organization" = "Organization";
+"ISP" = "ISP";
+"Timezone" = "Timezone";
+"Coordinates" = "Coordinates";
+"Open in Maps" = "Open in Maps";
+"Trace a route on the map" = "Trace a route on the map";
+"Runs traceroute, then resolves public hop addresses through ipwho.is. Private and timed-out hops stay in the list without a pin." = "Runs traceroute, then resolves public hop addresses through ipwho.is. Private and timed-out hops stay in the list without a pin.";
+"Host or IP address" = "Host or IP address";
+"Max hops: %lld" = "Max hops: %lld";
+"Locating %lld/%lld…" = "Locating %lld/%lld…";
+"No public hops to map" = "No public hops to map";
+"Private / local hop" = "Private / local hop";
+"GeoIP lookups use ipwho.is; only public hop addresses are sent." = "GeoIP lookups use ipwho.is; only public hop addresses are sent.";
+"Visual Traceroute" = "Visual Traceroute";
+
+/* Network Toolkit status formats */
+"%lld of %lld match" = "%lld of %lld match";
+"%lld of %lld answers" = "%lld of %lld answers";
+"%@ · %lld statuses" = "%@ · %lld statuses";
+"%lld hops" = "%lld hops";
+
+/* Network Toolkit labels */
+"%lld statuses" = "%lld statuses";
+
+/* Visual traceroute labels */
+"Location unavailable" = "Location unavailable";

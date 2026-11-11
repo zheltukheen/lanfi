@@ -716,3 +716,74 @@
 "Tool" = "Werkzeug";
 "Wireshark…" = "Wireshark…";
 "LinkLiar — MAC address spoofer…" = "LinkLiar — MAC-Adress-Spoofer…";
+
+/* Network Toolkit search */
+"Search tools" = "Werkzeuge suchen";
+"Recent" = "Zuletzt verwendet";
+"Results" = "Ergebnisse";
+"No tools found" = "Keine Werkzeuge gefunden";
+"Clear search" = "Suche löschen";
+
+/* Network Toolkit data tools */
+"Check DNS propagation" = "DNS-Verteilung prüfen";
+"Asks six public resolvers for the same record and shows whether they agree. Useful after changing DNS." = "Fragt sechs öffentliche Resolver nach demselben Datensatz und zeigt, ob sie übereinstimmen. Nützlich nach DNS-Änderungen.";
+"Domain" = "Domain";
+"Expected value (optional)" = "Erwarteter Wert";
+"Six public resolvers · each answer comes from the resolver's nearest location." = "Sechs öffentliche Resolver · jede Antwort kommt vom nächstgelegenen Standort.";
+"Check" = "Prüfen";
+"Checking…" = "Prüfe…";
+"Matching" = "Übereinstimmungen";
+"Consistent" = "Konsistent";
+"Record" = "Datensatz";
+"Resolvers" = "Resolver";
+"Resolver" = "Resolver";
+"Value" = "Wert";
+"Query time" = "Abfragezeit";
+"Look up a domain" = "Domain nachschlagen";
+"Reads the registration over RDAP: registrar, statuses, dates, nameservers and events. No Terminal." = "Liest die Registrierung über RDAP: Registrar, Status, Daten, Nameserver und Ereignisse. Ohne Terminal.";
+"Looking up…" = "Suche…";
+"Handle: %@" = "Handle: %@";
+"Dates" = "Daten";
+"Registered" = "Registriert";
+"Expires" = "Läuft ab";
+"Last changed" = "Zuletzt geändert";
+"Nameservers" = "Nameserver";
+"None reported" = "Keine gemeldet";
+"Events" = "Ereignisse";
+"Event" = "Ereignis";
+"Date" = "Datum";
+"Locate an IP address" = "IP-Adresse lokalisieren";
+"Type an IP or hostname, or use My IP. Hostnames are resolved locally first; only the address is sent to ipwho.is." = "IP oder Hostname eingeben oder „Meine IP“ wählen. Hostnamen werden lokal aufgelöst; nur die Adresse geht an ipwho.is.";
+"IP address or hostname" = "IP-Adresse oder Hostname";
+"My IP" = "Meine IP";
+"Location" = "Standort";
+"City" = "Stadt";
+"Region" = "Region";
+"Continent" = "Kontinent";
+"ASN" = "ASN";
+"Organization" = "Organisation";
+"ISP" = "ISP";
+"Timezone" = "Zeitzone";
+"Coordinates" = "Koordinaten";
+"Open in Maps" = "In Karten öffnen";
+"Trace a route on the map" = "Route auf der Karte anzeigen";
+"Runs traceroute, then resolves public hop addresses through ipwho.is. Private and timed-out hops stay in the list without a pin." = "Führt traceroute aus und löst öffentliche Hop-Adressen über ipwho.is auf. Private und ausgefallene Hops bleiben ohne Markierung in der Liste.";
+"Host or IP address" = "Host oder IP-Adresse";
+"Max hops: %lld" = "Max. Hops: %lld";
+"Locating %lld/%lld…" = "Lokalisiere %lld/%lld…";
+"No public hops to map" = "Keine öffentlichen Hops für die Karte";
+"Private / local hop" = "Privater / lokaler Hop";
+"GeoIP lookups use ipwho.is; only public hop addresses are sent." = "GeoIP-Abfragen nutzen ipwho.is; nur öffentliche Hop-Adressen werden gesendet.";
+"Visual Traceroute" = "Visuelles Traceroute";
+
+/* Network Toolkit status formats */
+"%lld of %lld match" = "%lld von %lld stimmen überein";
+"%lld of %lld answers" = "%lld von %lld antworten";
+"%@ · %lld statuses" = "%@ · %lld Status";
+"%lld hops" = "%lld Hops";
+
+/* Network Toolkit labels */
+"%lld statuses" = "%lld Status";
+
+/* Visual traceroute labels */
+"Location unavailable" = "Standort unbekannt";

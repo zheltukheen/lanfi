@@ -26,6 +26,15 @@ LanFi makes only these outbound requests:
   `captive.apple.com`, plus ICMP echo to the default gateway and `1.1.1.1`.
   These requests prove connectivity and measure latency; their results stay on
   your Mac and are never uploaded.
+- **Tools you explicitly run** contact the host you enter (ping, traceroute,
+  MTR, DNS, port scan, SSL, path check, iperf3, uptime checks).
+- **DNS Propagation** sends the queried name to six public resolvers
+  (Cloudflare, Google, Quad9, OpenDNS, Level3 and a Cloudflare secondary).
+- **Whois** sends the domain or IP to `rdap.org`; **GeoIP** and the map in
+  Visual Traceroute send public hop addresses to `ipwho.is`.
+- **Speed Test** uses Apple's `networkQuality` command. These third-party
+  requests are made only when you press the corresponding button; LanFi does
+  not attach an account, device identifier or telemetry payload.
 
 There is no telemetry, cloud sync, remote logging or third-party analytics SDK.
 Exports (CSV/JSON/PCAP) and saved sessions/annotations/surveys are written only

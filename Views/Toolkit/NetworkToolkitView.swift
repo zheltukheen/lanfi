@@ -6,6 +6,18 @@ struct NetworkToolkitView: View {
     @EnvironmentObject private var interfaces: InterfacesViewModel
     @EnvironmentObject private var uptime: UptimeMonitor
     @Environment(\.openWindow) private var openWindow
+    @State private var searchText = ""
+    @FocusState private var searchFocused: Bool
+
+    private var searchResults: [ToolboxTool] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return [] }
+        return ToolboxTool.allCases.filter { tool in
+            tool.title.localizedCaseInsensitiveContains(query)
+                || tool.section.title.localizedCaseInsensitiveContains(query)
+                || tool.plannedDetail.localizedCaseInsensitiveContains(query)
+        }
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -19,27 +31,82 @@ struct NetworkToolkitView: View {
     }
 
     private var sidebar: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                ForEach(ToolboxSection.allCases) { section in
-                    Text(section.title)
-                        .font(.caption2.weight(.semibold))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(0.5)
-                        .padding(.horizontal, 10)
-                        .padding(.top, section == .diagnostics ? 6 : 16)
-                        .padding(.bottom, 4)
-
-                    ForEach(ToolboxTool.allCases.filter { $0.section == section }) { tool in
-                        toolRow(tool)
+        VStack(spacing: 0) {
+            searchField
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        if !toolkit.recent.isEmpty {
+                            sectionHeader(String(localized: "Recent"))
+                            ForEach(toolkit.recent) { tool in
+                                toolRow(tool)
+                            }
+                        }
+                        ForEach(ToolboxSection.allCases) { section in
+                            sectionHeader(section.title)
+                            ForEach(ToolboxTool.allCases.filter { $0.section == section }) {
+                                tool in
+                                toolRow(tool)
+                            }
+                        }
+                    } else {
+                        sectionHeader(String(localized: "Results"))
+                        if searchResults.isEmpty {
+                            Text("No tools found")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                        } else {
+                            ForEach(searchResults) { tool in
+                                toolRow(tool)
+                            }
+                        }
                     }
                 }
+                .padding(8)
             }
-            .padding(8)
         }
         .frame(width: 228)
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            TextField("Search tools", text: $searchText)
+                .textFieldStyle(.plain)
+                .font(.callout)
+                .focused($searchFocused)
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, 8)
+        .padding(.top, 8)
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption2.weight(.semibold))
+            .foregroundColor(.secondary)
+            .textCase(.uppercase)
+            .tracking(0.5)
+            .padding(.horizontal, 10)
+            .padding(.top, 14)
+            .padding(.bottom, 4)
     }
 
     private func toolRow(_ tool: ToolboxTool) -> some View {
@@ -91,10 +158,18 @@ struct NetworkToolkitView: View {
             TracerouteToolView(model: toolkit.traceroute)
         case .mtr:
             MTRToolView(model: toolkit.mtr)
+        case .visualTraceroute:
+            VisualTracerouteToolView(model: toolkit.visualTraceroute)
         case .speedTest:
             SpeedTestToolView(model: toolkit.speedTest)
         case .dnsLookup:
             DNSToolView(model: toolkit.dns)
+        case .dnsPropagation:
+            DNSPropagationToolView(model: toolkit.dnsPropagation)
+        case .whois:
+            WhoisToolView(model: toolkit.whois)
+        case .geoIP:
+            GeoIPToolView(model: toolkit.geoIP)
         case .sslCertificate:
             SSLToolView(model: toolkit.ssl)
         case .portScan:
