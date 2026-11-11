@@ -150,15 +150,19 @@ are covered by tests in [`Tests/NetworkAnalyzerTests.swift`](Tests/NetworkAnalyz
 
 ## Comparison
 
-As of October 2026, against common macOS tools:
+As of November 2026, against common macOS tools:
 
 | | LanFi | WiFi Explorer | NetSpot | Apple Wireless Diagnostics |
 | --- | --- | --- | --- | --- |
-| Price / license | Free, FSL-1.1-ALv2 | Paid | Freemium | Free |
+| Price / license | Free, FSL-1.1-ALv2 | Paid (from ~$20; Pro) | Free tier; ~$19/mo or ~$179 one-time | Free |
 | Native CoreWLAN scanning | ✅ | ✅ | ✅ | ✅ |
 | Quality + congestion scores | ✅ | Partial | Partial | — |
 | Ranked channel recommendations | ✅ | Partial | Partial | — |
 | WPA3/OWE/PMF/WPS audit with remediation | ✅ | Partial | — | — |
+| Network toolkit: ping, traceroute, MTR, DNS, ports, SSL, subnet, iperf3 | ✅ | — | Speed test only | Partial |
+| Uptime Monitor + LAN Scanner + Network Guard | ✅ | — | — | — |
+| Interfaces / gateway / DNS monitor | ✅ | Partial | — | Partial |
+| Remote sensors over SSH | ✅ | ✅ (Pro) | — | — |
 | CSV + JSON export | ✅ | CSV/PCAP | CSV/PDF | — |
 | Raw information elements | ✅ | ✅ (Pro) | — | — |
 | Menu bar extra | ✅ | — | — | — |
@@ -170,8 +174,10 @@ As of October 2026, against common macOS tools:
 | Notarized | Roadmap | ✅ | ✅ | ✅ |
 
 Competitor capabilities change frequently; corrections via issues are welcome.
-LanFi deliberately focuses on analysis and privacy rather than heatmaps or
-hardware spectrum capture.
+LanFi deliberately focuses on analysis, privacy and troubleshooting rather
+than predictive enterprise design. The Netutilus-style toolkit coverage and
+remaining gaps are tracked in
+[`docs/NETUTILUS_PARITY.md`](docs/NETUTILUS_PARITY.md).
 
 ## Roadmap
 
@@ -180,7 +186,7 @@ The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-Delivered through 4.11: protocol blocks, all-interface analysis, diagnostics
+Delivered through 4.12.1: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column
 profiles, multi-select, synthetic + live + offline PCAP/PCAPNG, IDW survey
 heatmaps with walls and PDF reports, SSH remote sensors with polling, AP-name
