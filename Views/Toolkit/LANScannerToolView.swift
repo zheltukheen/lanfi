@@ -5,6 +5,8 @@ struct LANScannerToolView: View {
     @ObservedObject var model: LANScannerToolModel
     @State private var selectedID: String?
     @State private var showingDiscover = false
+    @State private var serviceDetails: [String: [UInt16: String]] = [:]
+    @State private var detectingDeviceID: String?
 
     var body: some View {
         ScrollView {
@@ -237,14 +239,35 @@ struct LANScannerToolView: View {
                             .foregroundColor(.secondary)
                     } else {
                         ForEach(device.openPorts, id: \.self) { port in
-                            HStack {
-                                Text("\(port)/tcp")
-                                    .font(.caption.monospacedDigit())
-                                Text(PortServices.name(for: port) ?? "")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                                Spacer()
+                            VStack(alignment: .leading, spacing: 1) {
+                                HStack {
+                                    Text("\(port)/tcp")
+                                        .font(.caption.monospacedDigit())
+                                    Text(PortServices.name(for: port) ?? "")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                }
+                                if let detail = serviceDetails[device.id]?[port] {
+                                    Text(detail)
+                                        .font(.caption2.monospaced())
+                                        .foregroundColor(.secondary)
+                                }
                             }
+                        }
+                        if !device.openPorts.isEmpty {
+                            Button {
+                                detectVersions(for: device)
+                            } label: {
+                                if detectingDeviceID == device.id {
+                                    ProgressView().controlSize(.small)
+                                } else {
+                                    Label("Detect versions", systemImage: "tag")
+                                }
+                            }
+                            .buttonStyle(.borderless)
+                            .font(.caption)
+                            .disabled(detectingDeviceID != nil)
                         }
                     }
                 } else {
@@ -277,6 +300,29 @@ struct LANScannerToolView: View {
                 .font(.caption.monospaced())
                 .lineLimit(2)
                 .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private func detectVersions(for device: LANDevice) {
+        guard detectingDeviceID == nil else { return }
+        detectingDeviceID = device.id
+        let ports = device.openPorts
+        Task {
+            var detected: [UInt16: String] = [:]
+            await withTaskGroup(of: (UInt16, String?).self) { group in
+                for port in ports {
+                    group.addTask {
+                        let banner = await ServiceBannerProbe().probe(
+                            host: device.ip, port: port)
+                        return (port, banner)
+                    }
+                }
+                for await (port, banner) in group {
+                    if let banner { detected[port] = banner }
+                }
+            }
+            serviceDetails[device.id] = detected
+            detectingDeviceID = nil
         }
     }
 

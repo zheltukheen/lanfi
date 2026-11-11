@@ -897,3 +897,17 @@
 "Concurrent: %lld" = "并发：%lld";
 "TCP connect only · no administrator rights" = "仅 TCP 连接 · 无需管理员权限";
 "%lld/%lld open" = "%lld/%lld 开放";
+
+/* Network monitor routes */
+"Routes" = "路由";
+"Routing table" = "路由表";
+"Destination" = "目标";
+"Flags" = "标志";
+"Expire" = "过期";
+"No routes found" = "未找到路由";
+"The system route table is empty or could not be read." = "系统路由表为空或无法读取。";
+"Default route" = "默认路由";
+"Primary interface" = "主接口";
+
+/* LAN service detection */
+"Detect versions" = "检测版本";

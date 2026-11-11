@@ -898,3 +898,17 @@
 "Concurrent: %lld" = "Concurrent: %lld";
 "TCP connect only · no administrator rights" = "TCP connect only · no administrator rights";
 "%lld/%lld open" = "%lld/%lld open";
+
+/* Network monitor routes */
+"Routes" = "Routes";
+"Routing table" = "Routing table";
+"Destination" = "Destination";
+"Flags" = "Flags";
+"Expire" = "Expire";
+"No routes found" = "No routes found";
+"The system route table is empty or could not be read." = "The system route table is empty or could not be read.";
+"Default route" = "Default route";
+"Primary interface" = "Primary interface";
+
+/* LAN service detection */
+"Detect versions" = "Detect versions";

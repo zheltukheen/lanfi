@@ -179,7 +179,7 @@ struct NetworkToolkitView: View {
         case .subnetCalculator:
             SubnetToolView(model: toolkit.subnet)
         case .networkMonitor:
-            InterfacesView(interfaces: interfaces)
+            NetworkMonitorToolView(interfaces: interfaces)
         case .uptimeMonitor:
             UptimeToolView(monitor: uptime)
         case .lanScanner:

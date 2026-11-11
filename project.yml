@@ -121,6 +121,7 @@ targets:
       - path: Models/SpeedTestHistory.swift
       - path: Models/Iperf3Models.swift
       - path: Models/Iperf3History.swift
+      - path: Models/NetworkRoute.swift
       - path: Models/UptimeModels.swift
       - path: Models/LANModels.swift
       - path: Models/DNSPropagationModels.swift

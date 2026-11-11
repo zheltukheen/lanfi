@@ -934,3 +934,17 @@
 "Concurrent: %lld" = "Параллельно: %lld";
 "TCP connect only · no administrator rights" = "Только TCP-подключение · без прав администратора";
 "%lld/%lld open" = "%lld/%lld открыто";
+
+/* Network monitor routes */
+"Routes" = "Маршруты";
+"Routing table" = "Таблица маршрутов";
+"Destination" = "Назначение";
+"Flags" = "Флаги";
+"Expire" = "Истекает";
+"No routes found" = "Маршруты не найдены";
+"The system route table is empty or could not be read." = "Системная таблица маршрутов пуста или недоступна для чтения.";
+"Default route" = "Маршрут по умолчанию";
+"Primary interface" = "Основной интерфейс";
+
+/* LAN service detection */
+"Detect versions" = "Определить версии";

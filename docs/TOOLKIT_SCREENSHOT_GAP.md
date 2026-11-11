@@ -20,8 +20,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Subnet Calculator | CIDR, IP + netmask and “This Mac” network | Done. |
 | iperf3 | Host/port/duration/direction, saved servers, persisted history | Done. |
 | Uptime Monitor | HTTP/TCP, history, notifications | Mail/DNS/SSL target types, DMARC/SPF summaries, richer outage detail. |
-| Network Monitor | Embedded Interfaces view | Overview / Routes tabs, current route table, change log. |
-| LAN Scanner | ARP or ICMP/TCP fallback, vendor, ports, Guard | Service/version detection, richer device inspector, saved-network view. |
+| Network Monitor | Overview + Routes tabs, current IPv4 route table | Done; change log remains. |
+| LAN Scanner | ARP/TCP fallback, vendor, ports, Guard, per-device service versions | Done. |
 | Internet Check | Verdict + path + detail | Quick/Full with speed, richer verdict evidence. |
 | Ping | ICMP/TCP, count/interval, continuous mode, TCP port presets, chart + table | Done; multi-chart layout remains optional. |
 | Traceroute | Max hops, probes, timeout, resolve names, richer table | Done. |
@@ -37,8 +37,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
    and MTR graph/stddev are done. DNS mail/reports and Speed Test tabs are
    also done; Path Check multi-port/presets and Subnet IP+mask/This Mac are
    done; Port service-version detection and iperf3 saved servers/history are
-   done. Remaining: MTR continuous, Port Scan UDP, Uptime mail checks,
-   Network Monitor routes, LAN service detection.
+   done; Network Monitor Routes and LAN service detection are done.
+   Remaining: MTR continuous, Port Scan UDP, Uptime mail checks.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and
    empty states with the reference screenshots.
 
