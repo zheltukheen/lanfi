@@ -13,8 +13,6 @@ elements, and turns the raw radio data into **quality scores, ranked channel
 recommendations and a security audit** — then proves the path end-to-end with
 protocol blocks, a local network diagnostics engine and monitoring.
 
-![LanFi with the Insights dashboard](docs/images/lanfi-main.webp)
-
 ## Why LanFi
 
 Most analyzers show a table and leave the diagnosis to you. LanFi scores every
@@ -55,23 +53,13 @@ surfaced with severity and remediation hints.
 | Updates | Sparkle 2 signed appcast, Homebrew cask, universal builds |
 | Privacy | No analytics/accounts/telemetry; only update and optional diagnostic requests; see [PRIVACY.md](PRIVACY.md) |
 
-![LanFi protocol blocks](docs/images/lanfi-protocols.webp)
-
-![LanFi network diagnostics](docs/images/lanfi-diagnostics.webp)
-
 ![LanFi Network Toolkit — Ping](docs/images/lanfi-toolkit-ping.webp)
 
-![LanFi Internet Check verdict](docs/images/lanfi-toolkit-internet.webp)
+![LanFi Port Scan](docs/images/lanfi-toolkit-ports.webp)
 
-![LanFi Wi-Fi Analyzer workspace](docs/images/lanfi-toolkit-wifi.webp)
+![LanFi DNS Lookup](docs/images/lanfi-toolkit-dns.webp)
 
 ![LanFi Uptime Monitor](docs/images/lanfi-toolkit-uptime.webp)
-
-![LanFi system network interfaces](docs/images/lanfi-interfaces.webp)
-
-![LanFi live packet capture](docs/images/lanfi-live-capture.webp)
-
-![LanFi site survey heatmap](docs/images/lanfi-survey.webp)
 
 ## Requirements
 
