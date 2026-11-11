@@ -816,3 +816,40 @@
 "Worst jitter" = "Worst jitter";
 "Max hops" = "Max hops";
 "Address" = "Address";
+
+/* DNS mail and speed tabs */
+"Mail" = "Mail";
+"Reports" = "Reports";
+"Records" = "Records";
+"Check Mail" = "Check Mail";
+"Build Report" = "Build Report";
+"%lld records · %lld ms" = "%lld records · %lld ms";
+"%lld/4 checks" = "%lld/4 checks";
+"MX records" = "MX records";
+"Issues" = "Issues";
+"Missing" = "Missing";
+"None" = "None";
+"Check mail records" = "Check mail records";
+"Reads MX, SPF, DMARC and common DKIM selectors, then explains what a receiver can verify." = "Reads MX, SPF, DMARC and common DKIM selectors, then explains what a receiver can verify.";
+"Build a mail report" = "Build a mail report";
+"Runs the MX/SPF/DMARC/DKIM checks and turns them into a short, copyable report." = "Runs the MX/SPF/DMARC/DKIM checks and turns them into a short, copyable report.";
+"All core mail checks pass." = "All core mail checks pass.";
+"%lld issues found." = "%lld issues found.";
+"Turns the mail checks into a short posture report you can copy." = "Turns the mail checks into a short posture report you can copy.";
+"Checks MX, SPF, DMARC and common DKIM selectors; every query goes to the selected resolver." = "Checks MX, SPF, DMARC and common DKIM selectors; every query goes to the selected resolver.";
+"No MX records: this domain cannot receive mail." = "No MX records: this domain cannot receive mail.";
+"No SPF record: receivers cannot tell which servers may send mail." = "No SPF record: receivers cannot tell which servers may send mail.";
+"No DMARC record: receivers have no policy for failing mail." = "No DMARC record: receivers have no policy for failing mail.";
+"DMARC is p=none: reports only, failing mail is not blocked." = "DMARC is p=none: reports only, failing mail is not blocked.";
+"No DKIM key found at the common selectors." = "No DKIM key found at the common selectors.";
+
+/* DNS and speed polish */
+"Testing…" = "Testing…";
+"Schedule off" = "Schedule off";
+"Runs at the next check" = "Runs at the next check";
+"Bufferbloat %@" = "Bufferbloat %@";
+"%.0f Mbps down" = "%.0f Mbps down";
+"%.0f Mbps up" = "%.0f Mbps up";
+"down —" = "down —";
+"up —" = "up —";
+"latency —" = "latency —";

@@ -54,6 +54,13 @@
 
             openWindow(id: "toolkit")
 
+            if let tabFlag = arguments.firstIndex(of: "--dns-tab"),
+                arguments.index(after: tabFlag) < arguments.endIndex,
+                let tab = DNSLookupTab(rawValue: arguments[arguments.index(after: tabFlag)])
+            {
+                toolkit.dns.tab = tab
+            }
+
             if arguments.contains("--run") {
                 run(toolkit.selection, toolkit: toolkit)
             }

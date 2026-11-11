@@ -1,27 +1,53 @@
 import SwiftUI
 
+private enum SpeedTestTab: String, CaseIterable, Identifiable {
+    case result, history
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .result: return String(localized: "Result")
+        case .history: return String(localized: "History")
+        }
+    }
+}
+
 struct SpeedTestToolView: View {
     @ObservedObject var model: SpeedTestToolModel
+    @State private var tab: SpeedTestTab = .result
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 controls
+                Picker("Mode", selection: $tab) {
+                    ForEach(SpeedTestTab.allCases) { tab in
+                        Text(tab.title).tag(tab)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 210)
                 if let error = model.errorMessage {
                     ToolkitErrorBanner(message: error)
                 }
-                if let report = model.report {
-                    metrics(report)
-                    gradeCard(report)
-                } else if !model.isRunning {
-                    ToolkitEmptyState(
-                        icon: "speedometer",
-                        title: "Measure the line",
-                        message:
-                            "Download, upload, latency and responsiveness from Apple's networkQuality. It uses real test traffic for up to 20 seconds."
-                    )
+                switch tab {
+                case .result:
+                    if let report = model.report {
+                        metrics(report)
+                        gradeCard(report)
+                    } else if !model.isRunning {
+                        ToolkitEmptyState(
+                            icon: "speedometer",
+                            title: "Measure the line",
+                            message:
+                                "Download, upload, latency and responsiveness from Apple's networkQuality. It uses real test traffic for up to 20 seconds."
+                        )
+                    }
+                case .history:
+                    historySection
                 }
-                historySection
             }
             .padding(18)
         }
@@ -62,7 +88,7 @@ struct SpeedTestToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return "Testing…" }
+        if model.isRunning { return String(localized: "Testing…") }
         guard let report = model.report else { return String(localized: "Ready") }
         return report.summary
     }
@@ -103,8 +129,12 @@ struct SpeedTestToolView: View {
                     .foregroundColor(gradeColor(report.bufferbloatGrade))
                     .frame(width: 64)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Bufferbloat \(report.bufferbloatLabel ?? "—")")
-                        .font(.headline)
+                    Text(
+                        String(
+                            format: String(localized: "Bufferbloat %@"),
+                            report.bufferbloatLabel ?? "—")
+                    )
+                    .font(.headline)
                     Text(
                         "Responsiveness measures round trips per minute while the line is saturated. A low grade means latency spikes when something is downloading."
                     )
@@ -120,8 +150,10 @@ struct SpeedTestToolView: View {
     }
 
     private var nextRunText: String {
-        guard model.schedule != .off else { return "Schedule off" }
-        guard let nextRun = model.nextRun else { return "Runs at the next check" }
+        guard model.schedule != .off else { return String(localized: "Schedule off") }
+        guard let nextRun = model.nextRun else {
+            return String(localized: "Runs at the next check")
+        }
         return nextRun.formatted(date: .abbreviated, time: .shortened)
     }
 

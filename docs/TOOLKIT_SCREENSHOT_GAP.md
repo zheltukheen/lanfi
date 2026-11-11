@@ -9,8 +9,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | --- | --- | --- |
 | Sidebar (search, Recent, sections) | Search + persisted Recent shipped | Done. |
 | Visual Traceroute | MapKit route + public-hop GeoIP + hop list | Done; private hops stay listed without a pin. |
-| Speed Test | Apple `networkQuality`, history + schedule | Result/History tabs, Cloudflare-style start screen and richer result presentation. |
-| DNS Lookup | Records table + resolver | Records / Mail / Reports tabs, custom DNS switch, mail-record summaries. |
+| Speed Test | Apple `networkQuality`, Result/History tabs, schedule | Done; a richer animated start screen remains optional. |
+| DNS Lookup | Records / Mail / Reports tabs, custom resolver, MX/SPF/DMARC/DKIM checks | Done. |
 | DNS Propagation | Six resolvers, expected value, table, summary | Done. |
 | Whois | RDAP domain/IP report, registrar, statuses, events, nameservers | Done. |
 | GeoIP | IP/host, My IP, city/country/ASN/ISP, map link | Done. |
@@ -34,8 +34,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
    reuse the existing DNS client and `URLSession`, so no new shelling out.
 3. **Visual Traceroute**: traceroute runner + GeoIP + MapKit — done.
 4. **Depth on existing tools**: Ping continuous/presets, Traceroute options
-   and MTR graph/stddev are done. Remaining: MTR continuous, DNS
-   mail/reports, Speed Test tabs, Port Scan service/UDP, Path Check presets,
+   and MTR graph/stddev are done. DNS mail/reports and Speed Test tabs are
+   also done. Remaining: MTR continuous, Port Scan service/UDP, Path Check presets,
    Subnet IP+mask, iperf3 saved servers, Uptime mail checks, Network Monitor
    routes, LAN service detection.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and

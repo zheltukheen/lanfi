@@ -815,3 +815,40 @@
 "Worst jitter" = "最高抖动";
 "Max hops" = "最大跳数";
 "Address" = "地址";
+
+/* DNS mail and speed tabs */
+"Mail" = "邮件";
+"Reports" = "报告";
+"Records" = "记录";
+"Check Mail" = "检查邮件";
+"Build Report" = "生成报告";
+"%lld records · %lld ms" = "%lld 条记录 · %lld 毫秒";
+"%lld/4 checks" = "%lld/4 项检查";
+"MX records" = "MX 记录";
+"Issues" = "问题";
+"Missing" = "缺失";
+"None" = "无";
+"Check mail records" = "检查邮件记录";
+"Reads MX, SPF, DMARC and common DKIM selectors, then explains what a receiver can verify." = "读取 MX、SPF、DMARC 和常见 DKIM 选择器，并说明收件方能验证什么。";
+"Build a mail report" = "生成邮件报告";
+"Runs the MX/SPF/DMARC/DKIM checks and turns them into a short, copyable report." = "运行 MX/SPF/DMARC/DKIM 检查并生成可复制的简短报告。";
+"All core mail checks pass." = "所有核心邮件检查通过。";
+"%lld issues found." = "发现 %lld 个问题。";
+"Turns the mail checks into a short posture report you can copy." = "将邮件检查转换为可复制的简短报告。";
+"Checks MX, SPF, DMARC and common DKIM selectors; every query goes to the selected resolver." = "检查 MX、SPF、DMARC 和常见 DKIM 选择器；所有查询都发往所选解析器。";
+"No MX records: this domain cannot receive mail." = "无 MX 记录：该域名无法接收邮件。";
+"No SPF record: receivers cannot tell which servers may send mail." = "无 SPF 记录：接收方无法判断哪些服务器可以发信。";
+"No DMARC record: receivers have no policy for failing mail." = "无 DMARC 记录：接收方没有失败邮件的处理策略。";
+"DMARC is p=none: reports only, failing mail is not blocked." = "DMARC 为 p=none：仅报告，不拦截失败邮件。";
+"No DKIM key found at the common selectors." = "常见选择器下未找到 DKIM 密钥。";
+
+/* DNS and speed polish */
+"Testing…" = "测试中…";
+"Schedule off" = "计划已关闭";
+"Runs at the next check" = "下次检查时运行";
+"Bufferbloat %@" = "Bufferbloat %@";
+"%.0f Mbps down" = "%.0f Mbps 下载";
+"%.0f Mbps up" = "%.0f Mbps 上传";
+"down —" = "下载 —";
+"up —" = "上传 —";
+"latency —" = "延迟 —";

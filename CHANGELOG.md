@@ -12,6 +12,9 @@
 - Ping continuous mode and TCP port presets.
 - Traceroute probe count, per-probe timeout and optional name resolution.
 - MTR latency-by-hop chart and fully localised table/status labels.
+- DNS Lookup tabs: Records, Mail (MX/SPF/DMARC/DKIM) and a copyable posture
+  report with issue explanations.
+- Speed Test Result/History tabs plus localised summary and schedule text.
 
 ## 4.12.1 — 2026-11-11
 
