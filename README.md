@@ -1,5 +1,7 @@
 # LanFi — native macOS Wi‑Fi analyzer
 
+[English](README.md) · [Русский](README.ru.md)
+
 <img src="docs/images/lanfi-icon.png" width="96" align="right" alt="LanFi icon">
 
 [![CI](https://github.com/zheltukheen/lanfi/actions/workflows/ci.yml/badge.svg)](https://github.com/zheltukheen/lanfi/actions/workflows/ci.yml)
@@ -321,11 +323,11 @@ tabs.
 
 ## Offline capture analysis
 
-Open **Data → Analyze Packet Capture…** to decode pcap/pcapng files with
-radiotap or bare 802.11 frames. Beacon/probe-response SSID, BSSID, channel,
+Open **Network Toolkit → Wi-Fi Analyzer → Analyze Capture** to decode
+pcap/pcapng files with radiotap or bare 802.11 frames. Beacon/probe-response SSID, BSSID, channel,
 RSSI, security and EHT presence are shown offline; no network is contacted.
 
 ## Remote sensors
 
-Open **Data → Remote Sensors…**, add a Mac with Remote Login enabled and an
-authorized SSH key, then run a scan. Password prompts are not supported.
+Open **Network Toolkit → Wi-Fi Analyzer → Remote Sensors**, add a Mac with
+Remote Login enabled and an authorized SSH key, then run a scan. Password prompts are not supported.
