@@ -965,3 +965,15 @@
 "Mail records" = "Mail records";
 "Mail checks %lld/4 · %lld issues" = "Mail checks %lld/4 · %lld issues";
 "Enter a domain for the mail target." = "Enter a domain for the mail target.";
+
+/* Survey toolbar */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network’s RSSI." = "Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network’s RSSI.";
+"Floor" = "Floor";
+"Clear points" = "Clear points";
+"Draw wall" = "Draw wall";
+"Predictive mode" = "Predictive mode";
+"Walk mode" = "Walk mode";
+"Structure tools" = "Structure tools";
+
+/* Survey empty state */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network's RSSI." = "Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network's RSSI.";

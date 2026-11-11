@@ -49,187 +49,203 @@ struct SurveyView: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 10) {
-            Button {
-                survey.importFloorPlan()
-            } label: {
-                Label("Import Floor Plan", systemImage: "photo")
-            }
-            .controlSize(.small)
-
-            Button {
-                survey.save()
-            } label: {
-                Label("Save", systemImage: "square.and.arrow.down")
-            }
-            .controlSize(.small)
-
-            Menu {
-                Button("This floor") {
-                    survey.exportPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
-                }
-                Button("All floors") {
-                    survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
-                }
-            } label: {
-                Label("PDF", systemImage: "doc.richtext")
-            }
-            .menuStyle(.borderlessButton)
-            .frame(width: 58)
-            .controlSize(.small)
-
-            Button {
-                showReportSettings = true
-            } label: {
-                Label("Report", systemImage: "doc.badge.gearshape")
-            }
-            .controlSize(.small)
-
-            Button(role: .destructive) {
-                survey.clearSamples()
-            } label: {
-                Label("Clear Points", systemImage: "trash")
-            }
-            .controlSize(.small)
-            .disabled(survey.samples.isEmpty)
-
-            Divider().frame(height: 20)
-
-            Button {
-                wallMode.toggle()
-                pendingWallStart = nil
-                survey.statusMessage =
-                    wallMode
-                    ? "Wall mode: click two points to draw a wall."
-                    : "Wall mode off."
-            } label: {
-                Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
-            }
-            .controlSize(.small)
-            .buttonStyle(.bordered)
-            .tint(wallMode ? .orange : nil)
-
-            Button {
-                predictiveMode.toggle()
-                survey.statusMessage =
-                    predictiveMode
-                    ? "Predictive mode: click the plan to place an AP."
-                    : "Predictive mode off."
-            } label: {
-                Label(
-                    "Predictive",
-                    systemImage: predictiveMode
-                        ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
-            }
-            .controlSize(.small)
-            .buttonStyle(.bordered)
-            .tint(predictiveMode ? .purple : nil)
-
-            Button {
-                walkMode.toggle()
-                survey.statusMessage =
-                    walkMode
-                    ? "Walk mode: move the pointer over the plan to sample automatically."
-                    : "Walk mode off."
-            } label: {
-                Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
-            }
-            .controlSize(.small)
-            .buttonStyle(.bordered)
-            .tint(walkMode ? .green : nil)
-
-            Menu {
+        VStack(spacing: 6) {
+            HStack(spacing: 10) {
                 Button {
-                    roomMode.toggle()
-                    roomPoints = []
-                    survey.statusMessage =
-                        roomMode
-                        ? "Room mode: click vertices, then Finish Room."
-                        : "Room mode off."
+                    survey.importFloorPlan()
                 } label: {
-                    Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
+                    Label("Import Floor Plan", systemImage: "photo")
                 }
-                Button("Finish Room") { finishRoom() }
-                    .disabled(roomPoints.count < 3)
-                Button("Clear Rooms", role: .destructive) {
-                    survey.clearObstacles()
-                    roomPoints = []
+                .controlSize(.small)
+
+                Button {
+                    survey.save()
+                } label: {
+                    Label("Save", systemImage: "square.and.arrow.down")
                 }
-                .disabled(survey.obstacles.isEmpty)
-                Button("Clear Predictive APs", role: .destructive) {
-                    survey.clearAccessPoints()
+                .controlSize(.small)
+
+                Menu {
+                    Button("This floor") {
+                        survey.exportPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                    }
+                    Button("All floors") {
+                        survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                    }
+                } label: {
+                    Label("PDF", systemImage: "doc.richtext")
                 }
-                .disabled(survey.accessPoints.isEmpty)
-                Divider()
-                Button(calibrating ? "Cancel Calibration" : "Calibrate Scale") {
-                    calibrating.toggle()
-                    calibrationPoints = []
-                    survey.statusMessage =
-                        calibrating
-                        ? "Calibration: click two points and enter the real distance."
-                        : "Calibration cancelled."
+                .menuStyle(.borderlessButton)
+                .frame(width: 58)
+                .controlSize(.small)
+
+                Button {
+                    showReportSettings = true
+                } label: {
+                    Label("Report", systemImage: "doc.badge.gearshape")
                 }
-                Divider()
-                Button("Clear Walls", role: .destructive) {
-                    survey.clearWalls()
+                .controlSize(.small)
+
+                Button(role: .destructive) {
+                    survey.clearSamples()
+                } label: {
+                    Label("Clear Points", systemImage: "trash")
+                }
+                .controlSize(.small)
+                .labelStyle(.iconOnly)
+                .help("Clear points")
+                .disabled(survey.samples.isEmpty)
+
+                Divider().frame(height: 20)
+
+                Button {
+                    wallMode.toggle()
                     pendingWallStart = nil
+                    survey.statusMessage =
+                        wallMode
+                        ? "Wall mode: click two points to draw a wall."
+                        : "Wall mode off."
+                } label: {
+                    Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
                 }
-                .disabled(survey.walls.isEmpty)
-            } label: {
-                Label("Structure", systemImage: "square.on.square")
-            }
-            .menuStyle(.borderlessButton)
-            .frame(width: 76)
-            .controlSize(.small)
+                .controlSize(.small)
+                .buttonStyle(.bordered)
+                .labelStyle(.iconOnly)
+                .help("Draw wall")
+                .tint(wallMode ? .orange : nil)
 
-            Divider().frame(height: 20)
-
-            Picker(
-                "Floor",
-                selection: Binding(
-                    get: { survey.project.id },
-                    set: { survey.selectProject(id: $0) }
-                )
-            ) {
-                ForEach(survey.projects) { project in
-                    Text(project.name).tag(project.id)
+                Button {
+                    predictiveMode.toggle()
+                    survey.statusMessage =
+                        predictiveMode
+                        ? "Predictive mode: click the plan to place an AP."
+                        : "Predictive mode off."
+                } label: {
+                    Label(
+                        "Predictive",
+                        systemImage: predictiveMode
+                            ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
                 }
-            }
-            .frame(minWidth: 130, maxWidth: 190)
-            .controlSize(.small)
-            Button {
-                survey.newFloor()
-            } label: {
-                Image(systemName: "plus.rectangle.on.rectangle")
-            }
-            .controlSize(.small)
-            .help("New floor")
-            Button {
-                show3DFloors = true
-            } label: {
-                Label("3D", systemImage: "square.3.layers.3d")
-            }
-            .controlSize(.small)
-            .help("Multi-floor 3D view")
+                .controlSize(.small)
+                .buttonStyle(.bordered)
+                .labelStyle(.iconOnly)
+                .help("Predictive mode")
+                .tint(predictiveMode ? .purple : nil)
 
-            Picker("Network", selection: $survey.selectedNetworkId) {
-                Text("All networks").tag(String?.none)
-                ForEach(analyzer.networks.sorted { $0.signal > $1.signal }) { network in
-                    Text("\(network.displaySSID) · \(network.bssid)").tag(Optional(network.id))
+                Button {
+                    walkMode.toggle()
+                    survey.statusMessage =
+                        walkMode
+                        ? "Walk mode: move the pointer over the plan to sample automatically."
+                        : "Walk mode off."
+                } label: {
+                    Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
                 }
-            }
-            .frame(minWidth: 240, maxWidth: 360)
-            .controlSize(.small)
+                .controlSize(.small)
+                .buttonStyle(.bordered)
+                .labelStyle(.iconOnly)
+                .help("Walk mode")
+                .tint(walkMode ? .green : nil)
 
-            if let selectedNetwork {
-                Text("\(selectedNetwork.signal) dBm · \(selectedNetwork.bandLabel) · ch \(selectedNetwork.channel)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Menu {
+                    Button {
+                        roomMode.toggle()
+                        roomPoints = []
+                        survey.statusMessage =
+                            roomMode
+                            ? "Room mode: click vertices, then Finish Room."
+                            : "Room mode off."
+                    } label: {
+                        Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
+                    }
+                    Button("Finish Room") { finishRoom() }
+                        .disabled(roomPoints.count < 3)
+                    Button("Clear Rooms", role: .destructive) {
+                        survey.clearObstacles()
+                        roomPoints = []
+                    }
+                    .disabled(survey.obstacles.isEmpty)
+                    Button("Clear Predictive APs", role: .destructive) {
+                        survey.clearAccessPoints()
+                    }
+                    .disabled(survey.accessPoints.isEmpty)
+                    Divider()
+                    Button(calibrating ? "Cancel Calibration" : "Calibrate Scale") {
+                        calibrating.toggle()
+                        calibrationPoints = []
+                        survey.statusMessage =
+                            calibrating
+                            ? "Calibration: click two points and enter the real distance."
+                            : "Calibration cancelled."
+                    }
+                    Divider()
+                    Button("Clear Walls", role: .destructive) {
+                        survey.clearWalls()
+                        pendingWallStart = nil
+                    }
+                    .disabled(survey.walls.isEmpty)
+                } label: {
+                    Label("Structure", systemImage: "square.on.square")
+                }
+                .menuStyle(.borderlessButton)
+                .labelStyle(.iconOnly)
+                .help("Structure tools")
+                .controlSize(.small)
+
+                Spacer()
             }
 
-            Spacer()
+            HStack(spacing: 10) {
+                Divider().frame(height: 20)
+
+                Picker(
+                    String(localized: "Floor"),
+                    selection: Binding(
+                        get: { survey.project.id },
+                        set: { survey.selectProject(id: $0) }
+                    )
+                ) {
+                    ForEach(survey.projects) { project in
+                        Text(project.name).tag(project.id)
+                    }
+                }
+                .frame(minWidth: 130, maxWidth: 190)
+                .controlSize(.small)
+                Button {
+                    survey.newFloor()
+                } label: {
+                    Image(systemName: "plus.rectangle.on.rectangle")
+                }
+                .controlSize(.small)
+                .help("New floor")
+                Button {
+                    show3DFloors = true
+                } label: {
+                    Label("3D", systemImage: "square.3.layers.3d")
+                }
+                .controlSize(.small)
+                .help("Multi-floor 3D view")
+
+                Picker("Network", selection: $survey.selectedNetworkId) {
+                    Text("All networks").tag(String?.none)
+                    ForEach(analyzer.networks.sorted { $0.signal > $1.signal }) { network in
+                        Text("\(network.displaySSID) · \(network.bssid)").tag(Optional(network.id))
+                    }
+                }
+                .frame(minWidth: 240, maxWidth: 360)
+                .controlSize(.small)
+
+                if let selectedNetwork {
+                    Text("\(selectedNetwork.signal) dBm · \(selectedNetwork.bandLabel) · ch \(selectedNetwork.channel)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+            }
         }
-        .padding(10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(Material.bar)
     }
 

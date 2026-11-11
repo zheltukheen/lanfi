@@ -5,10 +5,8 @@ import SwiftUI
 /// detailed editor.
 struct WiFiAnalyzerToolView: View {
     @EnvironmentObject private var analyzer: AnalyzerViewModel
-    @EnvironmentObject private var survey: SurveyViewModel
     @Environment(\.openWindow) private var openWindow
 
-    @State private var showingSurvey = false
     @State private var showingSpectrum = false
     @State private var showingLiveCapture = false
     @State private var showingOfflineCapture = false
@@ -31,10 +29,6 @@ struct WiFiAnalyzerToolView: View {
                 networks
             }
             .padding(18)
-        }
-        .sheet(isPresented: $showingSurvey) {
-            SurveyView(analyzer: analyzer, survey: survey)
-                .frame(minWidth: 1_000, minHeight: 700)
         }
         .sheet(isPresented: $showingSpectrum) {
             HardwareSpectrumView()
@@ -149,9 +143,6 @@ struct WiFiAnalyzerToolView: View {
                 alignment: .leading,
                 spacing: 10
             ) {
-                action(
-                    "Site Survey", "Floor plan, samples and heatmap", "map",
-                    action: { showingSurvey = true })
                 action(
                     "Hardware Spectrum", "RF Explorer and CSV traces", "waveform.path.ecg",
                     action: { showingSpectrum = true })

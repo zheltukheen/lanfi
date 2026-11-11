@@ -5,6 +5,8 @@ struct NetworkToolkitView: View {
     @EnvironmentObject private var diagnostics: DiagnosticsViewModel
     @EnvironmentObject private var interfaces: InterfacesViewModel
     @EnvironmentObject private var uptime: UptimeMonitor
+    @EnvironmentObject private var analyzer: AnalyzerViewModel
+    @EnvironmentObject private var survey: SurveyViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
     @FocusState private var searchFocused: Bool
@@ -214,6 +216,8 @@ struct NetworkToolkitView: View {
             AdvancedToolsToolView()
         case .wifiAnalyzer:
             WiFiAnalyzerToolView()
+        case .siteSurvey:
+            SurveyView(analyzer: analyzer, survey: survey)
         case .wifiNetworks:
             WiFiRedirectToolView(tool: toolkit.selection)
         }
