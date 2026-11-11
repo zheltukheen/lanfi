@@ -23,9 +23,9 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Network Monitor | Embedded Interfaces view | Overview / Routes tabs, current route table, change log. |
 | LAN Scanner | ARP or ICMP/TCP fallback, vendor, ports, Guard | Service/version detection, richer device inspector, saved-network view. |
 | Internet Check | Verdict + path + detail | Quick/Full with speed, richer verdict evidence. |
-| Ping | ICMP/TCP, count, interval, chart, table | Continuous mode, TCP port presets, multi-chart layout. |
-| Traceroute | Max hops only | Probe count, timeout, provider-name resolution, richer table. |
-| MTR | Rounds, loss/jitter table | Live graph, standard-deviation column, continuous mode. |
+| Ping | ICMP/TCP, count/interval, continuous mode, TCP port presets, chart + table | Done; multi-chart layout remains optional. |
+| Traceroute | Max hops, probes, timeout, resolve names, richer table | Done. |
+| MTR | Rounds, loss/jitter table, latency graph, stddev column | Continuous mode remains. |
 
 ## Delivery order
 
@@ -33,10 +33,11 @@ already at parity, what is missing, and the order in which the gaps are closed._
 2. **Missing data tools**: DNS Propagation, Whois/RDAP, GeoIP — done; they
    reuse the existing DNS client and `URLSession`, so no new shelling out.
 3. **Visual Traceroute**: traceroute runner + GeoIP + MapKit — done.
-4. **Depth on existing tools**: Ping continuous/presets, Traceroute options,
-   MTR graph/stddev, DNS mail/reports, Speed Test tabs, Port Scan
-   service/UDP, Path Check presets, Subnet IP+mask, iperf3 saved servers,
-   Uptime mail checks, Network Monitor routes, LAN service detection.
+4. **Depth on existing tools**: Ping continuous/presets, Traceroute options
+   and MTR graph/stddev are done. Remaining: MTR continuous, DNS
+   mail/reports, Speed Test tabs, Port Scan service/UDP, Path Check presets,
+   Subnet IP+mask, iperf3 saved servers, Uptime mail checks, Network Monitor
+   routes, LAN service detection.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and
    empty states with the reference screenshots.
 

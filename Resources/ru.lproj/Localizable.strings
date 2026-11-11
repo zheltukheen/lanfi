@@ -824,3 +824,31 @@
 
 /* Visual traceroute labels */
 "Location unavailable" = "Местоположение неизвестно";
+
+/* Toolkit phase 2 */
+"Continuous" = "Непрерывно";
+"Port presets" = "Пресеты портов";
+"Probes: %lld" = "Проб: %lld";
+"Timeout: %lld s" = "Тайм-аут: %lld с";
+"Resolve names" = "Определять имена";
+"Latency by hop" = "Задержка по хопам";
+"No latency samples yet." = "Пока нет замеров задержки.";
+"443 — HTTPS" = "443 — HTTPS";
+"80 — HTTP" = "80 — HTTP";
+"22 — SSH" = "22 — SSH";
+"53 — DNS" = "53 — DNS";
+"8080 — HTTP Alt" = "8080 — HTTP Alt";
+
+/* Toolkit phase 2 statuses */
+"Replies: %lld/%lld · %lld%% loss" = "Ответов: %lld/%lld · потери %lld%%";
+"Interval: %.1f s" = "Интервал: %.1f с";
+"Reached target · %lld hops" = "Цель достигнута · %lld хопов";
+"No reply at hop %lld" = "Нет ответа на хопе %lld";
+"Round %lld/%lld" = "Раунд %lld/%lld";
+"%lld rounds · %lld hops" = "%lld раундов · %lld хопов";
+"Start" = "Запуск";
+"Stop" = "Остановить";
+"Worst loss" = "Худшие потери";
+"Worst jitter" = "Худший джиттер";
+"Max hops" = "Макс. хопов";
+"Address" = "Адрес";

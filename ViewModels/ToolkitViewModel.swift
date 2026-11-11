@@ -50,6 +50,7 @@ final class PingToolModel: ObservableObject {
     @Published var host = "1.1.1.1"
     @Published var transport: PingTransport = .icmp
     @Published var count = 10
+    @Published var continuous = false
     @Published var interval = 0.5
     @Published var portText = "443"
     @Published private(set) var samples: [PingSample] = []
@@ -81,7 +82,7 @@ final class PingToolModel: ObservableObject {
         let probe: any PingProbing =
             transport == .icmp ? ICMPPingProbe() : TCPPingProbe(port: port ?? 443)
         let service = PingService(probe: probe)
-        let total = count
+        let total = continuous ? 10_000 : count
         let delay = interval
         task = Task { [weak self] in
             guard let self else { return }
@@ -498,6 +499,9 @@ final class PortScanToolModel: ObservableObject {
 final class TracerouteToolModel: ObservableObject {
     @Published var host = "1.1.1.1"
     @Published var maxHops = 30
+    @Published var probes = 1
+    @Published var waitSeconds = 2
+    @Published var resolveNames = false
     @Published private(set) var result: TracerouteReport?
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
@@ -518,7 +522,8 @@ final class TracerouteToolModel: ObservableObject {
             guard let self else { return }
             do {
                 let report = try await SystemTracerouteRunner().trace(
-                    host: target.host, maxHops: hops, waitSeconds: 2)
+                    host: target.host, maxHops: hops, waitSeconds: self.waitSeconds,
+                    probes: self.probes, resolveNames: self.resolveNames)
                 if Task.isCancelled { return }
                 self.result = report
             } catch is CancellationError {

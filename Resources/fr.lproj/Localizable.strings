@@ -787,3 +787,31 @@
 
 /* Visual traceroute labels */
 "Location unavailable" = "Emplacement indisponible";
+
+/* Toolkit phase 2 */
+"Continuous" = "Continu";
+"Port presets" = "Ports prédéfinis";
+"Probes: %lld" = "Sondes : %lld";
+"Timeout: %lld s" = "Délai : %lld s";
+"Resolve names" = "Résoudre les noms";
+"Latency by hop" = "Latence par saut";
+"No latency samples yet." = "Aucun échantillon de latence.";
+"443 — HTTPS" = "443 — HTTPS";
+"80 — HTTP" = "80 — HTTP";
+"22 — SSH" = "22 — SSH";
+"53 — DNS" = "53 — DNS";
+"8080 — HTTP Alt" = "8080 — HTTP Alt";
+
+/* Toolkit phase 2 statuses */
+"Replies: %lld/%lld · %lld%% loss" = "Réponses : %lld/%lld · %lld %% de perte";
+"Interval: %.1f s" = "Intervalle : %.1f s";
+"Reached target · %lld hops" = "Cible atteinte · %lld sauts";
+"No reply at hop %lld" = "Pas de réponse au saut %lld";
+"Round %lld/%lld" = "Tour %lld/%lld";
+"%lld rounds · %lld hops" = "%lld tours · %lld sauts";
+"Start" = "Démarrer";
+"Stop" = "Arrêter";
+"Worst loss" = "Pire perte";
+"Worst jitter" = "Pire gigue";
+"Max hops" = "Sauts max.";
+"Address" = "Adresse";
