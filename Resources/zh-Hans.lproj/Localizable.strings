@@ -919,3 +919,13 @@
 
 /* UDP note */
 "TCP + UDP probes · no administrator rights" = "TCP + UDP 探测 · 无需管理员权限";
+
+/* Uptime TLS and DNS */
+"TLS certificate" = "TLS 证书";
+"DNS record" = "DNS 记录";
+"TLS certificate expired" = "TLS 证书已过期";
+"TLS trusted · %lld days left" = "TLS 受信任 · 剩余 %lld 天";
+"TLS certificate is not trusted" = "TLS 证书不受信任";
+"No A records" = "无 A 记录";
+"Enter host[:port] for the TLS target." = "输入 TLS 目标的 host[:port]。";
+"Enter a hostname for the DNS target." = "输入 DNS 目标的主机名。";
