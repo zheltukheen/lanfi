@@ -947,3 +947,21 @@
 
 /* Internet check */
 "Full" = "Full";
+
+/* Final audit */
+"Not scanned" = "Not scanned";
+"Not scanned yet" = "Not scanned yet";
+"%lld devices · %lld open ports" = "%lld devices · %lld open ports";
+"%lld new devices since the last guarded scan" = "%lld new devices since the last guarded scan";
+"The full analyzer lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "The full analyzer lives in the main LanFi window, where the scan table, insights, spectrum and survey already are.";
+"The full network list lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "The full network list lives in the main LanFi window, where the scan table, insights, spectrum and survey already are.";
+"Open main LanFi" = "Open main LanFi";
+"%lld failed, %lld warnings" = "%lld failed, %lld warnings";
+"%lld warnings, %lld passed" = "%lld warnings, %lld passed";
+"All %lld checks passed" = "All %lld checks passed";
+"All %lld checks" = "All %lld checks";
+
+/* Uptime mail */
+"Mail records" = "Mail records";
+"Mail checks %lld/4 · %lld issues" = "Mail checks %lld/4 · %lld issues";
+"Enter a domain for the mail target." = "Enter a domain for the mail target.";

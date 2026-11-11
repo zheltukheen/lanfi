@@ -5,6 +5,7 @@ enum UptimeTargetKind: String, Codable, CaseIterable, Identifiable, Sendable {
     case tcp
     case tls
     case dns
+    case mail
 
     var id: String { rawValue }
 
@@ -14,6 +15,7 @@ enum UptimeTargetKind: String, Codable, CaseIterable, Identifiable, Sendable {
         case .tcp: return String(localized: "TCP port")
         case .tls: return String(localized: "TLS certificate")
         case .dns: return String(localized: "DNS record")
+        case .mail: return String(localized: "Mail records")
         }
     }
 }
@@ -76,7 +78,7 @@ struct UptimeTarget: Codable, Identifiable, Equatable, Sendable {
                 let port = target.port, port > 0
             else { return nil }
             normalized = "\(target.host):\(port)"
-        case .dns:
+        case .dns, .mail:
             guard let target = ToolTarget.parse(trimmedAddress) else { return nil }
             normalized = target.host
         }
@@ -110,12 +112,18 @@ struct UptimeTarget: Codable, Identifiable, Equatable, Sendable {
         return ToolTarget.parse(address)?.host
     }
 
+    var mailDomain: String? {
+        guard kind == .mail else { return nil }
+        return ToolTarget.parse(address)?.host
+    }
+
     var kindIcon: String {
         switch kind {
         case .http: return "globe"
         case .tcp: return "network"
         case .tls: return "lock.shield"
         case .dns: return "magnifyingglass"
+        case .mail: return "envelope.badge.shield.half.filled"
         }
     }
 }

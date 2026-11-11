@@ -48,7 +48,9 @@ struct WiFiRedirectToolView: View {
                             Text(tool.title)
                                 .font(.title3.bold())
                             Text(
-                                "The full \(tool == .wifiAnalyzer ? "analyzer" : "network list") lives in the main LanFi window, where the scan table, insights, spectrum and survey already are."
+                                tool == .wifiAnalyzer
+                                    ? "The full analyzer lives in the main LanFi window, where the scan table, insights, spectrum and survey already are."
+                                    : "The full network list lives in the main LanFi window, where the scan table, insights, spectrum and survey already are."
                             )
                             .font(.callout)
                             .foregroundColor(.secondary)
@@ -59,7 +61,7 @@ struct WiFiRedirectToolView: View {
                         openWindow(id: "main")
                         NSApp.activate(ignoringOtherApps: true)
                     } label: {
-                        Label("Open LanFi", systemImage: "arrow.up.forward.app")
+                        Label("Open main LanFi", systemImage: "arrow.up.forward.app")
                     }
                     .buttonStyle(.borderedProminent)
                 }

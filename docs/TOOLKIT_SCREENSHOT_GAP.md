@@ -19,7 +19,7 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Path Check | Host + up to 32 ports, presets, per-port results | Done. |
 | Subnet Calculator | CIDR, IP + netmask and “This Mac” network | Done. |
 | iperf3 | Host/port/duration/direction, saved servers, persisted history | Done. |
-| Uptime Monitor | HTTP/TCP/TLS/DNS targets, history, notifications | Done; richer mail/DMARC monitoring remains optional. |
+| Uptime Monitor | HTTP/TCP/TLS/DNS/mail targets, history, notifications | Done. |
 | Network Monitor | Overview + Routes tabs, current IPv4 route table | Done; change log remains. |
 | LAN Scanner | ARP/TCP fallback, vendor, ports, Guard, per-device service versions | Done. |
 | Internet Check | Verdict, path, details, Quick/Full with speed | Done. |
@@ -41,8 +41,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
    Port Scan UDP and Uptime TLS/DNS targets are done. Remaining: optional
    mail/DMARC monitoring and the final design pass.
 5. **Design pass**: consistent tool header, Port Scan proxy warning and
-   iperf3 control layout done; Internet Check Quick/Full done. Final
-   cross-screen audit remains.
+   iperf3 control layout done; Internet Check Quick/Full, Uptime mail targets
+   and the final Russian cross-screen audit are done.
 
 Phases 1–3 are shipped. Phase 4 and the final design pass remain.
 Each phase gets tests for its pure logic, a screenshot check and a commit.

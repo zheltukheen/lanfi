@@ -78,7 +78,9 @@ struct LANScannerToolView: View {
         if model.isScanning { return String(localized: "Scanning…") }
         guard let result = model.result else { return String(localized: "Ready") }
         let open = result.devices.reduce(0) { $0 + $1.openPorts.count }
-        return "\(result.devices.count) devices · \(open) open ports"
+        return String(
+            format: String(localized: "%lld devices · %lld open ports"),
+            result.devices.count, open)
     }
 
     private var statusTone: ToolkitTone {
@@ -92,7 +94,9 @@ struct LANScannerToolView: View {
             Image(systemName: "bell.badge.fill")
                 .foregroundColor(.orange)
             Text(
-                "\(model.newMACs.count) new device\(model.newMACs.count == 1 ? "" : "s") since the last guarded scan"
+                String(
+                    format: String(localized: "%lld new devices since the last guarded scan"),
+                    model.newMACs.count)
             )
             .font(.caption)
             Spacer()

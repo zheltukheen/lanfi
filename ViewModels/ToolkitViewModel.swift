@@ -989,7 +989,7 @@ final class LANScannerToolModel: ObservableObject {
 
     var devices: [LANDevice] { result?.devices ?? [] }
 
-    var selectedSubnet: String { result?.subnet ?? "Not scanned" }
+    var selectedSubnet: String { result?.subnet ?? String(localized: "Not scanned") }
 
     func scan() {
         guard !isScanning else { return }
