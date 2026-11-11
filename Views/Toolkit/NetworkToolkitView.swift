@@ -175,7 +175,7 @@ struct NetworkToolkitView: View {
     private var detail: some View {
         switch toolkit.selection {
         case .internetCheck:
-            InternetCheckToolView(diagnostics: diagnostics)
+            InternetCheckToolView(diagnostics: diagnostics, speedTest: toolkit.speedTest)
         case .ping:
             PingToolView(model: toolkit.ping)
         case .traceroute:

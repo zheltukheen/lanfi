@@ -2,6 +2,8 @@ import SwiftUI
 
 struct InternetCheckToolView: View {
     @ObservedObject var diagnostics: DiagnosticsViewModel
+    @ObservedObject var speedTest: SpeedTestToolModel
+    @State private var mode: InternetCheckMode = .quick
 
     var body: some View {
         ScrollView {
@@ -11,6 +13,12 @@ struct InternetCheckToolView: View {
                     verdictCard(report)
                     pathCard(report)
                     evidenceCard(report)
+                    if mode == .full, speedTest.isRunning {
+                        ProgressView("Measuring speed…")
+                            .frame(maxWidth: .infinity)
+                    } else if mode == .full, let speed = speedTest.report {
+                        speedCard(speed)
+                    }
                 } else if diagnostics.isRunning {
                     ProgressView("Running checks…")
                         .frame(maxWidth: .infinity)
@@ -33,34 +41,94 @@ struct InternetCheckToolView: View {
         }
     }
 
+    private func runCheck() async {
+        await diagnostics.run()
+        if mode == .full {
+            await speedTest.measure()
+        }
+    }
+
+    private func speedCard(_ report: ThroughputReport) -> some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    ToolkitSectionLabel(text: "Speed")
+                    Spacer()
+                    Text(report.testedAt.formatted(date: .omitted, time: .shortened))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                HStack(spacing: 20) {
+                    ToolkitMetric(
+                        title: "Download",
+                        value: report.downloadMbps.map { String(format: "%.0f Mbps", $0) }
+                            ?? "—")
+                    ToolkitMetric(
+                        title: "Upload",
+                        value: report.uploadMbps.map { String(format: "%.0f Mbps", $0) }
+                            ?? "—")
+                    ToolkitMetric(
+                        title: "Latency",
+                        value: report.latencyMilliseconds.map {
+                            String(format: "%.0f ms", $0)
+                        } ?? "—")
+                    ToolkitMetric(
+                        title: "Responsiveness",
+                        value: report.responsiveness.map { String(format: "%.0f RPM", $0) }
+                            ?? "—")
+                    Spacer()
+                }
+                if let error = speedTest.errorMessage {
+                    Text(error)
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                }
+            }
+        }
+    }
+
     private var controls: some View {
         ToolkitCard {
-            HStack(spacing: 10) {
-                Button {
-                    Task { await diagnostics.run() }
-                } label: {
-                    Label("Run Again", systemImage: "arrow.clockwise")
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    Picker("Mode", selection: $mode) {
+                        ForEach(InternetCheckMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(width: 190)
+
+                    Button {
+                        Task { await runCheck() }
+                    } label: {
+                        Label(
+                            mode == .full ? "Full Check" : "Quick Check",
+                            systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(diagnostics.isRunning || speedTest.isRunning)
+
+                    Toggle("Monitor every 60 s", isOn: $diagnostics.autoMonitor)
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+
+                    Spacer()
+
+                    ToolkitStatusPill(
+                        text: diagnostics.report?.verdict.title ?? "Not run yet",
+                        tone: diagnostics.report.map { tone(for: $0.verdict) } ?? .neutral)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(diagnostics.isRunning)
-
-                Toggle("Monitor every 60 s", isOn: $diagnostics.autoMonitor)
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-
-                Spacer()
-
-                Text(diagnostics.lastRunText)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                Button("Copy") { diagnostics.copyReport() }
-                    .buttonStyle(.bordered)
-                    .disabled(diagnostics.report == nil)
-
-                ToolkitStatusPill(
-                    text: diagnostics.report?.verdict.title ?? "Not run yet",
-                    tone: diagnostics.report.map { tone(for: $0.verdict) } ?? .neutral)
+                HStack(spacing: 10) {
+                    Text(diagnostics.lastRunText)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button("Copy") { diagnostics.copyReport() }
+                        .buttonStyle(.bordered)
+                        .disabled(diagnostics.report == nil)
+                }
             }
         }
     }
@@ -96,9 +164,13 @@ struct InternetCheckToolView: View {
                         .padding(.top, 2)
                     }
                     if report.warningCount > 0 {
-                        Text("\(report.warningCount) warning\(report.warningCount == 1 ? "" : "s")")
-                            .font(.caption2)
-                            .foregroundColor(.orange)
+                        Text(
+                            String(
+                                format: String(localized: "%lld warnings"),
+                                report.warningCount)
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.orange)
                     }
                 }
                 Spacer()
@@ -297,6 +369,19 @@ struct InternetCheckToolView: View {
         case .fail: return "xmark.octagon.fill"
         case .running: return "arrow.triangle.2.circlepath"
         case .pending, .skipped: return "minus.circle"
+        }
+    }
+}
+
+private enum InternetCheckMode: String, CaseIterable, Identifiable {
+    case quick, full
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .quick: return String(localized: "Quick")
+        case .full: return String(localized: "Full")
         }
     }
 }

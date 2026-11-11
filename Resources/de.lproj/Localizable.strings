@@ -932,3 +932,17 @@
 
 /* Design pass */
 "Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic." = "Alle geprüften Ports nahmen eine Verbindung an. Ein transparenter Proxy oder Captive Portal könnte den Verkehr abfangen.";
+
+/* Internet check modes */
+"Quick" = "Schnell";
+"Full (with speed)" = "Vollständig (mit Tempo)";
+"Quick Check" = "Schnellprüfung";
+"Full Check" = "Vollständige Prüfung";
+"Measuring speed…" = "Messe Geschwindigkeit…";
+"Speed" = "Geschwindigkeit";
+
+/* Internet check warnings */
+"%lld warnings" = "%lld Warnungen";
+
+/* Internet check */
+"Full" = "Vollständig";

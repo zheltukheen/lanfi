@@ -969,3 +969,17 @@
 
 /* Design pass */
 "Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic." = "Все проверенные порты приняли соединение. Возможно, трафик перехватывает прозрачный прокси или captive portal.";
+
+/* Internet check modes */
+"Quick" = "Быстрая";
+"Full (with speed)" = "Полная (со скоростью)";
+"Quick Check" = "Быстрая проверка";
+"Full Check" = "Полная проверка";
+"Measuring speed…" = "Измерение скорости…";
+"Speed" = "Скорость";
+
+/* Internet check warnings */
+"%lld warnings" = "Предупреждений: %lld";
+
+/* Internet check */
+"Full" = "Полная";

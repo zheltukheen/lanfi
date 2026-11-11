@@ -932,3 +932,17 @@
 
 /* Design pass */
 "Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic." = "所有探测端口都接受了连接。可能有透明代理或强制门户在拦截流量。";
+
+/* Internet check modes */
+"Quick" = "快速";
+"Full (with speed)" = "完整（含速度）";
+"Quick Check" = "快速检查";
+"Full Check" = "完整检查";
+"Measuring speed…" = "测量速度…";
+"Speed" = "速度";
+
+/* Internet check warnings */
+"%lld warnings" = "%lld 个警告";
+
+/* Internet check */
+"Full" = "完整";
