@@ -877,3 +877,24 @@
 "Common" = "Common";
 "Remote" = "Remote";
 "Databases" = "Databases";
+
+/* Port scan service detection */
+"Detect service versions" = "Detect service versions";
+"%lld open · %lld closed · %lld filtered" = "%lld open · %lld closed · %lld filtered";
+
+/* iperf3 history */
+"Saved servers" = "Saved servers";
+"No saved servers" = "No saved servers";
+"Save current server" = "Save current server";
+"Use" = "Use";
+"Remove" = "Remove";
+"Clear history" = "Clear history";
+"Direction" = "Direction";
+"Mbps" = "Mbps";
+
+/* Port layout */
+"Service" = "Service";
+"Timeout: %.1f s" = "Timeout: %.1f s";
+"Concurrent: %lld" = "Concurrent: %lld";
+"TCP connect only · no administrator rights" = "TCP connect only · no administrator rights";
+"%lld/%lld open" = "%lld/%lld open";

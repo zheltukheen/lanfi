@@ -26,6 +26,9 @@ struct Iperf3ToolView: View {
                             "Runs the Homebrew iperf3 client against your own server and parses its JSON report. This is not a public speed test."
                     )
                 }
+                if !model.history.isEmpty {
+                    historySection
+                }
             }
             .padding(18)
         }
@@ -41,6 +44,25 @@ struct Iperf3ToolView: View {
                     TextField("5201", text: $model.portText)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 70)
+                    Menu {
+                        if model.savedServers.isEmpty {
+                            Text("No saved servers")
+                        }
+                        ForEach(model.savedServers) { server in
+                            Menu(server.name) {
+                                Button("Use") { model.applyServer(server) }
+                                Button("Remove", role: .destructive) {
+                                    model.removeServer(server)
+                                }
+                            }
+                        }
+                        Divider()
+                        Button("Save current server") { model.saveCurrentServer() }
+                    } label: {
+                        Label("Saved servers", systemImage: "bookmark")
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
                     Spacer()
                     if model.isRunning {
                         Button("Stop") { model.stop() }
@@ -65,19 +87,19 @@ struct Iperf3ToolView: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .frame(width: 280)
+                    .frame(width: 470)
                     Stepper(value: $model.duration, in: 1...120) {
                         Text("\(model.duration) s")
                             .font(.caption)
                     }
                     .fixedSize()
                     Spacer()
-                    Text(
-                        "Needs an iperf3 server on the target. Nothing is measured against a third-party speed-test service."
-                    )
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
                 }
+                Text(
+                    "Needs an iperf3 server on the target. Nothing is measured against a third-party speed-test service."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
         }
     }
@@ -157,6 +179,52 @@ struct Iperf3ToolView: View {
                     .chartYAxisLabel("Mbps")
                     .frame(height: 190)
                 }
+            }
+        }
+    }
+
+    private var historySection: some View {
+        ToolkitCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    ToolkitSectionLabel(text: "History")
+                    Spacer()
+                    Button("Clear history") { model.clearHistory() }
+                        .buttonStyle(.borderless)
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 6)
+
+                Table(model.newestFirst) {
+                    TableColumn("When") { measurement in
+                        Text(
+                            measurement.testedAt.formatted(
+                                date: .abbreviated, time: .shortened)
+                        )
+                        .font(.caption2)
+                    }
+                    TableColumn("Server") { measurement in
+                        Text("\(measurement.host):\(measurement.port)")
+                            .font(.caption.monospaced())
+                    }
+                    TableColumn("Direction") { measurement in
+                        Text(measurement.direction.title)
+                            .font(.caption)
+                    }
+                    .width(110)
+                    TableColumn("Mbps") { measurement in
+                        Text(
+                            measurement.headlineMegabitsPerSecond.map {
+                                String(format: "%.0f", $0)
+                            } ?? "—"
+                        )
+                        .font(.caption.monospacedDigit())
+                    }
+                    .width(70)
+                }
+                .frame(height: min(CGFloat(model.history.count) * 26 + 40, 240))
             }
         }
     }

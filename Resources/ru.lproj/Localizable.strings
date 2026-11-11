@@ -913,3 +913,24 @@
 "Common" = "Обычные";
 "Remote" = "Удалённый доступ";
 "Databases" = "Базы данных";
+
+/* Port scan service detection */
+"Detect service versions" = "Определять версии сервисов";
+"%lld open · %lld closed · %lld filtered" = "%lld открыто · %lld закрыто · %lld фильтруется";
+
+/* iperf3 history */
+"Saved servers" = "Сохранённые серверы";
+"No saved servers" = "Нет сохранённых серверов";
+"Save current server" = "Сохранить текущий сервер";
+"Use" = "Использовать";
+"Remove" = "Удалить";
+"Clear history" = "Очистить историю";
+"Direction" = "Направление";
+"Mbps" = "Мбит/с";
+
+/* Port layout */
+"Service" = "Сервис";
+"Timeout: %.1f s" = "Тайм-аут: %.1f с";
+"Concurrent: %lld" = "Параллельно: %lld";
+"TCP connect only · no administrator rights" = "Только TCP-подключение · без прав администратора";
+"%lld/%lld open" = "%lld/%lld открыто";

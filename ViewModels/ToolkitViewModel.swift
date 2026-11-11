@@ -464,6 +464,7 @@ final class PortScanToolModel: ObservableObject {
     @Published var concurrency = 24
     @Published private(set) var results: [PortScanResult] = []
     @Published private(set) var isRunning = false
+    @Published var detectServices = true
     @Published var errorMessage: String?
 
     private var task: Task<Void, Never>?
@@ -497,8 +498,34 @@ final class PortScanToolModel: ObservableObject {
         let concurrency = concurrency
         task = Task { [weak self] in
             guard let self else { return }
-            let scan = await scanner.scan(
+            var scan = await scanner.scan(
                 host: target.host, ports: ports, timeout: timeout, concurrency: concurrency)
+            if self.detectServices {
+                let openPorts = scan.filter { $0.state == .open }.map(\.port)
+                var banners: [UInt16: String] = [:]
+                await withTaskGroup(of: (UInt16, String?).self) { group in
+                    for port in openPorts {
+                        group.addTask {
+                            let banner = await ServiceBannerProbe().probe(
+                                host: target.host, port: port)
+                            return (port, banner)
+                        }
+                    }
+                    for await (port, banner) in group {
+                        if let banner { banners[port] = banner }
+                    }
+                }
+                scan = scan.map { result in
+                    guard let banner = banners[result.port] else { return result }
+                    return PortScanResult(
+                        port: result.port,
+                        service: result.service,
+                        state: result.state,
+                        responseMilliseconds: result.responseMilliseconds,
+                        detail: banner
+                    )
+                }
+            }
             self.results = scan
             self.isRunning = false
             self.task = nil
@@ -806,11 +833,62 @@ final class Iperf3ToolModel: ObservableObject {
     @Published var direction: Iperf3Direction = .upload
     @Published private(set) var report: Iperf3Report?
     @Published private(set) var isRunning = false
+    @Published private(set) var savedServers: [Iperf3Server] = []
+    @Published private(set) var history: [Iperf3Measurement] = []
     @Published var errorMessage: String?
 
+    private let historyStore = Iperf3HistoryStore()
+    private let serversKey = "LanFi.iperf3.servers"
     private var task: Task<Void, Never>?
 
     var isInstalled: Bool { Iperf3Runner.locate() != nil }
+    var newestFirst: [Iperf3Measurement] { Array(history.reversed()) }
+
+    init() {
+        history = (try? historyStore.load()) ?? []
+        if let data = UserDefaults.standard.data(forKey: serversKey),
+            let servers = try? JSONDecoder().decode([Iperf3Server].self, from: data)
+        {
+            savedServers = servers
+        }
+    }
+
+    func saveCurrentServer() {
+        guard let parsed = ToolTarget.parse(host), let port = UInt16(portText), port > 0
+        else { return }
+        savedServers.removeAll { $0.host == parsed.host && $0.port == port }
+        savedServers.insert(
+            Iperf3Server(name: parsed.host, host: parsed.host, port: port), at: 0)
+        if savedServers.count > 12 { savedServers.removeLast(savedServers.count - 12) }
+        persistServers()
+    }
+
+    func applyServer(_ server: Iperf3Server) {
+        host = server.host
+        portText = String(server.port)
+    }
+
+    func removeServer(_ server: Iperf3Server) {
+        savedServers.removeAll { $0.id == server.id }
+        persistServers()
+    }
+
+    func clearHistory() {
+        history = []
+        historyStore.clear()
+    }
+
+    private func persistServers() {
+        if let data = try? JSONEncoder().encode(savedServers) {
+            UserDefaults.standard.set(data, forKey: serversKey)
+        }
+    }
+
+    private func record(_ report: Iperf3Report) {
+        history.append(Iperf3Measurement(report: report))
+        if history.count > 50 { history.removeFirst(history.count - 50) }
+        try? historyStore.save(history)
+    }
 
     func run() {
         guard !isRunning else { return }
@@ -834,6 +912,7 @@ final class Iperf3ToolModel: ObservableObject {
                 )
                 if Task.isCancelled { return }
                 self.report = measured
+                self.record(measured)
             } catch is CancellationError {
                 // Keep whatever the user already has.
             } catch {

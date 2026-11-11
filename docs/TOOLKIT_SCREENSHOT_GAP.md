@@ -15,10 +15,10 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Whois | RDAP domain/IP report, registrar, statuses, events, nameservers | Done. |
 | GeoIP | IP/host, My IP, city/country/ASN/ISP, map link | Done. |
 | SSL Certificate | Host/port, chain, trust, days left | Result cards and certificate detail polish. |
-| Port Scan | TCP connect, presets, service names | Service/version detection, optional UDP probes, richer presets. |
+| Port Scan | TCP connect, presets, service names, HTTP/SSH/FTP/SMTP banner versions | Done; optional UDP probes remain. |
 | Path Check | Host + up to 32 ports, presets, per-port results | Done. |
 | Subnet Calculator | CIDR, IP + netmask and “This Mac” network | Done. |
-| iperf3 | Host/port/duration/direction | Saved servers, upload/download comparison, result history. |
+| iperf3 | Host/port/duration/direction, saved servers, persisted history | Done. |
 | Uptime Monitor | HTTP/TCP, history, notifications | Mail/DNS/SSL target types, DMARC/SPF summaries, richer outage detail. |
 | Network Monitor | Embedded Interfaces view | Overview / Routes tabs, current route table, change log. |
 | LAN Scanner | ARP or ICMP/TCP fallback, vendor, ports, Guard | Service/version detection, richer device inspector, saved-network view. |
@@ -36,8 +36,9 @@ already at parity, what is missing, and the order in which the gaps are closed._
 4. **Depth on existing tools**: Ping continuous/presets, Traceroute options
    and MTR graph/stddev are done. DNS mail/reports and Speed Test tabs are
    also done; Path Check multi-port/presets and Subnet IP+mask/This Mac are
-   done. Remaining: MTR continuous, Port Scan service/UDP, iperf3 saved
-   servers, Uptime mail checks, Network Monitor routes, LAN service detection.
+   done; Port service-version detection and iperf3 saved servers/history are
+   done. Remaining: MTR continuous, Port Scan UDP, Uptime mail checks,
+   Network Monitor routes, LAN service detection.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and
    empty states with the reference screenshots.
 
