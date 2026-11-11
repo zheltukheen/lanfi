@@ -9,6 +9,9 @@
 - GeoIP lookup with hostname resolution, country flag, ASN/ISP and Maps link.
 - Visual Traceroute: MapKit route, public-hop GeoIP, per-hop RTT and list.
 - Russian localisation for the new screens; all five languages updated.
+- Ping continuous mode and TCP port presets.
+- Traceroute probe count, per-probe timeout and optional name resolution.
+- MTR latency-by-hop chart and fully localised table/status labels.
 
 ## 4.12.1 — 2026-11-11
 

@@ -111,7 +111,9 @@ private actor ScriptedRunner: TracerouteRunning {
         self.error = error
     }
 
-    func trace(host: String, maxHops: Int, waitSeconds: Int) async throws -> TracerouteReport {
+    func trace(
+        host: String, maxHops: Int, waitSeconds: Int, probes: Int, resolveNames: Bool
+    ) async throws -> TracerouteReport {
         if let error { throw error }
         guard index < reports.count else { throw TracerouteError.timedOut }
         defer { index += 1 }

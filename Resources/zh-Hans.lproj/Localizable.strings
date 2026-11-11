@@ -787,3 +787,31 @@
 
 /* Visual traceroute labels */
 "Location unavailable" = "位置未知";
+
+/* Toolkit phase 2 */
+"Continuous" = "持续";
+"Port presets" = "端口预设";
+"Probes: %lld" = "探测数：%lld";
+"Timeout: %lld s" = "超时：%lld 秒";
+"Resolve names" = "解析名称";
+"Latency by hop" = "每跳延迟";
+"No latency samples yet." = "暂无延迟样本。";
+"443 — HTTPS" = "443 — HTTPS";
+"80 — HTTP" = "80 — HTTP";
+"22 — SSH" = "22 — SSH";
+"53 — DNS" = "53 — DNS";
+"8080 — HTTP Alt" = "8080 — HTTP Alt";
+
+/* Toolkit phase 2 statuses */
+"Replies: %lld/%lld · %lld%% loss" = "响应：%lld/%lld · 丢包 %lld%%";
+"Interval: %.1f s" = "间隔：%.1f 秒";
+"Reached target · %lld hops" = "已到达目标 · %lld 个跳点";
+"No reply at hop %lld" = "第 %lld 跳无响应";
+"Round %lld/%lld" = "第 %lld/%lld 轮";
+"%lld rounds · %lld hops" = "%lld 轮 · %lld 个跳点";
+"Start" = "开始";
+"Stop" = "停止";
+"Worst loss" = "最高丢包";
+"Worst jitter" = "最高抖动";
+"Max hops" = "最大跳数";
+"Address" = "地址";

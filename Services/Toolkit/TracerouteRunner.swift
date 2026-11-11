@@ -18,26 +18,42 @@ enum TracerouteError: Error, Equatable, LocalizedError {
 }
 
 protocol TracerouteRunning: Sendable {
-    func trace(host: String, maxHops: Int, waitSeconds: Int) async throws -> TracerouteReport
+    func trace(
+        host: String, maxHops: Int, waitSeconds: Int, probes: Int, resolveNames: Bool
+    ) async throws -> TracerouteReport
+}
+
+extension TracerouteRunning {
+    func trace(host: String, maxHops: Int, waitSeconds: Int) async throws -> TracerouteReport {
+        try await trace(
+            host: host, maxHops: maxHops, waitSeconds: waitSeconds, probes: 1,
+            resolveNames: false)
+    }
 }
 
 /// `/usr/sbin/traceroute` is setuid root on macOS, so it can reach per-hop
 /// addresses without the app asking for administrator rights. The binary is
 /// still isolated behind this runner so a privileged helper can replace it.
 struct SystemTracerouteRunner: TracerouteRunning {
-    static func arguments(host: String, maxHops: Int, waitSeconds: Int) -> [String] {
-        [
-            "-n",
+    static func arguments(
+        host: String, maxHops: Int, waitSeconds: Int, probes: Int = 1,
+        resolveNames: Bool = false
+    ) -> [String] {
+        var arguments: [String] = []
+        if !resolveNames { arguments.append("-n") }
+        arguments += [
             "-m", String(max(1, min(maxHops, 64))),
             "-w", String(max(1, min(waitSeconds, 10))),
-            "-q", "1",
+            "-q", String(max(1, min(probes, 3))),
             host,
         ]
+        return arguments
     }
 
-    func trace(host: String, maxHops: Int = 30, waitSeconds: Int = 2) async throws
-        -> TracerouteReport
-    {
+    func trace(
+        host: String, maxHops: Int = 30, waitSeconds: Int = 2, probes: Int = 1,
+        resolveNames: Bool = false
+    ) async throws -> TracerouteReport {
         try await Task.detached(priority: .utility) {
             let executable = "/usr/sbin/traceroute"
             guard FileManager.default.isExecutableFile(atPath: executable) else {
@@ -47,7 +63,8 @@ struct SystemTracerouteRunner: TracerouteRunning {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: executable)
             process.arguments = Self.arguments(
-                host: host, maxHops: maxHops, waitSeconds: waitSeconds)
+                host: host, maxHops: maxHops, waitSeconds: waitSeconds, probes: probes,
+                resolveNames: resolveNames)
             let output = Pipe()
             let errors = Pipe()
             process.standardOutput = output
@@ -55,7 +72,8 @@ struct SystemTracerouteRunner: TracerouteRunning {
             try process.run()
 
             let deadline =
-                Date().addingTimeInterval(Double(maxHops) * Double(waitSeconds) + 10)
+                Date().addingTimeInterval(
+                    Double(maxHops) * Double(waitSeconds) * Double(max(probes, 1)) + 10)
             while process.isRunning && Date() < deadline {
                 do {
                     try await Task.sleep(nanoseconds: 100_000_000)

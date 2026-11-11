@@ -29,30 +29,47 @@ struct TracerouteToolView: View {
 
     private var controls: some View {
         ToolkitCard {
-            HStack(spacing: 10) {
-                TextField("Host", text: $model.host)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 280)
-                Stepper(value: $model.maxHops, in: 1...64) {
-                    Text("Max hops: \(model.maxHops)")
-                        .font(.caption)
-                }
-                .fixedSize()
-                Spacer()
-                if model.isRunning {
-                    Button("Stop") { model.stop() }
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    TextField("Host", text: $model.host)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: 280)
+                    Stepper(value: $model.maxHops, in: 1...64) {
+                        Text("Max hops: \(model.maxHops)")
+                            .font(.caption)
+                    }
+                    .fixedSize()
+                    Stepper(value: $model.probes, in: 1...3) {
+                        Text("Probes: \(model.probes)")
+                            .font(.caption)
+                    }
+                    .fixedSize()
+                    Spacer()
+                    if model.isRunning {
+                        Button("Stop") { model.stop() }
+                            .buttonStyle(.bordered)
+                    } else {
+                        Button("Trace") { model.run() }
+                            .buttonStyle(.borderedProminent)
+                    }
+                    Button("Copy") { copy() }
                         .buttonStyle(.bordered)
-                } else {
-                    Button("Trace") { model.run() }
-                        .buttonStyle(.borderedProminent)
+                        .disabled(model.result == nil)
+                    Button("Clear") { model.clear() }
+                        .buttonStyle(.borderless)
+                        .disabled(model.result == nil)
+                    ToolkitStatusPill(text: statusText, tone: statusTone)
                 }
-                Button("Copy") { copy() }
-                    .buttonStyle(.bordered)
-                    .disabled(model.result == nil)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
-                    .disabled(model.result == nil)
-                ToolkitStatusPill(text: statusText, tone: statusTone)
+                HStack(spacing: 16) {
+                    Stepper(value: $model.waitSeconds, in: 1...10) {
+                        Text("Timeout: \(model.waitSeconds) s")
+                            .font(.caption)
+                    }
+                    .fixedSize()
+                    Toggle("Resolve names", isOn: $model.resolveNames)
+                        .font(.caption)
+                    Spacer()
+                }
             }
         }
     }
@@ -61,9 +78,12 @@ struct TracerouteToolView: View {
         if model.isRunning { return String(localized: "Tracing…") }
         guard let report = model.result else { return String(localized: "Ready") }
         if report.reachedTarget {
-            return "Reached target · \(report.hops.count) hops"
+            return String(
+                format: String(localized: "Reached target · %lld hops"),
+                report.hops.count)
         }
-        return "No reply at hop \(report.hops.count)"
+        return String(
+            format: String(localized: "No reply at hop %lld"), report.hops.count)
     }
 
     private var statusTone: ToolkitTone {

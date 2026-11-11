@@ -50,6 +50,18 @@ struct PingToolView: View {
                         TextField("Port", text: $model.portText)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 70)
+                        Menu {
+                            Button("443 — HTTPS") { model.portText = "443" }
+                            Button("80 — HTTP") { model.portText = "80" }
+                            Button("22 — SSH") { model.portText = "22" }
+                            Button("53 — DNS") { model.portText = "53" }
+                            Button("8080 — HTTP Alt") { model.portText = "8080" }
+                        } label: {
+                            Image(systemName: "chevron.down")
+                        }
+                        .menuStyle(.borderlessButton)
+                        .fixedSize()
+                        .help("Port presets")
                     }
                     Spacer()
                     if model.isRunning {
@@ -72,9 +84,17 @@ struct PingToolView: View {
                             .font(.caption)
                     }
                     .fixedSize()
+                    .disabled(model.continuous)
+                    Toggle("Continuous", isOn: $model.continuous)
+                        .font(.caption)
+                        .fixedSize()
                     Stepper(value: $model.interval, in: 0.1...5, step: 0.1) {
-                        Text("Interval: \(String(format: "%.1f", model.interval)) s")
-                            .font(.caption)
+                        Text(
+                            String(
+                                format: String(localized: "Interval: %.1f s"),
+                                model.interval)
+                        )
+                        .font(.caption)
                     }
                     .fixedSize()
                     Spacer()
@@ -87,7 +107,9 @@ struct PingToolView: View {
     private var statusText: String {
         if model.isRunning { return String(localized: "Pinging…") }
         guard let stats = model.statistics else { return String(localized: "Ready") }
-        return "\(stats.received)/\(stats.transmitted) replies · \(Int(stats.packetLossPercent))% loss"
+        return String(
+            format: String(localized: "Replies: %lld/%lld · %lld%% loss"),
+            stats.received, stats.transmitted, Int(stats.packetLossPercent))
     }
 
     private var statusTone: ToolkitTone {

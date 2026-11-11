@@ -1,4 +1,5 @@
 import AppKit
+import Charts
 import SwiftUI
 
 struct MTRToolView: View {
@@ -13,6 +14,7 @@ struct MTRToolView: View {
                 }
                 if let report = model.report {
                     summary(report)
+                    latencyChart(report)
                     hopsTable(report)
                 } else if !model.isRunning {
                     ToolkitEmptyState(
@@ -69,10 +71,14 @@ struct MTRToolView: View {
 
     private var statusText: String {
         if model.isRunning {
-            return "Round \(model.report?.rounds ?? 0)/\(model.rounds)"
+            return String(
+                format: String(localized: "Round %lld/%lld"),
+                model.report?.rounds ?? 0, model.rounds)
         }
         guard let report = model.report else { return String(localized: "Ready") }
-        return "\(report.rounds) rounds · \(report.hops.count) hops"
+        return String(
+            format: String(localized: "%lld rounds · %lld hops"),
+            report.rounds, report.hops.count)
     }
 
     private var statusTone: ToolkitTone {
@@ -97,6 +103,35 @@ struct MTRToolView: View {
                     title: "Worst jitter",
                     value: ToolkitFormat.milliseconds(
                         report.hops.compactMap(\.jitterMilliseconds).max()))
+            }
+        }
+    }
+
+    private func latencyChart(_ report: MTRReport) -> some View {
+        let points = report.hops.filter { $0.averageMilliseconds != nil }
+        return ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                ToolkitSectionLabel(text: "Latency by hop")
+                if points.isEmpty {
+                    Text("No latency samples yet.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Chart(points) { hop in
+                        LineMark(
+                            x: .value("Hop", hop.hop),
+                            y: .value("Average", hop.averageMilliseconds ?? 0)
+                        )
+                        .interpolationMethod(.monotone)
+                        PointMark(
+                            x: .value("Hop", hop.hop),
+                            y: .value("Average", hop.averageMilliseconds ?? 0)
+                        )
+                        .symbolSize(22)
+                    }
+                    .chartYAxisLabel("ms")
+                    .frame(height: 160)
+                }
             }
         }
     }
