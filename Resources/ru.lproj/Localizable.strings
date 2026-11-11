@@ -966,3 +966,6 @@
 "No A records" = "Нет A-записей";
 "Enter host[:port] for the TLS target." = "Введите host[:port] для TLS-цели.";
 "Enter a hostname for the DNS target." = "Введите имя хоста для DNS-цели.";
+
+/* Design pass */
+"Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic." = "Все проверенные порты приняли соединение. Возможно, трафик перехватывает прозрачный прокси или captive portal.";

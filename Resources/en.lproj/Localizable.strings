@@ -930,3 +930,6 @@
 "No A records" = "No A records";
 "Enter host[:port] for the TLS target." = "Enter host[:port] for the TLS target.";
 "Enter a hostname for the DNS target." = "Enter a hostname for the DNS target.";
+
+/* Design pass */
+"Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic." = "Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic.";

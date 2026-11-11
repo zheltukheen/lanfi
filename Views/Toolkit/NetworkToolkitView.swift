@@ -23,8 +23,12 @@ struct NetworkToolkitView: View {
         HStack(spacing: 0) {
             sidebar
             Divider()
-            detail
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: 0) {
+                detailHeader
+                Divider()
+                detail
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
         .frame(minWidth: 980, minHeight: 640)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -145,6 +149,26 @@ struct NetworkToolkitView: View {
         .buttonStyle(.plain)
         .disabled(!tool.isAvailable)
         .help(tool.isAvailable ? tool.title : tool.plannedDetail)
+    }
+
+    private var detailHeader: some View {
+        HStack(spacing: 10) {
+            Image(systemName: toolkit.selection.icon)
+                .font(.title3)
+                .foregroundColor(.accentColor)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(toolkit.selection.title)
+                    .font(.title3.bold())
+                Text(toolkit.selection.section.title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     @ViewBuilder

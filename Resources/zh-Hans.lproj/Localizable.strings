@@ -929,3 +929,6 @@
 "No A records" = "无 A 记录";
 "Enter host[:port] for the TLS target." = "输入 TLS 目标的 host[:port]。";
 "Enter a hostname for the DNS target." = "输入 DNS 目标的主机名。";
+
+/* Design pass */
+"Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic." = "所有探测端口都接受了连接。可能有透明代理或强制门户在拦截流量。";

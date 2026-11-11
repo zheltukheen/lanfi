@@ -119,12 +119,22 @@ struct PortScanToolView: View {
 
     private var summary: some View {
         ToolkitCard {
-            HStack(spacing: 20) {
-                ToolkitMetric(title: "Open", value: "\(model.openCount)", tint: .green)
-                ToolkitMetric(title: "Closed", value: "\(model.closedCount)", tint: .red)
-                ToolkitMetric(title: "Filtered", value: "\(model.filteredCount)", tint: .orange)
-                ToolkitMetric(title: "Scanned", value: "\(model.results.count)")
-                ToolkitMetric(title: "Host", value: model.host)
+            VStack(alignment: .leading, spacing: 9) {
+                HStack(spacing: 20) {
+                    ToolkitMetric(title: "Open", value: "\(model.openCount)", tint: .green)
+                    ToolkitMetric(title: "Closed", value: "\(model.closedCount)", tint: .red)
+                    ToolkitMetric(title: "Filtered", value: "\(model.filteredCount)", tint: .orange)
+                    ToolkitMetric(title: "Scanned", value: "\(model.results.count)")
+                    ToolkitMetric(title: "Host", value: model.host)
+                }
+                if model.results.count > 5, model.openCount == model.results.count {
+                    Label(
+                        "Every probed port accepted a connection. A transparent proxy or captive portal may be intercepting traffic.",
+                        systemImage: "exclamationmark.triangle.fill"
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.orange)
+                }
             }
         }
     }
