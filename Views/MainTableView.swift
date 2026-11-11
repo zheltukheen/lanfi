@@ -415,14 +415,6 @@ struct ToolbarView: View {
             .help("Diagnostics")
             .accessibilityLabel("Open diagnostics")
 
-            Button {
-                openWindow(id: "toolkit")
-            } label: {
-                Label("Network Toolkit", systemImage: "wrench.and.screwdriver").font(.caption)
-            }
-            .buttonStyle(.borderless)
-            .help("Network Toolkit")
-            .accessibilityLabel("Open Network Toolkit")
         }
     }
 
@@ -448,14 +440,6 @@ struct ToolbarView: View {
             .help("Diagnostics")
             .accessibilityLabel("Open diagnostics")
 
-            Button {
-                openWindow(id: "toolkit")
-            } label: {
-                Image(systemName: "wrench.and.screwdriver")
-            }
-            .buttonStyle(.borderless)
-            .help("Network Toolkit")
-            .accessibilityLabel("Open Network Toolkit")
         }
     }
 
@@ -586,6 +570,18 @@ struct ToolbarView: View {
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
             }
+
+            Button {
+                openWindow(id: "toolkit")
+                NSApp.activate(ignoringOtherApps: true)
+            } label: {
+                Label("Network Toolkit", systemImage: "wrench.and.screwdriver")
+                    .font(.caption.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .help("Open Network Toolkit")
+            .accessibilityLabel("Open Network Toolkit")
 
             Spacer()
             if let connected = viewModel.connectedNetwork {

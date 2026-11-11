@@ -44,6 +44,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case uptimeMonitor
     case lanScanner
     case wifiAnalyzer
+    case siteSurvey
     case wifiNetworks
 
     var id: String { rawValue }
@@ -70,6 +71,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .uptimeMonitor: return String(localized: "Uptime Monitor")
         case .lanScanner: return String(localized: "LAN Scanner")
         case .wifiAnalyzer: return String(localized: "Wi-Fi Analyzer")
+        case .siteSurvey: return String(localized: "Site Survey")
         case .wifiNetworks: return String(localized: "Wi-Fi Networks")
         }
     }
@@ -96,6 +98,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .uptimeMonitor: return "clock.badge.checkmark"
         case .lanScanner: return "desktopcomputer"
         case .wifiAnalyzer: return "wifi"
+        case .siteSurvey: return "map"
         case .wifiNetworks: return "wifi.router"
         }
     }
@@ -108,7 +111,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
             return .dnsDomains
         case .portScan, .pathCheck, .subnetCalculator, .iperf3, .advancedTools:
             return .networkTools
-        case .wifiAnalyzer, .wifiNetworks:
+        case .wifiAnalyzer, .siteSurvey, .wifiNetworks:
             return .wifi
         case .networkMonitor, .uptimeMonitor, .lanScanner:
             return .monitoring
@@ -122,8 +125,8 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         switch self {
         case .internetCheck, .ping, .traceroute, .mtr, .visualTraceroute, .speedTest, .dnsLookup,
             .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
-            .uptimeMonitor, .lanScanner, .iperf3, .advancedTools, .wifiAnalyzer, .wifiNetworks,
-            .dnsPropagation, .whois, .geoIP:
+            .uptimeMonitor, .lanScanner, .iperf3, .advancedTools, .wifiAnalyzer, .siteSurvey,
+            .wifiNetworks, .dnsPropagation, .whois, .geoIP:
             return true
         }
     }

@@ -964,3 +964,15 @@
 "Mail records" = "Mail-Datensätze";
 "Mail checks %lld/4 · %lld issues" = "Mailprüfungen %lld/4 · %lld Probleme";
 "Enter a domain for the mail target." = "Domain für das Mail-Ziel eingeben.";
+
+/* Survey toolbar */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network’s RSSI." = "PNG- oder JPEG-Grundriss importieren, dann zum Aufzeichnen des RSSI der gewählten Netzwerks klicken.";
+"Floor" = "Etage";
+"Clear points" = "Punkte löschen";
+"Draw wall" = "Wand zeichnen";
+"Predictive mode" = "Prädiktiver Modus";
+"Walk mode" = "Gehmodus";
+"Structure tools" = "Strukturwerkzeuge";
+
+/* Survey empty state */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network's RSSI." = "PNG- oder JPEG-Grundriss importieren, dann zum Aufzeichnen des RSSI des gewählten Netzwerks klicken.";

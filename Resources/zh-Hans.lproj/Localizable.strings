@@ -964,3 +964,15 @@
 "Mail records" = "邮件记录";
 "Mail checks %lld/4 · %lld issues" = "邮件检查 %lld/4 · %lld 个问题";
 "Enter a domain for the mail target." = "输入邮件目标的域名。";
+
+/* Survey toolbar */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network’s RSSI." = "导入 PNG 或 JPEG 平面图，然后点击任意位置记录所选网络的 RSSI。";
+"Floor" = "楼层";
+"Clear points" = "清除点位";
+"Draw wall" = "绘制墙壁";
+"Predictive mode" = "预测模式";
+"Walk mode" = "步行模式";
+"Structure tools" = "结构工具";
+
+/* Survey empty state */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network's RSSI." = "导入 PNG 或 JPEG 平面图，然后点击任意位置记录所选网络的 RSSI。";

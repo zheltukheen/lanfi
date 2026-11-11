@@ -1001,3 +1001,15 @@
 "Mail records" = "Почтовые записи";
 "Mail checks %lld/4 · %lld issues" = "Проверки почты %lld/4 · проблем: %lld";
 "Enter a domain for the mail target." = "Введите домен для почтовой цели.";
+
+/* Survey toolbar */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network’s RSSI." = "Импортируйте план в PNG или JPEG, затем кликайте по нему, чтобы записывать RSSI выбранной сети.";
+"Floor" = "Этаж";
+"Clear points" = "Очистить точки";
+"Draw wall" = "Нарисовать стену";
+"Predictive mode" = "Режим прогноза";
+"Walk mode" = "Режим обхода";
+"Structure tools" = "Инструменты структуры";
+
+/* Survey empty state */
+"Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network's RSSI." = "Импортируйте план в PNG или JPEG, затем кликайте по нему, чтобы записывать RSSI выбранной сети.";

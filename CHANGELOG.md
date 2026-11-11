@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+- The Network Toolkit button sits next to the main search field and uses a
+  prominent bordered style, matching the toolkit's growing surface.
+- Site Survey / heatmap is a separate toolkit sidebar item again; its toolbar
+  is split into two compact rows so every control stays reachable.
+- Removed the duplicate Site Survey sheet from the Wi-Fi Analyzer workspace.
+
+## Unreleased
+
 ### Added
 - Network Toolkit sidebar search and a persisted Recent list.
 - DNS Propagation across six public resolvers, with expected-value matching.
