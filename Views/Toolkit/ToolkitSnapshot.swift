@@ -104,6 +104,14 @@
             switch tool {
             case .ping: toolkit.ping.run()
             case .dnsLookup: toolkit.dns.run()
+            case .dnsPropagation: toolkit.dnsPropagation.run()
+            case .whois: toolkit.whois.run()
+            case .geoIP:
+                toolkit.geoIP.query = "1.1.1.1"
+                toolkit.geoIP.run()
+            case .visualTraceroute:
+                toolkit.visualTraceroute.maxHops = 8
+                toolkit.visualTraceroute.run()
             case .portScan: toolkit.portScan.run()
             case .traceroute: toolkit.traceroute.run()
             case .sslCertificate: toolkit.ssl.run()

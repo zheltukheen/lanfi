@@ -753,3 +753,74 @@
 "Tool" = "Инструмент";
 "Wireshark…" = "Wireshark…";
 "LinkLiar — MAC address spoofer…" = "LinkLiar — спуфер MAC-адреса…";
+
+/* Network Toolkit search */
+"Search tools" = "Поиск инструментов";
+"Recent" = "Недавние";
+"Results" = "Результаты";
+"No tools found" = "Инструменты не найдены";
+"Clear search" = "Очистить поиск";
+
+/* Network Toolkit data tools */
+"Check DNS propagation" = "Проверить распространение DNS";
+"Asks six public resolvers for the same record and shows whether they agree. Useful after changing DNS." = "Опрашивает шесть публичных резолверов об одной записи и показывает, совпадают ли ответы. Полезно после смены DNS.";
+"Domain" = "Домен";
+"Expected value (optional)" = "Ожидаемое значение";
+"Six public resolvers · each answer comes from the resolver's nearest location." = "Шесть публичных резолверов · каждый отвечает из ближайшей к вам точки.";
+"Check" = "Проверить";
+"Checking…" = "Проверка…";
+"Matching" = "Совпадения";
+"Consistent" = "Согласованно";
+"Record" = "Запись";
+"Resolvers" = "Резолверы";
+"Resolver" = "Резолвер";
+"Value" = "Значение";
+"Query time" = "Время запроса";
+"Look up a domain" = "Проверить домен";
+"Reads the registration over RDAP: registrar, statuses, dates, nameservers and events. No Terminal." = "Читает регистрацию через RDAP: регистратор, статусы, даты, nameserver’ы и события. Без Terminal.";
+"Looking up…" = "Поиск…";
+"Handle: %@" = "Идентификатор: %@";
+"Dates" = "Даты";
+"Registered" = "Зарегистрирован";
+"Expires" = "Истекает";
+"Last changed" = "Последнее изменение";
+"Nameservers" = "Nameserver’ы";
+"None reported" = "Не указаны";
+"Events" = "События";
+"Event" = "Событие";
+"Date" = "Дата";
+"Locate an IP address" = "Определить местоположение IP";
+"Type an IP or hostname, or use My IP. Hostnames are resolved locally first; only the address is sent to ipwho.is." = "Введите IP или имя хоста либо нажмите «Мой IP». Имена хостов резолвятся локально; в ipwho.is отправляется только адрес.";
+"IP address or hostname" = "IP-адрес или имя хоста";
+"My IP" = "Мой IP";
+"Location" = "Местоположение";
+"City" = "Город";
+"Region" = "Регион";
+"Continent" = "Континент";
+"ASN" = "ASN";
+"Organization" = "Организация";
+"ISP" = "Провайдер";
+"Timezone" = "Часовой пояс";
+"Coordinates" = "Координаты";
+"Open in Maps" = "Открыть в Картах";
+"Trace a route on the map" = "Показать маршрут на карте";
+"Runs traceroute, then resolves public hop addresses through ipwho.is. Private and timed-out hops stay in the list without a pin." = "Запускает traceroute и определяет публичные адреса хопов через ipwho.is. Приватные и неответившие хопы остаются в списке без метки.";
+"Host or IP address" = "Хост или IP-адрес";
+"Max hops: %lld" = "Макс. хопов: %lld";
+"Locating %lld/%lld…" = "Определение %lld/%lld…";
+"No public hops to map" = "Нет публичных хопов для карты";
+"Private / local hop" = "Приватный / локальный хоп";
+"GeoIP lookups use ipwho.is; only public hop addresses are sent." = "GeoIP-запросы идут в ipwho.is; отправляются только публичные адреса хопов.";
+"Visual Traceroute" = "Визуальный Traceroute";
+
+/* Network Toolkit status formats */
+"%lld of %lld match" = "%lld из %lld совпадают";
+"%lld of %lld answers" = "%lld из %lld ответили";
+"%@ · %lld statuses" = "%@ · статусов: %lld";
+"%lld hops" = "%lld хопов";
+
+/* Network Toolkit labels */
+"%lld statuses" = "Статусов: %lld";
+
+/* Visual traceroute labels */
+"Location unavailable" = "Местоположение неизвестно";

@@ -122,6 +122,12 @@ targets:
       - path: Models/Iperf3Models.swift
       - path: Models/UptimeModels.swift
       - path: Models/LANModels.swift
+      - path: Models/DNSPropagationModels.swift
+      - path: Models/WhoisModels.swift
+      - path: Models/GeoIPModels.swift
+      - path: Models/VisualTracerouteModels.swift
+      - path: Services/GeoIPClient.swift
+      - path: Services/WhoisClient.swift
       - path: Services/UptimeStore.swift
       - path: Services/UptimeMonitor.swift
       - path: Services/Toolkit/MTRService.swift
