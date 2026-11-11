@@ -1092,21 +1092,27 @@ final class SpeedTestToolModel: ObservableObject {
 
     func run() {
         guard !isRunning else { return }
+        task = Task { [weak self] in
+            await self?.measure()
+        }
+    }
+
+    func measure() async {
+        guard !isRunning else { return }
         errorMessage = nil
         isRunning = true
-        task = Task { [weak self] in
-            guard let self else { return }
-            do {
-                let measured = try await Task.detached(priority: .userInitiated) {
-                    try await ThroughputTester.run()
-                }.value
-                self.report = measured
-                self.record(measured)
-            } catch {
-                self.errorMessage = error.localizedDescription
-            }
-            self.isRunning = false
-            self.task = nil
+        defer {
+            isRunning = false
+            task = nil
+        }
+        do {
+            let measured = try await Task.detached(priority: .userInitiated) {
+                try await ThroughputTester.run()
+            }.value
+            report = measured
+            record(measured)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 

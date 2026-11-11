@@ -22,7 +22,7 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Uptime Monitor | HTTP/TCP/TLS/DNS targets, history, notifications | Done; richer mail/DMARC monitoring remains optional. |
 | Network Monitor | Overview + Routes tabs, current IPv4 route table | Done; change log remains. |
 | LAN Scanner | ARP/TCP fallback, vendor, ports, Guard, per-device service versions | Done. |
-| Internet Check | Verdict + path + detail | Quick/Full with speed, richer verdict evidence. |
+| Internet Check | Verdict, path, details, Quick/Full with speed | Done. |
 | Ping | ICMP/TCP, count/interval, continuous mode, TCP port presets, chart + table | Done; multi-chart layout remains optional. |
 | Traceroute | Max hops, probes, timeout, resolve names, richer table | Done. |
 | MTR | Rounds, loss/jitter table, latency graph, stddev, continuous mode | Done. |
@@ -41,7 +41,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
    Port Scan UDP and Uptime TLS/DNS targets are done. Remaining: optional
    mail/DMARC monitoring and the final design pass.
 5. **Design pass**: consistent tool header, Port Scan proxy warning and
-   iperf3 control layout done; final cross-screen audit remains.
+   iperf3 control layout done; Internet Check Quick/Full done. Final
+   cross-screen audit remains.
 
 Phases 1–3 are shipped. Phase 4 and the final design pass remain.
 Each phase gets tests for its pure logic, a screenshot check and a commit.

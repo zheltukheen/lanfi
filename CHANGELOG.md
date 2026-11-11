@@ -27,6 +27,8 @@
 - Design pass: a consistent tool header (icon, name, section), a
   transparent-proxy warning in Port Scan, and iperf3 direction/error
   layout fixes.
+- Internet Check offers Quick and Full modes; Full runs Apple networkQuality
+  after the diagnostics pass and shows download/upload/latency/responsiveness.
 
 ## 4.12.1 — 2026-11-11
 
