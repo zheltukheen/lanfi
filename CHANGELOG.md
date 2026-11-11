@@ -1,47 +1,42 @@
 # Changelog
 
-## Unreleased
-
-### Changed
-- The Network Toolkit button sits next to the main search field and uses a
-  prominent bordered style, matching the toolkit's growing surface.
-- Site Survey / heatmap is a separate toolkit sidebar item again; its toolbar
-  is split into two compact rows so every control stays reachable.
-- Removed the duplicate Site Survey sheet from the Wi-Fi Analyzer workspace.
-
-## Unreleased
+## 4.13.0 — 2026-11-11
 
 ### Added
 - Network Toolkit sidebar search and a persisted Recent list.
 - DNS Propagation across six public resolvers, with expected-value matching.
-- Whois reports over RDAP (domains and IPs), without shelling out to `whois`.
+- Whois reports over RDAP for domains and IPs, without shelling out to `whois`.
 - GeoIP lookup with hostname resolution, country flag, ASN/ISP and Maps link.
-- Visual Traceroute: MapKit route, public-hop GeoIP, per-hop RTT and list.
-- Russian localisation for the new screens; all five languages updated.
+- Visual Traceroute with a MapKit route, public-hop GeoIP and per-hop RTT.
 - Ping continuous mode and TCP port presets.
 - Traceroute probe count, per-probe timeout and optional name resolution.
-- MTR latency-by-hop chart and fully localised table/status labels.
-- DNS Lookup tabs: Records, Mail (MX/SPF/DMARC/DKIM) and a copyable posture
-  report with issue explanations.
-- Speed Test Result/History tabs plus localised summary and schedule text.
+- MTR latency-by-hop chart, standard deviation and continuous mode.
+- DNS Lookup tabs: Records, Mail (MX/SPF/DMARC/DKIM) and a copyable posture report.
+- Speed Test Result/History tabs; Internet Check Quick/Full with a speed pass.
 - Subnet Calculator accepts IP + netmask and has a “This Mac” network shortcut.
 - Path Check probes up to 32 ports per run, with presets and per-port results.
-- Port Scan detects HTTP/SSH/FTP/SMTP service banners and versions.
+- Port Scan detects HTTP/SSH/FTP/SMTP service versions and optional UDP probes.
 - iperf3 stores up to 12 servers and a persisted 50-entry measurement history.
-- Network Monitor has Overview/Routes tabs; Routes parses the IPv4 `netstat`
-  table and highlights the default route for the primary interface.
-- LAN Scanner can detect HTTP/SSH/FTP/SMTP versions for a selected device.
-- MTR continuous mode and Port Scan optional UDP probes (10 common ports).
-- Uptime Monitor targets for TLS certificate expiry/trust and DNS A records.
-- Design pass: a consistent tool header (icon, name, section), a
-  transparent-proxy warning in Port Scan, and iperf3 direction/error
-  layout fixes.
-- Internet Check offers Quick and Full modes; Full runs Apple networkQuality
-  after the diagnostics pass and shows download/upload/latency/responsiveness.
-- Uptime Monitor can watch mail posture (MX/SPF/DMARC) alongside HTTP, TCP,
-  TLS and DNS targets.
-- Final Russian audit: localized Internet Check check titles/summaries, LAN
-  scanner status, Wi-Fi redirect copy and diagnostic warnings.
+- Network Monitor has Overview/Routes tabs; Routes parses the IPv4 `netstat` table.
+- LAN Scanner detects service versions for a selected device.
+- Uptime Monitor targets for HTTP, TCP, TLS, DNS and mail posture (MX/SPF/DMARC).
+- New screens localized across all five shipped languages.
+
+### Changed
+- The Network Toolkit button sits next to the main search field with a prominent
+  bordered style; duplicate toolbar entries were removed.
+- Site Survey / heatmap is a separate toolkit sidebar item again, embedded in
+  the detail pane. Its toolbar is split into two compact rows, with icon-only
+  secondary actions and tooltips.
+- Removed the duplicate Site Survey sheet from the Wi-Fi Analyzer workspace.
+- Consistent tool header (icon, name, section), transparent-proxy warning in
+  Port Scan, and iperf3 control/error layout fixes.
+
+### Fixed
+- Survey controls no longer clip in the toolkit; Russian labels fit the new
+  two-row toolbar.
+- Localized Internet Check titles/summaries, LAN Scanner status, Wi-Fi redirect
+  copy and diagnostic warnings.
 
 ## 4.12.1 — 2026-11-11
 
