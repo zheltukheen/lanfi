@@ -12,7 +12,7 @@ struct Iperf3ToolView: View {
                 if !model.isInstalled {
                     installHint
                 }
-                if let error = model.errorMessage {
+                if let error = model.errorMessage, model.isInstalled {
                     ToolkitErrorBanner(message: error)
                 }
                 if let report = model.report {
@@ -85,9 +85,9 @@ struct Iperf3ToolView: View {
                             Text(direction.title).tag(direction)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                     .labelsHidden()
-                    .frame(width: 470)
+                    .frame(width: 230)
                     Stepper(value: $model.duration, in: 1...120) {
                         Text("\(model.duration) s")
                             .font(.caption)

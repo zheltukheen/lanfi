@@ -40,8 +40,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
    done; Network Monitor Routes, LAN service detection, MTR continuous,
    Port Scan UDP and Uptime TLS/DNS targets are done. Remaining: optional
    mail/DMARC monitoring and the final design pass.
-5. **Design pass**: align spacing, inspector placement, toolbar actions and
-   empty states with the reference screenshots.
+5. **Design pass**: consistent tool header, Port Scan proxy warning and
+   iperf3 control layout done; final cross-screen audit remains.
 
 Phases 1–3 are shipped. Phase 4 and the final design pass remain.
 Each phase gets tests for its pure logic, a screenshot check and a commit.

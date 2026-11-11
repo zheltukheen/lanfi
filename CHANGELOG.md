@@ -24,6 +24,9 @@
 - LAN Scanner can detect HTTP/SSH/FTP/SMTP versions for a selected device.
 - MTR continuous mode and Port Scan optional UDP probes (10 common ports).
 - Uptime Monitor targets for TLS certificate expiry/trust and DNS A records.
+- Design pass: a consistent tool header (icon, name, section), a
+  transparent-proxy warning in Port Scan, and iperf3 direction/error
+  layout fixes.
 
 ## 4.12.1 — 2026-11-11
 
