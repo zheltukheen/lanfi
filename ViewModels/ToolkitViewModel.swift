@@ -114,10 +114,12 @@ final class PingToolModel: ObservableObject {
 @MainActor
 final class DNSToolModel: ObservableObject {
     @Published var host = "example.com"
+    @Published var tab: DNSLookupTab = .records
     @Published var type: DNSRecordType = .a
     @Published var resolverChoice = "cloudflare"
     @Published var customResolver = "1.1.1.1"
     @Published private(set) var result: DNSLookupResult?
+    @Published private(set) var mailReport: DNSMailReport?
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
 
@@ -134,6 +136,13 @@ final class DNSToolModel: ObservableObject {
     }
 
     func run() {
+        switch tab {
+        case .records: runRecords()
+        case .mail, .reports: runMail()
+        }
+    }
+
+    private func runRecords() {
         guard !isRunning else { return }
         guard let target = ToolTarget.parse(host) else {
             errorMessage = "Enter a domain name, for example example.com."
@@ -162,10 +171,36 @@ final class DNSToolModel: ObservableObject {
         }
     }
 
+    private func runMail() {
+        guard !isRunning else { return }
+        guard let target = ToolTarget.parse(host) else {
+            errorMessage = "Enter a domain name, for example example.com."
+            return
+        }
+        if resolverChoice == "custom", DNSResolver.custom(customResolver) == nil {
+            errorMessage = "Enter a resolver address, for example 1.1.1.1."
+            return
+        }
+        errorMessage = nil
+        mailReport = nil
+        isRunning = true
+        let selectedResolver = resolver
+        task = Task { [weak self] in
+            guard let self else { return }
+            let report = await DNSMailLookupService().lookup(
+                domain: target.host, resolver: selectedResolver)
+            if Task.isCancelled { return }
+            self.mailReport = report
+            self.isRunning = false
+            self.task = nil
+        }
+    }
+
     func clear() {
         task?.cancel()
         task = nil
         result = nil
+        mailReport = nil
         errorMessage = nil
         isRunning = false
     }

@@ -815,3 +815,40 @@
 "Worst jitter" = "Pire gigue";
 "Max hops" = "Sauts max.";
 "Address" = "Adresse";
+
+/* DNS mail and speed tabs */
+"Mail" = "Mail";
+"Reports" = "Rapports";
+"Records" = "Enregistrements";
+"Check Mail" = "Vérifier le mail";
+"Build Report" = "Créer un rapport";
+"%lld records · %lld ms" = "%lld enregistrements · %lld ms";
+"%lld/4 checks" = "%lld/4 vérifications";
+"MX records" = "Enregistrements MX";
+"Issues" = "Problèmes";
+"Missing" = "Manquant";
+"None" = "Aucun";
+"Check mail records" = "Vérifier les enregistrements mail";
+"Reads MX, SPF, DMARC and common DKIM selectors, then explains what a receiver can verify." = "Lit MX, SPF, DMARC et les sélecteurs DKIM courants, puis explique ce qu’un destinataire peut vérifier.";
+"Build a mail report" = "Créer un rapport mail";
+"Runs the MX/SPF/DMARC/DKIM checks and turns them into a short, copyable report." = "Lance les vérifications MX/SPF/DMARC/DKIM et produit un rapport court à copier.";
+"All core mail checks pass." = "Toutes les vérifications mail de base réussissent.";
+"%lld issues found." = "%lld problèmes trouvés.";
+"Turns the mail checks into a short posture report you can copy." = "Transforme les vérifications mail en un court rapport à copier.";
+"Checks MX, SPF, DMARC and common DKIM selectors; every query goes to the selected resolver." = "Vérifie MX, SPF, DMARC et les sélecteurs DKIM courants ; chaque requête va au résolveur choisi.";
+"No MX records: this domain cannot receive mail." = "Aucun enregistrement MX : ce domaine ne peut pas recevoir de mail.";
+"No SPF record: receivers cannot tell which servers may send mail." = "Aucun enregistrement SPF : les destinataires ne savent pas quels serveurs peuvent envoyer.";
+"No DMARC record: receivers have no policy for failing mail." = "Aucun enregistrement DMARC : les destinataires n’ont pas de politique pour les mails en échec.";
+"DMARC is p=none: reports only, failing mail is not blocked." = "DMARC est p=none : rapports seulement, les mails en échec ne sont pas bloqués.";
+"No DKIM key found at the common selectors." = "Aucune clé DKIM trouvée aux sélecteurs courants.";
+
+/* DNS and speed polish */
+"Testing…" = "Test…";
+"Schedule off" = "Planification désactivée";
+"Runs at the next check" = "Lance au prochain contrôle";
+"Bufferbloat %@" = "Bufferbloat %@";
+"%.0f Mbps down" = "%.0f Mbit/s descendant";
+"%.0f Mbps up" = "%.0f Mbit/s montant";
+"down —" = "descendant —";
+"up —" = "montant —";
+"latency —" = "latence —";

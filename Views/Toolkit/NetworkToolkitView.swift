@@ -192,8 +192,6 @@ struct NetworkToolkitView: View {
             WiFiAnalyzerToolView()
         case .wifiNetworks:
             WiFiRedirectToolView(tool: toolkit.selection)
-        case .dnsPropagation, .whois, .geoIP:
-            ComingSoonToolView(tool: toolkit.selection)
         }
     }
 }

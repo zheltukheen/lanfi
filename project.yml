@@ -123,6 +123,8 @@ targets:
       - path: Models/UptimeModels.swift
       - path: Models/LANModels.swift
       - path: Models/DNSPropagationModels.swift
+      - path: Models/DNSMailModels.swift
+      - path: Services/DNSMailLookupService.swift
       - path: Models/WhoisModels.swift
       - path: Models/GeoIPModels.swift
       - path: Models/VisualTracerouteModels.swift

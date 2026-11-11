@@ -852,3 +852,40 @@
 "Worst jitter" = "Худший джиттер";
 "Max hops" = "Макс. хопов";
 "Address" = "Адрес";
+
+/* DNS mail and speed tabs */
+"Mail" = "Почта";
+"Reports" = "Отчёты";
+"Records" = "Записи";
+"Check Mail" = "Проверить почту";
+"Build Report" = "Собрать отчёт";
+"%lld records · %lld ms" = "%lld записей · %lld мс";
+"%lld/4 checks" = "%lld/4 проверок";
+"MX records" = "MX-записи";
+"Issues" = "Проблемы";
+"Missing" = "Отсутствует";
+"None" = "Нет";
+"Check mail records" = "Проверить почтовые записи";
+"Reads MX, SPF, DMARC and common DKIM selectors, then explains what a receiver can verify." = "Читает MX, SPF, DMARC и типовые селекторы DKIM, затем объясняет, что может проверить получатель.";
+"Build a mail report" = "Собрать почтовый отчёт";
+"Runs the MX/SPF/DMARC/DKIM checks and turns them into a short, copyable report." = "Запускает проверки MX/SPF/DMARC/DKIM и превращает их в короткий отчёт для копирования.";
+"All core mail checks pass." = "Все основные почтовые проверки пройдены.";
+"%lld issues found." = "Найдено проблем: %lld.";
+"Turns the mail checks into a short posture report you can copy." = "Превращает почтовые проверки в короткий отчёт, который можно скопировать.";
+"Checks MX, SPF, DMARC and common DKIM selectors; every query goes to the selected resolver." = "Проверяет MX, SPF, DMARC и типовые селекторы DKIM; все запросы идут в выбранный резолвер.";
+"No MX records: this domain cannot receive mail." = "Нет MX-записей: домен не может принимать почту.";
+"No SPF record: receivers cannot tell which servers may send mail." = "Нет SPF-записи: получатели не знают, какие серверы могут отправлять почту.";
+"No DMARC record: receivers have no policy for failing mail." = "Нет DMARC-записи: у получателей нет политики для сбойной почты.";
+"DMARC is p=none: reports only, failing mail is not blocked." = "DMARC p=none: только отчёты, сбойная почта не блокируется.";
+"No DKIM key found at the common selectors." = "DKIM-ключ не найден по типовым селекторам.";
+
+/* DNS and speed polish */
+"Testing…" = "Тестирование…";
+"Schedule off" = "Расписание выключено";
+"Runs at the next check" = "Запустится при следующей проверке";
+"Bufferbloat %@" = "Bufferbloat %@";
+"%.0f Mbps down" = "%.0f Мбит/с загрузка";
+"%.0f Mbps up" = "%.0f Мбит/с отдача";
+"down —" = "загрузка —";
+"up —" = "отдача —";
+"latency —" = "задержка —";

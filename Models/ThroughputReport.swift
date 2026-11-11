@@ -8,9 +8,17 @@ struct ThroughputReport: Codable, Equatable {
     let testedAt: Date
 
     var summary: String {
-        let down = downloadMbps.map { String(format: "%.0f Mbps down", $0) } ?? "down —"
-        let up = uploadMbps.map { String(format: "%.0f Mbps up", $0) } ?? "up —"
-        let latency = latencyMilliseconds.map { String(format: "%.0f ms", $0) } ?? "latency —"
+        let down =
+            downloadMbps.map {
+                String(format: String(localized: "%.0f Mbps down"), $0)
+            } ?? String(localized: "down —")
+        let up =
+            uploadMbps.map {
+                String(format: String(localized: "%.0f Mbps up"), $0)
+            } ?? String(localized: "up —")
+        let latency =
+            latencyMilliseconds.map { String(format: "%.0f ms", $0) }
+            ?? String(localized: "latency —")
         return "\(down) · \(up) · \(latency)"
     }
 }

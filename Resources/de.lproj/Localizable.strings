@@ -815,3 +815,40 @@
 "Worst jitter" = "Schlechtester Jitter";
 "Max hops" = "Max. Hops";
 "Address" = "Adresse";
+
+/* DNS mail and speed tabs */
+"Mail" = "Mail";
+"Reports" = "Berichte";
+"Records" = "Datensätze";
+"Check Mail" = "Mail prüfen";
+"Build Report" = "Bericht erstellen";
+"%lld records · %lld ms" = "%lld Datensätze · %lld ms";
+"%lld/4 checks" = "%lld/4 Prüfungen";
+"MX records" = "MX-Datensätze";
+"Issues" = "Probleme";
+"Missing" = "Fehlt";
+"None" = "Keine";
+"Check mail records" = "Mail-Datensätze prüfen";
+"Reads MX, SPF, DMARC and common DKIM selectors, then explains what a receiver can verify." = "Liest MX, SPF, DMARC und gängige DKIM-Selektoren und erklärt, was ein Empfänger prüfen kann.";
+"Build a mail report" = "Mail-Bericht erstellen";
+"Runs the MX/SPF/DMARC/DKIM checks and turns them into a short, copyable report." = "Führt MX/SPF/DMARC/DKIM-Prüfungen aus und erstellt einen kurzen, kopierbaren Bericht.";
+"All core mail checks pass." = "Alle Kern-Mailprüfungen bestanden.";
+"%lld issues found." = "%lld Probleme gefunden.";
+"Turns the mail checks into a short posture report you can copy." = "Macht aus den Mailprüfungen einen kurzen Bericht zum Kopieren.";
+"Checks MX, SPF, DMARC and common DKIM selectors; every query goes to the selected resolver." = "Prüft MX, SPF, DMARC und gängige DKIM-Selektoren; alle Abfragen gehen an den gewählten Resolver.";
+"No MX records: this domain cannot receive mail." = "Keine MX-Datensätze: Diese Domain kann keine Mail empfangen.";
+"No SPF record: receivers cannot tell which servers may send mail." = "Kein SPF-Datensatz: Empfänger können nicht erkennen, welche Server senden dürfen.";
+"No DMARC record: receivers have no policy for failing mail." = "Kein DMARC-Datensatz: Empfänger haben keine Richtlinie für fehlgeschlagene Mail.";
+"DMARC is p=none: reports only, failing mail is not blocked." = "DMARC ist p=none: nur Berichte, fehlgeschlagene Mail wird nicht blockiert.";
+"No DKIM key found at the common selectors." = "Kein DKIM-Schlüssel bei den gängigen Selektoren gefunden.";
+
+/* DNS and speed polish */
+"Testing…" = "Teste…";
+"Schedule off" = "Zeitplan aus";
+"Runs at the next check" = "Läuft bei der nächsten Prüfung";
+"Bufferbloat %@" = "Bufferbloat %@";
+"%.0f Mbps down" = "%.0f Mbit/s down";
+"%.0f Mbps up" = "%.0f Mbit/s up";
+"down —" = "down —";
+"up —" = "up —";
+"latency —" = "Latenz —";
