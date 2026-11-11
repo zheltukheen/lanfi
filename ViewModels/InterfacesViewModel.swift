@@ -9,7 +9,7 @@ final class InterfacesViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     var lastUpdatedText: String {
-        guard report.generatedAt != .distantPast else { return "Not scanned yet" }
+        guard report.generatedAt != .distantPast else { return String(localized: "Not scanned yet") }
         return "Updated \(report.generatedAt.formatted(date: .omitted, time: .standard))"
     }
 

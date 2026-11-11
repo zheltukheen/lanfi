@@ -29,6 +29,10 @@
   layout fixes.
 - Internet Check offers Quick and Full modes; Full runs Apple networkQuality
   after the diagnostics pass and shows download/upload/latency/responsiveness.
+- Uptime Monitor can watch mail posture (MX/SPF/DMARC) alongside HTTP, TCP,
+  TLS and DNS targets.
+- Final Russian audit: localized Internet Check check titles/summaries, LAN
+  scanner status, Wi-Fi redirect copy and diagnostic warnings.
 
 ## 4.12.1 — 2026-11-11
 

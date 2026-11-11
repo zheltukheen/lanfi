@@ -117,11 +117,12 @@ struct InternetCheckToolView: View {
                     Spacer()
 
                     ToolkitStatusPill(
-                        text: diagnostics.report?.verdict.title ?? "Not run yet",
+                        text: diagnostics.report?.verdict.title
+                            ?? String(localized: "Not run yet"),
                         tone: diagnostics.report.map { tone(for: $0.verdict) } ?? .neutral)
                 }
                 HStack(spacing: 10) {
-                    Text(diagnostics.lastRunText)
+                    Text(lastRunText)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
@@ -152,7 +153,7 @@ struct InternetCheckToolView: View {
                     if !report.verdictEvidence.isEmpty {
                         HStack(spacing: 6) {
                             ForEach(report.verdictEvidence.prefix(3)) { check in
-                                Text("\(check.title): \(check.value)")
+                                Text("\(Text(LocalizedStringKey(check.title))): \(check.value)")
                                     .font(.caption2)
                                     .padding(.horizontal, 7)
                                     .padding(.vertical, 3)
@@ -205,7 +206,7 @@ struct InternetCheckToolView: View {
                 HStack {
                     ToolkitSectionLabel(text: "Details")
                     Spacer()
-                    Text(report.summary)
+                    Text(summary(report))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -213,7 +214,11 @@ struct InternetCheckToolView: View {
                     checkRow(check)
                 }
                 if report.checks.count > report.verdictEvidence.count {
-                    DisclosureGroup("All \(report.checks.count) checks") {
+                    DisclosureGroup(
+                        String(
+                            format: String(localized: "All %lld checks"),
+                            report.checks.count)
+                    ) {
                         VStack(alignment: .leading, spacing: 8) {
                             ForEach(report.checks) { check in
                                 checkRow(check)
@@ -235,7 +240,7 @@ struct InternetCheckToolView: View {
                 .frame(width: 14)
             VStack(alignment: .leading, spacing: 1) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(check.title)
+                    Text(LocalizedStringKey(check.title))
                         .font(.caption.weight(.medium))
                     Spacer()
                     Text(check.value)
@@ -333,6 +338,26 @@ struct InternetCheckToolView: View {
 
     private func check(_ id: String, in report: DiagnosticsReport) -> DiagnosticCheck? {
         report.checks.first { $0.id == id }
+    }
+
+    private var lastRunText: String {
+        guard let report = diagnostics.report else { return String(localized: "Not run yet") }
+        return "\(summary(report)) · \(Int(report.duration * 1000)) ms"
+    }
+
+    private func summary(_ report: DiagnosticsReport) -> String {
+        if report.failedCount > 0 {
+            return String(
+                format: String(localized: "%lld failed, %lld warnings"),
+                report.failedCount, report.warningCount)
+        }
+        if report.warningCount > 0 {
+            return String(
+                format: String(localized: "%lld warnings, %lld passed"),
+                report.warningCount, report.passedCount)
+        }
+        return String(
+            format: String(localized: "All %lld checks passed"), report.passedCount)
     }
 
     // MARK: - Status mapping

@@ -983,3 +983,21 @@
 
 /* Internet check */
 "Full" = "Полная";
+
+/* Final audit */
+"Not scanned" = "Не сканировано";
+"Not scanned yet" = "Ещё не сканировано";
+"%lld devices · %lld open ports" = "%lld устройств · %lld открытых портов";
+"%lld new devices since the last guarded scan" = "%lld новых устройств с последнего защищённого сканирования";
+"The full analyzer lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "Полный анализатор находится в главном окне LanFi, где уже есть таблица сканирования, инсайты, спектр и обследование.";
+"The full network list lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "Полный список сетей находится в главном окне LanFi, где уже есть таблица сканирования, инсайты, спектр и обследование.";
+"Open main LanFi" = "Открыть главный LanFi";
+"%lld failed, %lld warnings" = "Ошибок: %lld, предупреждений: %lld";
+"%lld warnings, %lld passed" = "Предупреждений: %lld, пройдено: %lld";
+"All %lld checks passed" = "Все проверки пройдены: %lld";
+"All %lld checks" = "Все проверки: %lld";
+
+/* Uptime mail */
+"Mail records" = "Почтовые записи";
+"Mail checks %lld/4 · %lld issues" = "Проверки почты %lld/4 · проблем: %lld";
+"Enter a domain for the mail target." = "Введите домен для почтовой цели.";

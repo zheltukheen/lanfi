@@ -16,6 +16,8 @@ struct SystemUptimeChecker: UptimeChecking {
             return await checkTLS(target)
         case .dns:
             return await checkDNS(target)
+        case .mail:
+            return await checkMail(target)
         }
     }
 
@@ -101,6 +103,26 @@ struct SystemUptimeChecker: UptimeChecking {
             return UptimeCheck(
                 targetID: target.id, isUp: false, detail: error.localizedDescription)
         }
+    }
+
+    private func checkMail(_ target: UptimeTarget) async -> UptimeCheck {
+        guard let domain = target.mailDomain else {
+            return UptimeCheck(
+                targetID: target.id, isUp: false, detail: "Invalid mail domain")
+        }
+        let started = Date()
+        let report = await DNSMailLookupService().lookup(
+            domain: domain, resolver: .system)
+        let milliseconds = Date().timeIntervalSince(started) * 1000
+        let coreChecks = report.hasMX && report.hasSPF && report.hasDMARC
+        return UptimeCheck(
+            targetID: target.id,
+            isUp: coreChecks,
+            latencyMilliseconds: milliseconds,
+            detail: String(
+                format: String(localized: "Mail checks %lld/4 · %lld issues"),
+                report.passedChecks, report.issues.count)
+        )
     }
 
     private func checkTCP(_ target: UptimeTarget) async -> UptimeCheck {

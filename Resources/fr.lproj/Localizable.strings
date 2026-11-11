@@ -946,3 +946,21 @@
 
 /* Internet check */
 "Full" = "Complète";
+
+/* Final audit */
+"Not scanned" = "Non analysé";
+"Not scanned yet" = "Pas encore analysé";
+"%lld devices · %lld open ports" = "%lld appareils · %lld ports ouverts";
+"%lld new devices since the last guarded scan" = "%lld nouveaux appareils depuis la dernière analyse protégée";
+"The full analyzer lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "L’analyseur complet se trouve dans la fenêtre principale de LanFi, avec le tableau, les insights, le spectre et le survey.";
+"The full network list lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "La liste complète des réseaux se trouve dans la fenêtre principale de LanFi, avec le tableau, les insights, le spectre et le survey.";
+"Open main LanFi" = "Ouvrir LanFi principal";
+"%lld failed, %lld warnings" = "%lld échecs, %lld avertissements";
+"%lld warnings, %lld passed" = "%lld avertissements, %lld réussis";
+"All %lld checks passed" = "Les %lld vérifications ont réussi";
+"All %lld checks" = "Les %lld vérifications";
+
+/* Uptime mail */
+"Mail records" = "Enregistrements mail";
+"Mail checks %lld/4 · %lld issues" = "Vérifications mail %lld/4 · %lld problèmes";
+"Enter a domain for the mail target." = "Saisissez un domaine pour la cible mail.";

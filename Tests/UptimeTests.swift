@@ -27,6 +27,12 @@ final class UptimeTests: XCTestCase {
                 name: "DNS", address: "example.com", kind: .dns, intervalMinutes: 5))
         XCTAssertEqual(dns.address, "example.com")
 
+        let mail = try XCTUnwrap(
+            UptimeTarget.make(
+                name: "Mail", address: "example.com", kind: .mail, intervalMinutes: 5))
+        XCTAssertEqual(mail.address, "example.com")
+        XCTAssertEqual(mail.mailDomain, "example.com")
+
         XCTAssertNil(
             UptimeTarget.make(name: "x", address: "example.com", kind: .tcp, intervalMinutes: 5))
         XCTAssertNil(

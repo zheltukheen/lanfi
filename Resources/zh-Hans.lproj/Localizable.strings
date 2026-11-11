@@ -946,3 +946,21 @@
 
 /* Internet check */
 "Full" = "完整";
+
+/* Final audit */
+"Not scanned" = "未扫描";
+"Not scanned yet" = "尚未扫描";
+"%lld devices · %lld open ports" = "%lld 台设备 · %lld 个开放端口";
+"%lld new devices since the last guarded scan" = "%lld 台新设备（自上次受保护扫描以来）";
+"The full analyzer lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "完整分析器位于 LanFi 主窗口，其中已有扫描表格、洞察、频谱和勘测。";
+"The full network list lives in the main LanFi window, where the scan table, insights, spectrum and survey already are." = "完整网络列表位于 LanFi 主窗口，其中已有扫描表格、洞察、频谱和勘测。";
+"Open main LanFi" = "打开 LanFi 主窗口";
+"%lld failed, %lld warnings" = "%lld 失败，%lld 警告";
+"%lld warnings, %lld passed" = "%lld 警告，%lld 通过";
+"All %lld checks passed" = "全部 %lld 项检查通过";
+"All %lld checks" = "全部 %lld 项检查";
+
+/* Uptime mail */
+"Mail records" = "邮件记录";
+"Mail checks %lld/4 · %lld issues" = "邮件检查 %lld/4 · %lld 个问题";
+"Enter a domain for the mail target." = "输入邮件目标的域名。";

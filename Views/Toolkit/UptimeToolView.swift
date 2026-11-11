@@ -369,7 +369,7 @@ private struct UptimeAddTargetView: View {
         case .http: return "https://example.com/health"
         case .tcp: return "example.com:5432"
         case .tls: return "example.com:443"
-        case .dns: return "example.com"
+        case .dns, .mail: return "example.com"
         }
     }
 
@@ -379,6 +379,7 @@ private struct UptimeAddTargetView: View {
         case .tcp: return String(localized: "Enter host:port for the TCP target.")
         case .tls: return String(localized: "Enter host[:port] for the TLS target.")
         case .dns: return String(localized: "Enter a hostname for the DNS target.")
+        case .mail: return String(localized: "Enter a domain for the mail target.")
         }
     }
 
