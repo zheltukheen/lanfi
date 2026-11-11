@@ -911,3 +911,11 @@
 
 /* LAN service detection */
 "Detect versions" = "Versionen erkennen";
+
+/* UDP port scan */
+"Also UDP (10 ports)" = "Auch UDP (10 Ports)";
+"UDP" = "UDP";
+"Best-effort: no response = open|filtered" = "Best-effort: keine Antwort = open|filtered";
+
+/* UDP note */
+"TCP + UDP probes · no administrator rights" = "TCP + UDP-Sonden · keine Admin-Rechte";

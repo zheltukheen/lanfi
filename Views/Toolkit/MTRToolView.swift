@@ -46,6 +46,8 @@ struct MTRToolView: View {
                             .font(.caption)
                     }
                     .fixedSize()
+                    Toggle("Continuous", isOn: $model.continuous)
+                        .font(.caption)
                     Spacer()
                     if model.isRunning {
                         Button("Stop") { model.stop() }

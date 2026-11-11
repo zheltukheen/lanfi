@@ -22,6 +22,7 @@
 - Network Monitor has Overview/Routes tabs; Routes parses the IPv4 `netstat`
   table and highlights the default route for the primary interface.
 - LAN Scanner can detect HTTP/SSH/FTP/SMTP versions for a selected device.
+- MTR continuous mode and Port Scan optional UDP probes (10 common ports).
 
 ## 4.12.1 — 2026-11-11
 

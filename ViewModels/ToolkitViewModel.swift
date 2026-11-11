@@ -463,8 +463,10 @@ final class PortScanToolModel: ObservableObject {
     @Published var timeout = 1.5
     @Published var concurrency = 24
     @Published private(set) var results: [PortScanResult] = []
+    @Published private(set) var udpResults: [PortScanResult] = []
     @Published private(set) var isRunning = false
     @Published var detectServices = true
+    @Published var includeUDP = false
     @Published var errorMessage: String?
 
     private var task: Task<Void, Never>?
@@ -527,6 +529,15 @@ final class PortScanToolModel: ObservableObject {
                 }
             }
             self.results = scan
+            if self.includeUDP {
+                let udpPorts: [UInt16] = [53, 67, 68, 69, 123, 137, 161, 500, 1900, 5353]
+                let udp = await PortScanner(probe: UDPPortProbe()).scan(
+                    host: target.host, ports: udpPorts, timeout: timeout,
+                    concurrency: min(concurrency, 10))
+                if !Task.isCancelled { self.udpResults = udp }
+            } else {
+                self.udpResults = []
+            }
             self.isRunning = false
             self.task = nil
         }
@@ -541,6 +552,7 @@ final class PortScanToolModel: ObservableObject {
     func clear() {
         stop()
         results = []
+        udpResults = []
         errorMessage = nil
     }
 
@@ -618,6 +630,7 @@ final class MTRToolModel: ObservableObject {
     @Published var host = "1.1.1.1"
     @Published var rounds = 10
     @Published var maxHops = 20
+    @Published var continuous = false
     @Published private(set) var report: MTRReport?
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
@@ -638,21 +651,26 @@ final class MTRToolModel: ObservableObject {
         let service = MTRService(runner: SystemTracerouteRunner())
         task = Task { [weak self] in
             guard let self else { return }
-            do {
-                let result = try await service.run(
-                    host: target.host, rounds: totalRounds, maxHops: hops, waitSeconds: 1
-                ) { update in
-                    Task { @MainActor [weak self] in
-                        self?.report = update
+            repeat {
+                do {
+                    let result = try await service.run(
+                        host: target.host, rounds: totalRounds, maxHops: hops, waitSeconds: 1
+                    ) { update in
+                        Task { @MainActor [weak self] in
+                            self?.report = update
+                        }
                     }
+                    if Task.isCancelled { break }
+                    self.report = result
+                } catch is CancellationError {
+                    break
+                } catch {
+                    self.errorMessage = error.localizedDescription
+                    break
                 }
-                if Task.isCancelled { return }
-                self.report = result
-            } catch is CancellationError {
-                // Keep the last partial report.
-            } catch {
-                self.errorMessage = error.localizedDescription
-            }
+                if !self.continuous { break }
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            } while self.continuous && !Task.isCancelled
             self.isRunning = false
             self.task = nil
         }

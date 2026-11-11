@@ -18,6 +18,9 @@ struct PortScanToolView: View {
                         inspector
                             .frame(width: 230)
                     }
+                    if !model.udpResults.isEmpty {
+                        udpTable
+                    }
                 } else if !model.isRunning {
                     ToolkitEmptyState(
                         icon: "square.grid.3x3",
@@ -79,6 +82,8 @@ struct PortScanToolView: View {
                     .fixedSize()
                     Toggle("Detect service versions", isOn: $model.detectServices)
                         .font(.caption)
+                    Toggle("Also UDP (10 ports)", isOn: $model.includeUDP)
+                        .font(.caption)
                     Spacer()
                     Button("Copy") { copy() }
                         .buttonStyle(.bordered)
@@ -87,9 +92,13 @@ struct PortScanToolView: View {
                         .buttonStyle(.borderless)
                         .disabled(model.results.isEmpty)
                 }
-                Text("TCP connect only · no administrator rights")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                Text(
+                    model.includeUDP
+                        ? String(localized: "TCP + UDP probes · no administrator rights")
+                        : String(localized: "TCP connect only · no administrator rights")
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
         }
     }
@@ -211,6 +220,48 @@ struct PortScanToolView: View {
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private var udpTable: some View {
+        ToolkitCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    ToolkitSectionLabel(text: "UDP")
+                    Spacer()
+                    Text("Best-effort: no response = open|filtered")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 6)
+                Table(model.udpResults) {
+                    TableColumn("Port") { result in
+                        Text("\(result.port)/udp")
+                            .font(.caption.monospacedDigit())
+                    }
+                    .width(76)
+                    TableColumn("Service") { result in
+                        Text(result.service ?? "—")
+                            .font(.caption)
+                    }
+                    TableColumn("State") { result in
+                        HStack(spacing: 5) {
+                            ToolkitStateDot(state: result.state)
+                            Text(result.state.label)
+                                .font(.caption)
+                        }
+                    }
+                    .width(80)
+                    TableColumn("Detail") { result in
+                        Text(result.detail ?? "")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(height: min(CGFloat(model.udpResults.count) * 26 + 40, 300))
             }
         }
     }
