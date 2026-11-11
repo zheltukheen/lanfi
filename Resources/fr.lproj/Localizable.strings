@@ -852,3 +852,27 @@
 "down —" = "descendant —";
 "up —" = "montant —";
 "latency —" = "latence —";
+
+/* Subnet and path check */
+"CIDR or IP + netmask" = "CIDR ou IP + masque";
+"%lld usable hosts" = "%lld hôtes utilisables";
+"Check host and ports" = "Vérifier l’hôte et les ports";
+"TCP connect probes tell you whether services are reachable from this Mac, without traceroute privileges." = "Les connexions TCP indiquent si les services sont joignables depuis ce Mac, sans privilèges traceroute.";
+"Up to 32 ports per run; each port gets its own TCP handshake." = "Jusqu’à 32 ports par exécution ; chaque port a sa propre poignée de main TCP.";
+"Reachable" = "Joignable";
+"Checked" = "Vérifiés";
+"Refused" = "Refusé";
+"%lld/%lld reachable" = "%lld/%lld joignables";
+"TCP handshake completed." = "Poignée de main TCP terminée.";
+"Host answered, nothing is listening." = "L’hôte répond, mais rien n’écoute.";
+"Dropped before the timeout." = "Abandonné avant le délai.";
+
+/* Subnet and presets */
+"Usable range" = "Plage utilisable";
+"Total addresses" = "Adresses totales";
+"Prefix length" = "Longueur du préfixe";
+"Network class" = "Classe réseau";
+"Presets" = "Préréglages";
+"Common" = "Courants";
+"Remote" = "Distant";
+"Databases" = "Bases de données";

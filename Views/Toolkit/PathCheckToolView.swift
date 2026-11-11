@@ -10,14 +10,15 @@ struct PathCheckToolView: View {
                 if let error = model.errorMessage {
                     ToolkitErrorBanner(message: error)
                 }
-                if let outcome = model.outcome {
-                    result(outcome)
+                if !model.results.isEmpty {
+                    summary
+                    resultsTable
                 } else if !model.isRunning {
                     ToolkitEmptyState(
                         icon: "arrow.triangle.branch",
-                        title: "Check a host and port",
+                        title: "Check host and ports",
                         message:
-                            "A TCP connect probe tells you whether a service is reachable from this Mac, without traceroute privileges."
+                            "TCP connect probes tell you whether services are reachable from this Mac, without traceroute privileges."
                     )
                 }
             }
@@ -27,106 +28,147 @@ struct PathCheckToolView: View {
 
     private var controls: some View {
         ToolkitCard {
-            HStack(spacing: 10) {
-                TextField("example.com:443", text: $model.target)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 280)
-                    .onSubmit { model.run() }
-                Button("Check") { model.run() }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(model.isRunning)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
-                    .disabled(model.outcome == nil)
-                Spacer()
-                ToolkitStatusPill(text: statusText, tone: statusTone)
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    TextField("example.com", text: $model.host)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: 230)
+                    TextField("80,443", text: $model.portsText)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 150)
+                    Menu("Presets") {
+                        ForEach(PortPreset.allCases) { preset in
+                            Button(preset.title) { model.applyPreset(preset) }
+                        }
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
+                    Spacer()
+                    if model.isRunning {
+                        Button("Stop") { model.stop() }
+                            .buttonStyle(.bordered)
+                    } else {
+                        Button("Check") { model.run() }
+                            .buttonStyle(.borderedProminent)
+                    }
+                    Button("Clear") { model.clear() }
+                        .buttonStyle(.borderless)
+                        .disabled(model.results.isEmpty)
+                    ToolkitStatusPill(text: statusText, tone: statusTone)
+                }
+                Text("Up to 32 ports per run; each port gets its own TCP handshake.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
         }
     }
 
     private var statusText: String {
         if model.isRunning { return String(localized: "Connecting…") }
-        guard let outcome = model.outcome else { return String(localized: "Ready") }
-        switch outcome {
-        case .open: return "Reachable"
-        case .closed: return "Refused"
-        case .filtered: return "No response"
-        }
+        guard !model.results.isEmpty else { return String(localized: "Ready") }
+        return String(
+            format: String(localized: "%lld/%lld reachable"),
+            model.reachableCount, model.results.count)
     }
 
     private var statusTone: ToolkitTone {
         if model.isRunning { return .running }
-        guard let outcome = model.outcome else { return .neutral }
-        switch outcome {
-        case .open: return .good
-        case .closed: return .bad
-        case .filtered: return .warning
-        }
+        guard !model.results.isEmpty else { return .neutral }
+        return model.reachableCount > 0 ? .good : .warning
     }
 
-    private func result(_ outcome: TCPProbeOutcome) -> some View {
+    private var summary: some View {
         ToolkitCard {
-            HStack(alignment: .top, spacing: 16) {
-                Image(systemName: icon(for: outcome))
-                    .font(.system(size: 36))
-                    .foregroundColor(color(for: outcome))
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(title(for: outcome))
-                        .font(.title3.bold())
-                    Text(detail(for: outcome))
-                        .font(.callout)
-                        .foregroundColor(.secondary)
-                    if let milliseconds = milliseconds(for: outcome) {
-                        Text(String(format: "TCP handshake: %.1f ms", milliseconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                }
+            HStack(spacing: 20) {
+                ToolkitMetric(
+                    title: "Reachable", value: "\(model.reachableCount)", tint: .green)
+                ToolkitMetric(title: "Checked", value: "\(model.results.count)")
+                ToolkitMetric(title: "Host", value: model.host)
                 Spacer()
             }
         }
     }
 
-    private func icon(for outcome: TCPProbeOutcome) -> String {
-        switch outcome {
-        case .open: return "checkmark.circle.fill"
-        case .closed: return "xmark.circle.fill"
-        case .filtered: return "questionmark.circle.fill"
+    private var resultsTable: some View {
+        ToolkitCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    ToolkitSectionLabel(text: "Ports")
+                    Spacer()
+                    Text(model.portsText)
+                        .font(.caption2.monospaced())
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 6)
+
+                Table(model.results) {
+                    TableColumn("Port") { result in
+                        Text("\(result.port)/tcp")
+                            .font(.caption.monospacedDigit())
+                    }
+                    .width(76)
+                    TableColumn("State") { result in
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(stateColor(result))
+                                .frame(width: 7, height: 7)
+                            Text(stateTitle(result))
+                                .font(.caption)
+                        }
+                    }
+                    .width(100)
+                    TableColumn("Response") { result in
+                        Text(ToolkitFormat.milliseconds(milliseconds(result)))
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary)
+                    }
+                    .width(95)
+                    TableColumn("Detail") { result in
+                        Text(detail(result))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                    }
+                }
+                .frame(height: min(CGFloat(model.results.count) * 30 + 42, 420))
+            }
         }
     }
 
-    private func color(for outcome: TCPProbeOutcome) -> Color {
-        switch outcome {
+    private func stateTitle(_ result: PathCheckResult) -> String {
+        switch result.outcome {
+        case .open: return String(localized: "Reachable")
+        case .closed: return String(localized: "Refused")
+        case .filtered: return String(localized: "No response")
+        }
+    }
+
+    private func stateColor(_ result: PathCheckResult) -> Color {
+        switch result.outcome {
         case .open: return .green
         case .closed: return .red
         case .filtered: return .orange
         }
     }
 
-    private func title(for outcome: TCPProbeOutcome) -> String {
-        switch outcome {
-        case .open: return "The port is reachable"
-        case .closed: return "The host refused the connection"
-        case .filtered: return "No response"
-        }
-    }
-
-    private func detail(for outcome: TCPProbeOutcome) -> String {
-        switch outcome {
-        case .open:
-            return "A TCP handshake completed, so a service is listening on this address and port."
-        case .closed(_, let detail):
-            return detail ?? "The host answered, but nothing is listening on this port."
-        case .filtered(let detail):
-            return detail ?? "A firewall or the host dropped the probe before the timeout."
-        }
-    }
-
-    private func milliseconds(for outcome: TCPProbeOutcome) -> Double? {
-        switch outcome {
-        case .open(let milliseconds): return milliseconds
-        case .closed(let milliseconds, _): return milliseconds
+    private func milliseconds(_ result: PathCheckResult) -> Double? {
+        switch result.outcome {
+        case .open(let value): return value
+        case .closed(let value, _): return value
         case .filtered: return nil
+        }
+    }
+
+    private func detail(_ result: PathCheckResult) -> String {
+        switch result.outcome {
+        case .open:
+            return String(localized: "TCP handshake completed.")
+        case .closed(_, let detail):
+            return detail ?? String(localized: "Host answered, nothing is listening.")
+        case .filtered(let detail):
+            return detail ?? String(localized: "Dropped before the timeout.")
         }
     }
 }

@@ -889,3 +889,27 @@
 "down —" = "загрузка —";
 "up —" = "отдача —";
 "latency —" = "задержка —";
+
+/* Subnet and path check */
+"CIDR or IP + netmask" = "CIDR или IP + маска";
+"%lld usable hosts" = "%lld доступных хостов";
+"Check host and ports" = "Проверить хост и порты";
+"TCP connect probes tell you whether services are reachable from this Mac, without traceroute privileges." = "TCP-подключения показывают, доступны ли сервисы с этого Mac, без привилегий traceroute.";
+"Up to 32 ports per run; each port gets its own TCP handshake." = "До 32 портов за запуск; для каждого порта отдельное TCP-рукопожатие.";
+"Reachable" = "Доступен";
+"Checked" = "Проверено";
+"Refused" = "Отказано";
+"%lld/%lld reachable" = "%lld/%lld доступны";
+"TCP handshake completed." = "TCP-рукопожатие завершено.";
+"Host answered, nothing is listening." = "Хост ответил, но порт никто не слушает.";
+"Dropped before the timeout." = "Пакет отброшен до тайм-аута.";
+
+/* Subnet and presets */
+"Usable range" = "Диапазон адресов";
+"Total addresses" = "Всего адресов";
+"Prefix length" = "Длина префикса";
+"Network class" = "Класс сети";
+"Presets" = "Пресеты";
+"Common" = "Обычные";
+"Remote" = "Удалённый доступ";
+"Databases" = "Базы данных";

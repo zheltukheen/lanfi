@@ -852,3 +852,27 @@
 "down —" = "下载 —";
 "up —" = "上传 —";
 "latency —" = "延迟 —";
+
+/* Subnet and path check */
+"CIDR or IP + netmask" = "CIDR 或 IP + 子网掩码";
+"%lld usable hosts" = "%lld 个可用主机";
+"Check host and ports" = "检查主机和端口";
+"TCP connect probes tell you whether services are reachable from this Mac, without traceroute privileges." = "TCP 连接探测可判断此 Mac 是否能访问服务，无需 traceroute 权限。";
+"Up to 32 ports per run; each port gets its own TCP handshake." = "每次最多 32 个端口；每个端口单独进行 TCP 握手。";
+"Reachable" = "可达";
+"Checked" = "已检查";
+"Refused" = "拒绝";
+"%lld/%lld reachable" = "%lld/%lld 可达";
+"TCP handshake completed." = "TCP 握手完成。";
+"Host answered, nothing is listening." = "主机有响应，但没有服务监听。";
+"Dropped before the timeout." = "超时前被丢弃。";
+
+/* Subnet and presets */
+"Usable range" = "可用范围";
+"Total addresses" = "总地址数";
+"Prefix length" = "前缀长度";
+"Network class" = "网络类别";
+"Presets" = "预设";
+"Common" = "常用";
+"Remote" = "远程";
+"Databases" = "数据库";

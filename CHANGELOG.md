@@ -15,6 +15,8 @@
 - DNS Lookup tabs: Records, Mail (MX/SPF/DMARC/DKIM) and a copyable posture
   report with issue explanations.
 - Speed Test Result/History tabs plus localised summary and schedule text.
+- Subnet Calculator accepts IP + netmask and has a “This Mac” network shortcut.
+- Path Check probes up to 32 ports per run, with presets and per-port results.
 
 ## 4.12.1 — 2026-11-11
 

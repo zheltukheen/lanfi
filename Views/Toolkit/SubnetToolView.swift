@@ -33,19 +33,24 @@ struct SubnetToolView: View {
     private var controls: some View {
         ToolkitCard {
             HStack(spacing: 10) {
-                TextField("192.168.1.0/24", text: $model.input)
+                TextField("CIDR or IP + netmask", text: $model.input)
                     .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 280)
+                    .frame(maxWidth: 340)
                     .onSubmit { model.calculate() }
                 Button("Calculate") { model.calculate() }
                     .buttonStyle(.borderedProminent)
+                Button("This Mac") { model.useCurrentNetwork() }
+                    .buttonStyle(.bordered)
                 Button("Copy") { copy() }
                     .buttonStyle(.bordered)
                     .disabled(model.result == nil)
                 Spacer()
                 if let subnet = model.result {
                     ToolkitStatusPill(
-                        text: "\(subnet.usableHosts) usable hosts", tone: .good)
+                        text: String(
+                            format: String(localized: "%lld usable hosts"),
+                            subnet.usableHosts),
+                        tone: .good)
                 }
             }
         }
@@ -100,7 +105,7 @@ struct SubnetToolView: View {
         }
     }
 
-    private func detailRow(_ title: String, _ value: String) -> some View {
+    private func detailRow(_ title: LocalizedStringKey, _ value: String) -> some View {
         HStack {
             Text(title)
                 .font(.caption)

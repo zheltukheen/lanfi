@@ -53,6 +53,25 @@ struct SubnetInfo: Equatable, Sendable {
 }
 
 enum SubnetCalculator {
+    /// Accepts `192.168.1.10/24` or `192.168.1.10 255.255.255.0`.
+    static func parse(_ raw: String) -> SubnetInfo? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.contains("/") { return parseCIDR(trimmed) }
+        let parts = trimmed.split(whereSeparator: \.isWhitespace)
+        guard parts.count == 2,
+            let address = IPv4Address(String(parts[0])),
+            let mask = IPv4Address(String(parts[1])),
+            let prefix = netmaskPrefix(mask)
+        else { return nil }
+        return subnet(address: address, prefixLength: prefix)
+    }
+
+    static func netmaskPrefix(_ mask: IPv4Address) -> Int? {
+        let inverted = ~mask.value
+        guard inverted & (inverted &+ 1) == 0 else { return nil }
+        return mask.value.nonzeroBitCount
+    }
+
     /// Parses `192.168.1.10/24` (a host address plus prefix) and returns the
     /// subnet it belongs to.
     static func parseCIDR(_ raw: String) -> SubnetInfo? {
