@@ -948,3 +948,11 @@
 
 /* LAN service detection */
 "Detect versions" = "Определить версии";
+
+/* UDP port scan */
+"Also UDP (10 ports)" = "Также UDP (10 портов)";
+"UDP" = "UDP";
+"Best-effort: no response = open|filtered" = "Best-effort: нет ответа = open|filtered";
+
+/* UDP note */
+"TCP + UDP probes · no administrator rights" = "TCP + UDP-пробы · без прав администратора";

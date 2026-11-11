@@ -15,7 +15,7 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Whois | RDAP domain/IP report, registrar, statuses, events, nameservers | Done. |
 | GeoIP | IP/host, My IP, city/country/ASN/ISP, map link | Done. |
 | SSL Certificate | Host/port, chain, trust, days left | Result cards and certificate detail polish. |
-| Port Scan | TCP connect, presets, service names, HTTP/SSH/FTP/SMTP banner versions | Done; optional UDP probes remain. |
+| Port Scan | TCP connect, presets, service versions, optional 10 UDP probes | Done. |
 | Path Check | Host + up to 32 ports, presets, per-port results | Done. |
 | Subnet Calculator | CIDR, IP + netmask and “This Mac” network | Done. |
 | iperf3 | Host/port/duration/direction, saved servers, persisted history | Done. |
@@ -25,7 +25,7 @@ already at parity, what is missing, and the order in which the gaps are closed._
 | Internet Check | Verdict + path + detail | Quick/Full with speed, richer verdict evidence. |
 | Ping | ICMP/TCP, count/interval, continuous mode, TCP port presets, chart + table | Done; multi-chart layout remains optional. |
 | Traceroute | Max hops, probes, timeout, resolve names, richer table | Done. |
-| MTR | Rounds, loss/jitter table, latency graph, stddev column | Continuous mode remains. |
+| MTR | Rounds, loss/jitter table, latency graph, stddev, continuous mode | Done. |
 
 ## Delivery order
 
@@ -37,8 +37,8 @@ already at parity, what is missing, and the order in which the gaps are closed._
    and MTR graph/stddev are done. DNS mail/reports and Speed Test tabs are
    also done; Path Check multi-port/presets and Subnet IP+mask/This Mac are
    done; Port service-version detection and iperf3 saved servers/history are
-   done; Network Monitor Routes and LAN service detection are done.
-   Remaining: MTR continuous, Port Scan UDP, Uptime mail checks.
+   done; Network Monitor Routes, LAN service detection, MTR continuous and
+   Port Scan UDP are done. Remaining: Uptime mail/DNS/SSL checks.
 5. **Design pass**: align spacing, inspector placement, toolbar actions and
    empty states with the reference screenshots.
 

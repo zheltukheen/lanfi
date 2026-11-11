@@ -55,6 +55,10 @@
 
             openWindow(id: "toolkit")
 
+            if arguments.contains("--udp") {
+                toolkit.portScan.includeUDP = true
+            }
+
             if let tabFlag = arguments.firstIndex(of: "--dns-tab"),
                 arguments.index(after: tabFlag) < arguments.endIndex,
                 let tab = DNSLookupTab(rawValue: arguments[arguments.index(after: tabFlag)])
