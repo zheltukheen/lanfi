@@ -26,10 +26,13 @@ final class ToolkitViewModel: ObservableObject {
     let speedTest = SpeedTestToolModel()
 
     init() {
-        if let raw = UserDefaults.standard.string(forKey: Self.selectionKey),
-            let stored = ToolboxTool(rawValue: raw), stored.isAvailable
-        {
-            selection = stored
+        if let raw = UserDefaults.standard.string(forKey: Self.selectionKey) {
+            // 5.0.1 removed the duplicate "Wi-Fi Networks" item; it opened the
+            // same screen as the analyzer, so old selections map onto it.
+            let migrated = raw == "wifiNetworks" ? ToolboxTool.wifiAnalyzer.rawValue : raw
+            if let stored = ToolboxTool(rawValue: migrated), stored.isAvailable {
+                selection = stored
+            }
         }
     }
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## 5.0.1 — 2026-11-12
+
+### Added
+- MCP `lanfi_devices`: read the Device Shelf with optional `online`,
+  `favourite`, `risky`, `search` and `limit` filters, including risk findings
+  and scores per device.
+
+### Changed
+- Removed the duplicate "Wi-Fi Networks" sidebar item — it opened the same
+  screen as the Wi-Fi Analyzer. Old selections migrate automatically.
+- The Device Shelf Risks filter and counter now only consider medium-and-above
+  findings, so ordinary HTTP admin pages and UPnP no longer mark every device
+  as risky.
+- Alias edits are debounced before the shelf is written to disk.
+
+### Fixed
+- An empty sweep (denied Local Network access, interface down) no longer marks
+  the whole shelf offline or counts against availability.
+- Devices with no identity signal at all (no MAC, hostname, vendor, ports or
+  gateway role) are no longer added to the shelf from a bare ICMP sweep.
+- The Devices tab no longer floats in the middle of an empty window.
+
 ## 5.0.0 — 2026-11-12
 
 ### Added

@@ -8,7 +8,7 @@ final class MCPProtocolTests: XCTestCase {
         "lanfi_path_check", "lanfi_dns", "lanfi_dns_propagation", "lanfi_whois", "lanfi_geoip",
         "lanfi_tls", "lanfi_subnet", "lanfi_interfaces", "lanfi_routes", "lanfi_lan_scan",
         "lanfi_iperf3", "lanfi_speed_test", "lanfi_uptime", "lanfi_diagnostics", "lanfi_info",
-        "lanfi_spectrum",
+        "lanfi_spectrum", "lanfi_devices",
     ]
 
     // MARK: - Handshake
@@ -170,6 +170,43 @@ final class MCPProtocolTests: XCTestCase {
         XCTAssertEqual(bands.count, 1)
         XCTAssertEqual(bands.first?["band"] as? String, "2.4 GHz")
         XCTAssertEqual(bands.first?["peakDbm"] as? Double, -41.0)
+    }
+
+    func testDevicesToolReadsTheShelfAndFilters() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lanfi-shelf-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        func device(_ mac: String, _ name: String, ports: [UInt16], online: Bool) -> ShelfDevice {
+            ShelfDevice(
+                id: mac, mac: mac, ip: "192.168.1.20", hostname: name, vendor: "Acme",
+                category: .computer, openPorts: ports, firstSeen: now, lastSeen: now,
+                isOnline: online, latencyMs: 4, latencySamples: [4], isFavourite: false,
+                alias: nil, notes: nil, scansSeen: 3, checks: 3, onlineChecks: 2, events: [])
+        }
+        DeviceShelfStore(directory: directory).save([
+            device("AA:BB:CC:00:00:01", "quiet", ports: [80], online: true),
+            device("AA:BB:CC:00:00:02", "risky", ports: [23], online: false),
+        ])
+
+        let all = try await callTool("lanfi_devices", ["directory": directory.path])
+        XCTAssertFalse(all.isError, all.text)
+        let allObject = try XCTUnwrap(jsonObject(all.text))
+        XCTAssertEqual(allObject["count"] as? Int, 2)
+
+        let risky = try await callTool("lanfi_devices", ["directory": directory.path, "risky": true])
+        let riskyObject = try XCTUnwrap(jsonObject(risky.text))
+        XCTAssertEqual(riskyObject["returned"] as? Int, 1)
+        let rows = try XCTUnwrap(riskyObject["devices"] as? [[String: Any]])
+        XCTAssertEqual(rows.first?["name"] as? String, "risky")
+        let findings = try XCTUnwrap(rows.first?["findings"] as? [[String: Any]])
+        XCTAssertEqual(findings.first?["severity"] as? String, "high")
+
+        let online = try await callTool("lanfi_devices", ["directory": directory.path, "online": true])
+        let onlineObject = try XCTUnwrap(jsonObject(online.text))
+        XCTAssertEqual(onlineObject["returned"] as? Int, 1)
     }
 
     func testSpectrumRejectsAMissingFile() async throws {

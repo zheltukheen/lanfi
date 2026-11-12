@@ -77,6 +77,7 @@ Claude Code / Claude Desktop, Cursor and other MCP clients take the same
 
 | Tool | Purpose |
 | --- | --- |
+| `lanfi_devices` | Read the Device Shelf: every inventoried device with name, IP, MAC, vendor, type, online state, open ports, availability, risk findings and score. Optional `online`, `favourite`, `risky`, `search`, `limit` and `directory`. |
 | `lanfi_uptime` | Uptime Monitor targets and their last checks. |
 | `lanfi_diagnostics` | The most recent Internet Check report. |
 | `lanfi_info` | Snapshot path, freshness and usage notes. |

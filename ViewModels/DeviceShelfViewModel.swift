@@ -49,8 +49,7 @@ final class DeviceShelfViewModel: ObservableObject {
             case .all: break
             case .online: if !device.isOnline { return false }
             case .favourites: if !device.isFavourite { return false }
-            case .risky:
-                if DeviceRiskCatalog.findings(for: device.openPorts).isEmpty { return false }
+            case .risky: if !device.hasMeaningfulRisk { return false }
             }
             guard !query.isEmpty else { return true }
             let haystack = [
@@ -68,7 +67,7 @@ final class DeviceShelfViewModel: ObservableObject {
     var onlineCount: Int { devices.filter(\.isOnline).count }
     var favouriteCount: Int { devices.filter(\.isFavourite).count }
     var riskyDeviceCount: Int {
-        devices.filter { !DeviceRiskCatalog.findings(for: $0.openPorts).isEmpty }.count
+        devices.filter(\.hasMeaningfulRisk).count
     }
 
     func device(id: String) -> ShelfDevice? { devices.first { $0.id == id } }
