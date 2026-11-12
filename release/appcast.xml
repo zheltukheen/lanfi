@@ -7,7 +7,7 @@
     <language>en</language>
     <item>
       <title>LanFi 5.0.2</title>
-      <pubDate>Thu, 12 Nov 2026 21:24:56 +0000</pubDate>
+      <pubDate>Thu, 12 Nov 2026 21:32:45 +0000</pubDate>
       <sparkle:version>64</sparkle:version>
       <sparkle:shortVersionString>5.0.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
@@ -43,7 +43,7 @@ tagged release.
 ### Verify
 The SHA-256 checksums are attached as `LanFi.sha256`.
 </description>
-      <enclosure url="https://github.com/zheltukheen/lanfi/releases/download/v5.0.2/LanFi.zip" length="6996381" sparkle:edSignature="CFtf5imxt2W4OmFkKxwkc8eaUtq9+vjv5EEkwOPrXkWVqaHGgqB4CsATB07buLxuRjSMv3gDV4ZgN9mlIy3tDg==" type="application/octet-stream" />
+      <enclosure url="https://github.com/zheltukheen/lanfi/releases/download/v5.0.2/LanFi.zip" length="7189789" sparkle:edSignature="8x1NjW6KYivXJXzJTuDn6FRJxfnHKxwxa1VDRp8vtLYxLUKzPbdHdwpgGyxESuTKclatMA73dI7j1BEXHPL8Dw==" type="application/octet-stream" />
     </item>
   </channel>
 </rss>
