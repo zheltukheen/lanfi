@@ -41,8 +41,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
-        MARKETING_VERSION: "4.13.0"
-        CURRENT_PROJECT_VERSION: "61"
+        MARKETING_VERSION: "5.0.0"
+        CURRENT_PROJECT_VERSION: "62"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -140,6 +140,7 @@ targets:
       - path: Models/ToolboxTool.swift
       - path: Models/EHTPuncturing.swift
       - path: Models/SpectrumSweep.swift
+      - path: Models/DeviceShelfModels.swift
       - path: Models/SupportedChannel.swift
       - path: Models/ChannelAdvice.swift
       - path: Services/ChannelAdvisor.swift
@@ -177,6 +178,14 @@ targets:
       - path: Services/SpectrumCSVImporter.swift
       - path: Services/HeatPalette.swift
       - path: Utils/OUIParser.swift
+      - path: Utils/MCPPaths.swift
+      - path: CLI/ScanExport.swift
+      - path: CLI/MCPToolkit.swift
+      - path: CLI/MCPProtocol.swift
+      - path: Services/Toolkit/LANScannerService.swift
+      - path: Services/Toolkit/BonjourDiscovery.swift
+      - path: Services/DiagnosticsHistoryStore.swift
+      - path: Services/UptimeStore.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.Tests
@@ -189,7 +198,42 @@ targets:
     deploymentTarget: "13.0"
     sources:
       - CLI
+      - Utils/MCPPaths.swift
+      - Utils/OUIParser.swift
       - Models/NetworkModel.swift
+      - Models/ToolkitModels.swift
+      - Models/SubnetCalculator.swift
+      - Models/SpectrumSweep.swift
+      - Services/SpectrumCSVImporter.swift
+      - Models/PortSpec.swift
+      - Models/NetworkRoute.swift
+      - Models/SystemInterface.swift
+      - Models/UptimeModels.swift
+      - Models/WhoisModels.swift
+      - Models/GeoIPModels.swift
+      - Models/DNSPropagationModels.swift
+      - Models/LANModels.swift
+      - Models/MTRModels.swift
+      - Models/Iperf3Models.swift
+      - Models/ThroughputReport.swift
+      - Models/DiagnosticsModel.swift
+      - Models/DiagnosticsVerdict.swift
+      - Services/UptimeStore.swift
+      - Services/DiagnosticsHistoryStore.swift
+      - Services/SystemInterfaceScanner.swift
+      - Services/WhoisClient.swift
+      - Services/GeoIPClient.swift
+      - Services/Toolkit/DNSMessage.swift
+      - Services/Toolkit/DNSClient.swift
+      - Services/Toolkit/PingService.swift
+      - Services/Toolkit/TracerouteParser.swift
+      - Services/Toolkit/TracerouteRunner.swift
+      - Services/Toolkit/MTRService.swift
+      - Services/Toolkit/PortScanner.swift
+      - Services/Toolkit/TLSCertificateInspector.swift
+      - Services/Toolkit/ServiceBannerProbe.swift
+      - Services/Toolkit/LANScannerService.swift
+      - Services/Toolkit/BonjourDiscovery.swift
       - Models/ProtocolProfile.swift
       - Models/MLOInfo.swift
       - Models/MLOGroup.swift

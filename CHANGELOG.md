@@ -1,5 +1,43 @@
 # Changelog
 
+## 5.0.0 — 2026-11-12
+
+### Added
+- **Device Shelf** in the LAN Scanner: a persistent device inventory that
+  survives rescans. Every device keeps a name (alias), a guessed type, vendor,
+  MAC, open ports, availability over all scans, latency trend, security
+  findings with a risk score, an event history (joined / back online / left /
+  ports changed) and CSV/JSON export.
+- Refresh countdown in the Wi-Fi analyzer toolbar next to Refresh/Pause, so the
+  next automatic scan is always visible.
+- MCP `lanfi_spectrum` for hardware spectrum CSV traces (span, noise floor,
+  peak, per-band maxima, share of the trace above −70/−60/−50 dBm).
+- `--bottom-tab` debug flag for toolkit snapshots.
+
+### Changed
+- The Network Toolkit is the app's main window; the Wi-Fi analyzer lives inside
+  it, the separate toolkit window is gone.
+- Wi-Fi filters moved from the collapsible sidebar into a taller top filter bar
+  with wider band chips and a prominent Filters button; active filters tint
+  their control instead of relying on a status line.
+- The bottom status strip in the network list was removed; the network count
+  stays in the toolbar and filter bar.
+- Toolkit sidebar width, inspector width and bottom panel height persist across
+  launches.
+- Hardware Spectrum, Analyze Capture and Remote Sensors open as full-size
+  sheets from the analyzer's Wi-Fi Tools menu; Capture/Spectrum/History stay in
+  the bottom tabs without duplicate toolbar entries.
+- Live capture scrolls its form and keeps Start Capture pinned in the short
+  bottom panel.
+- MCP grew to 25 tools and its protocol core is unit tested.
+
+### Fixed
+- iperf3 deadlock while reading pipes.
+- DNS mail lookup stuck in a running state after cancellation.
+- Cancelled port scans overwriting newer results.
+- Stale LAN Scanner service banners after a rescan.
+- Network Monitor route cache never refreshing.
+
 ## 4.13.0 — 2026-11-11
 
 ### Added

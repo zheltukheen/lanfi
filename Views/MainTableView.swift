@@ -7,46 +7,46 @@ import AppKit
 
 struct MainTableView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
+    /// Embedded inside the Network Toolkit, which is the app's main window.
+    var embedded: Bool = false
     @EnvironmentObject var uiState: AppUIState
     @EnvironmentObject var toolkit: ToolkitViewModel
-    @EnvironmentObject var uptime: UptimeMonitor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openWindow) private var openWindow
 
     // UI State
     @State private var isResizingPanels = false
+    @State private var showingHardwareSpectrum = false
+    @State private var showingOfflineCapture = false
+    @State private var showingRemoteSensors = false
 
-    // Resizable Panels State
-    @State private var inspectorBaseWidth: CGFloat = 300
+    // Resizable panels — widths and heights survive relaunch.
+    @AppStorage("LanFi.inspectorWidth") private var storedInspectorWidth: Double = 300
+    @AppStorage("LanFi.bottomPanelHeight") private var storedBottomPanelHeight: Double = 460
     @State private var inspectorDragOffset: CGFloat = 0
-
-    // Высота нижней панели (увеличена по умолчанию)
-    @State private var bottomPanelBaseHeight: CGFloat = 460
     @State private var bottomPanelDragOffset: CGFloat = 0
 
     // Вычисляемые размеры с ограничениями (min/max)
     var currentInspectorWidth: CGFloat {
-        max(250, min(500, inspectorBaseWidth - inspectorDragOffset))
+        max(250, min(500, CGFloat(storedInspectorWidth) - inspectorDragOffset))
     }
 
     var currentBottomPanelHeight: CGFloat {
-        max(150, min(600, bottomPanelBaseHeight - bottomPanelDragOffset))
+        max(150, min(600, CGFloat(storedBottomPanelHeight) - bottomPanelDragOffset))
     }
-
-    private let sidebarWidth: CGFloat = 260
 
     var body: some View {
         VStack(spacing: 0) {
 
-            // 1. TOOLBAR
+            // 1. TOP ROW: toolbar, then the filter bar that replaced the sidebar
             ToolbarView(
                 viewModel: viewModel,
-                showSidebar: $uiState.showSidebar,
                 showInspector: $uiState.showInspector,
                 customIntervalText: $uiState.customIntervalText,
                 showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert,
                 selectedBottomTab: $uiState.selectedBottomTab
             )
+            FilterBarView(viewModel: viewModel)
 
             // 2. CONTENT AREA
             // GeometryReader используется один раз для контекста
@@ -55,21 +55,24 @@ struct MainTableView: View {
 
                     // A. TOP SECTION: Table + Inspector
                     HStack(spacing: 0) {
-                        if uiState.showSidebar {
-                            SidebarFilterView(viewModel: viewModel)
-                                .frame(width: sidebarWidth)
-                                .background(Material.regularMaterial)
-                                .transition(.move(edge: .leading))
-
-                            Rectangle()
-                                .fill(Color(nsColor: .separatorColor))
-                                .frame(width: 1)
-                        }
-
                         // Table Area
                         VStack(spacing: 0) {
                             if let err = viewModel.errorMessage {
                                 ErrorBanner(message: err, onClose: { viewModel.errorMessage = nil })
+                            }
+
+                            if let session = viewModel.loadedSession {
+                                HStack(spacing: 8) {
+                                    Label("Session: \(session.displayName)", systemImage: "clock.arrow.circlepath")
+                                        .foregroundColor(.orange)
+                                    Button("Resume Live") { viewModel.resumeLiveScan() }
+                                        .buttonStyle(.link)
+                                    Spacer()
+                                }
+                                .font(.caption)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.orange.opacity(0.10))
                             }
 
                             if viewModel.isLocationAuthorized || !viewModel.networks.isEmpty {
@@ -93,8 +96,6 @@ struct MainTableView: View {
                             } else {
                                 LocationPermissionView(viewModel: viewModel)
                             }
-
-                            NetworkStatusBar(viewModel: viewModel)
                         }
 
                         // Inspector Area
@@ -117,7 +118,7 @@ struct MainTableView: View {
                                             self.inspectorDragOffset = value.translation.width
                                         }
                                         .onEnded { _ in
-                                            self.inspectorBaseWidth = self.currentInspectorWidth
+                                            self.storedInspectorWidth = Double(self.currentInspectorWidth)
                                             self.inspectorDragOffset = 0
                                             self.isResizingPanels = false
                                         }
@@ -152,7 +153,7 @@ struct MainTableView: View {
                                     self.bottomPanelDragOffset = value.translation.height
                                 }
                                 .onEnded { _ in
-                                    self.bottomPanelBaseHeight = self.currentBottomPanelHeight
+                                    self.storedBottomPanelHeight = Double(self.currentBottomPanelHeight)
                                     self.bottomPanelDragOffset = 0
                                     self.isResizingPanels = false
                                 }
@@ -198,6 +199,16 @@ struct MainTableView: View {
         } message: {
             Text("Enter refresh interval in seconds:")
         }
+        .sheet(isPresented: $showingHardwareSpectrum) {
+            HardwareSpectrumView()
+                .frame(minWidth: 980, minHeight: 620)
+        }
+        .sheet(isPresented: $showingOfflineCapture) {
+            OfflineCaptureView()
+        }
+        .sheet(isPresented: $showingRemoteSensors) {
+            RemoteSensorsView()
+        }
         .transaction { transaction in
             if isResizingPanels {
                 transaction.disablesAnimations = true
@@ -210,24 +221,29 @@ struct MainTableView: View {
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowInspector)) { _ in
             uiState.showInspector = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowWiFiTool)) { note in
+            switch note.userInfo?["tool"] as? String {
+            case "spectrum": showingHardwareSpectrum = true
+            case "analyze": showingOfflineCapture = true
+            case "sensors": showingRemoteSensors = true
+            default: break
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowToolkit)) { note in
             if let raw = note.userInfo?["tool"] as? String,
                 let tool = ToolboxTool(rawValue: raw)
             {
                 toolkit.select(tool)
             }
-            openWindow(id: "toolkit")
         }
         .textSelection(.enabled)
         .onAppear {
             if !viewModel.isLocationAuthorized {
                 viewModel.requestLocationAuthorization()
             }
-            #if DEBUG
-                ToolkitSnapshot.captureIfRequested(toolkit: toolkit, uptime: uptime, openWindow: openWindow)
-            #endif
         }
     }
+
 }
 
 // MARK: - Components
@@ -383,8 +399,6 @@ struct TabButton: View {
 struct ToolbarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.openWindow) private var openWindow
-    @Binding var showSidebar: Bool
     @Binding var showInspector: Bool
     @Binding var customIntervalText: String
     @Binding var showingCustomIntervalAlert: Bool
@@ -396,14 +410,64 @@ struct ToolbarView: View {
     private var primaryToolbarActions: some View {
         HStack(spacing: 10) {
             Button {
-                selectedBottomTab = 7
+                NotificationCenter.default.post(
+                    name: .lanfiShowToolkit, object: nil,
+                    userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
             } label: {
-                Label("Capture", systemImage: "record.circle").font(.caption)
+                Image(systemName: "stethoscope")
             }
             .buttonStyle(.borderless)
-            .help("Packet capture")
-            .accessibilityLabel("Open packet capture")
+            .help("Diagnostics")
+            .accessibilityLabel("Open diagnostics")
 
+        }
+    }
+
+    /// Time until the next automatic scan, right next to Refresh/Pause so the
+    /// analyzer shows how long the current list is good for.
+    private var refreshCountdown: some View {
+        TimelineView(.periodic(from: .now, by: 0.5)) { context in
+            let remaining = remainingUntilRefresh(at: context.date)
+            HStack(spacing: 4) {
+                Image(systemName: viewModel.isAutoScanPaused ? "pause.fill" : "clock")
+                    .font(.system(size: 10, weight: .semibold))
+                Text(
+                    viewModel.isAutoScanPaused
+                        ? "Paused"
+                        : String(format: "%.1f s", remaining)
+                )
+                .font(.caption2.monospacedDigit())
+            }
+            .foregroundColor(
+                viewModel.isAutoScanPaused
+                    ? .secondary
+                    : (remaining <= 1 ? .accentColor : .secondary)
+            )
+            .padding(.horizontal, 8)
+            .frame(height: 28)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+            )
+            .help(
+                viewModel.isAutoScanPaused
+                    ? "Auto-scan is paused"
+                    : "Time until the next scan (\(Int(viewModel.refreshInterval)) s interval)"
+            )
+            .accessibilityLabel("Refresh countdown")
+        }
+    }
+
+    private func remainingUntilRefresh(at date: Date) -> Double {
+        let interval = max(0.5, viewModel.refreshInterval)
+        guard let last = viewModel.lastScanDate else { return interval }
+        return max(0, last.addingTimeInterval(interval).timeIntervalSince(date))
+    }
+
+    private var compactToolbarActions: some View {
+        HStack(spacing: 10) {
             Button {
                 NotificationCenter.default.post(
                     name: .lanfiShowToolkit, object: nil,
@@ -418,29 +482,25 @@ struct ToolbarView: View {
         }
     }
 
-    private var compactToolbarActions: some View {
-        HStack(spacing: 10) {
-            Button {
-                selectedBottomTab = 7
-            } label: {
-                Image(systemName: "record.circle")
-            }
-            .buttonStyle(.borderless)
-            .help("Packet capture")
-            .accessibilityLabel("Open packet capture")
-
-            Button {
-                NotificationCenter.default.post(
-                    name: .lanfiShowToolkit, object: nil,
-                    userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
-            } label: {
-                Image(systemName: "stethoscope")
-            }
-            .buttonStyle(.borderless)
-            .help("Diagnostics")
-            .accessibilityLabel("Open diagnostics")
-
+    /// Hardware-only screens that need analyzer context or a full-size window:
+    /// they open as sheets from the analyzer rather than as toolkit sections.
+    private var wifiToolsMenu: some View {
+        Menu {
+            Button("Hardware Spectrum…") { postWiFiTool("spectrum") }
+            Button("Analyze Capture…") { postWiFiTool("analyze") }
+            Button("Remote Sensors…") { postWiFiTool("sensors") }
+        } label: {
+            Label("Wi-Fi Tools", systemImage: "wrench.and.screwdriver")
+                .font(.caption)
         }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Spectrum, capture analysis and remote sensors")
+    }
+
+    private func postWiFiTool(_ tool: String) {
+        NotificationCenter.default.post(
+            name: .lanfiShowWiFiTool, object: nil, userInfo: ["tool": tool])
     }
 
     var body: some View {
@@ -448,24 +508,6 @@ struct ToolbarView: View {
 
             // 1. LEFT CONTROLS (Refresh & Settings)
             HStack(spacing: 10) {
-                Button(action: {
-                    if reduceMotion {
-                        showSidebar.toggle()
-                    } else {
-                        withAnimation(.spring(response: 0.3)) { showSidebar.toggle() }
-                    }
-                }) {
-                    Image(systemName: "sidebar.left")
-                        .foregroundColor(showSidebar ? .accentColor : .primary)
-                }
-                .help("Toggle Filters Sidebar")
-                .accessibilityLabel("Toggle filters sidebar")
-                .buttonStyle(.borderless)
-                .frame(width: 36, height: 28)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .cornerRadius(6)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
-
                 // A. Кнопка Обновить
                 Button(action: { viewModel.refresh() }) {
                     Image(systemName: "arrow.clockwise")
@@ -490,6 +532,9 @@ struct ToolbarView: View {
                 .background(Color(nsColor: .controlBackgroundColor))
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
+
+                // A3. Отсчёт до следующего автосканирования
+                refreshCountdown
 
                 // B. Меню Настроек (Шестеренка) - унифицированный стиль
                 Menu {
@@ -571,18 +616,6 @@ struct ToolbarView: View {
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
             }
 
-            Button {
-                openWindow(id: "toolkit")
-                NSApp.activate(ignoringOtherApps: true)
-            } label: {
-                Label("Network Toolkit", systemImage: "wrench.and.screwdriver")
-                    .font(.caption.weight(.semibold))
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .help("Open Network Toolkit")
-            .accessibilityLabel("Open Network Toolkit")
-
             Spacer()
             if let connected = viewModel.connectedNetwork {
                 HStack(spacing: 5) {
@@ -601,6 +634,8 @@ struct ToolbarView: View {
 
             // 4. Right Controls
             HStack(spacing: 12) {
+
+                wifiToolsMenu
 
                 ViewThatFits(in: .horizontal) {
                     primaryToolbarActions
@@ -664,6 +699,7 @@ struct ToolbarView: View {
 
 extension Notification.Name {
     static let lanfiFocusSearch = Notification.Name("LanFi.focusSearch")
+    static let lanfiShowWiFiTool = Notification.Name("LanFi.showWiFiTool")
     static let lanfiSelectBottomTab = Notification.Name("LanFi.selectBottomTab")
     static let lanfiShowInspector = Notification.Name("LanFi.showInspector")
     static let lanfiShowToolkit = Notification.Name("LanFi.showToolkit")
@@ -1042,49 +1078,6 @@ struct LocationPermissionView: View {
         .padding(30)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
-    }
-}
-
-struct NetworkStatusBar: View {
-    @ObservedObject var viewModel: AnalyzerViewModel
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Label("\(viewModel.networks.count) networks", systemImage: "wifi")
-            if viewModel.groupMode != .none {
-                Divider().frame(height: 10)
-                Label("Grouped by \(viewModel.groupMode.title)", systemImage: "square.grid.2x2")
-                    .foregroundColor(.accentColor)
-            }
-            Divider().frame(height: 10)
-            Label("Avg quality \(viewModel.analysis.averageQuality)", systemImage: "gauge.with.dots.needle.50percent")
-            if viewModel.analysis.criticalFindingCount > 0 {
-                Divider().frame(height: 10)
-                Label("\(viewModel.analysis.criticalFindingCount) critical", systemImage: "exclamationmark.shield.fill")
-                    .foregroundColor(.red)
-            }
-            if let session = viewModel.loadedSession {
-                Divider().frame(height: 10)
-                Label("Session: \(session.displayName)", systemImage: "clock.arrow.circlepath")
-                    .foregroundColor(.orange)
-                Button("Resume Live") { viewModel.resumeLiveScan() }
-                    .buttonStyle(.link)
-                    .foregroundColor(.accentColor)
-            }
-            Spacer()
-            if let lastScan = viewModel.lastScanDate {
-                Text("Updated \(lastScan, style: .relative)")
-                    .fixedSize()
-            } else {
-                Text("Waiting for first scan…")
-            }
-        }
-        .font(.caption2)
-        .foregroundColor(.secondary)
-        .padding(.horizontal, 10)
-        .frame(height: 24)
-        .background(Material.bar)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .top)
     }
 }
 

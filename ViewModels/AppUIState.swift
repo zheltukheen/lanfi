@@ -1,7 +1,6 @@
 import Foundation
 
 final class AppUIState: ObservableObject {
-    @Published var showSidebar: Bool = false { didSet { store() } }
     @Published var showInspector: Bool = true { didSet { store() } }
     @Published var selectedBottomTab: Int = 0 { didSet { store() } }
     @Published var customIntervalText: String = ""
@@ -11,9 +10,6 @@ final class AppUIState: ObservableObject {
 
     init() {
         let defaults = UserDefaults.standard
-        if defaults.object(forKey: "LanFi.showSidebar") != nil {
-            showSidebar = defaults.bool(forKey: "LanFi.showSidebar")
-        }
         if defaults.object(forKey: "LanFi.showInspector") != nil {
             showInspector = defaults.bool(forKey: "LanFi.showInspector")
         }
@@ -47,7 +43,6 @@ final class AppUIState: ObservableObject {
 
     private func store() {
         let defaults = UserDefaults.standard
-        defaults.set(showSidebar, forKey: "LanFi.showSidebar")
         defaults.set(showInspector, forKey: "LanFi.showInspector")
         defaults.set(selectedBottomTab, forKey: "LanFi.bottomTab")
     }

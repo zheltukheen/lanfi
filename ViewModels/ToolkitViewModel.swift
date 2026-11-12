@@ -3,7 +3,11 @@ import SwiftUI
 
 @MainActor
 final class ToolkitViewModel: ObservableObject {
-    @Published var selection: ToolboxTool = .wifiAnalyzer
+    @Published var selection: ToolboxTool = .wifiAnalyzer {
+        didSet { UserDefaults.standard.set(selection.rawValue, forKey: Self.selectionKey) }
+    }
+
+    private static let selectionKey = "LanFi.toolkit.selection"
 
     let ping = PingToolModel()
     let dns = DNSToolModel()
@@ -21,25 +25,17 @@ final class ToolkitViewModel: ObservableObject {
     let iperf3 = Iperf3ToolModel()
     let speedTest = SpeedTestToolModel()
 
-    @Published private(set) var recent: [ToolboxTool] = []
-    private let recentKey = "LanFi.toolkit.recent"
-
     init() {
-        let raw = UserDefaults.standard.stringArray(forKey: recentKey) ?? []
-        recent = raw.compactMap(ToolboxTool.init(rawValue:)).filter(\.isAvailable)
+        if let raw = UserDefaults.standard.string(forKey: Self.selectionKey),
+            let stored = ToolboxTool(rawValue: raw), stored.isAvailable
+        {
+            selection = stored
+        }
     }
 
     func select(_ tool: ToolboxTool) {
         guard tool.isAvailable else { return }
         selection = tool
-        record(tool)
-    }
-
-    private func record(_ tool: ToolboxTool) {
-        recent.removeAll { $0 == tool }
-        recent.insert(tool, at: 0)
-        if recent.count > 5 { recent.removeLast(recent.count - 5) }
-        UserDefaults.standard.set(recent.map(\.rawValue), forKey: recentKey)
     }
 }
 
@@ -187,12 +183,14 @@ final class DNSToolModel: ObservableObject {
         let selectedResolver = resolver
         task = Task { [weak self] in
             guard let self else { return }
+            defer {
+                self.isRunning = false
+                self.task = nil
+            }
             let report = await DNSMailLookupService().lookup(
                 domain: target.host, resolver: selectedResolver)
             if Task.isCancelled { return }
             self.mailReport = report
-            self.isRunning = false
-            self.task = nil
         }
     }
 
@@ -527,6 +525,11 @@ final class PortScanToolModel: ObservableObject {
                         detail: banner
                     )
                 }
+            }
+            if Task.isCancelled {
+                self.isRunning = false
+                self.task = nil
+                return
             }
             self.results = scan
             if self.includeUDP {

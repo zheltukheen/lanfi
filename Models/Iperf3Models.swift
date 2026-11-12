@@ -183,6 +183,14 @@ struct Iperf3Runner {
                 throw Iperf3Error.failed(error.localizedDescription)
             }
 
+            // Drain both pipes while iperf3 runs. Waiting for the process to
+            // exit before reading deadlocks as soon as the JSON report fills
+            // the 64 KB pipe buffer, which it does for a normal test.
+            let stdoutHandle = output.fileHandleForReading
+            let stderrHandle = errors.fileHandleForReading
+            let stdoutTask = Task.detached { stdoutHandle.readDataToEndOfFile() }
+            let stderrTask = Task.detached { stderrHandle.readDataToEndOfFile() }
+
             let deadline = Date().addingTimeInterval(Double(durationSeconds) + 15)
             while process.isRunning && Date() < deadline {
                 do {
@@ -197,10 +205,9 @@ struct Iperf3Runner {
                 throw Iperf3Error.failed("iperf3 did not finish in time.")
             }
 
-            let data = output.fileHandleForReading.readDataToEndOfFile()
-            let errorText = String(
-                decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self
-            ).trimmingCharacters(in: .whitespacesAndNewlines)
+            let data = await stdoutTask.value
+            let errorText = String(decoding: await stderrTask.value, as: UTF8.self)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
             guard process.terminationStatus == 0 else {
                 throw Iperf3Error.failed(
                     errorText.isEmpty ? "iperf3 exited with \(process.terminationStatus)." : errorText)

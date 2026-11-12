@@ -13,8 +13,10 @@ struct RemoteSensorsView: View {
     @State private var showingRemoteCapture = false
 
     private let store = RemoteSensorStore()
+    private let embedded: Bool
 
-    init() {
+    init(embedded: Bool = false) {
+        self.embedded = embedded
         let loaded = RemoteSensorStore().sensors()
         _sensors = State(initialValue: loaded)
         _selectedID = State(initialValue: loaded.first?.id)
@@ -35,7 +37,9 @@ struct RemoteSensorsView: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                Button("Close") { dismiss() }
+                if !embedded {
+                    Button("Close") { dismiss() }
+                }
             }
             .padding(14)
             Divider()

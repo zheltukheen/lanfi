@@ -113,8 +113,13 @@ struct MenuBarView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     Spacer()
-                    Button("Open") { openWindow(id: "toolkit") }
-                        .controlSize(.mini)
+                    Button("Open") {
+                        NotificationCenter.default.post(
+                            name: .lanfiShowToolkit, object: nil,
+                            userInfo: ["tool": ToolboxTool.uptimeMonitor.rawValue])
+                        openWindow(id: "main")
+                    }
+                    .controlSize(.mini)
                 }
             }
 

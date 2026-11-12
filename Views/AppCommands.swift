@@ -67,8 +67,10 @@ struct LanFiCommands: Commands {
         }
 
         CommandMenu("Layout") {
-            Button("Network Toolkit") {
-                openWindow(id: "toolkit")
+            Button("Wi-Fi Analyzer") {
+                NotificationCenter.default.post(
+                    name: .lanfiShowToolkit, object: nil,
+                    userInfo: ["tool": ToolboxTool.wifiAnalyzer.rawValue])
             }
             .keyboardShortcut("t", modifiers: [.command, .shift])
 
@@ -88,7 +90,6 @@ struct LanFiCommands: Commands {
 
             Divider()
 
-            Toggle("Show Filters Sidebar", isOn: $uiState.showSidebar)
             Toggle("Show Inspector", isOn: $uiState.showInspector)
                 .keyboardShortcut("i", modifiers: [.command, .option])
 
@@ -111,7 +112,13 @@ struct LanFiCommands: Commands {
 
             Divider()
 
-            Picker("Bottom Panel", selection: $uiState.selectedBottomTab) {
+            Picker(
+                "Bottom Panel",
+                selection: Binding(
+                    get: { uiState.selectedBottomTab },
+                    set: { showPanel($0) }
+                )
+            ) {
                 Text("Overview").tag(0)
                 Text("Profile").tag(1)
                 Text("Raw Data").tag(3)
@@ -120,9 +127,9 @@ struct LanFiCommands: Commands {
                 Text("Capture").tag(7)
             }
 
-            Button("Show Overview") { uiState.selectedBottomTab = 0 }
+            Button("Show Overview") { showPanel(0) }
                 .keyboardShortcut("1", modifiers: [.command])
-            Button("Show Profile") { uiState.selectedBottomTab = 1 }
+            Button("Show Profile") { showPanel(1) }
                 .keyboardShortcut("2", modifiers: [.command])
             Button("Show Network Monitor") {
                 NotificationCenter.default.post(
@@ -130,11 +137,11 @@ struct LanFiCommands: Commands {
                     userInfo: ["tool": ToolboxTool.networkMonitor.rawValue])
             }
             .keyboardShortcut("3", modifiers: [.command])
-            Button("Show Raw Data") { uiState.selectedBottomTab = 3 }
+            Button("Show Raw Data") { showPanel(3) }
                 .keyboardShortcut("4", modifiers: [.command])
-            Button("Show Spectrum") { uiState.selectedBottomTab = 4 }
+            Button("Show Spectrum") { showPanel(4) }
                 .keyboardShortcut("5", modifiers: [.command])
-            Button("Show History") { uiState.selectedBottomTab = 5 }
+            Button("Show History") { showPanel(5) }
                 .keyboardShortcut("6", modifiers: [.command])
             Button("Show Internet Check") {
                 NotificationCenter.default.post(
@@ -198,5 +205,14 @@ struct LanFiCommands: Commands {
                 openWindow(id: "help")
             }
         }
+    }
+
+    /// Bottom panels live inside the Wi-Fi analyzer workspace, so opening one
+    /// also brings that tool forward.
+    private func showPanel(_ index: Int) {
+        NotificationCenter.default.post(
+            name: .lanfiShowToolkit, object: nil,
+            userInfo: ["tool": ToolboxTool.wifiAnalyzer.rawValue])
+        uiState.selectedBottomTab = index
     }
 }
