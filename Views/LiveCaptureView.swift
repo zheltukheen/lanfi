@@ -24,14 +24,50 @@ struct LiveCaptureView: View {
     @State private var autoOpenWireshark = UserDefaults.standard.bool(forKey: "LanFi.capture.autoWireshark")
 
     var body: some View {
+        Group {
+            if embedded {
+                // The bottom panel is shorter than the form: scroll the fields
+                // and keep Start Capture pinned so it is always reachable.
+                VStack(spacing: 0) {
+                    ScrollView { content }
+                    footer
+                }
+            } else {
+                VStack(spacing: 0) {
+                    content
+                    footer
+                }
+            }
+        }
+        .frame(width: embedded ? nil : 590)
+        .sheet(isPresented: $showingAnalysis) {
+            OfflineCaptureView(initialURL: completedURL)
+        }
+        .onAppear {
+            interfaces = LiveCaptureService.interfaceNames()
+            if !interfaces.contains(selectedInterface), let first = interfaces.first {
+                selectedInterface = first
+            }
+            monitorMode = selectedInterface == "en0"
+            profiles = CaptureProfileStore().load()
+        }
+        .onChange(of: viewModel.networks.map(\.bssid)) { _ in
+            checkTrigger()
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Live packet capture")
-                        .font(.title3.bold())
-                    Text("Writes a standard pcap using macOS tcpdump and BPF.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                // The panel tabs already label this screen; keep the form compact.
+                if !embedded {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Live packet capture")
+                            .font(.title3.bold())
+                        Text("Writes a standard pcap using macOS tcpdump and BPF.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 Spacer()
                 Menu("Profiles") {
@@ -180,8 +216,13 @@ struct LiveCaptureView: View {
                 }
             }
 
-            Divider()
+        }
+        .padding(embedded ? 10 : 18)
+    }
 
+    private var footer: some View {
+        VStack(spacing: 0) {
+            Divider()
             HStack {
                 Spacer()
                 if isCapturing {
@@ -199,22 +240,8 @@ struct LiveCaptureView: View {
                         .disabled(isCapturing || interfaces.isEmpty)
                 }
             }
-        }
-        .padding(embedded ? 10 : 18)
-        .frame(width: embedded ? nil : 590)
-        .sheet(isPresented: $showingAnalysis) {
-            OfflineCaptureView(initialURL: completedURL)
-        }
-        .onAppear {
-            interfaces = LiveCaptureService.interfaceNames()
-            if !interfaces.contains(selectedInterface), let first = interfaces.first {
-                selectedInterface = first
-            }
-            monitorMode = selectedInterface == "en0"
-            profiles = CaptureProfileStore().load()
-        }
-        .onChange(of: viewModel.networks.map(\.bssid)) { _ in
-            checkTrigger()
+            .padding(.horizontal, embedded ? 10 : 18)
+            .padding(.vertical, 8)
         }
     }
 

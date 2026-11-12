@@ -71,8 +71,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `ViewModels/AppUIState.swift` — sidebar/inspector/bottom-tab state.
 - `Views/WiFiTableView.swift` — `NSViewRepresentable` around `NSTableView`,
   column diff/reorder/resize persistence, context menus, selection sync.
-- `Views/MainTableView.swift` — toolbar, split panes, inspector, permission
-  onboarding, status bar, bottom-panel tabs.
+- `Views/MainTableView.swift` — the Wi-Fi workspace: toolbar, top-row
+  filter bar, split panes, inspector, permission onboarding, status bar,
+  bottom-panel tabs. It is embedded in the toolkit (`embedded: true`).
+- `Views/FilterBarView.swift` — band chips, signal threshold, sort, grouping,
+  saved rules and quick filters in the window's top row.
 - `Views/InsightsView.swift` — summary cards, channel recommendations, grouped
   security findings, occupancy chart.
 - `Views/ProtocolsView.swift` — block cards and all-network protocol coverage.
@@ -93,8 +96,24 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   Pure codecs/parsers must stay testable headless.
 - `Services/UptimeMonitor.swift`, `UptimeStore.swift` — scheduled HTTP/TCP
   checks, transitions, UserNotifications and seven-day history.
-- `Views/Toolkit/` — the Network Toolkit window, grouped custom sidebar and
-  per-tool screens.
+- `Views/Toolkit/` — the Network Toolkit, which is the app's main window:
+  grouped custom sidebar, per-tool screens and the full Wi-Fi analyzer
+  workspace.
+- `CLI/MCPProtocol.swift`, `CLI/MCPToolkit.swift` — transport-free MCP
+  JSON-RPC handler and the full tool catalogue (scan analysis plus ping,
+  traceroute, MTR, port scan, path check, DNS, propagation, WHOIS, GeoIP, TLS,
+  subnet, interfaces, routes, LAN scan, iperf3, speed test, uptime,
+  diagnostics, and spectrum CSV analysis). Unit tested in
+  `Tests/MCPProtocolTests.swift`.
+- `Models/DeviceShelfModels.swift`, `Services/DeviceShelfStore.swift`,
+  `ViewModels/DeviceShelfViewModel.swift`, `Views/Toolkit/DeviceShelfView.swift`
+  — the Device Shelf tab of the LAN Scanner: a persistent inventory (alias,
+  type, ports, availability, latency samples, risk score, event history) stored
+  in `~/Library/Application Support/LanFi/device-shelf.json`. Merge logic lives
+  in `DeviceShelfMerger` and is unit tested in `Tests/DeviceShelfTests.swift`.
+- `CLI/MCPServer.swift` — stdio transport (`lanfi-cli mcp`) for AI agents.
+  Reads the live snapshot written by `Services/MCPSnapshotWriter.swift`
+  (see `docs/mcp.md`).
 - `ViewModels/ToolkitViewModel.swift` — per-tool state and cancellation.
 - `Utils/LocationManager.swift` — CLLocation authorization wrapper.
 - `Utils/OUIParser.swift` — bundled IEEE OUI lookup (randomized MAC detection).
@@ -121,7 +140,10 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `LanFi.minSignal`, `LanFi.removeAfter` — signal threshold and expiry.
 - `LanFi.signalUnit`, `LanFi.highlightConnected` — display options.
 - `LanFi.sortKey`, `LanFi.sortAscending` — table sort.
-- `LanFi.showSidebar`, `LanFi.showInspector`, `LanFi.bottomTab` — layout
+- `LanFi.showInspector`, `LanFi.bottomTab` — layout
+- `LanFi.toolkit.selection`, `LanFi.toolkit.sidebarWidth` — toolkit selection
+  and sidebar width.
+- `LanFi.inspectorWidth`, `LanFi.bottomPanelHeight` — analyzer panel geometry.
   (`0` Overview, `1` Profile, `3` Raw Data, `4` Spectrum, `5` History,
   `7` Capture; `2` Interfaces and `6` Diagnostics were retired into the
   Network Toolkit and are migrated to Overview).
@@ -169,12 +191,17 @@ python3 scripts/update_oui.py
 
 ## Network Toolkit
 
-The main toolbar opens `NetworkToolkitView` directly (also
-`Layout → Network Toolkit`, ⇧⌘T); there is no Tools dropdown. The window has a
-custom grouped sidebar. Wi-Fi is the top section and Wi-Fi Analyzer is
-selected by default; its workspace hosts the Wi-Fi tool sheets (Survey,
-Spectrum, Live Capture, offline analysis, Remote Sensors). The toolkit owns the
-Interfaces and Diagnostics screens now; the main window is Wi-Fi-only.
+The Network Toolkit is the app's main window (`WindowGroup(id: "main")`).
+`Layout → Wi-Fi Analyzer` (⇧⌘T) selects its Wi-Fi workspace. The toolkit has a
+custom grouped sidebar (resizable, width persisted), no Recent section, and the
+last selected tool is restored from `LanFi.toolkit.selection`. The Wi-Fi
+Analyzer tool embeds the full analyzer (`MainTableView(embedded: true)`):
+table, top-row filters, inspector and bottom panels. Filters used to be a
+collapsible sidebar; they now live in the top filter bar, and controls that
+narrow the list tint themselves. Capture, Spectrum and History stay in the
+bottom panel tabs; Hardware Spectrum, offline capture analysis and Remote
+Sensors open as full-size sheets from the toolbar's Wi-Fi Tools menu because
+they depend on analyzer charts and need the extra room.
 `ToolboxTool` owns the catalogue, `isAvailable` marks wired screens, and planned
 rows stay visible with a "Planned" badge. Advanced Tools embeds the
 `ToolConsoleView` in the Network Tools section; there is no separate Tool

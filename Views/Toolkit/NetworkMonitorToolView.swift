@@ -6,6 +6,7 @@ struct NetworkMonitorToolView: View {
     @State private var tab: NetworkMonitorTab =
         ProcessInfo.processInfo.arguments.contains("--routes") ? .routes : .overview
     @State private var routes: [NetworkRoute] = []
+    @State private var routesLoaded = false
     @State private var isLoadingRoutes = false
     @State private var routesError: String?
 
@@ -49,7 +50,7 @@ struct NetworkMonitorToolView: View {
             if interfaces.report.interfaces.isEmpty {
                 await interfaces.refresh()
             }
-            if tab == .routes, routes.isEmpty { await loadRoutes() }
+            if tab == .routes, !routesLoaded { await loadRoutes() }
         }
     }
 
@@ -159,6 +160,7 @@ struct NetworkMonitorToolView: View {
         routesError = nil
         do {
             routes = try await RouteTableReader().read()
+            routesLoaded = true
         } catch {
             routesError = error.localizedDescription
         }

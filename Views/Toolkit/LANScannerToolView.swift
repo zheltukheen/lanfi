@@ -7,8 +7,58 @@ struct LANScannerToolView: View {
     @State private var showingDiscover = false
     @State private var serviceDetails: [String: [UInt16: String]] = [:]
     @State private var detectingDeviceID: String?
+    @AppStorage("LanFi.lanScannerTab") private var tabRaw = 0
+    @StateObject private var shelf = DeviceShelfViewModel()
 
     var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Picker("View", selection: $tabRaw) {
+                    Text("Scan").tag(0)
+                    Text("Devices").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 220)
+                Text(
+                    "The shelf keeps every device, its name, ports, availability and history across scans."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                Spacer()
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            Divider()
+
+            if tabRaw == 0 {
+                scanContent
+            } else {
+                DeviceShelfView(model: shelf)
+            }
+        }
+        .onChange(of: model.result) { result in
+            // A new scan replaces the device list, so cached service banners
+            // from the previous scan would belong to stale IPs.
+            serviceDetails.removeAll()
+            if selectedID == nil
+                || result?.devices.contains(where: { $0.id == selectedID }) != true
+            {
+                selectedID = result?.devices.first?.id
+            }
+            if let result {
+                shelf.merge(result)
+            }
+        }
+        .sheet(isPresented: $showingDiscover) {
+            LiveClientDiscoveryView()
+        }
+    }
+
+    private var scanContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 controls
@@ -35,14 +85,6 @@ struct LANScannerToolView: View {
                 }
             }
             .padding(18)
-        }
-        .onChange(of: model.result) { result in
-            if selectedID == nil {
-                selectedID = result?.devices.first?.id
-            }
-        }
-        .sheet(isPresented: $showingDiscover) {
-            LiveClientDiscoveryView()
         }
     }
 

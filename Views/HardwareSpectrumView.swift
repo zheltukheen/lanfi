@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 /// device status, and CSV trace import (Chanalyzer exports and generic
 /// frequency/dBm tables).
 struct HardwareSpectrumView: View {
+    var embedded = false
     @StateObject private var controller = HardwareSpectrumController.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedPort: String?
@@ -27,7 +28,7 @@ struct HardwareSpectrumView: View {
                 emptyState
             }
         }
-        .frame(minWidth: 900, minHeight: 520)
+        .frame(minWidth: embedded ? 0 : 900, minHeight: embedded ? 0 : 520)
     }
 
     // MARK: - Header

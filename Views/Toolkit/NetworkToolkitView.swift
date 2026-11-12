@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct NetworkToolkitView: View {
@@ -10,6 +11,12 @@ struct NetworkToolkitView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
     @FocusState private var searchFocused: Bool
+    @AppStorage("LanFi.toolkit.sidebarWidth") private var storedSidebarWidth: Double = 228
+    @State private var sidebarDragOffset: CGFloat = 0
+
+    private var currentSidebarWidth: CGFloat {
+        max(180, min(360, CGFloat(storedSidebarWidth) + sidebarDragOffset))
+    }
 
     private var searchResults: [ToolboxTool] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -24,16 +31,36 @@ struct NetworkToolkitView: View {
     var body: some View {
         HStack(spacing: 0) {
             sidebar
-            Divider()
+            sidebarResizer
             VStack(spacing: 0) {
-                detailHeader
-                Divider()
+                if !isWorkspaceTool {
+                    detailHeader
+                    Divider()
+                }
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .frame(minWidth: 980, minHeight: 640)
         .background(Color(nsColor: .windowBackgroundColor))
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowToolkit)) { note in
+            if let raw = note.userInfo?["tool"] as? String,
+                let tool = ToolboxTool(rawValue: raw)
+            {
+                toolkit.select(tool)
+            }
+        }
+        .onAppear {
+            #if DEBUG
+                ToolkitSnapshot.captureIfRequested(toolkit: toolkit, uptime: uptime)
+            #endif
+        }
+    }
+
+    /// The Wi-Fi workspace brings its own toolbar, so it does not need the
+    /// generic tool header above it.
+    private var isWorkspaceTool: Bool {
+        toolkit.selection == .wifiAnalyzer || toolkit.selection == .wifiNetworks
     }
 
     private var sidebar: some View {
@@ -42,12 +69,6 @@ struct NetworkToolkitView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
                     if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        if !toolkit.recent.isEmpty {
-                            sectionHeader(String(localized: "Recent"))
-                            ForEach(toolkit.recent) { tool in
-                                toolRow(tool)
-                            }
-                        }
                         ForEach(ToolboxSection.allCases) { section in
                             sectionHeader(section.title)
                             ForEach(ToolboxTool.allCases.filter { $0.section == section }) {
@@ -73,8 +94,30 @@ struct NetworkToolkitView: View {
                 .padding(8)
             }
         }
-        .frame(width: 228)
+        .frame(width: currentSidebarWidth)
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var sidebarResizer: some View {
+        Rectangle()
+            .fill(Color(nsColor: .separatorColor))
+            .frame(width: 1)
+            .overlay(
+                Rectangle().fill(Color.clear).frame(width: 9)
+                    .contentShape(Rectangle())
+                    .onHover { inside in
+                        if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
+                    }
+            )
+            .gesture(
+                DragGesture()
+                    .onChanged { value in sidebarDragOffset = value.translation.width }
+                    .onEnded { _ in
+                        storedSidebarWidth = Double(currentSidebarWidth)
+                        sidebarDragOffset = 0
+                    }
+            )
+            .zIndex(10)
     }
 
     private var searchField: some View {
@@ -219,7 +262,7 @@ struct NetworkToolkitView: View {
         case .siteSurvey:
             SurveyView(analyzer: analyzer, survey: survey)
         case .wifiNetworks:
-            WiFiRedirectToolView(tool: toolkit.selection)
+            WiFiAnalyzerToolView()
         }
     }
 }

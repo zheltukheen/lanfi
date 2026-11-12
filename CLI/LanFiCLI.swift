@@ -71,6 +71,8 @@ struct LanFiCLI {
                         }
                     }
                 }
+            case "mcp":
+                MCPServer.run()
             case "help", "--help", "-h":
                 printUsage()
             default:
@@ -106,6 +108,13 @@ struct LanFiCLI {
               lanfi-cli pcap <capture.pcap|pcapng> [--json]
                 --json prints {"networks": [...], "mloGroups": [...]} with
                 complete Multi-Link Operation link sets assembled per AP MLD.
+              lanfi-cli mcp
+                Model Context Protocol server over stdio for AI agents.
+                Exposes scan summary, analysis, protocols, channels, capture
+                parsing and DNS lookups. Reads the live scan snapshot that
+                the LanFi app writes to
+                ~/Library/Application Support/LanFi/mcp/latest-scan.json
+                or an exported scan JSON passed with the `path` argument.
               lanfi-cli help
             """
         )
@@ -118,64 +127,6 @@ private enum CLIError: LocalizedError {
         switch self {
         case .message(let value): return value
         }
-    }
-}
-
-private struct ScanExport {
-    let networks: [NetworkModel]
-
-    static func load(_ url: URL) throws -> ScanExport {
-        let data = try Data(contentsOf: url)
-        guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let rows = root["networks"] as? [[String: Any]]
-        else {
-            throw CLIError.message("Not a LanFi scan export (missing networks).")
-        }
-        var networks: [NetworkModel] = []
-        for row in rows {
-            guard let ssid = row["ssid"] as? String,
-                let bssid = row["bssid"] as? String
-            else { continue }
-            let band: WiFiBand
-            switch (row["band"] as? String ?? "").lowercased() {
-            case "2.4ghz", "2.4": band = .band24
-            case "5ghz", "5": band = .band5
-            case "6ghz", "6": band = .band6
-            default: band = .unknown
-            }
-            networks.append(
-                NetworkModel(
-                    summaryID: row["id"] as? String ?? bssid,
-                    bssid: bssid,
-                    ssid: ssid,
-                    band: band,
-                    channel: row["channel"] as? Int ?? 0,
-                    widthMHz: row["widthMHz"] as? Int ?? 0,
-                    security: row["security"] as? String ?? "Unknown",
-                    signal: row["signalDbm"] as? Int ?? -100,
-                    noise: row["noiseDbm"] as? Int,
-                    vendor: row["vendor"] as? String ?? "-"
-                )
-            )
-        }
-        return ScanExport(networks: networks)
-    }
-
-    var summaryJSON: [[String: Any]] {
-        networks.map {
-            [
-                "ssid": $0.displaySSID, "bssid": $0.bssid, "band": $0.band.label,
-                "channel": $0.channel, "signalDbm": $0.signal, "security": $0.security,
-            ]
-        }
-    }
-
-    var summaryText: String {
-        var lines = ["\(networks.count) networks"]
-        for network in networks.sorted(by: { $0.signal > $1.signal }) {
-            lines.append("\(network.displaySSID)\t\(network.bssid)\t\(network.band.label) ch \(network.channel)\t\(network.signal) dBm\t\(network.security)")
-        }
-        return lines.joined(separator: "\n")
     }
 }
 

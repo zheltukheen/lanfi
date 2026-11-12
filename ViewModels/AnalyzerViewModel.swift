@@ -491,6 +491,7 @@ class AnalyzerViewModel: ObservableObject {
         if let selectedId = selectedNetworkId, !filtered.contains(where: { $0.id == selectedId }) {
             selectedNetworkId = nil
         }
+        publishMCPSnapshotIfNeeded()
     }
 
     // MARK: - Public Methods
@@ -960,6 +961,25 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func exportJSON(networks: [NetworkModel], suffix: String) {
+        let payload = scanJSONPayload(networks: networks)
+
+        guard JSONSerialization.isValidJSONObject(payload),
+            let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
+            let string = String(data: data, encoding: .utf8)
+        else {
+            presentError("Could not encode scan results as JSON.")
+            return
+        }
+
+        presentSavePanel(
+            defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).json",
+            contentType: .json,
+            content: string
+        )
+    }
+
+    /// Shared shape for the JSON export and the MCP live snapshot.
+    private func scanJSONPayload(networks: [NetworkModel]) -> [String: Any] {
         let payload: [String: Any] = [
             "generator": "LanFi",
             "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
@@ -984,20 +1004,19 @@ class AnalyzerViewModel: ObservableObject {
                 ]
             },
         ]
+        return payload
+    }
 
-        guard JSONSerialization.isValidJSONObject(payload),
-            let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
-            let string = String(data: data, encoding: .utf8)
-        else {
-            presentError("Could not encode scan results as JSON.")
-            return
-        }
+    private var lastMCPSnapshotDate = Date.distantPast
 
-        presentSavePanel(
-            defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).json",
-            contentType: .json,
-            content: string
-        )
+    /// Publishes the scan for the MCP server. Throttled because filters can
+    /// recompute many times per second while the user types.
+    private func publishMCPSnapshotIfNeeded() {
+        let now = Date()
+        guard now.timeIntervalSince(lastMCPSnapshotDate) >= 5 else { return }
+        lastMCPSnapshotDate = now
+        MCPSnapshotWriter.write(
+            scanJSONPayload(networks: Array(persistentNetworks.values)))
     }
 
     private func refreshMenuBarAlerts() {

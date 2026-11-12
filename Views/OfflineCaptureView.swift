@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct OfflineCaptureView: View {
     @Environment(\.dismiss) private var dismiss
     private let initialURL: URL?
+    private let embedded: Bool
     @State private var beacons: [CapturedBeacon] = []
     @State private var fileName = ""
     @State private var errorMessage: String?
@@ -15,8 +16,9 @@ struct OfflineCaptureView: View {
     @State private var searchText = ""
     @State private var currentURL: URL?
 
-    init(initialURL: URL? = nil) {
+    init(initialURL: URL? = nil, embedded: Bool = false) {
         self.initialURL = initialURL
+        self.embedded = embedded
     }
 
     var body: some View {
@@ -31,7 +33,9 @@ struct OfflineCaptureView: View {
                 }
                 Spacer()
                 Button("Open Capture…") { open() }
-                Button("Close") { dismiss() }
+                if !embedded {
+                    Button("Close") { dismiss() }
+                }
             }
             .padding(14)
             Divider()

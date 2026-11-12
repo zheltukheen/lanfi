@@ -38,13 +38,15 @@ struct LanFiApp: App {
 
     var body: some Scene {
         WindowGroup(id: "main") {
-            MainTableView(viewModel: viewModel)
-                .frame(minWidth: 900, minHeight: 600)
+            NetworkToolkitView(toolkit: toolkit)
+                .frame(minWidth: 1000, minHeight: 640)
+                .environmentObject(viewModel)
                 .environmentObject(uiState)
                 .environmentObject(diagnostics)
                 .environmentObject(interfaces)
-                .environmentObject(toolkit)
+                .environmentObject(survey)
                 .environmentObject(uptime)
+                .environmentObject(toolkit)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
                 .onOpenURL { url in
@@ -52,31 +54,23 @@ struct LanFiApp: App {
                     switch link {
                     case .tab(let index):
                         if index == 2 {
-                            NotificationCenter.default.post(
-                                name: .lanfiShowToolkit, object: nil,
-                                userInfo: ["tool": ToolboxTool.networkMonitor.rawValue])
+                            toolkit.select(.networkMonitor)
                         } else if index == 6 {
-                            NotificationCenter.default.post(
-                                name: .lanfiShowToolkit, object: nil,
-                                userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
+                            toolkit.select(.internetCheck)
                         } else {
+                            toolkit.select(.wifiAnalyzer)
                             uiState.selectedBottomTab = index
                         }
                     case .interfaces:
-                        NotificationCenter.default.post(
-                            name: .lanfiShowToolkit, object: nil,
-                            userInfo: ["tool": ToolboxTool.networkMonitor.rawValue])
+                        toolkit.select(.networkMonitor)
                     case .search(let query):
+                        toolkit.select(.wifiAnalyzer)
                         viewModel.searchText = query
                     case .runDiagnostics:
-                        NotificationCenter.default.post(
-                            name: .lanfiShowToolkit, object: nil,
-                            userInfo: ["tool": ToolboxTool.internetCheck.rawValue])
+                        toolkit.select(.internetCheck)
                         Task { await diagnostics.run() }
                     case .toolkit(let tool):
-                        NotificationCenter.default.post(
-                            name: .lanfiShowToolkit, object: nil,
-                            userInfo: ["tool": tool.rawValue])
+                        toolkit.select(tool)
                     }
                     NSApp.activate(ignoringOtherApps: true)
                 }
@@ -114,19 +108,6 @@ struct LanFiApp: App {
             SpectrumView(viewModel: viewModel, isFullScreen: true)
                 .frame(minWidth: 1100, minHeight: 650)
         }
-
-        Window("Network Toolkit", id: "toolkit") {
-            NetworkToolkitView(toolkit: toolkit)
-                .environmentObject(viewModel)
-                .environmentObject(uiState)
-                .environmentObject(diagnostics)
-                .environmentObject(interfaces)
-                .environmentObject(survey)
-                .environmentObject(uptime)
-                .environment(\.lanFiHighContrast, highContrast)
-                .preferredColorScheme(preferredAppearance)
-        }
-        .defaultSize(width: 1180, height: 760)
 
         Window("History", id: "history") {
             SignalHistoryView(viewModel: viewModel, isFullScreen: true)

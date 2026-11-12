@@ -3,17 +3,20 @@
     import SwiftUI
 
     /// Debug-only window snapshot for design review: launches with
-    /// `--snapshot-toolkit <path> [--tool <id>] [--run]`, opens the toolkit,
+    /// `--snapshot-toolkit <path> [--tool <id>] [--bottom-tab <index>] [--run]`, opens the toolkit,
     /// captures its content view (no Screen Recording permission needed) and
     /// exits. Never compiled into Release.
     @MainActor
     enum ToolkitSnapshot {
+        private static var didSchedule = false
+
         static func captureIfRequested(
             toolkit: ToolkitViewModel,
-            uptime: UptimeMonitor,
-            openWindow: OpenWindowAction
+            uptime: UptimeMonitor
         ) {
+            guard !didSchedule else { return }
             let arguments = ProcessInfo.processInfo.arguments
+            Self.log("entry args=\(arguments.joined(separator: " "))")
             guard
                 let flag = arguments.firstIndex(of: "--snapshot-toolkit"),
                 arguments.index(after: flag) < arguments.endIndex
@@ -25,6 +28,16 @@
                 let tool = ToolboxTool(rawValue: arguments[arguments.index(after: toolFlag)])
             {
                 toolkit.select(tool)
+            }
+
+            if let tabFlag = arguments.firstIndex(of: "--bottom-tab"),
+                arguments.index(after: tabFlag) < arguments.endIndex,
+                let tab = Int(arguments[arguments.index(after: tabFlag)])
+            {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    NotificationCenter.default.post(
+                        name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": tab])
+                }
             }
 
             if let hostFlag = arguments.firstIndex(of: "--host"),
@@ -53,7 +66,7 @@
                 }
             }
 
-            openWindow(id: "toolkit")
+            didSchedule = true
 
             if arguments.contains("--udp") {
                 toolkit.portScan.includeUDP = true
@@ -80,17 +93,29 @@
                 delay = 7
             }
 
+            Self.log("scheduling capture in \(delay)s (tool=\(toolkit.selection.rawValue))")
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                let visible = NSApp.windows.filter { $0.isVisible && $0.contentView != nil }
+                Self.log("capturing tool=\(toolkit.selection.rawValue)")
+                Self.log(
+                    "windows "
+                        + visible.map {
+                            "\($0.title)|id=\($0.identifier?.rawValue ?? "-")|frame=\($0.frame)"
+                        }.joined(separator: "; "))
                 guard
-                    let window = NSApp.windows.first(where: {
-                        $0.title == "Network Toolkit" || $0.identifier?.rawValue == "toolkit"
-                    })
+                    let window =
+                        visible.first(where: { $0.identifier?.rawValue == "main" })
+                        ?? visible.first(where: { $0.title == "LanFi" })
+                        ?? visible.max(by: {
+                            $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height
+                        })
                 else {
-                    FileHandle.standardError.write(Data("snapshot: toolkit window not found\n".utf8))
+                    FileHandle.standardError.write(Data("snapshot: main window not found\n".utf8))
                     exit(2)
                 }
                 window.makeKeyAndOrderFront(nil)
-                guard let view = window.contentView,
+                window.contentView?.layoutSubtreeIfNeeded()
+                guard let view = window.contentView, view.bounds.width > 100,
                     let representation = view.bitmapImageRepForCachingDisplay(in: view.bounds)
                 else {
                     FileHandle.standardError.write(Data("snapshot: no bitmap\n".utf8))
@@ -103,12 +128,27 @@
                 }
                 do {
                     try data.write(to: URL(fileURLWithPath: path))
-                    print("snapshot: wrote \(path) (\(Int(view.bounds.width))×\(Int(view.bounds.height)))")
+                    Self.log("wrote \(path) \(Int(view.bounds.width))x\(Int(view.bounds.height))")
                 } catch {
                     FileHandle.standardError.write(Data("snapshot: \(error)\n".utf8))
                     exit(5)
                 }
                 exit(0)
+            }
+        }
+
+        private static func log(_ message: String) {
+            let url = URL(fileURLWithPath: "/tmp/lanfi-snapshot.log")
+            let line = "[\(Date())] \(message)\n"
+            guard let data = line.data(using: .utf8) else { return }
+            if FileManager.default.fileExists(atPath: url.path),
+                let handle = try? FileHandle(forWritingTo: url)
+            {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            } else {
+                try? data.write(to: url)
             }
         }
 
