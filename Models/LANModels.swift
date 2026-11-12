@@ -151,6 +151,10 @@ struct LANScanResult: Equatable, Sendable {
     let gateway: String?
     let devices: [LANDevice]
     let scannedAt: Date
+    /// The ARP table was empty, so MAC/vendor/hostname are missing and the
+    /// list came from the ICMP fallback sweep. Almost always means Local
+    /// Network access is off for the app rather than an empty network.
+    var localNetworkAccessLikelyDenied: Bool = false
 }
 
 final class LANGuardStore {

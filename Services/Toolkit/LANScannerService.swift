@@ -32,6 +32,9 @@ struct LANScannerService {
 
         let hosts = LANSubnet.hosts(address: address, prefixLength: prefix)
         guard !hosts.isEmpty else { throw LANScannerError.noInterface }
+        // Ask for Local Network access in-process first: reading `arp` through a
+        // child process does not trigger the macOS prompt for this app.
+        LocalNetworkAccess.request()
         ARPSweeper.nudge(hosts: hosts)
         try? await Task.sleep(nanoseconds: 900_000_000)
 
@@ -64,7 +67,8 @@ struct LANScannerService {
             subnet: "\(address)/\(prefix)",
             gateway: resolvedGateway,
             devices: devices,
-            scannedAt: Date()
+            scannedAt: Date(),
+            localNetworkAccessLikelyDenied: entries.isEmpty
         )
     }
 

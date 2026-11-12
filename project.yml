@@ -41,8 +41,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
-        MARKETING_VERSION: "5.0.1"
-        CURRENT_PROJECT_VERSION: "63"
+        MARKETING_VERSION: "5.0.2"
+        CURRENT_PROJECT_VERSION: "64"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -142,6 +142,7 @@ targets:
       - path: Models/SpectrumSweep.swift
       - path: Models/DeviceShelfModels.swift
       - path: Services/DeviceShelfStore.swift
+      - path: Services/LocalNetworkAccess.swift
       - path: Models/SupportedChannel.swift
       - path: Models/ChannelAdvice.swift
       - path: Services/ChannelAdvisor.swift
@@ -208,6 +209,7 @@ targets:
       - Services/SpectrumCSVImporter.swift
       - Models/DeviceShelfModels.swift
       - Services/DeviceShelfStore.swift
+      - Services/LocalNetworkAccess.swift
       - Models/PortSpec.swift
       - Models/NetworkRoute.swift
       - Models/SystemInterface.swift

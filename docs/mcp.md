@@ -73,11 +73,37 @@ Claude Code / Claude Desktop, Cursor and other MCP clients take the same
 | `lanfi_iperf3` | Run the iperf3 client against your own server. |
 | `lanfi_speed_test` | Apple networkQuality throughput and bufferbloat. |
 
+### Device Shelf
+
+`lanfi_devices` reads the inventory the LAN Scanner builds. It is stored
+locally at `~/Library/Application Support/LanFi/device-shelf.json`; no account,
+cloud or network call is involved.
+
+| Argument | Meaning |
+| --- | --- |
+| `online` | Only devices that answered in the latest scan. |
+| `favourite` | Only starred devices. |
+| `risky` | Only devices with at least one medium-or-higher risk finding. |
+| `search` | Case-insensitive match on name, hostname, IP, MAC, vendor or type. |
+| `limit` | Maximum rows, default 200, capped at 1000. |
+| `directory` | Folder holding `device-shelf.json`; omit for the app's shelf. |
+
+Each row carries `name`, `alias`-resolved `displayName`, `ip`, `mac`,
+`hostname`, `vendor`, `category`, `online`, `openPorts`, `availabilityPercent`,
+`latencyMs`, `riskScore`, `checks`, `firstSeen`, `lastSeen` and a `findings`
+array (`port`, `title`, `severity`, `advice`). The response also reports
+`shelfPath`, the total `count` and how many rows were `returned`.
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"lanfi_devices","arguments":{"risky":true}}}' \
+  | lanfi-cli mcp
+```
+
 ### App state
 
 | Tool | Purpose |
 | --- | --- |
-| `lanfi_devices` | Read the Device Shelf: every inventoried device with name, IP, MAC, vendor, type, online state, open ports, availability, risk findings and score. Optional `online`, `favourite`, `risky`, `search`, `limit` and `directory`. |
 | `lanfi_uptime` | Uptime Monitor targets and their last checks. |
 | `lanfi_diagnostics` | The most recent Internet Check report. |
 | `lanfi_info` | Snapshot path, freshness and usage notes. |
