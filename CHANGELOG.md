@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.0.3 — 2026-11-12
+
+### Fixed
+- **Visual Traceroute now traces.** macOS `traceroute` sends UDP probes by
+  default, and many routers and VPNs silently drop them, so every hop came
+  back as `*` and the map had nothing to show. The runner now probes with
+  ICMP first and retries with UDP when no hop answers; Traceroute and MTR use
+  the same fallback.
+- Visual Traceroute no longer waits for the whole trace before showing
+  anything. Hops stream in as `traceroute` prints them, so the hop list,
+  progress card and map fill in live.
+
+### Added
+- The Visual Traceroute map is always visible: the local egress point and the
+  target are geolocated when the trace starts, and the route is drawn hop by
+  hop with RTT-coloured segments, numbered hop pins, a highlight on the hop in
+  flight and an RTT legend.
+
 ## 5.0.2 — 2026-11-12
 
 ### Fixed

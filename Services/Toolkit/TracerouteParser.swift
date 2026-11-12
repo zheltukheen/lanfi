@@ -8,7 +8,9 @@ enum TracerouteParser {
         var seenTTLs = Set<Int>()
 
         for line in output.split(whereSeparator: \.isNewline) {
-            guard let hop = parseHop(String(line)), seenTTLs.insert(hop.ttl).inserted else { continue }
+            guard let hop = parseLine(String(line)), seenTTLs.insert(hop.ttl).inserted else {
+                continue
+            }
             hops.append(hop)
         }
 
@@ -17,7 +19,8 @@ enum TracerouteParser {
 
     // MARK: - Lines
 
-    private static func parseHop(_ line: String) -> TracerouteHop? {
+    /// Parses a single stdout line; used by the streaming runner as hops arrive.
+    static func parseLine(_ line: String) -> TracerouteHop? {
         let tokens = line.split(whereSeparator: \.isWhitespace).map(String.init)
         guard let first = tokens.first, let ttl = Int(first), (1...255).contains(ttl) else { return nil }
 

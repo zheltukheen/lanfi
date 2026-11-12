@@ -48,6 +48,7 @@
                 toolkit.dns.host = host
                 toolkit.portScan.host = host
                 toolkit.traceroute.host = host
+                toolkit.visualTraceroute.host = host
                 toolkit.ssl.host = host
                 toolkit.pathCheck.host = host
                 toolkit.pathCheck.portsText = "443"
