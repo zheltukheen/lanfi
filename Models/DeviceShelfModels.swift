@@ -90,6 +90,16 @@ struct ShelfDevice: Codable, Identifiable, Equatable, Sendable {
     }
 
     var isNew: Bool { scansSeen <= 1 }
+
+    var riskFindings: [DeviceRiskFinding] {
+        DeviceRiskCatalog.findings(for: openPorts)
+    }
+
+    /// Low-severity noise (HTTP admin, UPnP, raw printing) is common on home
+    /// routers and printers, so the Risks view only counts medium and above.
+    var hasMeaningfulRisk: Bool {
+        riskFindings.contains { $0.severity >= .medium }
+    }
 }
 
 // MARK: - Classification
@@ -238,6 +248,11 @@ enum DeviceShelfMerger {
     static func merge(_ stored: [ShelfDevice], scan: LANScanResult, now: Date = Date())
         -> [ShelfDevice]
     {
+        // An empty sweep usually means Local Network access was denied or the
+        // interface was down, not that every device left at once. Keeping the
+        // shelf unchanged avoids a whole inventory flapping offline.
+        guard !scan.devices.isEmpty || stored.isEmpty else { return stored }
+
         var remaining: [String: ShelfDevice] = [:]
         for device in stored where remaining[device.id] == nil {
             remaining[device.id] = device
@@ -246,6 +261,13 @@ enum DeviceShelfMerger {
         var merged: [ShelfDevice] = []
         for lan in scan.devices {
             let id = deviceID(mac: lan.mac, ip: lan.ip)
+            // Without Local Network permission an ICMP fallback sweep can list
+            // bare addresses. Those are not identity, so they must not turn
+            // into shelf entries; a known device still gets refreshed.
+            let hasIdentity =
+                lan.mac != nil || lan.hostname != nil || lan.vendor != nil
+                || !lan.openPorts.isEmpty || lan.isGateway
+            if remaining[id] == nil && !hasIdentity { continue }
             var record =
                 remaining.removeValue(forKey: id)
                 ?? ShelfDevice(

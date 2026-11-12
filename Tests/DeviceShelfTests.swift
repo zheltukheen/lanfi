@@ -52,7 +52,12 @@ final class DeviceShelfTests: XCTestCase {
     func testReturningDeviceGetsReturnedEvent() {
         let first = DeviceShelfMerger.merge(
             [], scan: scan([device(ip: "192.168.1.20", mac: "AA:BB:CC:00:11:22")]), now: now)
-        let second = DeviceShelfMerger.merge(first, scan: scan([]), now: now.addingTimeInterval(5))
+        // A scan that found other devices but not this one is a real "left";
+        // an empty sweep is treated as no data at all.
+        let second = DeviceShelfMerger.merge(
+            first,
+            scan: scan([device(ip: "192.168.1.30", mac: "AA:BB:CC:00:33:44")]),
+            now: now.addingTimeInterval(5))
         let third = DeviceShelfMerger.merge(
             second,
             scan: scan([device(ip: "192.168.1.20", mac: "AA:BB:CC:00:11:22")]),
@@ -88,6 +93,44 @@ final class DeviceShelfTests: XCTestCase {
         XCTAssertEqual(second.count, 1)
         XCTAssertEqual(second.first?.ip, "192.168.1.99")
         XCTAssertEqual(second.first?.events.first?.kind, .joined)
+    }
+
+    func testEmptyScanKeepsTheShelfOnline() {
+        let first = DeviceShelfMerger.merge(
+            [], scan: scan([device(ip: "192.168.1.20", mac: "AA:BB:CC:00:11:22")]), now: now)
+        let empty = DeviceShelfMerger.merge(first, scan: scan([]), now: now.addingTimeInterval(5))
+
+        XCTAssertEqual(empty.count, 1)
+        XCTAssertEqual(empty.first?.isOnline, true)
+        XCTAssertEqual(empty.first?.checks, 1)
+        XCTAssertEqual(empty.first?.availabilityPercent, 100)
+        XCTAssertEqual(empty.first?.events.map(\.kind), [.joined])
+    }
+
+    func testBareAddressesWithoutIdentityAreNotInventoried() {
+        let result = DeviceShelfMerger.merge(
+            [],
+            scan: scan([
+                device(ip: "192.168.1.20", mac: nil, ports: []),
+                device(ip: "192.168.1.1", mac: nil, ports: [], gateway: true),
+                device(ip: "192.168.1.21", mac: nil, ports: [22]),
+            ]),
+            now: now)
+
+        XCTAssertEqual(result.map(\.ip).sorted(), ["192.168.1.1", "192.168.1.21"])
+    }
+
+    func testLowSeverityPortsAreNotMeaningfulRisks() {
+        let quiet = DeviceShelfMerger.merge(
+            [], scan: scan([device(ip: "192.168.1.20", mac: "AA:BB:CC:00:11:22", ports: [80])]),
+            now: now)[0]
+        let risky = DeviceShelfMerger.merge(
+            [], scan: scan([device(ip: "192.168.1.21", mac: "AA:BB:CC:00:11:23", ports: [23])]),
+            now: now)[0]
+
+        XCTAssertFalse(quiet.hasMeaningfulRisk)
+        XCTAssertTrue(risky.hasMeaningfulRisk)
+        XCTAssertFalse(quiet.riskFindings.isEmpty)
     }
 
     func testLatencySamplesAreCapped() {

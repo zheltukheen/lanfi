@@ -60,7 +60,7 @@ struct NetworkToolkitView: View {
     /// The Wi-Fi workspace brings its own toolbar, so it does not need the
     /// generic tool header above it.
     private var isWorkspaceTool: Bool {
-        toolkit.selection == .wifiAnalyzer || toolkit.selection == .wifiNetworks
+        toolkit.selection == .wifiAnalyzer
     }
 
     private var sidebar: some View {
@@ -261,8 +261,6 @@ struct NetworkToolkitView: View {
             WiFiAnalyzerToolView()
         case .siteSurvey:
             SurveyView(analyzer: analyzer, survey: survey)
-        case .wifiNetworks:
-            WiFiAnalyzerToolView()
         }
     }
 }

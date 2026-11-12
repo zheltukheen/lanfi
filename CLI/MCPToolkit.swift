@@ -30,7 +30,7 @@ struct MCPToolOutcome: Equatable {
 /// writes; probe tools run directly on this Mac, just like the toolkit screens.
 enum MCPToolkit {
     static var definitions: [[String: Any]] {
-        scanTools + probeTools + infoTools
+        scanTools + deviceTools + probeTools + infoTools
     }
 
     static func call(_ name: String, arguments: [String: Any]) async -> MCPToolOutcome? {
@@ -42,6 +42,7 @@ enum MCPToolkit {
         case "lanfi_channels": return channels(arguments)
         case "lanfi_capture": return capture(arguments)
         case "lanfi_spectrum": return spectrum(arguments)
+        case "lanfi_devices": return devices(arguments)
         // Network probes
         case "lanfi_ping": return await ping(arguments)
         case "lanfi_traceroute": return await traceroute(arguments)
@@ -105,6 +106,32 @@ enum MCPToolkit {
                     ]
                 ],
                 required: ["path"]),
+        ]
+    }
+
+    private static var deviceTools: [[String: Any]] {
+        [
+            tool(
+                "lanfi_devices",
+                "Read the Device Shelf: every device the LAN Scanner has inventoried, with name, IP, MAC, vendor, type, online state, open ports, availability, risk findings and score. Filters are optional.",
+                properties: [
+                    "directory": [
+                        "type": "string",
+                        "description":
+                            "Folder containing device-shelf.json. Omit to use the app's shelf (Application Support/LanFi).",
+                    ],
+                    "online": ["type": "boolean", "description": "Only devices online now."],
+                    "favourite": ["type": "boolean", "description": "Only favourites."],
+                    "risky": [
+                        "type": "boolean",
+                        "description": "Only devices with a medium-or-higher risk finding.",
+                    ],
+                    "search": [
+                        "type": "string",
+                        "description": "Match name, hostname, IP, MAC, vendor or type.",
+                    ],
+                    "limit": ["type": "integer", "description": "Default 200, max 1000."],
+                ])
         ]
     }
 
@@ -504,6 +531,71 @@ enum MCPToolkit {
             payload["peak"] = ["mhz": round1(peak.mhz), "dbm": round1(peak.dbm)]
         }
         return .json(payload)
+    }
+
+    private static func devices(_ arguments: [String: Any]) -> MCPToolOutcome {
+        let directory = string(arguments, "directory").map { URL(fileURLWithPath: $0) }
+        let store = DeviceShelfStore(directory: directory)
+        var rows = store.load()
+        let total = rows.count
+        if flag(arguments, "online") { rows = rows.filter(\.isOnline) }
+        if flag(arguments, "favourite") { rows = rows.filter(\.isFavourite) }
+        if flag(arguments, "risky") { rows = rows.filter(\.hasMeaningfulRisk) }
+        if let query = string(arguments, "search")?.lowercased() {
+            rows = rows.filter { device in
+                [
+                    device.displayName, device.hostname ?? "", device.ip, device.mac ?? "",
+                    device.vendor ?? "", device.category.title,
+                ].joined(separator: " ").lowercased().contains(query)
+            }
+        }
+        rows = Array(rows.prefix(max(1, min(int(arguments, "limit") ?? 200, 1000))))
+
+        let devices: [[String: Any]] = rows.map { device in
+            let findings = device.riskFindings
+            var row: [String: Any] = [
+                "name": device.displayName,
+                "ip": device.ip,
+                "online": device.isOnline,
+                "favourite": device.isFavourite,
+                "category": device.category.rawValue,
+                "openPorts": device.openPorts.map(Int.init),
+                "riskScore": DeviceRiskCatalog.score(for: findings),
+                "checks": device.checks,
+                "firstSeen": ISO8601DateFormatter().string(from: device.firstSeen),
+                "lastSeen": ISO8601DateFormatter().string(from: device.lastSeen),
+            ]
+            row["availabilityPercent"] = device.availabilityPercent.map { ($0 * 10).rounded() / 10 }
+            if let mac = device.mac { row["mac"] = mac }
+            if let vendor = device.vendor { row["vendor"] = vendor }
+            if let hostname = device.hostname { row["hostname"] = hostname }
+            if let latency = device.latencyMs { row["latencyMs"] = (latency * 10).rounded() / 10 }
+            row["findings"] = findings.map { finding in
+                [
+                    "port": Int(finding.port),
+                    "title": finding.title,
+                    "severity": name(finding.severity),
+                    "advice": finding.advice,
+                ] as [String: Any]
+            }
+            return row
+        }
+
+        return .json([
+            "shelfPath": store.path,
+            "count": total,
+            "returned": devices.count,
+            "devices": devices,
+        ])
+    }
+
+    private static func name(_ severity: DeviceRiskFinding.Severity) -> String {
+        switch severity {
+        case .high: return "high"
+        case .medium: return "medium"
+        case .low: return "low"
+        case .info: return "info"
+        }
     }
 
     // MARK: - Probes

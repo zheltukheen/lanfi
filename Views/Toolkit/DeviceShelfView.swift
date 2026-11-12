@@ -7,6 +7,7 @@ struct DeviceShelfView: View {
     @ObservedObject var model: DeviceShelfViewModel
     @State private var aliasDraft = ""
     @State private var notesDraft = ""
+    @State private var aliasSaveTask: Task<Void, Never>?
     @State private var showingClearConfirm = false
 
     var body: some View {
@@ -31,9 +32,11 @@ struct DeviceShelfView: View {
             }
         }
         .padding(18)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear { syncDrafts() }
         .onChange(of: model.selectedID) { _ in syncDrafts() }
         .onChange(of: model.selectedDevice?.alias) { _ in syncDrafts() }
+        .onDisappear { commitAlias() }
         .confirmationDialog(
             "Forget every device on the shelf?",
             isPresented: $showingClearConfirm
@@ -274,12 +277,8 @@ struct DeviceShelfView: View {
                     )
                     .textFieldStyle(.roundedBorder)
                     .font(.caption)
-                    .onSubmit { model.setAlias(aliasDraft, for: device.id) }
-                    .onChange(of: aliasDraft) { value in
-                        if value != (device.alias ?? "") {
-                            model.setAlias(value, for: device.id)
-                        }
-                    }
+                    .onSubmit { commitAlias() }
+                    .onChange(of: aliasDraft) { _ in scheduleAliasSave() }
                     .help("Your name for this device; it survives rescans and DHCP changes")
 
                     Picker(
@@ -454,8 +453,29 @@ struct DeviceShelfView: View {
     }
 
     private func syncDrafts() {
+        aliasSaveTask?.cancel()
         aliasDraft = model.selectedDevice?.alias ?? ""
         notesDraft = model.selectedDevice?.notes ?? ""
+    }
+
+    /// Typing an alias writes the shelf JSON, so debounce it instead of
+    /// rewriting the file on every keystroke.
+    private func scheduleAliasSave() {
+        guard let id = model.selectedID else { return }
+        let value = aliasDraft
+        aliasSaveTask?.cancel()
+        aliasSaveTask = Task {
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            guard !Task.isCancelled else { return }
+            model.setAlias(value, for: id)
+        }
+    }
+
+    private func commitAlias() {
+        aliasSaveTask?.cancel()
+        aliasSaveTask = nil
+        guard let id = model.selectedID else { return }
+        model.setAlias(aliasDraft, for: id)
     }
 
     // MARK: - Export
