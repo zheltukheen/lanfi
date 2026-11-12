@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.0.2 — 2026-11-12
+
+### Fixed
+- **Local Network gating.** LanFi now requests macOS Local Network access
+  in-process before scanning; reading the ARP table through the `arp`
+  subprocess never triggered the permission prompt, so the app stayed
+  unauthorized. The scanner reports when the ARP table is unavailable and
+  shows an actionable gate (Open Settings, Request access, Rescan) instead of
+  a passive note, and the shelf no longer ingests identity-free fallback rows.
+
+### Docs
+- `docs/mcp.md` documents the Device Shelf tool in full: storage location,
+  every argument, the row schema and a runnable example.
+
+### Tooling
+- Removed a stale local `post-commit` hook that pointed at a deleted
+  `scripts/autopush.sh` outside the repository.
+
 ## 5.0.1 — 2026-11-12
 
 ### Added

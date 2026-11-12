@@ -40,6 +40,7 @@ struct LANScannerToolView: View {
                 DeviceShelfView(model: shelf)
             }
         }
+        .onAppear { LocalNetworkAccess.request() }
         .onChange(of: model.result) { result in
             // A new scan replaces the device list, so cached service banners
             // from the previous scan would belong to stale IPs.
@@ -164,15 +165,41 @@ struct LANScannerToolView: View {
                     ToolkitMetric(title: "Interface", value: result.interfaceName)
                     Spacer()
                 }
-                if result.devices.contains(where: { $0.mac == nil }) {
-                    Text(
-                        "MAC addresses, vendor names and TCP ports need Local Network access. Grant it in System Settings → Privacy & Security → Local Network, then scan again."
-                    )
-                    .font(.caption2)
-                    .foregroundColor(.orange)
+                if result.localNetworkAccessLikelyDenied || result.devices.contains(where: { $0.mac == nil }) {
+                    localNetworkGate
                 }
             }
         }
+    }
+
+    private var localNetworkGate: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: "lock.shield.fill")
+                    .foregroundColor(.orange)
+                Text("Local Network access is off")
+                    .font(.caption.weight(.semibold))
+            }
+            Text(
+                "macOS hides the ARP table, vendor names and host names without this permission, so the sweep can only return bare addresses. Allow LanFi under Privacy & Security → Local Network, then rescan."
+            )
+            .font(.caption2)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                Button("Open Settings") { LocalNetworkAccess.openSettings() }
+                    .controlSize(.small)
+                Button("Request access") { LocalNetworkAccess.request() }
+                    .controlSize(.small)
+                Button("Rescan") { model.scan() }
+                    .controlSize(.small)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.isScanning)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private func devicesTable(_ result: LANScanResult) -> some View {

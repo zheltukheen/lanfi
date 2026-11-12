@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>LanFi</title>
+    <link>https://github.com/zheltukheen/lanfi</link>
+    <description>Native macOS Wi-Fi analyzer updates</description>
+    <language>en</language>
+    <item>
+      <title>LanFi 5.0.2</title>
+      <pubDate>Thu, 12 Nov 2026 21:24:56 +0000</pubDate>
+      <sparkle:version>64</sparkle:version>
+      <sparkle:shortVersionString>5.0.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+      <description>## LanFi 5.0.2
+
+### Fixed
+- **Local Network gating.** LanFi now requests macOS Local Network access
+  in-process before scanning; reading the ARP table through the `arp`
+  subprocess never triggered the permission prompt, so the app stayed
+  unauthorized. The scanner reports when the ARP table is unavailable and
+  shows an actionable gate (Open Settings, Request access, Rescan) instead of
+  a passive note, and the shelf no longer ingests identity-free fallback rows.
+
+### Docs
+- `docs/mcp.md` documents the Device Shelf tool in full: storage location,
+  every argument, the row schema and a runnable example.
+
+### Tooling
+- Removed a stale local `post-commit` hook that pointed at a deleted
+  `scripts/autopush.sh` outside the repository.
+
+### Install
+1. Download `LanFi.dmg` (or `LanFi.zip`).
+2. Drag LanFi to Applications.
+3. Open LanFi and allow Location Services when prompted — macOS requires it to reveal SSIDs/BSSIDs.
+4. If Gatekeeper blocks the ad-hoc signed build, right-click the app and choose Open.
+
+The always-latest build lives at
+&lt;https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg&gt;
+(`LanFi.zip` for the archive). The same unversioned names are used inside each
+tagged release.
+
+### Verify
+The SHA-256 checksums are attached as `LanFi.sha256`.
+</description>
+      <enclosure url="https://github.com/zheltukheen/lanfi/releases/download/v5.0.2/LanFi.zip" length="6996381" sparkle:edSignature="CFtf5imxt2W4OmFkKxwkc8eaUtq9+vjv5EEkwOPrXkWVqaHGgqB4CsATB07buLxuRjSMv3gDV4ZgN9mlIy3tDg==" type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
