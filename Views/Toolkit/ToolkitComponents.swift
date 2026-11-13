@@ -157,6 +157,27 @@ struct ToolkitErrorBanner: View {
     }
 }
 
+// MARK: - Chips
+
+/// Compact wrapping list of service/role labels used in device inspectors.
+struct ToolkitChips: View {
+    let items: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(items, id: \.self) { item in
+                Text(item)
+                    .font(.caption2)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(Color.accentColor.opacity(0.12), in: Capsule())
+                    .foregroundColor(.primary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 // MARK: - Badges
 
 struct ToolkitTypeBadge: View {
@@ -187,6 +208,23 @@ enum ToolkitTypeColor {
         case .caa: return .brown
         case .ptr: return .teal
         }
+    }
+}
+
+// MARK: - Tables
+
+/// Consistent table sizing for the toolkit. A table with one row used to
+/// collapse to a couple of dozen points, clipping the header and the row, so
+/// every table now keeps a readable minimum while still growing with content.
+enum ToolkitTableHeight {
+    static func rows(
+        _ count: Int,
+        row: CGFloat = 28,
+        header: CGFloat = 34,
+        minimum: CGFloat = 190,
+        maximum: CGFloat = 520
+    ) -> CGFloat {
+        max(minimum, min(CGFloat(max(count, 1)) * row + header, maximum))
     }
 }
 

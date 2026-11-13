@@ -9,6 +9,8 @@ struct DiagnosticTool: Identifiable, Hashable {
     let candidates: [String]
     let arguments: [String]
     let installHint: String?
+    /// Homebrew formula that provides this tool, when one exists.
+    var brewPackage: String? = nil
 
     var command: String { candidates.joined(separator: " / ") }
 }
@@ -38,7 +40,7 @@ enum ToolCatalog {
             id: "blueutil", title: "blueutil", icon: "antenna.radiowaves.left.and.right", category: "Wireless",
             description: "Bluetooth radio state and coexistence inspection.",
             candidates: ["/usr/local/bin/blueutil", "/opt/homebrew/bin/blueutil"], arguments: ["-p"],
-            installHint: "brew install blueutil"
+            installHint: "brew install blueutil", brewPackage: "blueutil"
         ),
         DiagnosticTool(
             id: "captive", title: "Captive portal check", icon: "lock.shield", category: "Security",

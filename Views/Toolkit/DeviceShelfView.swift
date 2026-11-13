@@ -38,7 +38,7 @@ struct DeviceShelfView: View {
         .onChange(of: model.selectedDevice?.alias) { _ in syncDrafts() }
         .onDisappear { commitAlias() }
         .confirmationDialog(
-            "Forget every device on the shelf?",
+            String(localized: "Forget every device on the shelf?"),
             isPresented: $showingClearConfirm
         ) {
             Button("Remove all", role: .destructive) { model.clearAll() }
@@ -58,7 +58,7 @@ struct DeviceShelfView: View {
                         Image(systemName: "magnifyingglass")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        TextField("Search name, IP, vendor, MAC…", text: $model.searchText)
+                        TextField(String(localized: "Search name, IP, vendor, MAC…"), text: $model.searchText)
                             .textFieldStyle(.plain)
                             .frame(minWidth: 180, maxWidth: 260)
                     }
@@ -81,13 +81,13 @@ struct DeviceShelfView: View {
                     Spacer()
 
                     Menu {
-                        Button("Export CSV…") { export(.csv) }
-                        Button("Export JSON…") { export(.json) }
+                        Button(String(localized: "Export CSV…")) { export(.csv) }
+                        Button(String(localized: "Export JSON…")) { export(.json) }
                         Divider()
-                        Button("Copy as text") { copyToPasteboard() }
-                        Button("Forget all…", role: .destructive) { showingClearConfirm = true }
+                        Button(String(localized: "Copy as text")) { copyToPasteboard() }
+                        Button(String(localized: "Forget all…"), role: .destructive) { showingClearConfirm = true }
                     } label: {
-                        Label("Export", systemImage: "square.and.arrow.up")
+                        Label(String(localized: "Export"), systemImage: "square.and.arrow.up")
                             .font(.caption)
                     }
                     .menuStyle(.borderlessButton)
@@ -104,9 +104,13 @@ struct DeviceShelfView: View {
                         tint: model.riskyDeviceCount > 0 ? .orange : .primary)
                     Spacer()
                     if let merged = model.lastMergedAt {
-                        Text("Shelf updated \(merged, style: .relative)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                        Text(
+                            String(
+                                format: String(localized: "Shelf updated %@"),
+                                merged.formatted(.relative(presentation: .named)))
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                     } else if let subnet = model.lastScanSubnet {
                         Text(subnet)
                             .font(.caption2.monospaced())
@@ -125,7 +129,7 @@ struct DeviceShelfView: View {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
                     Spacer()
-                    Text("\(model.filteredDevices.count) shown")
+                    Text(String(format: String(localized: "%lld shown"), model.filteredDevices.count))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -143,7 +147,9 @@ struct DeviceShelfView: View {
                                 .foregroundColor(device.isFavourite ? .yellow : .secondary.opacity(0.5))
                         }
                         .buttonStyle(.plain)
-                        .help(device.isFavourite ? "Remove from favourites" : "Add to favourites")
+                        .help(
+                            device.isFavourite
+                                ? String(localized: "Remove from favourites") : String(localized: "Add to favourites"))
                     }
                     .width(22)
 
@@ -208,17 +214,21 @@ struct DeviceShelfView: View {
                     }
                     .width(70)
 
-                    TableColumn("Availability") { device in
+                    TableColumn(String(localized: "Availability")) { device in
                         Text(device.availabilityPercent.map { String(format: "%.0f%%", $0) } ?? "—")
                             .font(.caption2.monospacedDigit())
                             .foregroundColor(.secondary)
                     }
                     .width(80)
 
-                    TableColumn("Last seen") { device in
-                        Text(device.isOnline ? "now" : device.lastSeen.formatted(.relative(presentation: .named)))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                    TableColumn(String(localized: "Last seen")) { device in
+                        Text(
+                            device.isOnline
+                                ? String(localized: "now")
+                                : device.lastSeen.formatted(.relative(presentation: .named))
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                     }
                     .width(95)
                 }
@@ -257,11 +267,13 @@ struct DeviceShelfView: View {
 
                     HStack(spacing: 6) {
                         ToolkitStatusPill(
-                            text: device.isOnline ? "Online" : "Offline",
+                            text: device.isOnline
+                                ? String(localized: "Online") : String(localized: "Offline"),
                             tone: device.isOnline ? .good : .neutral)
                         if let availability = device.availabilityPercent {
                             ToolkitStatusPill(
-                                text: String(format: "%.0f%% available", availability),
+                                text: String(
+                                    format: String(localized: "%.0f%% available"), availability),
                                 tone: availability >= 90 ? .good : (availability >= 50 ? .warning : .bad))
                         }
                     }
@@ -269,7 +281,7 @@ struct DeviceShelfView: View {
                     Divider()
 
                     TextField(
-                        "Name",
+                        String(localized: "Name"),
                         text: Binding(
                             get: { aliasDraft },
                             set: { aliasDraft = $0 }
@@ -279,7 +291,10 @@ struct DeviceShelfView: View {
                     .font(.caption)
                     .onSubmit { commitAlias() }
                     .onChange(of: aliasDraft) { _ in scheduleAliasSave() }
-                    .help("Your name for this device; it survives rescans and DHCP changes")
+                    .help(
+                        String(
+                            localized:
+                                "Your name for this device; it survives rescans and DHCP changes"))
 
                     Picker(
                         "Type",
@@ -298,8 +313,12 @@ struct DeviceShelfView: View {
                     inspectorRow("Hostname", device.hostname ?? "—")
                     inspectorRow("MAC", device.mac ?? "—")
                     inspectorRow("Source", model.lastScanSubnet ?? "—")
-                    inspectorRow("First seen", device.firstSeen.formatted(date: .abbreviated, time: .shortened))
-                    inspectorRow("Last seen", device.lastSeen.formatted(date: .abbreviated, time: .shortened))
+                    inspectorRow(
+                        "First seen",
+                        device.firstSeen.formatted(date: .abbreviated, time: .shortened))
+                    inspectorRow(
+                        "Last seen",
+                        device.lastSeen.formatted(date: .abbreviated, time: .shortened))
 
                     if device.latencySamples.count > 1 {
                         ToolkitSectionLabel(text: "Latency")
@@ -312,11 +331,15 @@ struct DeviceShelfView: View {
                     HStack {
                         ToolkitSectionLabel(text: "Risks")
                         Spacer()
-                        Text("score \(DeviceRiskCatalog.score(for: risks))")
-                            .font(.caption2.monospacedDigit())
-                            .foregroundColor(
-                                DeviceRiskCatalog.score(for: risks) >= 80
-                                    ? .green : (risks.isEmpty ? .secondary : .orange))
+                        Text(
+                            String(
+                                format: String(localized: "score %lld"),
+                                DeviceRiskCatalog.score(for: risks))
+                        )
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(
+                            DeviceRiskCatalog.score(for: risks) >= 80
+                                ? .green : (risks.isEmpty ? .secondary : .orange))
                     }
                     if risks.isEmpty {
                         Text("No risky ports detected on the probed set.")
@@ -387,7 +410,7 @@ struct DeviceShelfView: View {
                     }
 
                     Divider()
-                    Button("Forget this device", role: .destructive) {
+                    Button(String(localized: "Forget this device"), role: .destructive) {
                         model.forget(device.id)
                     }
                     .buttonStyle(.borderless)

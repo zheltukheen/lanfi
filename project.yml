@@ -41,8 +41,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
-        MARKETING_VERSION: "5.0.3"
-        CURRENT_PROJECT_VERSION: "65"
+        MARKETING_VERSION: "5.1.0"
+        CURRENT_PROJECT_VERSION: "66"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -62,10 +62,24 @@ targets:
           - _http._tcp
           - _https._tcp
           - _ssh._tcp
+          - _sftp-ssh._tcp
           - _smb._tcp
+          - _afpovertcp._tcp
           - _airplay._tcp
+          - _raop._tcp
+          - _googlecast._tcp
+          - _spotify-connect._tcp
+          - _sonos._tcp
           - _ipp._tcp
+          - _ipps._tcp
           - _printer._tcp
+          - _pdl-datastream._tcp
+          - _workstation._tcp
+          - _device-info._tcp
+          - _hap._tcp
+          - _matter._tcp
+          - _companion-link._tcp
+          - _sleep-proxy._udp
         CFBundleURLTypes:
           - CFBundleURLName: ru.zheltukheen.LanFi
             CFBundleURLSchemes:

@@ -62,6 +62,14 @@ struct PortScanToolView: View {
                     }
                     ToolkitStatusPill(text: statusText, tone: statusTone)
                 }
+                if model.isRunning, model.totalPorts > 0 {
+                    ProgressView(
+                        value: Double(model.results.count),
+                        total: Double(max(model.totalPorts, 1))
+                    )
+                    .progressViewStyle(.linear)
+                    .controlSize(.small)
+                }
                 HStack(spacing: 14) {
                     Stepper(value: $model.timeout, in: 0.5...10, step: 0.5) {
                         Text(
@@ -104,7 +112,14 @@ struct PortScanToolView: View {
     }
 
     private var statusText: String {
-        if model.isRunning { return String(localized: "Scanning…") }
+        if model.isRunning {
+            if model.totalPorts > 0 {
+                return String(
+                    format: String(localized: "Scanning %lld/%lld"),
+                    model.results.count, model.totalPorts)
+            }
+            return String(localized: "Scanning…")
+        }
         guard !model.results.isEmpty else { return String(localized: "Ready") }
         return String(
             format: String(localized: "%lld/%lld open"), model.openCount,
@@ -185,7 +200,10 @@ struct PortScanToolView: View {
                             .lineLimit(1)
                     }
                 }
-                .frame(height: min(CGFloat(model.results.count) * 26 + 40, 560))
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        model.results.count, row: 28, header: 42, minimum: 220,
+                        maximum: 560))
             }
         }
     }
@@ -271,7 +289,10 @@ struct PortScanToolView: View {
                             .foregroundColor(.secondary)
                     }
                 }
-                .frame(height: min(CGFloat(model.udpResults.count) * 26 + 40, 300))
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        model.udpResults.count, row: 28, header: 42, minimum: 170,
+                        maximum: 320))
             }
         }
     }

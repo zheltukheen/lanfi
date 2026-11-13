@@ -43,28 +43,62 @@ struct PortScanner: Sendable {
         timeout: TimeInterval = 1.5,
         concurrency: Int = 24
     ) async -> [PortScanResult] {
-        let unique = Array(Set(ports)).sorted()
-        guard !unique.isEmpty else { return [] }
-        let width = max(1, min(concurrency, 64))
         var results: [PortScanResult] = []
-        results.reserveCapacity(unique.count)
-
-        for start in stride(from: 0, to: unique.count, by: width) {
-            if Task.isCancelled { break }
-            let end = min(start + width, unique.count)
-            let batch = Array(unique[start..<end])
-            await withTaskGroup(of: PortScanResult.self) { group in
-                for port in batch {
-                    group.addTask {
-                        await probe.probe(host: host, port: port, timeout: timeout)
-                    }
-                }
-                for await result in group {
-                    results.append(result)
-                }
-            }
+        for await result in stream(
+            host: host, ports: ports, timeout: timeout, concurrency: concurrency)
+        {
+            results.append(result)
         }
         return results.sorted { $0.port < $1.port }
+    }
+
+    /// Yields each port as soon as its probe finishes and keeps a sliding
+    /// window of probes in flight. A slow or silently dropped port therefore
+    /// never blocks the rest of the list, and the UI fills progressively.
+    func stream(
+        host: String,
+        ports: [UInt16],
+        timeout: TimeInterval = 1.5,
+        concurrency: Int = 24
+    ) -> AsyncStream<PortScanResult> {
+        let unique = Array(Set(ports)).sorted()
+        let width = max(1, min(concurrency, 64))
+        let probe = self.probe
+        return AsyncStream { continuation in
+            let task = Task {
+                guard !unique.isEmpty else {
+                    continuation.finish()
+                    return
+                }
+                await withTaskGroup(of: PortScanResult.self) { group in
+                    var nextIndex = 0
+                    let initial = min(width, unique.count)
+                    for _ in 0..<initial {
+                        let port = unique[nextIndex]
+                        nextIndex += 1
+                        group.addTask {
+                            await probe.probe(host: host, port: port, timeout: timeout)
+                        }
+                    }
+                    while let result = await group.next() {
+                        continuation.yield(result)
+                        if Task.isCancelled {
+                            group.cancelAll()
+                            break
+                        }
+                        if nextIndex < unique.count {
+                            let port = unique[nextIndex]
+                            nextIndex += 1
+                            group.addTask {
+                                await probe.probe(host: host, port: port, timeout: timeout)
+                            }
+                        }
+                    }
+                }
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
     }
 }
 

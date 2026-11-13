@@ -105,13 +105,60 @@ struct Iperf3ToolView: View {
     }
 
     private var installHint: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "terminal")
-                .foregroundColor(.orange)
-            Text("iperf3 is not installed. Run `brew install iperf3` and reopen the toolkit.")
-                .font(.caption)
-                .textSelection(.enabled)
-            Spacer()
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "terminal")
+                    .foregroundColor(.orange)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("iperf3 is not installed")
+                        .font(.caption.weight(.semibold))
+                    Text(
+                        "Install it with one click. LanFi uses Homebrew and enables Run as soon as the client is available."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+                Spacer()
+                if model.isInstalling {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Installing…")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else {
+                    Button {
+                        model.install()
+                    } label: {
+                        Label(
+                            model.installSucceeded == false
+                                ? "Try Again" : "Install iperf3",
+                            systemImage: "arrow.down.circle")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+            }
+            if let output = model.installOutput, !output.isEmpty {
+                Text(output)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundColor(model.installSucceeded == true ? .secondary : .orange)
+                    .lineLimit(8)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            HStack(spacing: 8) {
+                Button("Copy brew command") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(
+                        ToolInstaller.command(for: "iperf3"), forType: .string)
+                }
+                .buttonStyle(.borderless)
+                .font(.caption2)
+                Text("Homebrew is required; a server must run on the target.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
         }
         .padding(10)
         .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
@@ -120,7 +167,8 @@ struct Iperf3ToolView: View {
     private var statusText: String {
         if model.isRunning { return String(localized: "Measuring…") }
         guard let report = model.report else { return String(localized: "Ready") }
-        return report.headlineMegabitsPerSecond.map { String(format: "%.0f Mbps", $0) } ?? "Done"
+        return report.headlineMegabitsPerSecond.map { String(format: "%.0f Mbps", $0) }
+            ?? String(localized: "Done")
     }
 
     private var statusTone: ToolkitTone {

@@ -318,7 +318,10 @@ struct UptimeToolView: View {
                                 .lineLimit(1)
                         }
                     }
-                    .frame(height: min(CGFloat(min(state.checks.count, 20)) * 24 + 30, 260))
+                    .frame(
+                        height: ToolkitTableHeight.rows(
+                            min(state.checks.count, 20), row: 26, header: 40,
+                            minimum: 190, maximum: 280))
                 }
             }
         }

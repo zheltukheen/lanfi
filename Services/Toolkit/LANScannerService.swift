@@ -16,7 +16,9 @@ enum LANScannerError: Error, Equatable, LocalizedError {
 }
 
 struct LANScannerService {
-    var probePorts: [UInt16] = [22, 80, 443, 445, 5_000, 7_000, 8_080, 3_389]
+    var probePorts: [UInt16] = [
+        22, 80, 139, 443, 445, 548, 631, 3_389, 5_000, 7_000, 8_080, 9_100, 62_078,
+    ]
 
     func scan(knownMACs: Set<String>, guardEnabled: Bool) async throws -> LANScanResult {
         let report = SystemInterfaceScanner.scan()
@@ -36,31 +38,52 @@ struct LANScannerService {
         // child process does not trigger the macOS prompt for this app.
         LocalNetworkAccess.request()
         ARPSweeper.nudge(hosts: hosts)
-        try? await Task.sleep(nanoseconds: 900_000_000)
 
-        let arpOutput = try ARPTableReader.read()
-        let hostSet = Set(hosts)
-        let parsed = ARPParser.parse(arpOutput)
-        let entries = parsed.filter { hostSet.contains($0.ip) }
+        // Run the independent discovery passes together instead of waiting for
+        // each one in turn: ICMP sweep, Bonjour and SSDP all overlap.
+        async let bonjourTask = BonjourDiscovery.advertisements(timeout: 1.0)
+        async let ssdpTask = SSDPDiscovery.advertisements(timeout: 1.0)
+        let responsive = await sweep(hosts)
+
+        var entries = readARPHostEntries(hosts: hosts)
+        if entries.isEmpty {
+            // Give the ARP cache a second chance after the sweep; some routers
+            // answer ICMP before they answer the UDP nudge.
+            ARPSweeper.nudge(hosts: hosts)
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            entries = readARPHostEntries(hosts: hosts)
+        }
+
         let resolvedGateway = gateway(for: interface.bsdName) ?? report.router
+        let probeHosts = Array(Set(entries.map(\.ip)).union(responsive.keys))
+            .sorted { (IPv4Address($0)?.value ?? 0) < (IPv4Address($1)?.value ?? 0) }
 
-        // macOS can hide the ARP table from a non-privileged child process
-        // until Local Network access is granted. When it is empty, fall back to
-        // an ICMP/TCP sweep so the scanner still finds devices; MAC/vendor are
-        // filled in when ARP is available.
-        let responsive = entries.isEmpty ? await sweep(hosts) : [:]
-        let probeHosts = entries.isEmpty ? Array(responsive.keys) : entries.map(\.ip)
-        let hostnames = await BonjourDiscovery.names(timeout: 2)
+        // PTR names and TCP probes are independent of the ARP result, so a
+        // denied ARP table still produces responsive addresses with names.
+        async let reverseTask = ReverseDNS.names(hosts: probeHosts)
         let probes = await probe(probeHosts)
+        let bonjour = await bonjourTask
+        let ssdp = await ssdpTask
+        let reversed = await reverseTask
+
+        var advertisements = bonjour
+        for (ip, advertisement) in ssdp {
+            advertisements[ip] = advertisements[ip]?.merged(with: advertisement) ?? advertisement
+        }
+        for (ip, name) in reversed {
+            let advertisement = LANAdvertisement(name: name)
+            advertisements[ip] = advertisements[ip]?.merged(with: advertisement) ?? advertisement
+        }
 
         let devices = LANDeviceAssembler.assemble(
             entries: entries,
             responsiveHosts: responsive,
-            hostnames: hostnames,
+            hostnames: [:],
             probes: probes,
             gateway: resolvedGateway,
             thisMAC: interface.macAddress,
-            knownMACs: guardEnabled ? knownMACs : []
+            knownMACs: guardEnabled ? knownMACs : [],
+            advertisements: advertisements
         )
         return LANScanResult(
             interfaceName: interface.bsdName,
@@ -70,6 +93,12 @@ struct LANScannerService {
             scannedAt: Date(),
             localNetworkAccessLikelyDenied: entries.isEmpty
         )
+    }
+
+    private func readARPHostEntries(hosts: [String]) -> [ARPEntry] {
+        guard let output = try? ARPTableReader.read() else { return [] }
+        let hostSet = Set(hosts)
+        return ARPParser.parse(output).filter { hostSet.contains($0.ip) }
     }
 
     /// The global router can be a VPN. For a LAN scan, read the default route
@@ -95,50 +124,72 @@ struct LANScannerService {
         return nil
     }
 
+    /// Probes every host/port pair through one sliding window. A dropped or
+    /// slow port only occupies its slot for the probe timeout; the rest keep
+    /// flowing, and no per-host batch waits for its slowest member.
     private func probe(_ hosts: [String]) async -> [String: [PortScanResult]] {
-        guard !hosts.isEmpty else { return [:] }
+        let pairs = hosts.flatMap { host in probePorts.map { (host, $0) } }
+        guard !pairs.isEmpty else { return [:] }
         var results: [String: [PortScanResult]] = [:]
-        let batchSize = 8
+        let probe = TCPPortProbe()
+        let timeout: TimeInterval = 0.55
+        let width = min(96, pairs.count)
 
-        for start in stride(from: 0, to: hosts.count, by: batchSize) {
-            if Task.isCancelled { break }
-            let batch = Array(hosts[start..<min(start + batchSize, hosts.count)])
-            await withTaskGroup(of: (String, [PortScanResult]).self) { group in
-                for host in batch {
-                    group.addTask {
-                        let scan = await PortScanner(probe: TCPPortProbe()).scan(
-                            host: host,
-                            ports: probePorts,
-                            timeout: 0.8,
-                            concurrency: 6
-                        )
-                        return (host, scan)
-                    }
+        await withTaskGroup(of: (String, PortScanResult).self) { group in
+            var iterator = pairs.makeIterator()
+            for _ in 0..<width {
+                guard let pair = iterator.next() else { break }
+                group.addTask {
+                    let result = await probe.probe(
+                        host: pair.0, port: pair.1, timeout: timeout)
+                    return (pair.0, result)
                 }
-                for await (ip, scan) in group {
-                    results[ip] = scan
+            }
+            while let (host, result) = await group.next() {
+                results[host, default: []].append(result)
+                if Task.isCancelled {
+                    group.cancelAll()
+                    break
+                }
+                if let pair = iterator.next() {
+                    group.addTask {
+                        let result = await probe.probe(
+                            host: pair.0, port: pair.1, timeout: timeout)
+                        return (pair.0, result)
+                    }
                 }
             }
         }
-        return results
+        return results.mapValues { $0.sorted { $0.port < $1.port } }
     }
 
     private func sweep(_ hosts: [String]) async -> [String: Double] {
         var responsive: [String: Double] = [:]
-        let batchSize = 32
-        for start in stride(from: 0, to: hosts.count, by: batchSize) {
-            if Task.isCancelled { break }
-            let batch = Array(hosts[start..<min(start + batchSize, hosts.count)])
-            await withTaskGroup(of: (String, Double?).self) { group in
-                for host in batch {
+        let width = min(128, hosts.count)
+        guard width > 0 else { return responsive }
+
+        await withTaskGroup(of: (String, Double?).self) { group in
+            var iterator = hosts.makeIterator()
+            for _ in 0..<width {
+                guard let host = iterator.next() else { break }
+                group.addTask {
+                    let sample = await ICMPPingProbe().probe(
+                        host: host, sequence: 1, timeout: 0.45)
+                    return (host, sample.rttMilliseconds)
+                }
+            }
+            while let (host, rtt) = await group.next() {
+                if let rtt { responsive[host] = rtt }
+                if Task.isCancelled {
+                    group.cancelAll()
+                    break
+                }
+                if let host = iterator.next() {
                     group.addTask {
                         let sample = await ICMPPingProbe().probe(
-                            host: host, sequence: 1, timeout: 0.6)
+                            host: host, sequence: 1, timeout: 0.45)
                         return (host, sample.rttMilliseconds)
                     }
-                }
-                for await (host, rtt) in group {
-                    if let rtt { responsive[host] = rtt }
                 }
             }
         }
@@ -198,5 +249,183 @@ enum ARPTableReader {
             throw LANScannerError.arpUnavailable(text)
         }
         return String(decoding: data, as: UTF8.self)
+    }
+}
+
+// MARK: - SSDP / UPnP
+
+/// Discovers devices that answer SSDP (media players, TVs, routers, printers,
+/// NAS boxes) and reads their UPnP description for a friendly name and model.
+enum SSDPDiscovery {
+    static func advertisements(timeout: TimeInterval = 1.0) async -> [String: LANAdvertisement] {
+        let responses = await Task.detached(priority: .utility) {
+            receive(timeout: timeout)
+        }.value
+        guard !responses.isEmpty else { return [:] }
+
+        // Deduplicate by USN/location; one device often sends several replies.
+        var unique: [String: SSDPResponse] = [:]
+        for response in responses {
+            let key = response.usn ?? response.location ?? response.sourceIP
+            if unique[key] == nil { unique[key] = response }
+        }
+        let selected = Array(unique.values.prefix(24))
+
+        var advertisements: [String: LANAdvertisement] = [:]
+        await withTaskGroup(of: (String, LANAdvertisement).self) { group in
+            var iterator = selected.makeIterator()
+            let width = min(8, selected.count)
+            for _ in 0..<width {
+                guard let response = iterator.next() else { break }
+                group.addTask {
+                    (response.sourceIP, await fetchAdvertisement(for: response))
+                }
+            }
+            while let (ip, advertisement) = await group.next() {
+                guard !advertisement.isEmpty else { continue }
+                advertisements[ip] = advertisements[ip]?.merged(with: advertisement) ?? advertisement
+                if let response = iterator.next() {
+                    group.addTask {
+                        (response.sourceIP, await fetchAdvertisement(for: response))
+                    }
+                }
+            }
+        }
+        return advertisements
+    }
+
+    private static func fetchAdvertisement(for response: SSDPResponse) async -> LANAdvertisement {
+        var advertisement = LANAdvertisement(services: ["UPnP"])
+        if let location = response.location, let url = URL(string: location),
+            let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https"
+        {
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 1.5
+            request.setValue("application/xml, text/xml, */*", forHTTPHeaderField: "Accept")
+            if let (data, _) = try? await URLSession.shared.data(for: request),
+                let text = String(data: data, encoding: .utf8)
+            {
+                advertisement = UPnPDescriptionParser.parse(text)
+            }
+        }
+        if advertisement.name == nil, let server = response.server {
+            // Example: "Linux/3.14 UPnP/1.0 MiniDLNA/1.0".
+            let parts = server.split(whereSeparator: { $0 == " " || $0 == "/" })
+            if let first = parts.first, !first.isEmpty, parts.count > 1 {
+                advertisement.name = String(first)
+            }
+        }
+        return advertisement
+    }
+
+    private static func receive(timeout: TimeInterval) -> [SSDPResponse] {
+        let descriptor = socket(AF_INET, SOCK_DGRAM, 0)
+        guard descriptor >= 0 else { return [] }
+        defer { close(descriptor) }
+
+        var receiveTimeout = timeval(tv_sec: 0, tv_usec: 200_000)
+        setsockopt(
+            descriptor, SOL_SOCKET, SO_RCVTIMEO, &receiveTimeout,
+            socklen_t(MemoryLayout<timeval>.size))
+
+        var destination = sockaddr_in()
+        destination.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        destination.sin_family = sa_family_t(AF_INET)
+        destination.sin_port = UInt16(1900).bigEndian
+        guard inet_pton(AF_INET, "239.255.255.250", &destination.sin_addr) == 1 else {
+            return []
+        }
+        var ttl: UInt8 = 2
+        setsockopt(
+            descriptor, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
+            socklen_t(MemoryLayout<UInt8>.size))
+
+        let request = Data(
+            """
+            M-SEARCH * HTTP/1.1\r
+            HOST: 239.255.255.250:1900\r
+            MAN: "ssdp:discover"\r
+            MX: 1\r
+            ST: ssdp:all\r
+            \r
+            """.utf8)
+        let bytes = [UInt8](request)
+        for _ in 0..<2 {
+            _ = withUnsafePointer(to: &destination) { pointer in
+                pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { address in
+                    sendto(
+                        descriptor, bytes, bytes.count, 0, address,
+                        socklen_t(MemoryLayout<sockaddr_in>.size))
+                }
+            }
+        }
+
+        let deadline = Date().addingTimeInterval(max(0.3, timeout))
+        var responses: [SSDPResponse] = []
+        while Date() < deadline {
+            var buffer = [UInt8](repeating: 0, count: 8_192)
+            var source = sockaddr_in()
+            var sourceLength = socklen_t(MemoryLayout<sockaddr_in>.size)
+            let received = withUnsafeMutablePointer(to: &source) { pointer in
+                pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { address in
+                    recvfrom(
+                        descriptor, &buffer, buffer.count, 0, address, &sourceLength)
+                }
+            }
+            if received <= 0 {
+                if errno == EAGAIN || errno == EWOULDBLOCK { continue }
+                break
+            }
+            var address = source.sin_addr
+            var nameBuffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
+            guard inet_ntop(AF_INET, &address, &nameBuffer, socklen_t(nameBuffer.count)) != nil
+            else { continue }
+            let sourceIP = String(cString: nameBuffer)
+            let text = String(decoding: buffer[0..<received], as: UTF8.self)
+            if let response = SSDPParser.parseResponse(text, sourceIP: sourceIP) {
+                responses.append(response)
+            }
+        }
+        return responses
+    }
+}
+
+// MARK: - Reverse DNS
+
+/// PTR lookups for the addresses that answered. Host names are a strong
+/// identity hint on managed networks and cost one short UDP query per host.
+enum ReverseDNS {
+    static func names(hosts: [String], timeout: TimeInterval = 0.6) async -> [String: String] {
+        guard !hosts.isEmpty else { return [:] }
+        var names: [String: String] = [:]
+        await withTaskGroup(of: (String, String?).self) { group in
+            var iterator = hosts.makeIterator()
+            let width = min(8, hosts.count)
+            for _ in 0..<width {
+                guard let host = iterator.next() else { break }
+                group.addTask { (host, await lookupName(for: host, timeout: timeout)) }
+            }
+            while let (host, name) = await group.next() {
+                if let name { names[host] = name }
+                if let host = iterator.next() {
+                    group.addTask { (host, await lookupName(for: host, timeout: timeout)) }
+                }
+            }
+        }
+        return names
+    }
+
+    private static func lookupName(for host: String, timeout: TimeInterval) async -> String? {
+        guard IPv4Address(host) != nil else { return nil }
+        let reversed = host.split(separator: ".").reversed().joined(separator: ".") + ".in-addr.arpa"
+        guard
+            let result = try? await UDPDNSClient().lookup(
+                host: reversed, type: .ptr, resolver: .system, timeout: timeout),
+            let value = result.records.first?.value.trimmingCharacters(
+                in: CharacterSet(charactersIn: ".")
+            ),
+            !value.isEmpty
+        else { return nil }
+        return value
     }
 }

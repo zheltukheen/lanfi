@@ -216,7 +216,10 @@ struct DNSToolView: View {
                             .textSelection(.enabled)
                     }
                 }
-                .frame(height: min(CGFloat(result.records.count) * 24 + 28, 520))
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        result.records.count, row: 26, header: 40, minimum: 210,
+                        maximum: 540))
             }
         }
     }

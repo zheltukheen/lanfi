@@ -54,7 +54,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var reportNotes: String?
     var updatedAt: Date
 
-    static func new(name: String = "Untitled survey") -> SurveyProject {
+    static func new(name: String = String(localized: "Untitled survey")) -> SurveyProject {
         SurveyProject(
             id: UUID(), name: name, imageFileName: nil, samples: [], walls: [],
             obstacles: [], accessPoints: [], floorLevel: 0, floorHeightMeters: 3.0, updatedAt: Date()
