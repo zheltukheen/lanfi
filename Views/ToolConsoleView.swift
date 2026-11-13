@@ -9,6 +9,9 @@ struct ToolConsoleView: View {
     @State private var output = ""
     @State private var running = false
     @State private var startedAt: Date?
+    @State private var isInstalling = false
+    @State private var installSucceeded: Bool?
+    @State private var installOutput: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -26,11 +29,12 @@ struct ToolConsoleView: View {
                     .help("Toggle full screen")
                 }
                 Text(tool.description).font(.caption).foregroundColor(.secondary)
-                if let installHint = tool.installHint, executable == nil {
-                    Text(installHint).font(.caption).foregroundColor(.orange).textSelection(.enabled)
+                if executable == nil {
+                    installBanner(tool)
                 }
                 HStack {
-                    Text(executable ?? "Not found").font(.caption.monospaced()).lineLimit(1)
+                    Text(executable ?? String(localized: "Not found"))
+                        .font(.caption.monospaced()).lineLimit(1)
                     Spacer()
                     Button("Run") { run() }
                         .buttonStyle(.borderedProminent)
@@ -50,8 +54,13 @@ struct ToolConsoleView: View {
                         .disabled(output.isEmpty)
                     Spacer()
                     if let startedAt {
-                        Text("Last run \(startedAt.formatted(date: .omitted, time: .standard))").font(.caption2)
-                            .foregroundColor(.secondary)
+                        Text(
+                            String(
+                                format: String(localized: "Last run %@"),
+                                startedAt.formatted(date: .omitted, time: .standard))
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                     }
                 }
                 .controlSize(.small)
@@ -79,10 +88,84 @@ struct ToolConsoleView: View {
         }
     }
 
+    @ViewBuilder
+    private func installBanner(_ tool: DiagnosticTool) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 8) {
+                Image(systemName: "shippingbox")
+                    .foregroundColor(.orange)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(tool.title) is not installed")
+                        .font(.caption.weight(.semibold))
+                    if let hint = tool.installHint {
+                        Text(hint)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .textSelection(.enabled)
+                    }
+                }
+                Spacer()
+                if let package = tool.brewPackage {
+                    if isInstalling {
+                        ProgressView().controlSize(.small)
+                        Text("Installing…")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Button {
+                            install(package)
+                        } label: {
+                            Label(
+                                installSucceeded == false ? "Try Again" : "Install",
+                                systemImage: "arrow.down.circle")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                    }
+                    Button("Copy command") {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(
+                            ToolInstaller.command(for: package), forType: .string)
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.caption2)
+                }
+            }
+            if let installOutput, !installOutput.isEmpty {
+                Text(installOutput)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundColor(installSucceeded == true ? .secondary : .orange)
+                    .lineLimit(8)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(9)
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func install(_ package: String) {
+        guard !isInstalling else { return }
+        isInstalling = true
+        installSucceeded = nil
+        installOutput = nil
+        Task {
+            let result = await ToolInstaller.install(package: package)
+            await MainActor.run {
+                isInstalling = false
+                installSucceeded = result.succeeded
+                installOutput = result.message
+                if let tool {
+                    executable = ToolRunner.locate(tool.candidates)
+                }
+            }
+        }
+    }
+
     private func run() {
         guard let executable else { return }
         running = true
-        output = "Running…"
+        output = String(localized: "Running…")
         startedAt = Date()
         let args = parseArguments(arguments)
         Task {

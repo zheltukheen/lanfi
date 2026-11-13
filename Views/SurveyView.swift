@@ -15,6 +15,7 @@ struct SurveyView: View {
     @State private var show3DFloors = false
     @State private var calibrating = false
     @State private var calibrationPoints: [SurveyPoint] = []
+    @State private var showingClearConfirm = false
     @StateObject private var heatGridCache = HeatGridCache()
 
     private var selectedNetwork: NetworkModel? {
@@ -34,17 +35,28 @@ struct SurveyView: View {
         VStack(spacing: 0) {
             toolbar
             Divider()
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .layoutPriority(1)
+            HStack(spacing: 0) {
+                surveyInspector
+                    .frame(width: 268)
+                Divider()
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .layoutPriority(1)
+            }
         }
-        .frame(minWidth: 760, minHeight: 560)
+        .frame(minWidth: 980, minHeight: 620)
         .background(Color(nsColor: .windowBackgroundColor))
         .sheet(isPresented: $showReportSettings) {
             SurveyReportSettingsView(survey: survey)
         }
         .sheet(isPresented: $show3DFloors) {
             MultiFloorSurveyView(survey: survey)
+        }
+        .alert("Clear all survey points?", isPresented: $showingClearConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear Points", role: .destructive) { survey.clearSamples() }
+        } message: {
+            Text("Walls, rooms and predictive access points stay in place.")
         }
     }
 
@@ -67,7 +79,9 @@ struct SurveyView: View {
 
                 Menu {
                     Button("This floor") {
-                        survey.exportPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                        survey.exportPDF(
+                            networkName: selectedNetwork?.displaySSID ?? "All networks",
+                            samples: displayedSamples)
                     }
                     Button("All floors") {
                         survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
@@ -103,8 +117,8 @@ struct SurveyView: View {
                     pendingWallStart = nil
                     survey.statusMessage =
                         wallMode
-                        ? "Wall mode: click two points to draw a wall."
-                        : "Wall mode off."
+                        ? String(localized: "Wall mode: click two points to draw a wall.")
+                        : String(localized: "Wall mode off.")
                 } label: {
                     Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
                 }
@@ -118,8 +132,8 @@ struct SurveyView: View {
                     predictiveMode.toggle()
                     survey.statusMessage =
                         predictiveMode
-                        ? "Predictive mode: click the plan to place an AP."
-                        : "Predictive mode off."
+                        ? String(localized: "Predictive mode: click the plan to place an AP.")
+                        : String(localized: "Predictive mode off.")
                 } label: {
                     Label(
                         "Predictive",
@@ -136,8 +150,8 @@ struct SurveyView: View {
                     walkMode.toggle()
                     survey.statusMessage =
                         walkMode
-                        ? "Walk mode: move the pointer over the plan to sample automatically."
-                        : "Walk mode off."
+                        ? String(localized: "Walk mode: move the pointer over the plan to sample automatically.")
+                        : String(localized: "Walk mode off.")
                 } label: {
                     Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
                 }
@@ -153,8 +167,8 @@ struct SurveyView: View {
                         roomPoints = []
                         survey.statusMessage =
                             roomMode
-                            ? "Room mode: click vertices, then Finish Room."
-                            : "Room mode off."
+                            ? String(localized: "Room mode: click vertices, then Finish Room.")
+                            : String(localized: "Room mode off.")
                     } label: {
                         Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
                     }
@@ -175,8 +189,8 @@ struct SurveyView: View {
                         calibrationPoints = []
                         survey.statusMessage =
                             calibrating
-                            ? "Calibration: click two points and enter the real distance."
-                            : "Calibration cancelled."
+                            ? String(localized: "Calibration: click two points and enter the real distance.")
+                            : String(localized: "Calibration cancelled.")
                     }
                     Divider()
                     Button("Clear Walls", role: .destructive) {
@@ -249,26 +263,296 @@ struct SurveyView: View {
         .background(Material.bar)
     }
 
+    // MARK: - Inspector
+
+    private var surveyInspector: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                headerCard
+                metricsCard
+                toolCard
+                networkCard
+                if survey.floorPlanImage != nil {
+                    samplesCard
+                }
+                tipsCard
+            }
+            .padding(12)
+        }
+        .background(Color(nsColor: .underPageBackgroundColor).opacity(0.45))
+    }
+
+    private var headerCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Image(systemName: "map")
+                        .foregroundColor(.accentColor)
+                    Text(survey.project.name)
+                        .font(.headline)
+                        .lineLimit(1)
+                    Spacer()
+                }
+                Text(
+                    String(
+                        format: String(localized: "Floor %lld · %lld points"),
+                        survey.project.floorLevel + 1, survey.project.samples.count)
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                Text(survey.statusMessage)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var metricsCard: some View {
+        let samples = displayedSamples
+        let average =
+            samples.isEmpty
+            ? nil : samples.map(\.rssi).reduce(0, +) / samples.count
+        let best = samples.map(\.rssi).max()
+        return ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                ToolkitSectionLabel(text: "Coverage")
+                HStack(spacing: 12) {
+                    ToolkitMetric(title: "Points", value: "\(samples.count)")
+                    ToolkitMetric(
+                        title: "Average",
+                        value: average.map { "\($0) dBm" } ?? "—",
+                        tint: average.map { $0 >= -65 ? Color.green : .orange } ?? .primary)
+                    ToolkitMetric(
+                        title: "Best", value: best.map { "\($0) dBm" } ?? "—",
+                        tint: best.map { $0 >= -55 ? Color.green : .primary } ?? .primary)
+                }
+                HStack(spacing: 12) {
+                    ToolkitMetric(title: "Walls", value: "\(survey.walls.count)")
+                    ToolkitMetric(title: "Rooms", value: "\(survey.obstacles.count)")
+                    ToolkitMetric(title: "APs", value: "\(survey.accessPoints.count)")
+                }
+            }
+        }
+    }
+
+    private var toolCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                ToolkitSectionLabel(text: "Current tool")
+                HStack(spacing: 7) {
+                    Image(systemName: currentToolIcon)
+                        .foregroundColor(currentToolTint)
+                    Text(currentToolTitle)
+                        .font(.caption.weight(.semibold))
+                    Spacer()
+                }
+                Text(currentToolHint)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var networkCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                ToolkitSectionLabel(text: "Capture")
+                if let network = captureNetwork {
+                    Text(network.displaySSID)
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                    Text("\(network.signal) dBm · \(network.bandLabel) · ch \(network.channel)")
+                        .font(.caption2.monospaced())
+                        .foregroundColor(.secondary)
+                    Text(selectedNetwork == nil ? "Strongest visible network" : "Selected network")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("No Wi-Fi networks visible. Start a scan in the Wi-Fi Analyzer.")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                }
+            }
+        }
+    }
+
+    private var samplesCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    ToolkitSectionLabel(text: "Points")
+                    Spacer()
+                    Button("Undo") { survey.removeLastSample() }
+                        .buttonStyle(.borderless)
+                        .font(.caption2)
+                        .disabled(survey.samples.isEmpty)
+                }
+                if displayedSamples.isEmpty {
+                    Text("Click the plan to add the first point.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(Array(displayedSamples.suffix(14).reversed())) { sample in
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(heatColor(sample.rssi))
+                                .frame(width: 7, height: 7)
+                            Text("\(sample.rssi) dBm")
+                                .font(.caption2.monospacedDigit())
+                                .frame(width: 52, alignment: .leading)
+                            Text(sample.ssid)
+                                .font(.caption2)
+                                .lineLimit(1)
+                            Spacer()
+                            Button {
+                                survey.removeSample(id: sample.id)
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 8))
+                            }
+                            .buttonStyle(.borderless)
+                            .help("Remove point")
+                        }
+                    }
+                }
+                Divider()
+                Button(role: .destructive) {
+                    showingClearConfirm = true
+                } label: {
+                    Label("Clear all points", systemImage: "trash")
+                        .font(.caption2)
+                }
+                .buttonStyle(.borderless)
+                .disabled(survey.samples.isEmpty)
+            }
+        }
+    }
+
+    private var tipsCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                ToolkitSectionLabel(text: "How to survey")
+                tipRow("1", "Import a floor plan.")
+                tipRow("2", "Walk the area and click to record RSSI.")
+                tipRow("3", "Add walls and rooms for realistic attenuation.")
+                tipRow("4", "Export a PDF report or inspect the 3D view.")
+            }
+        }
+    }
+
+    private func tipRow(_ number: String, _ text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 7) {
+            Text(number)
+                .font(.system(size: 9, weight: .bold, design: .rounded))
+                .frame(width: 15, height: 15)
+                .background(Color.accentColor.opacity(0.14), in: Circle())
+            Text(text)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var currentToolTitle: String {
+        if calibrating { return String(localized: "Calibrate scale") }
+        if predictiveMode { return String(localized: "Predictive AP") }
+        if wallMode { return String(localized: "Draw wall") }
+        if roomMode { return String(localized: "Draw room") }
+        if walkMode { return String(localized: "Walk sampling") }
+        return String(localized: "Record sample")
+    }
+
+    private var currentToolIcon: String {
+        if calibrating { return "ruler" }
+        if predictiveMode { return "antenna.radiowaves.left.and.right" }
+        if wallMode { return "pencil.tip" }
+        if roomMode { return "rectangle.dashed" }
+        if walkMode { return "figure.walk" }
+        return "hand.tap"
+    }
+
+    private var currentToolTint: Color {
+        if calibrating { return .cyan }
+        if predictiveMode { return .purple }
+        if wallMode || roomMode { return .orange }
+        if walkMode { return .green }
+        return .accentColor
+    }
+
+    private var currentToolHint: String {
+        if calibrating {
+            return String(localized: "Click two points that have a known real-world distance.")
+        }
+        if predictiveMode {
+            return String(
+                localized: "Click the plan to place a virtual access point and render predicted coverage."
+            )
+        }
+        if wallMode {
+            return String(localized: "Click two points to draw a wall. Walls attenuate the heatmap.")
+        }
+        if roomMode {
+            return String(localized: "Click the room corners, then choose Finish Room from Structure.")
+        }
+        if walkMode {
+            return String(localized: "Move the pointer over the plan to sample automatically as you walk.")
+        }
+        return String(localized: "Click anywhere on the plan to capture the selected network's signal.")
+    }
+
     @ViewBuilder
     private var content: some View {
         if survey.floorPlanImage == nil {
-            VStack(spacing: 12) {
-                Image(systemName: "map")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary.opacity(0.35))
-                Text("No floor plan loaded")
-                    .font(.headline)
-                Text(
-                    "Import a PNG or JPEG floor plan, then click anywhere on it to record the selected network's RSSI."
-                )
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-                Button("Import Floor Plan") { survey.importFloorPlan() }
-                    .buttonStyle(.borderedProminent)
+            ScrollView {
+                VStack(spacing: 18) {
+                    Image(systemName: "map.fill")
+                        .font(.system(size: 46))
+                        .foregroundColor(.accentColor.opacity(0.75))
+                    Text("Start a site survey")
+                        .font(.title2.bold())
+                    Text(
+                        "Import a floor plan, record signal strength around the space, and see a continuous coverage heatmap."
+                    )
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 520)
+
+                    HStack(alignment: .top, spacing: 12) {
+                        onboardingStep(
+                            icon: "photo", title: "1 · Floor plan",
+                            detail: "Import a PNG or JPEG. It is copied into the survey project.")
+                        onboardingStep(
+                            icon: "hand.tap", title: "2 · Record",
+                            detail: "Click on the plan or use Walk mode to sample the selected network.")
+                        onboardingStep(
+                            icon: "square.3.layers.3d", title: "3 · Analyse",
+                            detail: "Add walls and rooms, place predictive APs and export a PDF.")
+                    }
+                    .frame(maxWidth: 760)
+
+                    HStack(spacing: 10) {
+                        Button {
+                            survey.importFloorPlan()
+                        } label: {
+                            Label("Import Floor Plan", systemImage: "photo")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        Button {
+                            survey.newFloor()
+                        } label: {
+                            Label("New Floor", systemImage: "plus.rectangle.on.rectangle")
+                        }
+                        .controlSize(.large)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(36)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             GeometryReader { geo in
                 let rect = fittedRect(in: geo.size)
@@ -307,10 +591,13 @@ struct SurveyView: View {
                         drawCalibration(context: context, rect: rect)
                     }
                     .allowsHitTesting(false)
-                    .accessibilityLabel("Floor plan heatmap")
+                    .accessibilityLabel(String(localized: "Floor plan heatmap"))
                     .accessibilityValue(
-                        "\(displayedSamples.count) samples, \(survey.walls.count) walls, "
-                            + "\(selectedNetwork?.displaySSID ?? "all networks")")
+                        String(
+                            format: String(
+                                localized: "%lld samples, %lld walls, %@"),
+                            displayedSamples.count, survey.walls.count,
+                            selectedNetwork?.displaySSID ?? String(localized: "all networks")))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(selectedNetwork?.displaySSID ?? "All networks")
@@ -339,6 +626,27 @@ struct SurveyView: View {
                         }
                     }
                     .padding(10)
+
+                    if displayedSamples.isEmpty, !predictiveMode {
+                        VStack(spacing: 5) {
+                            Image(systemName: "hand.tap")
+                                .font(.title3)
+                                .foregroundColor(.accentColor)
+                            Text("Click anywhere on the plan")
+                                .font(.caption.weight(.semibold))
+                            Text(
+                                captureNetwork?.displaySSID
+                                    ?? String(localized: "Start a Wi-Fi scan first")
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .allowsHitTesting(false)
+                    }
                 }
                 .contentShape(Rectangle())
                 .onTapGesture { location in
@@ -363,7 +671,9 @@ struct SurveyView: View {
                     }
                     if roomMode {
                         roomPoints.append(SurveyPoint(x: x, y: y))
-                        survey.statusMessage = "Room vertices: \(roomPoints.count). Finish Room when ready."
+                        survey.statusMessage = String(
+                            format: String(localized: "Room vertices: %lld. Finish Room when ready."),
+                            roomPoints.count)
                         return
                     }
                     if wallMode {
@@ -372,7 +682,8 @@ struct SurveyView: View {
                             pendingWallStart = nil
                         } else {
                             pendingWallStart = CGPoint(x: x, y: y)
-                            survey.statusMessage = "Wall start set. Click the second point."
+                            survey.statusMessage = String(
+                                localized: "Wall start set. Click the second point.")
                         }
                         return
                     }
@@ -397,6 +708,25 @@ struct SurveyView: View {
         }
     }
 
+    private func onboardingStep(
+        icon: String, title: LocalizedStringKey, detail: LocalizedStringKey
+    ) -> some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.accentColor)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
     private func finishCalibration() {
         let first = calibrationPoints[0]
         let second = calibrationPoints[1]
@@ -406,13 +736,14 @@ struct SurveyView: View {
             return
         }
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 22))
-        field.placeholderString = "metres"
+        field.placeholderString = String(localized: "metres")
         let alert = NSAlert()
-        alert.messageText = "Calibrate plan scale"
-        alert.informativeText = "Enter the real-world distance between the two points."
+        alert.messageText = String(localized: "Calibrate plan scale")
+        alert.informativeText = String(
+            localized: "Enter the real-world distance between the two points.")
         alert.accessoryView = field
-        alert.addButton(withTitle: "Apply")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Apply"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         if alert.runModal() == .alertFirstButtonReturn,
             let meters = Double(field.stringValue.replacingOccurrences(of: ",", with: "."))
         {

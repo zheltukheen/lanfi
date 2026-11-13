@@ -187,21 +187,66 @@ struct DeviceRiskFinding: Identifiable, Equatable, Sendable {
 enum DeviceRiskCatalog {
     private static let entries: [(port: UInt16, title: String, severity: DeviceRiskFinding.Severity, advice: String)] =
         [
-            (23, "Telnet is open", .high, "Disable Telnet and use SSH: credentials cross the LAN in clear text."),
-            (21, "FTP is open", .high, "Prefer SFTP/FTPS; anonymous FTP exposes files to the whole network."),
-            (5900, "VNC is open", .high, "Screen sharing on the LAN; set a strong password or a tunnel."),
-            (27017, "MongoDB is open", .high, "A database without auth is a common ransomware entry point."),
-            (2375, "Docker API without TLS", .high, "Anyone on the LAN can start containers on this host."),
-            (445, "SMB file sharing", .medium, "Keep it inside trusted networks and patch SMB regularly."),
-            (139, "NetBIOS is open", .medium, "Legacy sharing; disable it if the device does not need it."),
-            (3389, "Remote Desktop is open", .medium, "Restrict RDP to a VPN and enable account lockout."),
-            (554, "RTSP camera stream", .medium, "Camera streams often have default credentials. Change them."),
-            (1883, "MQTT without TLS", .medium, "Smart-home traffic in clear text; use 8883 with TLS."),
-            (9200, "Elasticsearch is open", .medium, "Search APIs are unauthenticated by default."),
-            (80, "Web admin over HTTP", .low, "Prefer HTTPS and change factory admin passwords."),
-            (8080, "Web admin over HTTP", .low, "Prefer HTTPS and change factory admin passwords."),
-            (1900, "UPnP / SSDP", .low, "UPnP can open router ports without asking; disable it if unused."),
-            (9100, "Raw printing", .low, "JetDirect printing accepts jobs from any LAN host."),
+            (
+                23, String(localized: "Telnet is open"), .high,
+                String(localized: "Disable Telnet and use SSH: credentials cross the LAN in clear text.")
+            ),
+            (
+                21, String(localized: "FTP is open"), .high,
+                String(localized: "Prefer SFTP/FTPS; anonymous FTP exposes files to the whole network.")
+            ),
+            (
+                5900, String(localized: "VNC is open"), .high,
+                String(localized: "Screen sharing on the LAN; set a strong password or a tunnel.")
+            ),
+            (
+                27017, String(localized: "MongoDB is open"), .high,
+                String(localized: "A database without auth is a common ransomware entry point.")
+            ),
+            (
+                2375, String(localized: "Docker API without TLS"), .high,
+                String(localized: "Anyone on the LAN can start containers on this host.")
+            ),
+            (
+                445, String(localized: "SMB file sharing"), .medium,
+                String(localized: "Keep it inside trusted networks and patch SMB regularly.")
+            ),
+            (
+                139, String(localized: "NetBIOS is open"), .medium,
+                String(localized: "Legacy sharing; disable it if the device does not need it.")
+            ),
+            (
+                3389, String(localized: "Remote Desktop is open"), .medium,
+                String(localized: "Restrict RDP to a VPN and enable account lockout.")
+            ),
+            (
+                554, String(localized: "RTSP camera stream"), .medium,
+                String(localized: "Camera streams often have default credentials. Change them.")
+            ),
+            (
+                1883, String(localized: "MQTT without TLS"), .medium,
+                String(localized: "Smart-home traffic in clear text; use 8883 with TLS.")
+            ),
+            (
+                9200, String(localized: "Elasticsearch is open"), .medium,
+                String(localized: "Search APIs are unauthenticated by default.")
+            ),
+            (
+                80, String(localized: "Web admin over HTTP"), .low,
+                String(localized: "Prefer HTTPS and change factory admin passwords.")
+            ),
+            (
+                8080, String(localized: "Web admin over HTTP"), .low,
+                String(localized: "Prefer HTTPS and change factory admin passwords.")
+            ),
+            (
+                1900, String(localized: "UPnP / SSDP"), .low,
+                String(localized: "UPnP can open router ports without asking; disable it if unused.")
+            ),
+            (
+                9100, String(localized: "Raw printing"), .low,
+                String(localized: "JetDirect printing accepts jobs from any LAN host.")
+            ),
         ]
 
     static func findings(for ports: [UInt16]) -> [DeviceRiskFinding] {
@@ -297,10 +342,11 @@ enum DeviceShelfMerger {
             let isFirstScan = record.checks == 0
             if isFirstScan {
                 record.events.append(
-                    DeviceShelfEvent(date: now, kind: .joined, detail: "Joined \(scan.subnet)"))
+                    DeviceShelfEvent(
+                        date: now, kind: .joined, detail: String(format: String(localized: "Joined %@"), scan.subnet)))
             } else if !record.isOnline {
                 record.events.append(
-                    DeviceShelfEvent(date: now, kind: .returned, detail: "Back online"))
+                    DeviceShelfEvent(date: now, kind: .returned, detail: String(localized: "Back online")))
             }
 
             if !isFirstScan {
@@ -311,10 +357,16 @@ enum DeviceShelfMerger {
                     let opened = current.subtracting(previous).sorted()
                     let closed = previous.subtracting(current).sorted()
                     if !opened.isEmpty {
-                        parts.append("opened " + opened.map(String.init).joined(separator: ", "))
+                        parts.append(
+                            String(
+                                format: String(localized: "opened %@"),
+                                opened.map(String.init).joined(separator: ", ")))
                     }
                     if !closed.isEmpty {
-                        parts.append("closed " + closed.map(String.init).joined(separator: ", "))
+                        parts.append(
+                            String(
+                                format: String(localized: "closed %@"),
+                                closed.map(String.init).joined(separator: ", ")))
                     }
                     record.events.append(
                         DeviceShelfEvent(
@@ -358,7 +410,7 @@ enum DeviceShelfMerger {
             if record.isOnline {
                 record.isOnline = false
                 record.events.append(
-                    DeviceShelfEvent(date: now, kind: .left, detail: "Not seen in scan"))
+                    DeviceShelfEvent(date: now, kind: .left, detail: String(localized: "Not seen in scan")))
                 record.events = Array(record.events.suffix(eventLimit))
             }
             merged.append(record)

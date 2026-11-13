@@ -8,7 +8,7 @@ final class SurveyViewModel: ObservableObject {
     @Published private(set) var projects: [SurveyProject] = []
     @Published private(set) var floorPlanData: Data?
     @Published var selectedNetworkId: String?
-    @Published var statusMessage: String = "Import a floor plan, then click to record signal."
+    @Published var statusMessage: String = String(localized: "Import a floor plan, then click to record signal.")
 
     private let store = SurveyStore()
     private var pendingSave: DispatchWorkItem?
@@ -17,11 +17,15 @@ final class SurveyViewModel: ObservableObject {
         if let latest = store.latestProject() {
             project = latest
             floorPlanData = store.imageData(for: latest)
-            statusMessage = "Loaded \(latest.name) · \(latest.samples.count) points"
+            statusMessage = String(
+                format: String(localized: "Loaded %@ · %lld points"), latest.name, latest.samples.count)
         } else {
             project = .new()
         }
         projects = store.projects()
+        if !projects.contains(where: { $0.id == project.id }) {
+            projects.insert(project, at: 0)
+        }
     }
 
     var floorPlanImage: NSImage? {
@@ -40,7 +44,7 @@ final class SurveyViewModel: ObservableObject {
 
     func importFloorPlan() {
         let panel = NSOpenPanel()
-        panel.title = "Choose a floor plan"
+        panel.title = String(localized: "Choose a floor plan")
         panel.allowedContentTypes = [.image]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url,
@@ -53,7 +57,7 @@ final class SurveyViewModel: ObservableObject {
         project.updatedAt = Date()
         floorPlanData = data
         store.save(project, imageData: data)
-        statusMessage = "Floor plan loaded. Click on the plan to record signal."
+        statusMessage = String(localized: "Floor plan loaded. Click on the plan to record signal.")
     }
 
     func addSample(x: Double, y: Double, network: NetworkModel) {
@@ -71,7 +75,31 @@ final class SurveyViewModel: ObservableObject {
         project.samples.append(sample)
         project.updatedAt = Date()
         scheduleSave()
-        statusMessage = "Recorded \(network.signal) dBm for \(network.displaySSID)."
+        statusMessage = String(
+            format: String(localized: "Recorded %lld dBm for %@."), network.signal, network.displaySSID)
+    }
+
+    func removeSample(id: UUID) {
+        let before = project.samples.count
+        project.samples.removeAll { $0.id == id }
+        guard project.samples.count != before else { return }
+        project.updatedAt = Date()
+        scheduleSave()
+        statusMessage = String(format: String(localized: "Point removed · %lld left."), project.samples.count)
+    }
+
+    func removeLastSample() {
+        guard let sample = project.samples.last else { return }
+        removeSample(id: sample.id)
+    }
+
+    func renameProject(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        project.name = trimmed
+        project.updatedAt = Date()
+        save()
+        statusMessage = String(format: String(localized: "Renamed to %@."), trimmed)
     }
 
     func addWall(x1: Double, y1: Double, x2: Double, y2: Double) {
@@ -83,7 +111,9 @@ final class SurveyViewModel: ObservableObject {
         )
         project.updatedAt = Date()
         scheduleSave()
-        statusMessage = "Wall added · \(Int(project.walls.last?.attenuationDb ?? 8)) dB attenuation."
+        statusMessage = String(
+            format: String(localized: "Wall added · %lld dB attenuation."),
+            Int(project.walls.last?.attenuationDb ?? 8))
     }
 
     func addObstacle(points: [SurveyPoint]) {
@@ -94,7 +124,7 @@ final class SurveyViewModel: ObservableObject {
         project.obstacles.append(.new(points: clamped))
         project.updatedAt = Date()
         scheduleSave()
-        statusMessage = "Room added · \(project.obstacles.count) rooms."
+        statusMessage = String(format: String(localized: "Room added · %lld rooms."), project.obstacles.count)
     }
 
     func addAccessPoint(x: Double, y: Double, band: String, channel: Int) {
@@ -103,21 +133,21 @@ final class SurveyViewModel: ObservableObject {
         )
         project.updatedAt = Date()
         scheduleSave()
-        statusMessage = "Predictive AP added · \(project.accessPoints.count) APs."
+        statusMessage = String(format: String(localized: "Predictive AP added · %lld APs."), project.accessPoints.count)
     }
 
     func clearAccessPoints() {
         project.accessPoints.removeAll()
         project.updatedAt = Date()
         store.save(project, imageData: nil)
-        statusMessage = "Predictive APs cleared."
+        statusMessage = String(localized: "Predictive APs cleared.")
     }
 
     func clearObstacles() {
         project.obstacles.removeAll()
         project.updatedAt = Date()
         store.save(project, imageData: nil)
-        statusMessage = "Rooms cleared."
+        statusMessage = String(localized: "Rooms cleared.")
     }
 
     func calibrateScale(realMeters: Double, normalizedDistance: Double) {
@@ -125,7 +155,8 @@ final class SurveyViewModel: ObservableObject {
         project.planWidthMeters = realMeters / normalizedDistance
         project.updatedAt = Date()
         save()
-        statusMessage = String(format: "Calibrated: plan width %.1f m.", project.planWidthMeters ?? 0)
+        statusMessage = String(
+            format: String(localized: "Calibrated: plan width %.1f m."), project.planWidthMeters ?? 0)
     }
 
     func updateReportMetadata(title: String, client: String, planWidth: String, notes: String) {
@@ -143,7 +174,7 @@ final class SurveyViewModel: ObservableObject {
 
     func exportAllFloorsPDF(networkName: String) {
         let panel = NSSavePanel()
-        panel.title = "Export all floors"
+        panel.title = String(localized: "Export all floors")
         panel.nameFieldStringValue = "LanFi-Survey-All-Floors.pdf"
         panel.allowedContentTypes = [.pdf]
         guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -160,44 +191,51 @@ final class SurveyViewModel: ObservableObject {
         project.walls.removeAll()
         project.updatedAt = Date()
         store.save(project, imageData: nil)
-        statusMessage = "Walls cleared."
+        statusMessage = String(localized: "Walls cleared.")
     }
 
     func selectProject(id: UUID) {
+        guard id != project.id else { return }
+        // Preserve the current floor before switching away from it.
+        save()
         guard let selected = projects.first(where: { $0.id == id }) else { return }
         project = selected
         floorPlanData = store.imageData(for: selected)
-        statusMessage = "Loaded \(selected.name) · \(selected.samples.count) points"
+        statusMessage = String(
+            format: String(localized: "Loaded %@ · %lld points"), selected.name, selected.samples.count)
     }
 
     func newFloor() {
         let alert = NSAlert()
-        alert.messageText = "New floor"
-        alert.informativeText = "Create a separate floor plan and survey."
+        alert.messageText = String(localized: "New floor")
+        alert.informativeText = String(localized: "Create a separate floor plan and survey.")
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 22))
-        field.placeholderString = "Floor name"
+        field.placeholderString = String(localized: "Floor name")
         alert.accessoryView = field
-        alert.addButton(withTitle: "Create")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Create"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let name = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        var newProject = SurveyProject.new(name: name.isEmpty ? "New floor" : name)
+        var newProject = SurveyProject.new(
+            name: name.isEmpty ? String(localized: "New floor") : name)
         newProject.floorLevel = (projects.map(\.floorLevel).max() ?? -1) + 1
         store.save(newProject, imageData: nil)
         projects = store.projects()
         project = newProject
         floorPlanData = nil
-        statusMessage = "Created \(newProject.name). Import a floor plan to begin."
+        statusMessage = String(
+            format: String(localized: "Created %@. Import a floor plan to begin."), newProject.name)
     }
 
-    func exportPDF(networkName: String) {
+    func exportPDF(networkName: String, samples: [SurveySample]? = nil) {
         let panel = NSSavePanel()
-        panel.title = "Export survey report"
+        panel.title = String(localized: "Export survey report")
         panel.nameFieldStringValue = "LanFi-Survey-\(project.name).pdf"
         panel.allowedContentTypes = [.pdf]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         let data = SurveyReportExporter.makePDF(
-            project: project, image: floorPlanImage, networkName: networkName
+            project: project, image: floorPlanImage, networkName: networkName,
+            samples: samples
         )
         try? data.write(to: url, options: .atomic)
     }
@@ -206,20 +244,23 @@ final class SurveyViewModel: ObservableObject {
         project.samples.removeAll()
         project.updatedAt = Date()
         store.save(project, imageData: nil)
-        statusMessage = "Survey points cleared."
+        statusMessage = String(localized: "Survey points cleared.")
     }
 
     func save() {
         store.save(project, imageData: floorPlanData)
         projects = store.projects()
-        statusMessage = "Survey saved locally."
+        if !projects.contains(where: { $0.id == project.id }) {
+            projects.insert(project, at: 0)
+        }
+        statusMessage = String(localized: "Survey saved locally.")
     }
 
     func selectLatest() {
         guard let latest = store.latestProject() else { return }
         project = latest
         floorPlanData = store.imageData(for: latest)
-        statusMessage = "Loaded \(latest.name)."
+        statusMessage = String(format: String(localized: "Loaded %@."), latest.name)
     }
 
     private func scheduleSave() {

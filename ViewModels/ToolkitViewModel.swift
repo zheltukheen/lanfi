@@ -558,11 +558,13 @@ final class PortScanToolModel: ObservableObject {
     @Published private(set) var results: [PortScanResult] = []
     @Published private(set) var udpResults: [PortScanResult] = []
     @Published private(set) var isRunning = false
+    @Published private(set) var totalPorts = 0
     @Published var detectServices = true
     @Published var includeUDP = false
     @Published var errorMessage: String?
 
     private var task: Task<Void, Never>?
+    private var scanToken = UUID()
 
     var openCount: Int { results.filter { $0.state == .open }.count }
     var closedCount: Int { results.filter { $0.state == .closed }.count }
@@ -587,17 +589,31 @@ final class PortScanToolModel: ObservableObject {
         }
         errorMessage = nil
         results = []
+        udpResults = []
+        totalPorts = ports.count
         isRunning = true
+        let token = UUID()
+        scanToken = token
         let scanner = PortScanner(probe: TCPPortProbe())
         let timeout = timeout
         let concurrency = concurrency
+        let detectServices = detectServices
+        let includeUDP = includeUDP
         task = Task { [weak self] in
             guard let self else { return }
-            var scan = await scanner.scan(
+
+            // Stream every TCP result as it arrives. Insert in port order so
+            // the table stays stable while it fills.
+            for await result in scanner.stream(
                 host: target.host, ports: ports, timeout: timeout, concurrency: concurrency)
-            if self.detectServices {
-                let openPorts = scan.filter { $0.state == .open }.map(\.port)
-                var banners: [UInt16: String] = [:]
+            {
+                guard self.scanToken == token else { return }
+                Self.insert(result, into: &self.results)
+            }
+            guard self.scanToken == token, !Task.isCancelled else { return }
+
+            if detectServices {
+                let openPorts = self.results.filter { $0.state == .open }.map(\.port)
                 await withTaskGroup(of: (UInt16, String?).self) { group in
                     for port in openPorts {
                         group.addTask {
@@ -607,41 +623,53 @@ final class PortScanToolModel: ObservableObject {
                         }
                     }
                     for await (port, banner) in group {
-                        if let banner { banners[port] = banner }
+                        guard self.scanToken == token else {
+                            group.cancelAll()
+                            return
+                        }
+                        guard let banner,
+                            let index = self.results.firstIndex(where: { $0.port == port })
+                        else { continue }
+                        let existing = self.results[index]
+                        self.results[index] = PortScanResult(
+                            port: existing.port,
+                            service: existing.service,
+                            state: existing.state,
+                            responseMilliseconds: existing.responseMilliseconds,
+                            detail: banner
+                        )
                     }
                 }
-                scan = scan.map { result in
-                    guard let banner = banners[result.port] else { return result }
-                    return PortScanResult(
-                        port: result.port,
-                        service: result.service,
-                        state: result.state,
-                        responseMilliseconds: result.responseMilliseconds,
-                        detail: banner
-                    )
-                }
             }
-            if Task.isCancelled {
-                self.isRunning = false
-                self.task = nil
-                return
-            }
-            self.results = scan
-            if self.includeUDP {
+            guard self.scanToken == token, !Task.isCancelled else { return }
+
+            if includeUDP {
                 let udpPorts: [UInt16] = [53, 67, 68, 69, 123, 137, 161, 500, 1900, 5353]
-                let udp = await PortScanner(probe: UDPPortProbe()).scan(
+                let udpScanner = PortScanner(probe: UDPPortProbe())
+                for await result in udpScanner.stream(
                     host: target.host, ports: udpPorts, timeout: timeout,
                     concurrency: min(concurrency, 10))
-                if !Task.isCancelled { self.udpResults = udp }
-            } else {
-                self.udpResults = []
+                {
+                    guard self.scanToken == token else { return }
+                    Self.insert(result, into: &self.udpResults)
+                }
             }
+            guard self.scanToken == token else { return }
             self.isRunning = false
             self.task = nil
         }
     }
 
+    private static func insert(_ result: PortScanResult, into list: inout [PortScanResult]) {
+        if let index = list.firstIndex(where: { $0.port > result.port }) {
+            list.insert(result, at: index)
+        } else {
+            list.append(result)
+        }
+    }
+
     func stop() {
+        scanToken = UUID()
         task?.cancel()
         task = nil
         isRunning = false
@@ -651,6 +679,7 @@ final class PortScanToolModel: ObservableObject {
         stop()
         results = []
         udpResults = []
+        totalPorts = 0
         errorMessage = nil
     }
 
@@ -951,13 +980,17 @@ final class Iperf3ToolModel: ObservableObject {
     @Published private(set) var isRunning = false
     @Published private(set) var savedServers: [Iperf3Server] = []
     @Published private(set) var history: [Iperf3Measurement] = []
+    @Published private(set) var executable: String? = Iperf3Runner.locate()
+    @Published private(set) var isInstalling = false
+    @Published private(set) var installSucceeded: Bool?
+    @Published private(set) var installOutput: String?
     @Published var errorMessage: String?
 
     private let historyStore = Iperf3HistoryStore()
     private let serversKey = "LanFi.iperf3.servers"
     private var task: Task<Void, Never>?
 
-    var isInstalled: Bool { Iperf3Runner.locate() != nil }
+    var isInstalled: Bool { executable != nil }
     var newestFirst: [Iperf3Measurement] { Array(history.reversed()) }
 
     init() {
@@ -992,6 +1025,24 @@ final class Iperf3ToolModel: ObservableObject {
     func clearHistory() {
         history = []
         historyStore.clear()
+    }
+
+    /// Installs the Homebrew formula and refreshes `isInstalled`, so the Run
+    /// button becomes available without relaunching the app.
+    func install() {
+        guard !isInstalling else { return }
+        isInstalling = true
+        installSucceeded = nil
+        installOutput = nil
+        Task { [weak self] in
+            guard let self else { return }
+            let result = await ToolInstaller.install(package: "iperf3")
+            self.executable = Iperf3Runner.locate()
+            self.isInstalling = false
+            self.installSucceeded = result.succeeded && self.executable != nil
+            self.installOutput = result.message
+            if self.isInstalled { self.errorMessage = nil }
+        }
     }
 
     private func persistServers() {

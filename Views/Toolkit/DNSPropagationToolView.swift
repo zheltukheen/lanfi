@@ -104,7 +104,7 @@ struct DNSPropagationToolView: View {
                         ? .primary : (model.summary.allMatch ? .green : .orange))
                 ToolkitMetric(
                     title: "Consistent",
-                    value: model.summary.consistent ? "Yes" : "No",
+                    value: model.summary.consistent ? String(localized: "Yes") : String(localized: "No"),
                     tint: model.summary.consistent ? .green : .orange)
                 ToolkitMetric(title: "Record", value: model.type.label)
                 Spacer()
@@ -151,16 +151,19 @@ struct DNSPropagationToolView: View {
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             } else {
-                                ForEach(result.values, id: \.self) { value in
-                                    Text(value)
-                                        .font(.caption.monospaced())
-                                        .foregroundColor(
-                                            model.expected.isEmpty
-                                                || value.caseInsensitiveCompare(model.expected)
+                                let joined = result.values.joined(separator: ", ")
+                                Text(joined)
+                                    .font(.caption.monospaced())
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                    .foregroundColor(
+                                        model.expected.isEmpty
+                                            || result.values.allSatisfy({
+                                                $0.caseInsensitiveCompare(model.expected)
                                                     == .orderedSame
-                                                ? .primary : .orange
-                                        )
-                                }
+                                            })
+                                            ? .primary : .orange
+                                    )
                             }
                         }
                     }
@@ -171,7 +174,10 @@ struct DNSPropagationToolView: View {
                     }
                     .width(95)
                 }
-                .frame(height: min(CGFloat(model.results.count) * 30 + 52, 420))
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        model.results.count, row: 32, header: 42, minimum: 230,
+                        maximum: 440))
             }
         }
     }

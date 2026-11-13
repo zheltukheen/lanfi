@@ -1,5 +1,41 @@
 # Changelog
 
+## 5.1.0 — 2026-11-13
+
+### Added
+- **Faster LAN discovery.** The scanner now overlaps ARP nudging, an ICMP
+  sweep, TCP probes, Bonjour, SSDP/UPnP and reverse DNS, with shorter
+  timeouts and higher concurrency. Devices report advertised names, models,
+  services and guessed roles instead of bare addresses.
+- **Device Shelf enrichment.** The shelf inspector shows advertised services,
+  type, vendor, hostname, model, latency trend, risk findings and history;
+  exported and copied rows include the new fields.
+- **Streaming port scans.** Results appear as each port answers through a
+  sliding concurrency window, so one hung port no longer blocks the rest.
+- **In-app installs.** iperf3 and blueutil install from a single button via
+  Homebrew, with live output and a copyable fallback command.
+- **Uptime defaults.** A fresh Uptime Monitor starts with Cloudflare DNS,
+  Google and GitHub HTTP checks every five minutes.
+- Site Survey gains a floor-project picker with the unsaved project, point
+  undo/removal, wall/room/AP tools, onboarding cards and a coverage inspector.
+- Survey PDF exports respect the selected network filter and wall/room
+  attenuation.
+
+### Changed
+- GeoIP loads this Mac's public address as soon as the tool opens.
+- Traceroute, DNS, DNS propagation, port scan, UDP scan and uptime tables keep
+  a useful minimum height instead of collapsing on launch.
+- Site Survey coverage interpolation no longer discards sparse samples.
+- DNS propagation rows join multiple records on one line so long answers are
+  no longer clipped.
+
+### Fixed
+- The new Toolkit screens, Device Shelf, risk findings, Site Survey and
+  installer UI are fully localized in Russian, English, German, French and
+  Simplified Chinese.
+- Boolean metrics such as DNS consistency and traceroute reachability honor
+  the active locale.
+
 ## 5.0.3 — 2026-11-12
 
 ### Fixed

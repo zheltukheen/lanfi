@@ -17,8 +17,10 @@ enum SurveyInterpolator {
         for sample in samples {
             let dx = sample.x - x
             let dy = sample.y - y
+            // No distance cutoff: sparse surveys used to leave large blank
+            // areas at the plan edges. IDW still gives nearby samples far more
+            // weight, so the whole floor gets a continuous estimate.
             let distance = max(0.0001, sqrt(dx * dx + dy * dy))
-            if distance > 0.9 { continue }
             let wallAttenuation = walls.reduce(0.0) { total, wall in
                 let wallHit = segmentsIntersect(
                     x1: sample.x, y1: sample.y, x2: x, y2: y,

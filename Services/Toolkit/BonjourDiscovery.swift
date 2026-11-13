@@ -1,11 +1,16 @@
 import Darwin
 import Foundation
 
-/// Best-effort Bonjour name lookup for the LAN Scanner. It browses a small set
+/// Best-effort Bonjour discovery for the LAN Scanner. It browses a small set
 /// of common service types, resolves them, and maps resolved IPv4 addresses to
-/// the advertised service name. A failure/timeout simply returns no names.
+/// a display name plus the services the device advertises. A failure/timeout
+/// simply returns no information.
 enum BonjourDiscovery {
     static func names(timeout: TimeInterval) async -> [String: String] {
+        await advertisements(timeout: timeout).compactMapValues(\.name)
+    }
+
+    static func advertisements(timeout: TimeInterval) async -> [String: LANAdvertisement] {
         await Task.detached(priority: .utility) {
             BonjourResolver().run(timeout: timeout)
         }.value
@@ -17,46 +22,70 @@ private final class BonjourResolver: NSObject, NetServiceBrowserDelegate, NetSer
         "_http._tcp.",
         "_https._tcp.",
         "_ssh._tcp.",
+        "_sftp-ssh._tcp.",
         "_smb._tcp.",
+        "_afpovertcp._tcp.",
         "_airplay._tcp.",
+        "_raop._tcp.",
+        "_googlecast._tcp.",
+        "_spotify-connect._tcp.",
+        "_sonos._tcp.",
         "_ipp._tcp.",
+        "_ipps._tcp.",
         "_printer._tcp.",
+        "_pdl-datastream._tcp.",
+        "_workstation._tcp.",
+        "_device-info._tcp.",
+        "_hap._tcp.",
+        "_matter._tcp.",
+        "_companion-link._tcp.",
+        "_sleep-proxy._udp.",
     ]
 
-    private var services: [NetService] = []
+    private var services: [(service: NetService, label: String?)] = []
     private var browsers: [NetServiceBrowser] = []
-    private var names: [String: String] = [:]
+    private var advertisements: [String: LANAdvertisement] = [:]
 
-    func run(timeout: TimeInterval) -> [String: String] {
+    func run(timeout: TimeInterval) -> [String: LANAdvertisement] {
         for type in Self.serviceTypes {
             let browser = NetServiceBrowser()
             browser.delegate = self
             browser.searchForServices(ofType: type, inDomain: "local.")
             browsers.append(browser)
         }
-        RunLoop.current.run(until: Date().addingTimeInterval(timeout))
+        RunLoop.current.run(until: Date().addingTimeInterval(max(0.2, timeout)))
 
-        for service in services {
-            service.delegate = self
-            service.resolve(withTimeout: 1)
+        for entry in services {
+            entry.service.delegate = self
+            entry.service.resolve(withTimeout: 0.8)
         }
-        RunLoop.current.run(until: Date().addingTimeInterval(1.5))
+        RunLoop.current.run(until: Date().addingTimeInterval(1.2))
 
         for browser in browsers { browser.stop() }
-        return names
+        return advertisements
     }
 
     func netServiceBrowser(
         _ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool
     ) {
-        services.append(service)
+        let label = LANServiceCatalog.label(forBonjourType: service.type)
+        services.append((service, label))
     }
 
     func netServiceDidResolveAddress(_ sender: NetService) {
         guard let addresses = sender.addresses else { return }
+        let label = LANServiceCatalog.label(forBonjourType: sender.type)
+        let advertisement = LANAdvertisement(
+            name: sender.name,
+            services: label.map { [$0] } ?? []
+        )
         for data in addresses {
             guard let ip = Self.ipAddress(from: data) else { continue }
-            names[ip] = sender.name
+            if let existing = advertisements[ip] {
+                advertisements[ip] = existing.merged(with: advertisement)
+            } else {
+                advertisements[ip] = advertisement
+            }
         }
     }
 

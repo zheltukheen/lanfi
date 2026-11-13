@@ -29,6 +29,23 @@ struct UptimeTarget: Codable, Identifiable, Equatable, Sendable {
     var enabled: Bool
     var createdAt: Date
 
+    /// Three public services that answer quickly from almost anywhere. They
+    /// are seeded on first launch so the monitor shows live data immediately
+    /// instead of an empty list.
+    static var starterTargets: [UptimeTarget] {
+        [
+            UptimeTarget(
+                name: "Cloudflare DNS", address: "https://1.1.1.1", kind: .http,
+                intervalMinutes: 5),
+            UptimeTarget(
+                name: "Google", address: "https://www.google.com", kind: .http,
+                intervalMinutes: 5),
+            UptimeTarget(
+                name: "GitHub", address: "https://github.com", kind: .http,
+                intervalMinutes: 5),
+        ]
+    }
+
     init(
         id: UUID = UUID(),
         name: String,

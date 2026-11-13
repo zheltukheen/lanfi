@@ -81,7 +81,7 @@ struct LANScannerToolView: View {
                         icon: "desktopcomputer",
                         title: "Find the devices on this network",
                         message:
-                            "ARP sweep plus TCP probes, OUI vendor names and Bonjour host names. Network Guard remembers known devices and flags new ones."
+                            "ARP plus a fast ICMP sweep, TCP probes, Bonjour, SSDP/UPnP and reverse DNS. LanFi fills in names, models, services and roles, not just addresses. Network Guard remembers known devices and flags new ones."
                     )
                 }
             }
@@ -157,8 +157,10 @@ struct LANScannerToolView: View {
                         title: "Open ports",
                         value: "\(result.devices.reduce(0) { $0 + $1.openPorts.count })")
                     ToolkitMetric(
-                        title: "Named",
-                        value: "\(result.devices.filter { $0.hostname != nil }.count)")
+                        title: "Identified",
+                        value:
+                            "\(result.devices.filter { $0.hostname != nil || $0.model != nil || !$0.services.isEmpty }.count)"
+                    )
                     ToolkitMetric(
                         title: "Gateway",
                         value: result.gateway ?? "—")
@@ -239,13 +241,20 @@ struct LANScannerToolView: View {
                         Text(device.ip)
                             .font(.caption.monospaced())
                     }
-                    .width(110)
+                    .width(105)
+                    TableColumn("Type") { device in
+                        Text(device.kindLabel)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    .width(130)
                     TableColumn("Vendor") { device in
                         Text(device.vendor ?? "—")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    .width(120)
+                    .width(115)
                     TableColumn("MAC") { device in
                         Text(device.mac ?? "—")
                             .font(.caption2.monospaced())
@@ -299,11 +308,20 @@ struct LANScannerToolView: View {
                             .background(Color.green.opacity(0.14), in: Capsule())
                     }
                     Divider()
+                    inspectorRow("Kind", device.kindLabel)
                     inspectorRow("Vendor", device.vendor ?? "—")
                     inspectorRow("Hostname", device.hostname ?? "—")
+                    if let model = device.model, !model.isEmpty {
+                        inspectorRow("Model", model)
+                    }
                     inspectorRow("MAC", device.mac ?? "—")
                     inspectorRow(
                         "Latency", ToolkitFormat.milliseconds(device.latencyMilliseconds))
+                    if !device.serviceSummary.isEmpty {
+                        Divider()
+                        ToolkitSectionLabel(text: "Advertised services")
+                        ToolkitChips(items: device.serviceSummary)
+                    }
                     Divider()
                     ToolkitSectionLabel(text: "Open ports")
                     if device.openPorts.isEmpty {
@@ -404,7 +422,7 @@ struct LANScannerToolView: View {
         var lines = ["LanFi LAN scan \(result.subnet) · \(result.interfaceName)", ""]
         for device in result.devices {
             lines.append(
-                "\(device.ip)\t\(device.mac ?? "-")\t\(device.vendor ?? "-")\t\(device.openPorts.map(String.init).joined(separator: ","))"
+                "\(device.ip)\t\(device.mac ?? "-")\t\(device.hostname ?? "-")\t\(device.vendor ?? "-")\t\(device.kindLabel)\t\(device.model ?? "-")\t\(device.openPorts.map(String.init).joined(separator: ","))"
             )
         }
         NSPasteboard.general.clearContents()

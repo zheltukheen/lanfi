@@ -3,13 +3,17 @@ import Foundation
 import PDFKit
 
 enum SurveyReportExporter {
-    static func makePDF(project: SurveyProject, image: NSImage?, networkName: String) -> Data {
+    static func makePDF(
+        project: SurveyProject, image: NSImage?, networkName: String,
+        samples: [SurveySample]? = nil
+    ) -> Data {
         let page = NSSize(width: 842, height: 595)  // A4 landscape at 72 dpi
         let view = SurveyReportView(
             frame: NSRect(origin: .zero, size: page),
             project: project,
             image: image,
-            networkName: networkName
+            networkName: networkName,
+            samples: samples ?? project.samples
         )
         return view.dataWithPDF(inside: view.bounds)
     }
@@ -36,11 +40,16 @@ private final class SurveyReportView: NSView {
     let project: SurveyProject
     let image: NSImage?
     let networkName: String
+    let samples: [SurveySample]
 
-    init(frame: NSRect, project: SurveyProject, image: NSImage?, networkName: String) {
+    init(
+        frame: NSRect, project: SurveyProject, image: NSImage?, networkName: String,
+        samples: [SurveySample]
+    ) {
         self.project = project
         self.image = image
         self.networkName = networkName
+        self.samples = samples
         super.init(frame: frame)
     }
 
@@ -100,7 +109,7 @@ private final class SurveyReportView: NSView {
     }
 
     private func drawHeatmap(in rect: NSRect) {
-        guard !project.samples.isEmpty else { return }
+        guard !samples.isEmpty else { return }
         let cell: CGFloat = 7
         var y = rect.minY
         while y < rect.maxY {
@@ -109,7 +118,8 @@ private final class SurveyReportView: NSView {
                 let nx = Double((x - rect.minX) / rect.width)
                 let ny = Double((y - rect.minY) / rect.height)
                 if let rssi = SurveyInterpolator.estimate(
-                    x: nx, y: ny, samples: project.samples, walls: project.walls
+                    x: nx, y: ny, samples: samples, walls: project.walls,
+                    obstacles: project.obstacles
                 ) {
                     color(for: rssi).withAlphaComponent(0.48).setFill()
                     NSRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5).fill()
@@ -118,7 +128,7 @@ private final class SurveyReportView: NSView {
             }
             y += cell
         }
-        for sample in project.samples {
+        for sample in samples {
             let point = NSPoint(
                 x: rect.minX + sample.x * rect.width,
                 y: rect.minY + (1 - sample.y) * rect.height

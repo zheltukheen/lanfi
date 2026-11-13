@@ -200,6 +200,10 @@ final class UptimeMonitor: ObservableObject {
         let snapshot = store.load()
         targets = snapshot.targets
         checks = snapshot.checks
+        if targets.isEmpty, checks.isEmpty {
+            targets = UptimeTarget.starterTargets
+            save()
+        }
         if startAutomatically { start() }
     }
 

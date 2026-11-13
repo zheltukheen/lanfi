@@ -99,7 +99,7 @@ struct TracerouteToolView: View {
                 ToolkitMetric(title: "Hops", value: "\(report.hops.count)")
                 ToolkitMetric(
                     title: "Reached",
-                    value: report.reachedTarget ? "Yes" : "No",
+                    value: report.reachedTarget ? String(localized: "Yes") : String(localized: "No"),
                     tint: report.reachedTarget ? .green : .orange)
                 ToolkitMetric(
                     title: "Worst hop",
@@ -151,7 +151,10 @@ struct TracerouteToolView: View {
                     }
                     .width(90)
                 }
-                .frame(height: min(CGFloat(report.hops.count) * 24 + 28, 420))
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        report.hops.count, row: 26, header: 38, minimum: 210,
+                        maximum: 440))
             }
         }
     }
