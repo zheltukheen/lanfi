@@ -71,6 +71,68 @@ struct LanFiCLI {
                         }
                     }
                 }
+            case "har":
+                try requireFile(arguments, index: 1) { url in
+                    let traffic = try HARParser.parse(data: Data(contentsOf: url))
+                    let insights = HARTrafficAnalyzer.insights(for: traffic)
+                    let redact = !arguments.contains("--no-redact")
+                    if arguments.contains("--markdown") {
+                        print(
+                            HARTrafficAnalyzer.markdownReport(
+                                for: traffic, redacted: !arguments.contains("--no-redact")))
+                        return
+                    }
+                    if arguments.contains("--json") {
+                        let slowest = insights.slowest.map { entry -> [String: Any] in
+                            [
+                                "method": entry.request.method,
+                                "status": entry.response.status,
+                                "url": redact
+                                    ? HARRedaction.url(entry.request.url) : entry.request.url,
+                                "timeMs": entry.duration,
+                            ]
+                        }
+                        let hosts = insights.hosts.map { host -> [String: Any] in
+                            [
+                                "host": host.host, "requests": host.requests,
+                                "failures": host.failures, "bytes": host.bytes,
+                                "averageMs": host.averageMilliseconds,
+                            ]
+                        }
+                        let summary: [String: Any] = [
+                            "requests": insights.requestCount,
+                            "failures": insights.failureCount,
+                            "redirects": insights.redirectCount,
+                            "cached": insights.cachedCount,
+                            "transferBytes": insights.transferBytes,
+                            "averageMs": insights.averageMilliseconds,
+                            "p95Ms": insights.p95Milliseconds,
+                            "slowestPhase": insights.slowestPhase?.name ?? NSNull(),
+                            "creator": traffic.creator ?? NSNull(),
+                        ]
+                        printJSON(["summary": summary, "slowest": slowest, "hosts": hosts])
+                    } else {
+                        print(
+                            "\(insights.requestCount) requests · \(insights.failureCount) failures · "
+                                + "\(HARTrafficAnalyzer.bytes(insights.transferBytes)) · "
+                                + "avg \(HAREntry.milliseconds(insights.averageMilliseconds)) · "
+                                + "p95 \(HAREntry.milliseconds(insights.p95Milliseconds))"
+                        )
+                        for entry in insights.slowest {
+                            let target = redact
+                                ? HARRedaction.url(entry.host + entry.path)
+                                : entry.host + entry.path
+                            print(
+                                "  \(entry.durationLabel)\t\(entry.statusLabel)\t\(entry.request.method)\t\(target)"
+                            )
+                        }
+                        for host in insights.hosts.prefix(10) {
+                            print(
+                                "  \(host.host)\t\(host.requests) req\t\(HARTrafficAnalyzer.bytes(host.bytes))\tavg \(HAREntry.milliseconds(host.averageMilliseconds))"
+                            )
+                        }
+                    }
+                }
             case "mcp":
                 MCPServer.run()
             case "help", "--help", "-h":
@@ -108,6 +170,10 @@ struct LanFiCLI {
               lanfi-cli pcap <capture.pcap|pcapng> [--json]
                 --json prints {"networks": [...], "mloGroups": [...]} with
                 complete Multi-Link Operation link sets assembled per AP MLD.
+              lanfi-cli har <traffic.har> [--json|--markdown] [--no-redact]
+                Slowest requests, failures, p95 latency, bytes per host and the
+                dominant timing phase from a browser or proxy HAR export.
+                Credentials are redacted unless --no-redact is passed.
               lanfi-cli mcp
                 Model Context Protocol server over stdio for AI agents.
                 Exposes scan summary, analysis, protocols, channels, capture

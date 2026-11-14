@@ -85,8 +85,17 @@ struct LANDevice: Identifiable, Equatable, Sendable {
     let isNew: Bool
     /// Model/description published via UPnP or Bonjour.
     let model: String?
+    /// Vendor published by the device itself, more precise than the OUI table.
+    let manufacturer: String?
+    /// Firmware/software version advertised in mDNS TXT or UPnP.
+    let version: String?
+    /// Role the device claims for itself, e.g. "Media renderer".
+    let deviceType: String?
+    let serialNumber: String?
     /// Human-readable service labels advertised by the device.
     let services: [String]
+    /// Version banners read from open TCP ports.
+    let banners: [UInt16: String]
 
     init(
         ip: String,
@@ -99,7 +108,12 @@ struct LANDevice: Identifiable, Equatable, Sendable {
         isThisMac: Bool,
         isNew: Bool,
         model: String? = nil,
-        services: [String] = []
+        manufacturer: String? = nil,
+        version: String? = nil,
+        deviceType: String? = nil,
+        serialNumber: String? = nil,
+        services: [String] = [],
+        banners: [UInt16: String] = [:]
     ) {
         self.ip = ip
         self.mac = mac
@@ -111,15 +125,44 @@ struct LANDevice: Identifiable, Equatable, Sendable {
         self.isThisMac = isThisMac
         self.isNew = isNew
         self.model = model
+        self.manufacturer = manufacturer
+        self.version = version
+        self.deviceType = deviceType
+        self.serialNumber = serialNumber
         self.services = services
+        self.banners = banners
     }
 
     var id: String { "\(ip)-\(mac ?? "")" }
     var displayName: String {
-        if let hostname { return hostname }
+        if let hostname, !hostname.isEmpty { return hostname }
         if isThisMac { return String(localized: "This Mac") }
         if isGateway { return String(localized: "Router") }
-        return vendor ?? String(localized: "Unknown device")
+        return manufacturer ?? vendor ?? String(localized: "Unknown device")
+    }
+
+    /// The vendor line shown in tables: the device's own claim first, then the
+    /// MAC OUI lookup.
+    var makeLabel: String {
+        manufacturer ?? vendor ?? "—"
+    }
+
+    /// Best version string: an advertised firmware version wins over a banner.
+    var versionLabel: String {
+        if let version, !version.isEmpty { return version }
+        return banners.sorted { $0.key < $1.key }.compactMap(\.value).first ?? "—"
+    }
+
+    /// One line that answers "what is this?" from the strongest signal we have.
+    var identityLabel: String {
+        var parts: [String] = [kindLabel]
+        if let model, !model.isEmpty, model != kindLabel {
+            parts.append(model)
+        }
+        if let version, !version.isEmpty, !(model ?? "").contains(version) {
+            parts.append("v\(version)")
+        }
+        return parts.joined(separator: " · ")
     }
 
     /// A short "what is it" line for the inspector: advertised services first,
@@ -137,6 +180,11 @@ struct LANDevice: Identifiable, Equatable, Sendable {
     var kindLabel: String {
         if isGateway { return String(localized: "Router / gateway") }
         if isThisMac { return String(localized: "This Mac") }
+        if let deviceType, !deviceType.isEmpty,
+            !["UPnP", "UPnP device", "Basic"].contains(deviceType)
+        {
+            return deviceType
+        }
         let labels = serviceSummary
         if labels.contains(where: { $0.contains("Printer") || $0.contains("printing") }) {
             return String(localized: "Printer")
@@ -170,6 +218,7 @@ enum LANDeviceAssembler {
         thisMAC: String?,
         knownMACs: Set<String>,
         advertisements: [String: LANAdvertisement] = [:],
+        banners: [String: [UInt16: String]] = [:],
         vendorFor: (String) -> String = OUIParser.vendor
     ) -> [LANDevice] {
         var arpByIP: [String: ARPEntry] = [:]
@@ -197,7 +246,12 @@ enum LANDeviceAssembler {
                 isThisMac: entry?.mac == thisMAC?.uppercased(),
                 isNew: !knownMACs.isEmpty && !knownMACs.contains(key),
                 model: advertisement?.model,
-                services: advertisement?.services ?? []
+                manufacturer: advertisement?.manufacturer,
+                version: advertisement?.version,
+                deviceType: advertisement?.deviceType,
+                serialNumber: advertisement?.serialNumber,
+                services: advertisement?.services ?? [],
+                banners: banners[ip] ?? [:]
             )
         }
         .sorted { lhs, rhs in
@@ -263,22 +317,32 @@ struct LANAdvertisement: Equatable, Sendable {
     var name: String?
     var model: String?
     var manufacturer: String?
+    var version: String?
+    var deviceType: String?
+    var serialNumber: String?
     var services: [String]
 
     init(
         name: String? = nil,
         model: String? = nil,
         manufacturer: String? = nil,
+        version: String? = nil,
+        deviceType: String? = nil,
+        serialNumber: String? = nil,
         services: [String] = []
     ) {
         self.name = name
         self.model = model
         self.manufacturer = manufacturer
+        self.version = version
+        self.deviceType = deviceType
+        self.serialNumber = serialNumber
         self.services = services
     }
 
     var isEmpty: Bool {
-        name == nil && model == nil && manufacturer == nil && services.isEmpty
+        name == nil && model == nil && manufacturer == nil && version == nil
+            && deviceType == nil && serialNumber == nil && services.isEmpty
     }
 
     func merged(with other: LANAdvertisement) -> LANAdvertisement {
@@ -286,6 +350,9 @@ struct LANAdvertisement: Equatable, Sendable {
             name: Self.preferred(name, other.name),
             model: Self.preferred(model, other.model),
             manufacturer: Self.preferred(manufacturer, other.manufacturer),
+            version: Self.preferred(version, other.version),
+            deviceType: Self.preferred(deviceType, other.deviceType),
+            serialNumber: Self.preferred(serialNumber, other.serialNumber),
             services: Array(Set(services + other.services)).sorted()
         )
     }
@@ -359,6 +426,69 @@ enum LANServiceCatalog {
     }
 }
 
+/// Parses the length-prefixed TXT record carried by mDNS/Bonjour. Devices put
+/// their model, vendor, firmware version and role in these keys, which is often
+/// the richest identity information available without authentication.
+enum BonjourTXTRecord {
+    static func parse(_ data: Data) -> [String: String] {
+        var result: [String: String] = [:]
+        var index = data.startIndex
+        while index < data.endIndex {
+            let length = Int(data[index])
+            index = data.index(after: index)
+            guard length > 0, index < data.endIndex else { break }
+            let end = data.index(index, offsetBy: length, limitedBy: data.endIndex) ?? data.endIndex
+            let entry = String(decoding: data[index..<end], as: UTF8.self)
+            index = end
+            guard let separator = entry.firstIndex(of: "=") else { continue }
+            let key = entry[..<separator].trimmingCharacters(in: .whitespaces).lowercased()
+            let value = entry[entry.index(after: separator)...]
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty, !value.isEmpty else { continue }
+            result[key] = value
+        }
+        return result
+    }
+
+    static func advertisement(
+        txt: [String: String], serviceName: String, serviceLabel: String?
+    ) -> LANAdvertisement {
+        let model = first(txt, ["model", "md", "am", "modelname"])
+        let manufacturer = first(txt, ["manufacturer", "mf"])
+        let version = first(
+            txt,
+            [
+                "firmware", "firmwareversion", "fw", "vers", "version", "osxvers", "srcvers", "ve",
+            ])
+        let role = first(txt, ["ty", "devicetype", "role"])
+        let serial = first(txt, ["serialnumber", "sn"])
+        let friendlyName = first(txt, ["fn", "name"])
+        return LANAdvertisement(
+            name: friendlyName ?? (serviceName.isEmpty ? nil : serviceName),
+            model: model,
+            manufacturer: manufacturer,
+            version: version,
+            deviceType: role.map(humanizeRole),
+            serialNumber: serial,
+            services: serviceLabel.map { [$0] } ?? []
+        )
+    }
+
+    private static func first(_ txt: [String: String], _ keys: [String]) -> String? {
+        for key in keys {
+            if let value = txt[key], !value.isEmpty { return value }
+        }
+        return nil
+    }
+
+    private static func humanizeRole(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "_", with: " ")
+            .replacingOccurrences(
+                of: "([a-z])([A-Z])", with: "$1 $2", options: .regularExpression)
+    }
+}
+
 /// One SSDP reply. Header names are case-insensitive in the wire format.
 struct SSDPResponse: Equatable, Sendable {
     let sourceIP: String
@@ -402,11 +532,18 @@ enum UPnPDescriptionParser {
         let model =
             value(of: "modelName", in: xml)
             ?? value(of: "modelDescription", in: xml)
+        let version =
+            value(of: "firmwareVersion", in: xml)
+            ?? value(of: "softwareVersion", in: xml)
+            ?? value(of: "modelNumber", in: xml)
+        let serial = value(of: "serialNumber", in: xml)
         var services: [String] = []
+        var role: String?
         if let deviceType = value(of: "deviceType", in: xml) {
             let leaf = deviceType.split(separator: ":").dropLast().last.map(String.init)
             if let leaf, !leaf.isEmpty {
-                services.append(Self.humanize(leaf))
+                role = Self.humanize(leaf)
+                services.append(role ?? "UPnP")
             }
         }
         if services.isEmpty {
@@ -416,6 +553,9 @@ enum UPnPDescriptionParser {
             name: name,
             model: model,
             manufacturer: manufacturer,
+            version: version,
+            deviceType: role,
+            serialNumber: serial,
             services: services
         )
     }

@@ -1,5 +1,47 @@
 # Changelog
 
+## 5.2.0 — 2026-11-14
+
+### Added
+- **Asset register in the Device Shelf.** Each device now carries a serial
+  number, location, purchase date and warranty end, editable in the inspector.
+  The shelf derives the warranty state from the single date, flags devices that
+  expire within 30 days (or already have), and adds a Warranty filter, metric
+  and table column. CSV, JSON and `lanfi_devices` exports include the fields.
+- **Printed device labels.** Every device gets an opaque `LF-…` asset tag on
+  first sight; a QR label sheet (PDF) and single PNG codes encode
+  `lanfi://device/<tag>` instead of a MAC address, and opening such a link
+  selects that device on the shelf.
+- **Wake-on-LAN.** The shelf sends a standard magic packet to any device with a
+  known MAC.
+- **HTTP Traffic analysis.** A new Network Tools screen reads a HAR archive
+  exported by browser DevTools, Proxyman, Charles or Rockxy and reports the
+  slowest requests, failures, p95 latency, transferred and uncompressed bytes
+  per host, cache hits and the dominant timing phase. LanFi analyzes the
+  recording only — it does not proxy, intercept or decrypt traffic.
+- **Shareable HTTP reports.** Copy any request as a cURL command, export CSV or
+  a Markdown report; `lanfi-cli har` and the `lanfi_har` MCP tool expose the
+  same analysis to scripts and agents.
+- **Credential redaction.** Authorization, cookie and token values are masked
+  in exports, the inspector and copied cURL commands, and JSON bodies lose
+  password/token fields, while the loaded capture stays untouched.
+- **Capture security audit.** Offline packet analysis now decodes EAPOL-Key
+  frames and reports, per BSSID, whether a 4-way handshake or a PMKID is in
+  the capture and whether the network is still offline-crackable. Findings use
+  the same graded severity as the live security audit, appear in the beacon
+  table, a dedicated Security sheet, JSON/CSV exports and `lanfi_capture`.
+- **Management-frame counters.** Deauthentication and disassociation frames are
+  counted per BSSID with their 802.11 reason codes; a burst within five seconds
+  is flagged as a possible management-frame flood. Beacon floods with many
+  randomized BSSIDs on one SSID are reported too.
+- **Richer capture clients.** The client list shows OUI vendor, best RSSI,
+  last-seen time, management/data frame mix, EAPOL activity and the SSIDs each
+  client probed for, can be filtered to the selected network, and matches MACs
+  against the Device Shelf.
+- **Channel plans for capture profiles.** Profiles store a channel list, and the
+  live capture form fills it from 2.4/5/6 GHz band buttons or a comma-separated
+  list; one channel pins the interface.
+
 ## 5.1.0 — 2026-11-13
 
 ### Added

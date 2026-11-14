@@ -1,11 +1,19 @@
 import Foundation
 
+/// A device link can arrive before the LAN Scanner screen exists, so the tag
+/// waits here until the shelf consumes it.
+enum DeviceShelfLink {
+    static var pendingTag: String?
+}
+
 enum DeepLink: Equatable {
     case tab(Int)
     case search(String)
     case runDiagnostics
     case interfaces
     case toolkit(ToolboxTool)
+    /// Opaque asset tag from a printed label, e.g. `lanfi://device/LF-1A2B3C4D`.
+    case device(String)
 
     static func parse(_ url: URL) -> DeepLink? {
         guard url.scheme?.lowercased() == "lanfi" else { return nil }
@@ -33,6 +41,9 @@ enum DeepLink: Equatable {
             return path.first?.lowercased() == "run" ? .runDiagnostics : nil
         case "interfaces":
             return .interfaces
+        case "device":
+            guard let tag = path.first, !tag.isEmpty else { return nil }
+            return .device(tag.uppercased())
         case "toolkit":
             guard let raw = path.first,
                 let tool = ToolboxTool.allCases.first(where: {

@@ -8,7 +8,11 @@ struct DeviceShelfView: View {
     @State private var aliasDraft = ""
     @State private var notesDraft = ""
     @State private var aliasSaveTask: Task<Void, Never>?
+    @State private var serialDraft = ""
+    @State private var locationDraft = ""
     @State private var showingClearConfirm = false
+    @State private var showingQR = false
+    @State private var wakeStatus: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -36,7 +40,13 @@ struct DeviceShelfView: View {
         .onAppear { syncDrafts() }
         .onChange(of: model.selectedID) { _ in syncDrafts() }
         .onChange(of: model.selectedDevice?.alias) { _ in syncDrafts() }
-        .onDisappear { commitAlias() }
+        .onDisappear {
+            commitAlias()
+            commitAssetFields()
+        }
+        .sheet(isPresented: $showingQR) {
+            qrSheet
+        }
         .confirmationDialog(
             String(localized: "Forget every device on the shelf?"),
             isPresented: $showingClearConfirm
@@ -76,13 +86,14 @@ struct DeviceShelfView: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .frame(width: 280)
+                    .frame(width: 350)
 
                     Spacer()
 
                     Menu {
                         Button(String(localized: "Export CSV…")) { export(.csv) }
                         Button(String(localized: "Export JSON…")) { export(.json) }
+                        Button(String(localized: "QR labels (PDF)…")) { exportLabels() }
                         Divider()
                         Button(String(localized: "Copy as text")) { copyToPasteboard() }
                         Button(String(localized: "Forget all…"), role: .destructive) { showingClearConfirm = true }
@@ -102,6 +113,9 @@ struct DeviceShelfView: View {
                     ToolkitMetric(
                         title: "With risks", value: "\(model.riskyDeviceCount)",
                         tint: model.riskyDeviceCount > 0 ? .orange : .primary)
+                    ToolkitMetric(
+                        title: "Warranty", value: "\(model.warrantyAttentionCount)",
+                        tint: model.warrantyAttentionCount > 0 ? .orange : .primary)
                     Spacer()
                     if let merged = model.lastMergedAt {
                         Text(
@@ -221,6 +235,28 @@ struct DeviceShelfView: View {
                     }
                     .width(80)
 
+                    TableColumn(String(localized: "Warranty")) { device in
+                        switch device.warranty {
+                        case .unknown:
+                            Text("—")
+                                .font(.caption2)
+                                .foregroundColor(.secondary.opacity(0.6))
+                        case .active(let days):
+                            Text("\(days) d")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        case .expiring(let days):
+                            Text(days == 0 ? String(localized: "today") : "\(days) d")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.orange)
+                        case .expired:
+                            Text(String(localized: "expired"))
+                                .font(.caption2)
+                                .foregroundColor(.red)
+                        }
+                    }
+                    .width(72)
+
                     TableColumn(String(localized: "Last seen")) { device in
                         Text(
                             device.isOnline
@@ -309,7 +345,16 @@ struct DeviceShelfView: View {
                     }
                     .font(.caption)
 
-                    inspectorRow("Vendor", device.vendor ?? "—")
+                    inspectorRow("Manufacturer", device.makeLabel)
+                    if let model = device.model, !model.isEmpty {
+                        inspectorRow("Model", model)
+                    }
+                    if let version = device.version, !version.isEmpty {
+                        inspectorRow("Version", version)
+                    }
+                    if let role = device.role, !role.isEmpty {
+                        inspectorRow("Role", role)
+                    }
                     inspectorRow("Hostname", device.hostname ?? "—")
                     inspectorRow("MAC", device.mac ?? "—")
                     inspectorRow("Source", model.lastScanSubnet ?? "—")
@@ -319,6 +364,87 @@ struct DeviceShelfView: View {
                     inspectorRow(
                         "Last seen",
                         device.lastSeen.formatted(date: .abbreviated, time: .shortened))
+
+                    Divider()
+                    HStack {
+                        ToolkitSectionLabel(text: "Asset")
+                        Spacer()
+                        if device.warranty.needsAttention {
+                            ToolkitStatusPill(text: device.warranty.title, tone: .warning)
+                        }
+                    }
+                    inspectorRow("Asset tag", device.assetTag ?? "—")
+                    assetField("Serial number", text: $serialDraft)
+                    assetField("Location", text: $locationDraft)
+                    HStack(spacing: 6) {
+                        Text("Purchased").font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { device.purchaseDate ?? Date() },
+                                set: { model.setPurchaseDate($0, for: device.id) }),
+                            displayedComponents: .date
+                        )
+                        .labelsHidden()
+                        .controlSize(.mini)
+                        if device.purchaseDate != nil {
+                            Button("Clear") { model.setPurchaseDate(nil, for: device.id) }
+                                .buttonStyle(.borderless)
+                                .font(.caption2)
+                        }
+                    }
+                    HStack(spacing: 6) {
+                        Text("Warranty ends").font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { device.warrantyEnd ?? Date() },
+                                set: { model.setWarrantyEnd($0, for: device.id) }),
+                            displayedComponents: .date
+                        )
+                        .labelsHidden()
+                        .controlSize(.mini)
+                        if device.warrantyEnd != nil {
+                            Button("Clear") { model.setWarrantyEnd(nil, for: device.id) }
+                                .buttonStyle(.borderless)
+                                .font(.caption2)
+                        }
+                    }
+                    if device.warranty.isKnown {
+                        Text(device.warranty.title)
+                            .font(.caption2)
+                            .foregroundColor(device.warranty.needsAttention ? .orange : .secondary)
+                    }
+                    HStack(spacing: 8) {
+                        Button {
+                            showingQR = true
+                        } label: {
+                            Label("QR label", systemImage: "qrcode")
+                        }
+                        .controlSize(.small)
+                        if let mac = device.mac {
+                            Button {
+                                wake(device, mac: mac)
+                            } label: {
+                                Label("Wake", systemImage: "power")
+                            }
+                            .controlSize(.small)
+                            .help(String(localized: "Send a Wake-on-LAN magic packet to \(mac)"))
+                        }
+                    }
+                    if let wakeStatus {
+                        Text(wakeStatus)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .textSelection(.enabled)
+                    }
+
+                    if !device.serviceLabels.isEmpty {
+                        ToolkitSectionLabel(text: "Advertised services")
+                        ToolkitChips(items: device.serviceLabels)
+                    }
 
                     if device.latencySamples.count > 1 {
                         ToolkitSectionLabel(text: "Latency")
@@ -479,6 +605,98 @@ struct DeviceShelfView: View {
         aliasSaveTask?.cancel()
         aliasDraft = model.selectedDevice?.alias ?? ""
         notesDraft = model.selectedDevice?.notes ?? ""
+        serialDraft = model.selectedDevice?.serialNumber ?? ""
+        locationDraft = model.selectedDevice?.location ?? ""
+        wakeStatus = nil
+    }
+
+    // MARK: - Asset register
+
+    private func assetField(_ title: LocalizedStringKey, text: Binding<String>) -> some View {
+        HStack(spacing: 6) {
+            Text(title).font(.caption2).foregroundColor(.secondary)
+            Spacer()
+            TextField("", text: text)
+                .textFieldStyle(.roundedBorder)
+                .font(.caption2)
+                .frame(width: 150)
+                .onSubmit { commitAssetFields() }
+                .onChange(of: text.wrappedValue) { _ in commitAssetFields() }
+        }
+    }
+
+    private func commitAssetFields() {
+        guard let id = model.selectedID else { return }
+        model.setSerial(serialDraft, for: id)
+        model.setLocation(locationDraft, for: id)
+    }
+
+    private func wake(_ device: ShelfDevice, mac: String) {
+        do {
+            try WakeOnLAN.send(mac: mac)
+            wakeStatus = String(format: String(localized: "Magic packet sent to %@"), mac)
+        } catch {
+            wakeStatus = error.localizedDescription
+        }
+    }
+
+    private var qrSheet: some View {
+        VStack(spacing: 12) {
+            if let device = model.selectedDevice, let tag = device.assetTag,
+                let image = QRCode.image(for: DeviceShelfAsset.deepLink(for: tag), scale: 12)
+            {
+                Text(device.displayName).font(.headline)
+                Image(nsImage: image)
+                    .interpolation(.none)
+                    .resizable()
+                    .frame(width: 200, height: 200)
+                Text(DeviceShelfAsset.deepLink(for: tag))
+                    .font(.caption2.monospaced())
+                    .textSelection(.enabled)
+                Text(
+                    "The code holds the asset tag, not the MAC address. Any Mac with LanFi opens this device from the shelf."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(width: 260)
+                HStack {
+                    Button("Copy link") { copyLabelLink(tag) }
+                    Button("Save PNG…") { saveLabelPNG(tag) }
+                    Button("Close") { showingQR = false }
+                }
+            } else {
+                Text("Select a device with an asset tag.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Button("Close") { showingQR = false }
+            }
+        }
+        .padding(18)
+        .frame(width: 320)
+    }
+
+    private func copyLabelLink(_ tag: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(DeviceShelfAsset.deepLink(for: tag), forType: .string)
+    }
+
+    private func saveLabelPNG(_ tag: String) {
+        guard let data = DeviceLabelPDF.png(for: tag) else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "\(tag).png"
+        panel.allowedContentTypes = [.png]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? data.write(to: url, options: .atomic)
+    }
+
+    private func exportLabels() {
+        let panel = NSSavePanel()
+        panel.canCreateDirectories = true
+        panel.nameFieldStringValue = "lanfi-device-labels.pdf"
+        panel.allowedContentTypes = [.pdf]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? DeviceLabelPDF.data(for: model.devices).write(to: url, options: .atomic)
     }
 
     /// Typing an alias writes the shelf JSON, so debounce it instead of

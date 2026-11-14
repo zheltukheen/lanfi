@@ -75,9 +75,11 @@ private final class BonjourResolver: NSObject, NetServiceBrowserDelegate, NetSer
     func netServiceDidResolveAddress(_ sender: NetService) {
         guard let addresses = sender.addresses else { return }
         let label = LANServiceCatalog.label(forBonjourType: sender.type)
-        let advertisement = LANAdvertisement(
-            name: sender.name,
-            services: label.map { [$0] } ?? []
+        let txt = sender.txtRecordData().map(BonjourTXTRecord.parse) ?? [:]
+        let advertisement = BonjourTXTRecord.advertisement(
+            txt: txt,
+            serviceName: sender.name,
+            serviceLabel: label
         )
         for data in addresses {
             guard let ip = Self.ipAddress(from: data) else { continue }

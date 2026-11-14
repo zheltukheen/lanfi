@@ -28,13 +28,16 @@ struct SettingsView: View {
                 .tabItem { Label("Automation", systemImage: "clock.arrow.circlepath") }
             ControllersSettingsView()
                 .tabItem { Label("Controllers", systemImage: "server.rack") }
+            MCPSettingsView()
+                .tabItem { Label("MCP", systemImage: "sparkles") }
         }
-        .frame(width: 620, height: 520)
+        .frame(width: 620, height: 540)
     }
 }
 
 private struct GeneralSettingsView: View {
     @EnvironmentObject private var updater: UpdaterController
+    @Environment(\.openWindow) private var openWindow
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
@@ -147,6 +150,16 @@ private struct GeneralSettingsView: View {
                         set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.occupancy") }
                     )
                 )
+            }
+
+            Section("Help") {
+                Button("Open LanFi Help") { openWindow(id: "help") }
+                    .keyboardShortcut("?", modifiers: [.command])
+                Text(
+                    "The help window covers the network toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, settings and keyboard shortcuts. It also opens with ⌘?."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
 
             Section("Data") {

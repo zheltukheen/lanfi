@@ -40,7 +40,13 @@ struct LANScannerToolView: View {
                 DeviceShelfView(model: shelf)
             }
         }
-        .onAppear { LocalNetworkAccess.request() }
+        .onAppear {
+            LocalNetworkAccess.request()
+            applyPendingShelfLink()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiSelectShelfDevice)) { _ in
+            applyPendingShelfLink()
+        }
         .onChange(of: model.result) { result in
             // A new scan replaces the device list, so cached service banners
             // from the previous scan would belong to stale IPs.
@@ -56,6 +62,17 @@ struct LANScannerToolView: View {
         }
         .sheet(isPresented: $showingDiscover) {
             LiveClientDiscoveryView()
+        }
+    }
+
+    /// A `lanfi://device/<tag>` link (from a printed QR label) opens the shelf
+    /// on that device.
+    private func applyPendingShelfLink() {
+        guard let tag = DeviceShelfLink.pendingTag else { return }
+        DeviceShelfLink.pendingTag = nil
+        tabRaw = 1
+        if let device = shelf.device(assetTag: tag) {
+            shelf.selectedID = device.id
         }
     }
 
@@ -248,19 +265,29 @@ struct LANScannerToolView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
-                    .width(130)
-                    TableColumn("Vendor") { device in
-                        Text(device.vendor ?? "—")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    .width(120)
+                    TableColumn("Make / model") { device in
+                        Text(
+                            [device.makeLabel, device.model]
+                                .compactMap { $0 }
+                                .filter { !$0.isEmpty && $0 != "—" }
+                                .joined(separator: " · ")
+                        )
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                     }
-                    .width(115)
-                    TableColumn("MAC") { device in
-                        Text(device.mac ?? "—")
-                            .font(.caption2.monospaced())
-                            .foregroundColor(.secondary)
+                    TableColumn("Services") { device in
+                        Text(
+                            device.serviceSummary.isEmpty
+                                ? "—"
+                                : device.serviceSummary.prefix(2).joined(separator: ", ")
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                     }
-                    .width(130)
+                    .width(140)
                     TableColumn("Open ports") { device in
                         Text(
                             device.openPorts.isEmpty
@@ -309,12 +336,23 @@ struct LANScannerToolView: View {
                     }
                     Divider()
                     inspectorRow("Kind", device.kindLabel)
-                    inspectorRow("Vendor", device.vendor ?? "—")
-                    inspectorRow("Hostname", device.hostname ?? "—")
+                    inspectorRow("Manufacturer", device.makeLabel)
                     if let model = device.model, !model.isEmpty {
                         inspectorRow("Model", model)
                     }
+                    if let version = device.version, !version.isEmpty {
+                        inspectorRow("Version", version)
+                    }
+                    if let role = device.deviceType, !role.isEmpty {
+                        inspectorRow("Role", role)
+                    }
+                    if let serial = device.serialNumber, !serial.isEmpty {
+                        inspectorRow("Serial", serial)
+                    }
+                    inspectorRow("Hostname", device.hostname ?? "—")
                     inspectorRow("MAC", device.mac ?? "—")
+                    inspectorRow("Network", result.subnet)
+                    inspectorRow("Gateway", device.isGateway ? String(localized: "Yes") : "—")
                     inspectorRow(
                         "Latency", ToolkitFormat.milliseconds(device.latencyMilliseconds))
                     if !device.serviceSummary.isEmpty {
@@ -339,7 +377,7 @@ struct LANScannerToolView: View {
                                         .foregroundColor(.secondary)
                                     Spacer()
                                 }
-                                if let detail = serviceDetails[device.id]?[port] {
+                                if let detail = serviceDetails[device.id]?[port] ?? device.banners[port] {
                                     Text(detail)
                                         .font(.caption2.monospaced())
                                         .foregroundColor(.secondary)
@@ -422,7 +460,7 @@ struct LANScannerToolView: View {
         var lines = ["LanFi LAN scan \(result.subnet) · \(result.interfaceName)", ""]
         for device in result.devices {
             lines.append(
-                "\(device.ip)\t\(device.mac ?? "-")\t\(device.hostname ?? "-")\t\(device.vendor ?? "-")\t\(device.kindLabel)\t\(device.model ?? "-")\t\(device.openPorts.map(String.init).joined(separator: ","))"
+                "\(device.ip)\t\(device.mac ?? "-")\t\(device.hostname ?? "-")\t\(device.makeLabel)\t\(device.model ?? "-")\t\(device.versionLabel)\t\(device.kindLabel)\t\(device.serviceSummary.joined(separator: "|"))\t\(device.openPorts.map(String.init).joined(separator: ","))"
             )
         }
         NSPasteboard.general.clearContents()

@@ -71,6 +71,13 @@ struct LanFiApp: App {
                         Task { await diagnostics.run() }
                     case .toolkit(let tool):
                         toolkit.select(tool)
+                    case .device(let tag):
+                        // The scanner screen may not be on screen yet, so keep
+                        // the tag until the shelf is ready to consume it.
+                        toolkit.select(.lanScanner)
+                        DeviceShelfLink.pendingTag = tag
+                        NotificationCenter.default.post(
+                            name: .lanfiSelectShelfDevice, object: nil)
                     }
                     NSApp.activate(ignoringOtherApps: true)
                 }

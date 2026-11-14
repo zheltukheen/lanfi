@@ -1232,3 +1232,39 @@
 /* Traceroute metrics */
 "Reached" = "已到达";
 "Worst hop" = "最差跳点";
+
+/* Toolkit, LAN enrichment and MCP */
+"Manufacturer" = "制造商";
+"Version" = "版本";
+"Role" = "角色";
+"Serial" = "序列号";
+"Make / model" = "厂商 / 型号";
+"Services" = "服务";
+"Advertised services" = "广播服务";
+"Help" = "帮助";
+"MCP" = "MCP";
+"Link" = "链路";
+"Other active interfaces (%lld)" = "其他活动接口（%lld）";
+"%lld up · %lld tunnels · updated %@" = "%lld 个已启用 · %lld 个隧道 · 更新于 %@";
+"Live scan snapshot" = "实时扫描快照";
+"Publish the latest scan for MCP clients" = "为 MCP 客户端发布最新扫描";
+"Snapshot file" = "快照文件";
+"Copy path" = "复制路径";
+"Copied" = "已复制";
+"MCP client" = "MCP 客户端";
+"lanfi-cli path" = "lanfi-cli 路径";
+"Detect" = "检测";
+"Use default" = "使用默认值";
+"Found" = "已找到";
+"Client name" = "客户端名称";
+"Add this block to the MCP configuration of Claude Desktop, Claude Code, Cursor or another client:" = "将以下配置块添加到 Claude Desktop、Claude Code、Cursor 或其他客户端的 MCP 配置中：";
+"Copy client configuration" = "复制客户端配置";
+"What agents can do" = "智能体可以做什么";
+"The server exposes scan analysis, channel and protocol recommendations, ping, traceroute, MTR, port and path checks, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, the Device Shelf, uptime, diagnostics and speed tests." = "服务器提供扫描分析、信道与协议建议、ping、traceroute、MTR、端口与路径检查、DNS、WHOIS、GeoIP、TLS、子网、接口、路由、局域网发现、设备架、运行时间、诊断和速度测试。";
+"Open MCP documentation" = "打开 MCP 文档";
+"The server runs over stdio, stays on this Mac and never uploads scan data." = "服务器通过 stdio 在本机运行，绝不会上传扫描数据。";
+"Open LanFi Help" = "打开 LanFi 帮助";
+"The help window covers the network toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, settings and keyboard shortcuts. It also opens with ⌘?." = "帮助窗口涵盖网络工具包、LAN 扫描器、设备架、网络监视器、MCP、设置和键盘快捷键。也可以按 ⌘? 打开。";
+"LanFi Help" = "LanFi 帮助";
+"Model" = "型号";
+"Inactive interfaces (%lld)" = "未启用的接口（%lld）";

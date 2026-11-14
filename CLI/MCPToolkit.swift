@@ -41,6 +41,7 @@ enum MCPToolkit {
         case "lanfi_protocols": return protocols(arguments)
         case "lanfi_channels": return channels(arguments)
         case "lanfi_capture": return capture(arguments)
+        case "lanfi_har": return har(arguments)
         case "lanfi_spectrum": return spectrum(arguments)
         case "lanfi_devices": return devices(arguments)
         // Network probes
@@ -95,6 +96,18 @@ enum MCPToolkit {
                 "lanfi_capture",
                 "Parse a pcap/pcapng capture exported by LanFi: beacons, BSSIDs, channels, RSSI and assembled Multi-Link Operation groups.",
                 properties: ["path": ["type": "string", "description": "Capture file path."]],
+                required: ["path"]),
+            tool(
+                "lanfi_har",
+                "Analyze a HAR archive exported by browser DevTools or a debugging proxy: slowest requests, failures, p95 latency, bytes per host and the dominant timing phase. Credentials are redacted unless `redact` is false.",
+                properties: [
+                    "path": ["type": "string", "description": "HAR file path."],
+                    "redact": [
+                        "type": "boolean",
+                        "description": "Mask Authorization, cookie and token values. Default true.",
+                    ],
+                    "limit": ["type": "integer", "description": "Requests to list, default 50, max 500."],
+                ],
                 required: ["path"]),
             tool(
                 "lanfi_spectrum",
@@ -310,6 +323,13 @@ enum MCPToolkit {
 
     // MARK: - Argument helpers
 
+    private static let assetDay: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
     private static func string(_ arguments: [String: Any], _ key: String) -> String? {
         guard let value = arguments[key] as? String else { return nil }
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -424,7 +444,8 @@ enum MCPToolkit {
             return .error("File not found: \(path)")
         }
         do {
-            let beacons = try PcapAnalyzer.parse(data: Data(contentsOf: url))
+            let summary = try PcapAnalyzer.summary(data: Data(contentsOf: url))
+            let beacons = summary.beacons
             let groups = MLOGroupAssembler.assemble(beacons: beacons)
             let rows = beacons.map {
                 [
@@ -450,7 +471,96 @@ enum MCPToolkit {
                     },
                 ] as [String: Any]
             }
-            return .json(["networks": rows, "mloGroups": mlo])
+            let security: [String: Any] = [
+                "handshakes": summary.security.handshakes.map { handshake in
+                    [
+                        "bssid": handshake.bssid,
+                        "keyFrames": handshake.keyFrameCount,
+                        "messages": handshake.messageLabel,
+                        "complete": handshake.hasCompleteHandshake,
+                        "pmkid": handshake.hasPMKID,
+                    ] as [String: Any]
+                },
+                "management": summary.security.management.map { counters in
+                    [
+                        "bssid": counters.bssid,
+                        "beacons": counters.beacons,
+                        "probeResponses": counters.probeResponses,
+                        "deauth": counters.deauth,
+                        "disassoc": counters.disassoc,
+                        "burst": counters.burst,
+                    ] as [String: Any]
+                },
+                "findings": summary.security.findings.map { finding in
+                    [
+                        "id": finding.id,
+                        "severity": finding.severity.title,
+                        "title": finding.title,
+                        "detail": finding.detail,
+                    ] as [String: Any]
+                },
+            ]
+            return .json(["networks": rows, "mloGroups": mlo, "security": security])
+        } catch {
+            return .error(error.localizedDescription)
+        }
+    }
+
+    private static func har(_ arguments: [String: Any]) -> MCPToolOutcome {
+        guard let path = string(arguments, "path") else {
+            return .error("Pass the HAR file path as `path`.")
+        }
+        let url = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            return .error("File not found: \(path)")
+        }
+        let redact = (arguments["redact"] as? Bool) ?? true
+        let limit = min(max(int(arguments, "limit") ?? 50, 1), 500)
+        do {
+            let traffic = try HARParser.parse(data: Data(contentsOf: url))
+            let insights = HARTrafficAnalyzer.insights(for: traffic)
+            let requests = traffic.entries.prefix(limit).map { entry -> [String: Any] in
+                [
+                    "method": entry.request.method,
+                    "status": entry.response.status,
+                    "url": redact ? HARRedaction.url(entry.request.url) : entry.request.url,
+                    "mimeType": entry.response.mimeType,
+                    "transferBytes": entry.sizeBytes,
+                    "timeMs": entry.duration,
+                    "cached": entry.isFromCache,
+                ]
+            }
+            let slowest = insights.slowest.map { entry -> [String: Any] in
+                [
+                    "method": entry.request.method,
+                    "status": entry.response.status,
+                    "url": redact ? HARRedaction.url(entry.request.url) : entry.request.url,
+                    "timeMs": entry.duration,
+                ]
+            }
+            let hosts = insights.hosts.prefix(25).map { host -> [String: Any] in
+                [
+                    "host": host.host, "requests": host.requests, "failures": host.failures,
+                    "bytes": host.bytes, "averageMs": host.averageMilliseconds,
+                    "slowestMs": host.slowestMilliseconds,
+                ]
+            }
+            let summary: [String: Any] = [
+                "requests": insights.requestCount,
+                "failures": insights.failureCount,
+                "redirects": insights.redirectCount,
+                "cached": insights.cachedCount,
+                "transferBytes": insights.transferBytes,
+                "contentBytes": insights.contentBytes,
+                "averageMs": insights.averageMilliseconds,
+                "p95Ms": insights.p95Milliseconds,
+                "slowestPhase": insights.slowestPhase?.name ?? NSNull(),
+                "creator": traffic.creator ?? NSNull(),
+                "redacted": redact,
+            ]
+            return .json([
+                "summary": summary, "requests": requests, "slowest": slowest, "hosts": hosts,
+            ])
         } catch {
             return .error(error.localizedDescription)
         }
@@ -545,7 +655,9 @@ enum MCPToolkit {
             rows = rows.filter { device in
                 [
                     device.displayName, device.hostname ?? "", device.ip, device.mac ?? "",
-                    device.vendor ?? "", device.category.title,
+                    device.vendor ?? "", device.manufacturer ?? "", device.model ?? "",
+                    device.role ?? "", device.category.title,
+                    device.serviceLabels.joined(separator: " "),
                 ].joined(separator: " ").lowercased().contains(query)
             }
         }
@@ -569,7 +681,23 @@ enum MCPToolkit {
             if let mac = device.mac { row["mac"] = mac }
             if let vendor = device.vendor { row["vendor"] = vendor }
             if let hostname = device.hostname { row["hostname"] = hostname }
+            if let model = device.model { row["model"] = model }
+            if let manufacturer = device.manufacturer { row["manufacturer"] = manufacturer }
+            if let version = device.version { row["version"] = version }
+            if let role = device.role { row["role"] = role }
+            if let services = device.services, !services.isEmpty { row["services"] = services }
             if let latency = device.latencyMs { row["latencyMs"] = (latency * 10).rounded() / 10 }
+            if let assetTag = device.assetTag { row["assetTag"] = assetTag }
+            if let serial = device.serialNumber { row["serialNumber"] = serial }
+            if let location = device.location { row["location"] = location }
+            if let purchase = device.purchaseDate {
+                row["purchaseDate"] = assetDay.string(from: purchase)
+            }
+            if let end = device.warrantyEnd {
+                row["warrantyEnd"] = assetDay.string(from: end)
+                row["warrantyStatus"] = device.warranty.title
+                row["warrantyAttention"] = device.warranty.needsAttention
+            }
             row["findings"] = findings.map { finding in
                 [
                     "port": Int(finding.port),
@@ -991,6 +1119,13 @@ enum MCPToolkit {
                         "mac": $0.mac as Any,
                         "vendor": $0.vendor as Any,
                         "hostname": $0.hostname as Any,
+                        "model": $0.model as Any,
+                        "manufacturer": $0.manufacturer as Any,
+                        "version": $0.version as Any,
+                        "role": $0.deviceType as Any,
+                        "services": $0.services,
+                        "banners": Dictionary(
+                            uniqueKeysWithValues: $0.banners.map { (String($0.key), $0.value) }),
                         "openPorts": $0.openPorts.map(Int.init),
                         "latencyMs": $0.latencyMilliseconds as Any,
                         "isGateway": $0.isGateway,

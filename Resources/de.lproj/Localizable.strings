@@ -1232,3 +1232,39 @@
 /* Traceroute metrics */
 "Reached" = "Erreicht";
 "Worst hop" = "Schlechtester Hop";
+
+/* Toolkit, LAN enrichment and MCP */
+"Manufacturer" = "Hersteller";
+"Version" = "Version";
+"Role" = "Rolle";
+"Serial" = "Seriennummer";
+"Make / model" = "Hersteller / Modell";
+"Services" = "Dienste";
+"Advertised services" = "Angekündigte Dienste";
+"Help" = "Hilfe";
+"MCP" = "MCP";
+"Link" = "Verbindung";
+"Other active interfaces (%lld)" = "Weitere aktive Schnittstellen (%lld)";
+"%lld up · %lld tunnels · updated %@" = "%lld aktiv · %lld Tunnel · aktualisiert %@";
+"Live scan snapshot" = "Live-Scan-Snapshot";
+"Publish the latest scan for MCP clients" = "Letzten Scan für MCP-Clients veröffentlichen";
+"Snapshot file" = "Snapshot-Datei";
+"Copy path" = "Pfad kopieren";
+"Copied" = "Kopiert";
+"MCP client" = "MCP-Client";
+"lanfi-cli path" = "lanfi-cli-Pfad";
+"Detect" = "Erkennen";
+"Use default" = "Standard verwenden";
+"Found" = "Gefunden";
+"Client name" = "Client-Name";
+"Add this block to the MCP configuration of Claude Desktop, Claude Code, Cursor or another client:" = "Fügen Sie diesen Block der MCP-Konfiguration von Claude Desktop, Claude Code, Cursor oder einem anderen Client hinzu:";
+"Copy client configuration" = "Client-Konfiguration kopieren";
+"What agents can do" = "Was Agenten tun können";
+"The server exposes scan analysis, channel and protocol recommendations, ping, traceroute, MTR, port and path checks, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, the Device Shelf, uptime, diagnostics and speed tests." = "Der Server bietet Scan-Analyse, Kanal- und Protokoll-Empfehlungen, Ping, Traceroute, MTR, Port- und Pfadprüfungen, DNS, WHOIS, GeoIP, TLS, Subnetz, Schnittstellen, Routen, LAN-Erkennung, das Device Shelf, Uptime, Diagnose und Speedtests.";
+"Open MCP documentation" = "MCP-Dokumentation öffnen";
+"The server runs over stdio, stays on this Mac and never uploads scan data." = "Der Server läuft über stdio, bleibt auf diesem Mac und lädt niemals Scandaten hoch.";
+"Open LanFi Help" = "LanFi-Hilfe öffnen";
+"The help window covers the network toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, settings and keyboard shortcuts. It also opens with ⌘?." = "Das Hilfefenster behandelt Network Toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, Einstellungen und Tastaturkürzel. Es öffnet sich auch mit ⌘?.";
+"LanFi Help" = "LanFi-Hilfe";
+"Model" = "Modell";
+"Inactive interfaces (%lld)" = "Inaktive Schnittstellen (%lld)";

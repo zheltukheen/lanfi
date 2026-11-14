@@ -343,50 +343,281 @@ private extension Data {
 struct CapturedClient: Identifiable, Equatable {
     let id: String
     let mac: String
-    let bssid: String
-    let frameCount: Int
+    /// Empty for a client only seen in broadcast probes until an AP is known.
+    var bssid: String
+    var frameCount: Int
     let isAccessPoint: Bool
+    /// Last frame timestamp for this MAC in the capture.
+    var lastSeen: Date = .distantPast
+    /// Strongest RSSI seen for the client, from radiotap.
+    var rssi: Int? = nil
+    var managementFrames: Int = 0
+    var dataFrames: Int = 0
+    /// EAPOL-Key frames this client took part in — a handshake in progress.
+    var eapolFrames: Int = 0
+    /// SSIDs this client probed for, in capture order.
+    var probeSSIDs: [String] = []
+}
+
+/// Everything a single pass over a capture can produce. Decoding a large
+/// capture is the expensive part, so the UI asks for all three at once.
+struct CaptureSummary: Equatable {
+    var beacons: [CapturedBeacon] = []
+    var clients: [CapturedClient] = []
+    var security: CaptureSecurityReport = .empty
 }
 
 extension PcapAnalyzer {
+    static func summary(data: Data) throws -> CaptureSummary {
+        let beacons = try parse(data: data)
+        let packets = try rawPackets(data)
+        return CaptureSummary(
+            beacons: beacons,
+            clients: clients(beacons: beacons, packets: packets),
+            security: securityReport(beacons: beacons, packets: packets)
+        )
+    }
+
     static func clients(data: Data) throws -> [CapturedClient] {
         let beacons = try parse(data: data)
-        let accessPointMACs = Set(beacons.map(\.bssid))
-        let packets = try rawPackets(data)
-        var counts: [String: (bssid: String, frames: Int)] = [:]
-        for (linkType, packet, _) in packets {
+        return clients(beacons: beacons, packets: try rawPackets(data))
+    }
+
+    // MARK: - Clients
+
+    /// Associates every unicast MAC with the BSSID it talked to, keeping the
+    /// last-seen time, best RSSI, frame mix and probe-request SSIDs.
+    static func clients(beacons: [CapturedBeacon], packets: [(UInt32, Data, Date)]) -> [CapturedClient] {
+        let accessPointMACs = Set(beacons.map { $0.bssid.uppercased() })
+        var entries: [String: CapturedClient] = [:]
+        for (linkType, packet, timestamp) in packets {
+            guard linkType == 127 || linkType == 105 else { continue }
+            var frame = packet
+            var rssi: Int?
+            if linkType == 127 {
+                guard let info = parseRadiotap(packet), info.headerLength < packet.count else { continue }
+                frame = packet.subdata(in: info.headerLength..<packet.count)
+                rssi = info.rssi
+            }
+            guard let fields = frameFields(frame) else { continue }
+            let candidates = [fields.address1, fields.address2, fields.address3].filter {
+                !$0.isEmpty && $0 != "FF:FF:FF:FF:FF:FF" && !isMulticast($0)
+            }
+            guard !candidates.isEmpty else { continue }
+            let resolved = candidates.first { accessPointMACs.contains($0.uppercased()) } ?? fields.bssid
+            guard resolved != "00:00:00:00:00:00" else { continue }
+            // Probe requests are broadcast: leave the BSSID empty until a frame names one.
+            let bssid = isMulticast(resolved) ? "" : resolved
+            let probeSSID = fields.isProbeRequest ? ssidElement(frame, from: 24) : nil
+            let eapol = fields.type == 2 ? parseEAPOLKey(frame) : nil
+            for address in candidates where address != bssid {
+                var entry =
+                    entries[address]
+                    ?? CapturedClient(
+                        id: address, mac: address, bssid: bssid, frameCount: 0,
+                        isAccessPoint: false, lastSeen: timestamp
+                    )
+                entry.frameCount += 1
+                if entry.bssid.isEmpty, !bssid.isEmpty { entry.bssid = bssid }
+                if timestamp > entry.lastSeen { entry.lastSeen = timestamp }
+                if let rssi { entry.rssi = max(entry.rssi ?? rssi, rssi) }
+                switch fields.type {
+                case 0: entry.managementFrames += 1
+                case 2: entry.dataFrames += 1
+                default: break
+                }
+                if address == fields.address2 {
+                    if let probeSSID, !probeSSID.isEmpty, !entry.probeSSIDs.contains(probeSSID) {
+                        entry.probeSSIDs.append(probeSSID)
+                    }
+                    if eapol != nil { entry.eapolFrames += 1 }
+                }
+                entries[address] = entry
+            }
+        }
+        return entries.values.sorted { lhs, rhs in
+            if lhs.frameCount != rhs.frameCount { return lhs.frameCount > rhs.frameCount }
+            return lhs.mac < rhs.mac
+        }
+    }
+
+    // MARK: - Security
+
+    static func securityReport(data: Data) throws -> CaptureSecurityReport {
+        let beacons = try parse(data: data)
+        return securityReport(beacons: beacons, packets: try rawPackets(data))
+    }
+
+    /// Counts EAPOL-Key exchanges, PMKIDs and management-frame disruption per
+    /// BSSID. Read-only: nothing is framed, injected or deauthenticated.
+    static func securityReport(
+        beacons: [CapturedBeacon], packets: [(UInt32, Data, Date)]
+    ) -> CaptureSecurityReport {
+        var handshakes: [String: EAPOLHandshake] = [:]
+        var counters: [String: ManagementCounters] = [:]
+        var deauthTimes: [String: [Date]] = [:]
+        for (linkType, packet, timestamp) in packets {
             guard linkType == 127 || linkType == 105 else { continue }
             var frame = packet
             if linkType == 127 {
-                guard let headerLength = radiotapHeaderLength(packet), headerLength < packet.count else { continue }
-                frame = packet.subdata(in: headerLength..<packet.count)
+                guard let info = parseRadiotap(packet), info.headerLength < packet.count else { continue }
+                frame = packet.subdata(in: info.headerLength..<packet.count)
             }
-            guard frame.count >= 24 else { continue }
-            let fc = frame.uint16(at: 0, littleEndian: true)
-            let type = (fc >> 2) & 0x3
-            guard type == 0 || type == 2 else { continue }
-            let address1 = mac(frame, offset: 4)
-            let address2 = mac(frame, offset: 10)
-            let address3 = mac(frame, offset: 16)
-            let candidates = [address1, address2, address3].filter { mac in
-                !mac.isEmpty && mac != "FF:FF:FF:FF:FF:FF" && !isMulticast(mac)
-            }
-            let bssid =
-                candidates.first { accessPointMACs.contains($0) }
-                ?? (type == 0 ? address3 : address1)
-            guard !candidates.isEmpty, bssid != "00:00:00:00:00:00" else { continue }
-            for address in candidates where address != bssid {
-                var entry = counts[address] ?? (bssid, 0)
-                entry.frames += 1
-                counts[address] = entry
+            guard let fields = frameFields(frame) else { continue }
+            if fields.type == 0 {
+                let bssid = fields.address3
+                guard bssid != "00:00:00:00:00:00", !isMulticast(bssid) else { continue }
+                guard [5, 8, 10, 12].contains(fields.subtype) else { continue }
+                var counter = counters[bssid] ?? ManagementCounters(bssid: bssid)
+                counter.firstSeen = min(counter.firstSeen ?? timestamp, timestamp)
+                counter.lastSeen = max(counter.lastSeen ?? timestamp, timestamp)
+                switch fields.subtype {
+                case 5: counter.probeResponses += 1
+                case 8: counter.beacons += 1
+                case 10:
+                    counter.disassoc += 1
+                    if frame.count >= 26 { addReason(Int(frame.uint16(at: 24, littleEndian: true)), to: &counter) }
+                default:
+                    counter.deauth += 1
+                    deauthTimes[bssid, default: []].append(timestamp)
+                    if frame.count >= 26 { addReason(Int(frame.uint16(at: 24, littleEndian: true)), to: &counter) }
+                }
+                counters[bssid] = counter
+            } else if let key = parseEAPOLKey(frame) {
+                let bssid = fields.bssid
+                guard !bssid.isEmpty, bssid != "00:00:00:00:00:00" else { continue }
+                var handshake =
+                    handshakes[bssid]
+                    ?? EAPOLHandshake(
+                        bssid: bssid, keyFrameCount: 0, messages: [], hasPMKID: false,
+                        firstSeen: timestamp, lastSeen: timestamp
+                    )
+                handshake.keyFrameCount += 1
+                if let message = key.message { handshake.messages.insert(message) }
+                handshake.hasPMKID = handshake.hasPMKID || key.hasPMKID
+                handshake.firstSeen = min(handshake.firstSeen, timestamp)
+                handshake.lastSeen = max(handshake.lastSeen, timestamp)
+                handshakes[bssid] = handshake
             }
         }
-        return counts.map {
-            CapturedClient(
-                id: $0.key, mac: $0.key, bssid: $0.value.bssid,
-                frameCount: $0.value.frames, isAccessPoint: false
-            )
-        }.sorted { $0.frameCount > $1.frameCount }
+        return CaptureSecurityAnalyzer.report(
+            handshakes: handshakes.values.sorted { $0.bssid < $1.bssid },
+            counters: counters.values.sorted { $0.bssid < $1.bssid },
+            beacons: beacons,
+            deauthTimes: deauthTimes
+        )
+    }
+
+    private static func addReason(_ code: Int, to counter: inout ManagementCounters) {
+        guard code > 0 else { return }
+        if let index = counter.reasons.firstIndex(where: { $0.code == code }) {
+            counter.reasons[index].count += 1
+        } else {
+            counter.reasons.append(ManagementCounters.Reason(code: code, count: 1))
+        }
+        counter.reasons.sort { $0.count > $1.count }
+    }
+
+    // MARK: - Frame helpers
+
+    private struct FrameFields {
+        let type: Int
+        let subtype: Int
+        let address1: String
+        let address2: String
+        let address3: String
+        let toDS: Bool
+        let fromDS: Bool
+
+        var isProbeRequest: Bool { type == 0 && subtype == 4 }
+        /// The AP address for a data frame, given the distribution system bits.
+        var bssid: String { toDS ? address1 : (fromDS ? address2 : address3) }
+    }
+
+    private static func frameFields(_ frame: Data) -> FrameFields? {
+        guard frame.count >= 24 else { return nil }
+        let fc = frame.uint16(at: 0, littleEndian: true)
+        let type = Int((fc >> 2) & 0x3)
+        guard type == 0 || type == 2 else { return nil }
+        return FrameFields(
+            type: type,
+            subtype: Int((fc >> 4) & 0xF),
+            address1: mac(frame, offset: 4),
+            address2: mac(frame, offset: 10),
+            address3: mac(frame, offset: 16),
+            toDS: fc & 0x0100 != 0,
+            fromDS: fc & 0x0200 != 0
+        )
+    }
+
+    private static func ssidElement(_ frame: Data, from offset: Int) -> String? {
+        var index = offset
+        while index + 2 <= frame.count {
+            let id = frame[index]
+            let length = Int(frame[index + 1])
+            index += 2
+            guard index + length <= frame.count else { return nil }
+            if id == 0, length > 0 {
+                return String(decoding: frame.subdata(in: index..<(index + length)), as: UTF8.self)
+            }
+            index += length
+        }
+        return nil
+    }
+
+    /// Parses an EAPOL-Key frame: which of the four messages it is, and whether
+    /// message 1 carries a PMKID key-data element.
+    private static func parseEAPOLKey(_ frame: Data) -> (message: Int?, hasPMKID: Bool)? {
+        guard frame.count >= 24 else { return nil }
+        let fc = frame.uint16(at: 0, littleEndian: true)
+        guard (fc >> 2) & 0x3 == 2 else { return nil }
+        let subtype = (fc >> 4) & 0xF
+        var header = 24
+        if subtype & 0x8 != 0 { header += 2 }  // QoS control
+        if fc & 0x8000 != 0 { header += 4 }  // HT control
+        guard header + 8 <= frame.count else { return nil }
+        let llc = frame.subdata(in: header..<(header + 8))
+        guard llc[0] == 0xAA, llc[1] == 0xAA, llc[2] == 0x03, llc[6] == 0x88, llc[7] == 0x8E else {
+            return nil
+        }
+        let eapol = header + 8
+        guard eapol + 99 <= frame.count, frame[eapol + 1] == 3 else { return nil }
+        let keyInfo = UInt16(frame[eapol + 5]) << 8 | UInt16(frame[eapol + 6])
+        let ack = keyInfo & 0x0080 != 0
+        let mic = keyInfo & 0x0100 != 0
+        let install = keyInfo & 0x0040 != 0
+        let secure = keyInfo & 0x0200 != 0
+        let message: Int?
+        if ack && !mic {
+            message = 1
+        } else if mic && !ack && !secure {
+            message = 2
+        } else if mic && ack && install {
+            message = 3
+        } else if mic && !ack && secure {
+            message = 4
+        } else {
+            message = nil
+        }
+        let keyDataLength = Int(UInt16(frame[eapol + 97]) << 8 | UInt16(frame[eapol + 98]))
+        var hasPMKID = false
+        if keyDataLength > 0, eapol + 99 + keyDataLength <= frame.count {
+            var offset = eapol + 99
+            let end = offset + keyDataLength
+            while offset + 2 <= end {
+                let id = frame[offset]
+                let length = Int(frame[offset + 1])
+                let body = offset + 2
+                guard body + length <= end else { break }
+                if id == 0xDD, length >= 20, frame[body] == 0x00, frame[body + 1] == 0x0F,
+                    frame[body + 2] == 0xAC, frame[body + 3] == 0x04
+                {
+                    hasPMKID = true
+                }
+                offset = body + length
+            }
+        }
+        return (message, hasPMKID)
     }
 
     private static func rawPackets(_ data: Data) throws -> [(UInt32, Data, Date)] {

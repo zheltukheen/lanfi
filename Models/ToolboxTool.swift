@@ -38,6 +38,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case pathCheck
     case subnetCalculator
     case iperf3
+    case httpTraffic
     case advancedTools
 
     case networkMonitor
@@ -65,6 +66,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .pathCheck: return String(localized: "Path Check")
         case .subnetCalculator: return String(localized: "Subnet Calculator")
         case .iperf3: return String(localized: "iperf3")
+        case .httpTraffic: return String(localized: "HTTP Traffic")
         case .advancedTools: return String(localized: "Advanced Tools")
         case .networkMonitor: return String(localized: "Network Monitor")
         case .uptimeMonitor: return String(localized: "Uptime Monitor")
@@ -91,6 +93,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .pathCheck: return "arrow.triangle.branch"
         case .subnetCalculator: return "number"
         case .iperf3: return "arrow.up.arrow.down"
+        case .httpTraffic: return "list.bullet.rectangle.portrait"
         case .advancedTools: return "terminal"
         case .networkMonitor: return "waveform.path.ecg"
         case .uptimeMonitor: return "clock.badge.checkmark"
@@ -106,7 +109,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
             return .diagnostics
         case .dnsLookup, .dnsPropagation, .whois, .geoIP, .sslCertificate:
             return .dnsDomains
-        case .portScan, .pathCheck, .subnetCalculator, .iperf3, .advancedTools:
+        case .portScan, .pathCheck, .subnetCalculator, .iperf3, .httpTraffic, .advancedTools:
             return .networkTools
         case .wifiAnalyzer, .siteSurvey:
             return .wifi
@@ -122,8 +125,8 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
         switch self {
         case .internetCheck, .ping, .traceroute, .mtr, .visualTraceroute, .speedTest, .dnsLookup,
             .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
-            .uptimeMonitor, .lanScanner, .iperf3, .advancedTools, .wifiAnalyzer, .siteSurvey,
-            .dnsPropagation, .whois, .geoIP:
+            .uptimeMonitor, .lanScanner, .iperf3, .httpTraffic, .advancedTools, .wifiAnalyzer,
+            .siteSurvey, .dnsPropagation, .whois, .geoIP:
             return true
         }
     }
