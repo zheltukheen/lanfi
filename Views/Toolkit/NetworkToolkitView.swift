@@ -210,6 +210,14 @@ struct NetworkToolkitView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
+            Button {
+                openWindow(id: "help")
+            } label: {
+                Image(systemName: "questionmark.circle")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .help("LanFi Help")
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 10)
@@ -255,6 +263,8 @@ struct NetworkToolkitView: View {
             LANScannerToolView(model: toolkit.lanScanner)
         case .iperf3:
             Iperf3ToolView(model: toolkit.iperf3)
+        case .httpTraffic:
+            HTTPTrafficToolView(model: toolkit.httpTraffic)
         case .advancedTools:
             AdvancedToolsToolView()
         case .wifiAnalyzer:

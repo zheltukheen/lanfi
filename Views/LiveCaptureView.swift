@@ -17,7 +17,8 @@ struct LiveCaptureView: View {
     @State private var customOutput = false
     @State private var filter = ""
     @State private var profiles: [CaptureProfile] = []
-    @State private var channel = 0
+    @State private var channelText = ""
+    @State private var selectedBands: Set<WiFiBand> = []
     @State private var triggerMode = 0
     @State private var triggerBSSID = ""
     @State private var waitingForTrigger = false
@@ -98,15 +99,28 @@ struct LiveCaptureView: View {
                     .frame(width: 220)
                 }
                 GridRow {
-                    Text("Channel").foregroundColor(.secondary)
-                    Picker("", selection: $channel) {
-                        Text("Auto / current").tag(0)
-                        ForEach(Array(Set(viewModel.supportedChannels.map(\.channel))).sorted(), id: \.self) { value in
-                            Text("\(value)").tag(value)
+                    Text("Channels").foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            ForEach([WiFiBand.band24, WiFiBand.band5, WiFiBand.band6], id: \.self) { band in
+                                Button(band.label) { toggle(band) }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                                    .tint(selectedBands.contains(band) ? Color.accentColor : Color.secondary)
+                                    .help("Add this band's channels to the list")
+                            }
                         }
+                        TextField("All channels, or e.g. 1,6,11", text: $channelText)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 240)
+                        Text(
+                            "Monitor mode hops across channels. List one channel to pin the interface; a longer list is kept with the profile and used when the capture is analyzed."
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(width: 300, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
                     }
-                    .labelsHidden()
-                    .frame(width: 220)
                 }
                 GridRow {
                     Text("Duration").foregroundColor(.secondary)
@@ -300,7 +314,7 @@ struct LiveCaptureView: View {
             monitorMode: monitorMode && selectedInterface.hasPrefix("en"),
             filter: filter,
             startDelay: startDelay,
-            channel: channel == 0 ? nil : channel
+            channel: pinnedChannel
         )
         isCapturing = true
         Task {
@@ -322,12 +336,31 @@ struct LiveCaptureView: View {
         }
     }
 
+    /// A capture can pin one channel; a longer list stays in the profile.
+    private var pinnedChannel: Int? {
+        let channels = CaptureProfile.parseChannels(channelText)
+        return channels.count == 1 ? channels.first : nil
+    }
+
+    private func toggle(_ band: WiFiBand) {
+        if selectedBands.contains(band) {
+            selectedBands.remove(band)
+        } else {
+            selectedBands.insert(band)
+        }
+        channelText = CaptureProfile.channels(for: selectedBands, available: viewModel.supportedChannels)
+            .map(String.init)
+            .joined(separator: ",")
+    }
+
     private func apply(_ profile: CaptureProfile) {
         selectedInterface = profile.interfaceName
         duration = profile.duration
         monitorMode = profile.monitorMode
         filter = profile.filter
-        channel = profile.channel ?? 0
+        channelText = (profile.channels ?? profile.channel.map { [$0] } ?? []).map(String.init)
+            .joined(separator: ",")
+        selectedBands = []
     }
 
     private func saveProfile() {
@@ -343,7 +376,8 @@ struct LiveCaptureView: View {
         guard !name.isEmpty else { return }
         let profile = CaptureProfile.new(
             name: name, interfaceName: selectedInterface, duration: duration,
-            monitorMode: monitorMode, filter: filter, channel: channel == 0 ? nil : channel
+            monitorMode: monitorMode, filter: filter,
+            channel: pinnedChannel, channels: CaptureProfile.parseChannels(channelText)
         )
         if let index = profiles.firstIndex(where: { $0.name == name }) {
             profiles[index] = profile

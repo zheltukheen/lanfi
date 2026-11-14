@@ -21,6 +21,13 @@ final class DeepLinkTests: XCTestCase {
             .toolkit(.lanScanner))
     }
 
+    func testParsesShelfDeviceTag() {
+        XCTAssertEqual(
+            DeepLink.parse(URL(string: "lanfi://device/lf-1a2b3c4d")!),
+            .device("LF-1A2B3C4D"))
+        XCTAssertNil(DeepLink.parse(URL(string: "lanfi://device")!))
+    }
+
     func testRejectsOtherSchemes() {
         XCTAssertNil(DeepLink.parse(URL(string: "https://example.com")!))
         XCTAssertNil(DeepLink.parse(URL(string: "lanfi://tab/unknown")!))

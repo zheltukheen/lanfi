@@ -113,6 +113,7 @@ struct HelpView: View {
             shortcut("⌘⇧D", HelpContent.diagnostics)
             shortcut("⌘⇧M", HelpContent.survey)
             shortcut("⌘,", HelpContent.settings)
+            shortcut("⌘?", HelpContent.help)
         }
     }
 
@@ -159,6 +160,7 @@ private enum HelpContent {
     static var diagnostics: String { isRussian ? "Диагностика" : "Diagnostics" }
     static var survey: String { isRussian ? "Site Survey" : "Site Survey" }
     static var settings: String { isRussian ? "Настройки" : "Settings" }
+    static var help: String { isRussian ? "Открыть справку" : "Open help" }
 
     static var current: [HelpTopic] {
         isRussian ? russian : english
@@ -219,6 +221,109 @@ private enum HelpContent {
                     [
                         "Interfaces lists every BSD interface, including VPN tunnels, bridges, AWDL and loopback.",
                         "Inactive interfaces are collapsed. Active cards show addresses, MTU, speed, traffic and Wi-Fi association.",
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "toolkit", title: "Network Toolkit",
+            summary: "The main window: grouped tools, search and live status.",
+            icon: "square.grid.2x2",
+            sections: [
+                HelpSection(
+                    "Finding a tool",
+                    [
+                        "The sidebar groups tools by Wi-Fi, Monitoring, Diagnostics, DNS & Domains and Network Tools. Type in Search tools to filter by name or description.",
+                        "Unavailable tools stay visible with a Soon badge so the map of the toolkit stays honest.",
+                    ]),
+                HelpSection(
+                    "Reading results",
+                    [
+                        "Every tool uses the same cards, metrics and status pills. Green means ready or healthy, orange needs attention, and a spinner means a probe is running.",
+                        "Stop cancels a running probe without closing the screen. Copy exports the visible result to the clipboard.",
+                    ]),
+                HelpSection(
+                    "Help",
+                    [
+                        "Press ⌘? or click the question mark in the toolbar to open this window. Settings → General has the same button."
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "lan", title: "LAN Scanner & Device Shelf",
+            summary: "What is on the network: names, models, services, ports and history.",
+            icon: "desktopcomputer",
+            sections: [
+                HelpSection(
+                    "What LanFi reads",
+                    [
+                        "ARP plus a fast ICMP sweep find addresses. Bonjour/mDNS TXT records, SSDP/UPnP descriptions and TCP banners supply the device's own name, manufacturer, model, firmware version, role and services. Reverse DNS adds host names.",
+                        "This is why a device can be labelled even when you never typed its name: the device advertises the data itself.",
+                    ]),
+                HelpSection(
+                    "Reading the inspector",
+                    [
+                        "Kind and Role answer what the device is. Manufacturer, Model and Version answer which one it is. IP, MAC, Network and Gateway answer where it is. Advertised services and open ports answer how it can be reached.",
+                        "Detect versions reads banners from every open port and fills in the software running behind them.",
+                    ]),
+                HelpSection(
+                    "Device Shelf",
+                    [
+                        "Every device is kept across scans with your alias, type, notes, availability, latency history and risk findings. New devices are flagged only when Guard this network is on.",
+                        "Export CSV or JSON from the shelf menu. Names and notes survive rescans and DHCP changes.",
+                    ]),
+                HelpSection(
+                    "If fields are empty",
+                    [
+                        "Most devices publish nothing. Allow Local Network access, scan again, and prefer a network where multicast (mDNS/SSDP) is not blocked by client isolation."
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "monitor", title: "Network Monitor",
+            summary: "How this Mac is connected: primary interface, addresses, router and routes.",
+            icon: "waveform.path.ecg",
+            sections: [
+                HelpSection(
+                    "Overview",
+                    [
+                        "The primary interface card shows the address, router, DNS, Wi-Fi and traffic that matter. Other active interfaces stay collapsed; open one to see MTU, speed, IPv6 and counters. Inactive interfaces are hidden under a disclosure."
+                    ]),
+                HelpSection(
+                    "Routes",
+                    [
+                        "The Routes tab reads the IPv4 routing table. The default route for the primary interface is highlighted; Refresh re-reads netstat."
+                    ]),
+                HelpSection(
+                    "Auto-refresh",
+                    [
+                        "Overview refreshes every eight seconds while Auto-refresh is on. Copy writes the full interface report to the clipboard."
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "mcp", title: "MCP for AI agents",
+            summary: "Connect Claude, Cursor or another MCP client to LanFi.",
+            icon: "sparkles",
+            sections: [
+                HelpSection(
+                    "How it works",
+                    [
+                        "The app publishes the live scan to ~/Library/Application Support/LanFi/mcp/latest-scan.json. The lanfi-cli mcp command serves that snapshot and the toolkit probes over stdio. No cloud, account or telemetry is involved."
+                    ]),
+                HelpSection(
+                    "Setup",
+                    [
+                        "Build or install lanfi-cli, then add the command and args [\"mcp\"] to your client's MCP configuration. Settings → MCP copies a ready config and remembers the binary path."
+                    ]),
+                HelpSection(
+                    "Tools",
+                    [
+                        "Agents can read scan summaries, analysis, protocols, channels, captures and spectrum traces; run ping, traceroute, MTR, port and path checks, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, iperf3 and speed tests; and read the Device Shelf, uptime and diagnostics."
+                    ]),
+                HelpSection(
+                    "Privacy",
+                    [
+                        "The server runs locally and reads files you already have. Turn off Publish the latest scan for MCP clients in Settings → MCP to stop writing the snapshot."
                     ]),
             ]
         ),
@@ -311,6 +416,7 @@ private enum HelpContent {
                         "lanfi-cli summary scan.json [--json]",
                         "lanfi-cli protocols scan.json",
                         "lanfi-cli pcap capture.pcapng [--json]",
+                        "lanfi-cli mcp   # MCP server for AI agents (see the MCP topic)",
                     ]),
                 HelpSection(
                     "Deep links",
@@ -408,6 +514,109 @@ private enum HelpContent {
             ]
         ),
         HelpTopic(
+            id: "toolkit", title: "Network Toolkit",
+            summary: "Главное окно: сгруппированные инструменты, поиск и живой статус.",
+            icon: "square.grid.2x2",
+            sections: [
+                HelpSection(
+                    "Как найти инструмент",
+                    [
+                        "Сайдбар группирует инструменты по Wi-Fi, Monitoring, Diagnostics, DNS & Domains и Network Tools. Введите запрос в Search tools, чтобы фильтровать по названию или описанию.",
+                        "Недоступные инструменты остаются видимыми с бейджем Soon, чтобы карта toolkit была честной.",
+                    ]),
+                HelpSection(
+                    "Как читать результат",
+                    [
+                        "Все инструменты используют одинаковые карточки, метрики и статусы. Зелёный — готово или всё в порядке, оранжевый — требует внимания, спиннер — проба выполняется.",
+                        "Stop отменяет запущенную пробу, не закрывая экран. Copy копирует видимый результат в буфер обмена.",
+                    ]),
+                HelpSection(
+                    "Справка",
+                    [
+                        "Нажмите ⌘? или значок вопроса в toolbar, чтобы открыть это окно. Та же кнопка есть в Settings → General."
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "lan", title: "LAN Scanner и Device Shelf",
+            summary: "Что есть в сети: имена, модели, сервисы, порты и история.",
+            icon: "desktopcomputer",
+            sections: [
+                HelpSection(
+                    "Что читает LanFi",
+                    [
+                        "ARP и быстрый ICMP-свип находят адреса. Записи Bonjour/mDNS TXT, описания SSDP/UPnP и TCP-баннеры дают собственное имя устройства, производителя, модель, версию прошивки, роль и сервисы. Reverse DNS добавляет hostname.",
+                        "Поэтому устройство подписывается, даже если вы никогда не вводили его имя: оно само сообщает эти данные в сеть.",
+                    ]),
+                HelpSection(
+                    "Как читать инспектор",
+                    [
+                        "Kind и Role отвечают, что это за устройство. Manufacturer, Model и Version — какое именно. IP, MAC, Network и Gateway — где оно находится. Advertised services и открытые порты — как до него добраться.",
+                        "Detect versions читает баннеры со всех открытых портов и показывает, какое ПО за ними работает.",
+                    ]),
+                HelpSection(
+                    "Device Shelf",
+                    [
+                        "Каждое устройство сохраняется между сканами с вашим именем, типом, заметками, доступностью, историей задержек и рисками. Новые устройства отмечаются, только если включён Guard this network.",
+                        "Export CSV или JSON — в меню полки. Имена и заметки переживают повторные сканы и смену адреса по DHCP.",
+                    ]),
+                HelpSection(
+                    "Если поля пустые",
+                    [
+                        "Большинство устройств ничего о себе не публикуют. Разрешите Local Network access, повторите скан и используйте сеть, где multicast (mDNS/SSDP) не блокируется изоляцией клиентов."
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "monitor", title: "Network Monitor",
+            summary: "Как подключён этот Mac: основной интерфейс, адреса, роутер и маршруты.",
+            icon: "waveform.path.ecg",
+            sections: [
+                HelpSection(
+                    "Overview",
+                    [
+                        "Карточка основного интерфейса показывает главное: адрес, роутер, DNS, Wi-Fi и трафик. Остальные активные интерфейсы свёрнуты; раскройте нужный, чтобы увидеть MTU, скорость, IPv6 и счётчики. Неактивные интерфейсы спрятаны под disclosure."
+                    ]),
+                HelpSection(
+                    "Routes",
+                    [
+                        "Вкладка Routes читает таблицу IPv4-маршрутов. Маршрут по умолчанию для основного интерфейса подсвечен; Refresh перечитывает netstat."
+                    ]),
+                HelpSection(
+                    "Auto-refresh",
+                    [
+                        "Overview обновляется каждые восемь секунд, пока включён Auto-refresh. Copy копирует полный отчёт по интерфейсам в буфер обмена."
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "mcp", title: "MCP для AI-агентов",
+            summary: "Подключите Claude, Cursor или другой MCP-клиент к LanFi.",
+            icon: "sparkles",
+            sections: [
+                HelpSection(
+                    "Как это работает",
+                    [
+                        "Приложение публикует живой скан в ~/Library/Application Support/LanFi/mcp/latest-scan.json. Команда lanfi-cli mcp отдаёт этот снимок и пробы toolkit по stdio. Облака, аккаунта и телеметрии нет."
+                    ]),
+                HelpSection(
+                    "Настройка",
+                    [
+                        "Соберите или установите lanfi-cli, затем добавьте command и args [\"mcp\"] в MCP-конфигурацию клиента. Settings → MCP копирует готовый конфиг и запоминает путь к бинарнику."
+                    ]),
+                HelpSection(
+                    "Инструменты",
+                    [
+                        "Агенты читают сводку скана, анализ, протоколы, каналы, захваты и spectrum; запускают ping, traceroute, MTR, проверку портов и пути, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, iperf3 и speed test; читают Device Shelf, uptime и diagnostics."
+                    ]),
+                HelpSection(
+                    "Приватность",
+                    [
+                        "Сервер работает локально и читает файлы, которые уже есть на Mac. Отключите Publish the latest scan for MCP clients в Settings → MCP, чтобы перестать писать снимок."
+                    ]),
+            ]
+        ),
+        HelpTopic(
             id: "charts", title: "Spectrum и History", summary: "RF-графики и автомасштаб сигнала.",
             icon: "waveform.path.ecg",
             sections: [
@@ -495,6 +704,7 @@ private enum HelpContent {
                         "lanfi-cli summary scan.json [--json]",
                         "lanfi-cli protocols scan.json",
                         "lanfi-cli pcap capture.pcapng [--json]",
+                        "lanfi-cli mcp   # MCP server for AI agents (see the MCP topic)",
                     ]),
                 HelpSection(
                     "Deep links",

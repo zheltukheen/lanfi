@@ -62,6 +62,7 @@ struct LANScannerService {
         // denied ARP table still produces responsive addresses with names.
         async let reverseTask = ReverseDNS.names(hosts: probeHosts)
         let probes = await probe(probeHosts)
+        let banners = await fetchBanners(from: probes)
         let bonjour = await bonjourTask
         let ssdp = await ssdpTask
         let reversed = await reverseTask
@@ -83,7 +84,8 @@ struct LANScannerService {
             gateway: resolvedGateway,
             thisMAC: interface.macAddress,
             knownMACs: guardEnabled ? knownMACs : [],
-            advertisements: advertisements
+            advertisements: advertisements,
+            banners: banners
         )
         return LANScanResult(
             interfaceName: interface.bsdName,
@@ -162,6 +164,54 @@ struct LANScannerService {
         }
         return results.mapValues { $0.sorted { $0.port < $1.port } }
     }
+
+    /// Reads the version banner on the most useful open ports. This runs after
+    /// the TCP probe so it only touches ports that already answered, and caps
+    /// both ports per host and concurrency to keep the scan fast.
+    private func fetchBanners(from probes: [String: [PortScanResult]])
+        async -> [String: [UInt16: String]]
+    {
+        let candidates: [(String, UInt16)] = probes.flatMap { host, results in
+            results
+                .filter { $0.state == .open && Self.bannerPorts.contains($0.port) }
+                .map(\.port)
+                .sorted()
+                .prefix(2)
+                .map { (host, $0) }
+        }
+        guard !candidates.isEmpty else { return [:] }
+
+        var banners: [String: [UInt16: String]] = [:]
+        await withTaskGroup(of: (String, UInt16, String?).self) { group in
+            var iterator = candidates.makeIterator()
+            let width = min(16, candidates.count)
+            for _ in 0..<width {
+                guard let pair = iterator.next() else { break }
+                group.addTask {
+                    let banner = await ServiceBannerProbe().probe(
+                        host: pair.0, port: pair.1, timeout: 0.9)
+                    return (pair.0, pair.1, banner)
+                }
+            }
+            while let (host, port, banner) = await group.next() {
+                if let banner { banners[host, default: [:]][port] = banner }
+                if Task.isCancelled {
+                    group.cancelAll()
+                    break
+                }
+                if let pair = iterator.next() {
+                    group.addTask {
+                        let banner = await ServiceBannerProbe().probe(
+                            host: pair.0, port: pair.1, timeout: 0.9)
+                        return (pair.0, pair.1, banner)
+                    }
+                }
+            }
+        }
+        return banners
+    }
+
+    private static let bannerPorts: Set<UInt16> = [21, 22, 25, 80, 5000, 8080, 8000]
 
     private func sweep(_ hosts: [String]) async -> [String: Double] {
         var responsive: [String: Double] = [:]
@@ -308,11 +358,23 @@ enum SSDPDiscovery {
                 advertisement = UPnPDescriptionParser.parse(text)
             }
         }
-        if advertisement.name == nil, let server = response.server {
-            // Example: "Linux/3.14 UPnP/1.0 MiniDLNA/1.0".
-            let parts = server.split(whereSeparator: { $0 == " " || $0 == "/" })
-            if let first = parts.first, !first.isEmpty, parts.count > 1 {
-                advertisement.name = String(first)
+        if let server = response.server, !server.isEmpty {
+            // Example: "Linux/3.14 UPnP/1.0 MiniDLNA/1.0". The last token is
+            // the product that actually speaks UPnP; earlier tokens are the OS
+            // and protocol version.
+            let tokens = server.split(whereSeparator: { $0 == " " || $0 == "/" }).map(String.init)
+            if tokens.count >= 2 {
+                let product = tokens[tokens.count - 2]
+                let productVersion = tokens[tokens.count - 1]
+                if advertisement.model == nil, product != "UPnP" {
+                    advertisement.model = product
+                }
+                if advertisement.version == nil, productVersion.first?.isNumber == true {
+                    advertisement.version = productVersion
+                }
+            }
+            if advertisement.name == nil, let first = tokens.first, !first.isEmpty {
+                advertisement.name = first
             }
         }
         return advertisement

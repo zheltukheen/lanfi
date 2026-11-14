@@ -1012,6 +1012,10 @@ class AnalyzerViewModel: ObservableObject {
     /// Publishes the scan for the MCP server. Throttled because filters can
     /// recompute many times per second while the user types.
     private func publishMCPSnapshotIfNeeded() {
+        let defaults = UserDefaults.standard
+        guard (defaults.object(forKey: "LanFi.mcp.publishSnapshot") as? Bool) ?? true else {
+            return
+        }
         let now = Date()
         guard now.timeIntervalSince(lastMCPSnapshotDate) >= 5 else { return }
         lastMCPSnapshotDate = now

@@ -61,6 +61,12 @@ struct ShelfDevice: Codable, Identifiable, Equatable, Sendable {
     var ip: String
     var hostname: String?
     var vendor: String?
+    /// What the device advertised about itself (mDNS/UPnP), kept across scans.
+    var model: String?
+    var manufacturer: String?
+    var version: String?
+    var role: String?
+    var services: [String]?
     var category: DeviceCategory
     var openPorts: [UInt16]
     var firstSeen: Date
@@ -76,11 +82,36 @@ struct ShelfDevice: Codable, Identifiable, Equatable, Sendable {
     var onlineChecks: Int
     var events: [DeviceShelfEvent]
 
+    /// Asset-register fields. All optional so shelves written by older builds
+    /// decode unchanged; the tag is backfilled on load.
+    var assetTag: String? = nil
+    var serialNumber: String? = nil
+    var purchaseDate: Date? = nil
+    var warrantyEnd: Date? = nil
+    var location: String? = nil
+
+    var warranty: DeviceWarranty { DeviceWarranty(end: warrantyEnd) }
+
     var displayName: String {
         if let alias, !alias.trimmingCharacters(in: .whitespaces).isEmpty { return alias }
         if let hostname, !hostname.isEmpty { return hostname }
+        if let model, !model.isEmpty { return model }
+        if let manufacturer, !manufacturer.isEmpty { return manufacturer }
         if let vendor, !vendor.isEmpty { return vendor }
         return String(localized: "Unknown device")
+    }
+
+    var makeLabel: String {
+        manufacturer ?? vendor ?? "—"
+    }
+
+    var serviceLabels: [String] {
+        services ?? []
+    }
+
+    var versionLabel: String {
+        if let version, !version.isEmpty { return version }
+        return "—"
     }
 
     /// Share of scans in which this device answered, 0…100.
@@ -101,6 +132,73 @@ struct ShelfDevice: Codable, Identifiable, Equatable, Sendable {
         riskFindings.contains { $0.severity >= .medium }
     }
 }
+/// Where a device's warranty stands. Only one date is stored; the status is
+/// derived so a shelf opened months later stays correct without edits.
+enum DeviceWarranty: Equatable {
+    case unknown
+    case active(daysLeft: Int)
+    case expiring(daysLeft: Int)
+    case expired(daysAgo: Int)
+
+    /// Warn this many days before the end date.
+    static let warningWindow = 30
+
+    init(end: Date?, now: Date = Date(), calendar: Calendar = .current) {
+        guard let end else {
+            self = .unknown
+            return
+        }
+        let days =
+            calendar.dateComponents(
+                [.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: end)
+            ).day ?? 0
+        if days < 0 {
+            self = .expired(daysAgo: -days)
+        } else if days <= Self.warningWindow {
+            self = .expiring(daysLeft: days)
+        } else {
+            self = .active(daysLeft: days)
+        }
+    }
+
+    var isKnown: Bool { self != .unknown }
+
+    var needsAttention: Bool {
+        switch self {
+        case .expiring, .expired: return true
+        case .unknown, .active: return false
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .unknown: return String(localized: "No warranty date")
+        case .active(let days):
+            return String(format: String(localized: "%lld days left"), days)
+        case .expiring(let days):
+            return days == 0
+                ? String(localized: "Ends today")
+                : String(format: String(localized: "Ends in %lld days"), days)
+        case .expired(let days):
+            return String(format: String(localized: "Expired %lld days ago"), days)
+        }
+    }
+}
+
+/// Opaque identity for printed labels and `lanfi://device/...` links, so a
+/// sticker on a box never carries the device's MAC address.
+enum DeviceShelfAsset {
+    static let tagPrefix = "LF-"
+
+    static func newTag() -> String {
+        let hex = UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8).uppercased()
+        return tagPrefix + hex
+    }
+
+    static func deepLink(for tag: String) -> String {
+        "lanfi://device/" + tag
+    }
+}
 
 // MARK: - Classification
 
@@ -108,11 +206,14 @@ enum DeviceClassifier {
     /// Best-effort type from the signals a LAN scan already has: the gateway
     /// flag, mDNS host names, the OUI vendor and the ports that answered.
     static func category(
-        vendor: String?, hostname: String?, ports: [UInt16], isGateway: Bool
+        vendor: String?, hostname: String?, ports: [UInt16], isGateway: Bool,
+        model: String? = nil, role: String? = nil
     ) -> DeviceCategory {
         if isGateway { return .router }
         let portSet = Set(ports)
-        let name = "\((hostname ?? "").lowercased()) \((vendor ?? "").lowercased())"
+        let name =
+            "\((hostname ?? "").lowercased()) \((vendor ?? "").lowercased()) "
+            + "\((model ?? "").lowercased()) \((role ?? "").lowercased())"
 
         if !portSet.isDisjoint(with: [9100, 631, 515]) { return .printer }
         if !portSet.isDisjoint(with: [554, 8554, 1935, 8000]) { return .camera }
@@ -145,6 +246,9 @@ enum DeviceClassifier {
         }
         if name.contains("playstation") || name.contains("xbox") || name.contains("nintendo") {
             return .console
+        }
+        if name.contains("renderer") || name.contains("media server") || name.contains("mediaserver") {
+            return .tv
         }
         if name.contains("macbook") || name.contains("imac") || name.contains("mac mini")
             || name.contains("desktop") || name.contains("laptop") || name.contains("windows")
@@ -311,6 +415,7 @@ enum DeviceShelfMerger {
             // into shelf entries; a known device still gets refreshed.
             let hasIdentity =
                 lan.mac != nil || lan.hostname != nil || lan.vendor != nil
+                || lan.model != nil || lan.manufacturer != nil || !lan.services.isEmpty
                 || !lan.openPorts.isEmpty || lan.isGateway
             if remaining[id] == nil && !hasIdentity { continue }
             var record =
@@ -321,9 +426,14 @@ enum DeviceShelfMerger {
                     ip: lan.ip,
                     hostname: lan.hostname,
                     vendor: lan.vendor,
+                    model: lan.model,
+                    manufacturer: lan.manufacturer,
+                    version: lan.version,
+                    role: lan.deviceType,
+                    services: lan.services,
                     category: DeviceClassifier.category(
                         vendor: lan.vendor, hostname: lan.hostname, ports: lan.openPorts,
-                        isGateway: lan.isGateway),
+                        isGateway: lan.isGateway, model: lan.model, role: lan.deviceType),
                     openPorts: lan.openPorts.sorted(),
                     firstSeen: now,
                     lastSeen: now,
@@ -336,9 +446,13 @@ enum DeviceShelfMerger {
                     scansSeen: 0,
                     checks: 0,
                     onlineChecks: 0,
-                    events: []
+                    events: [],
+                    assetTag: DeviceShelfAsset.newTag()
                 )
 
+            // Shelves written before the asset register existed get a tag on
+            // their next merge, so printed labels never go stale.
+            if record.assetTag == nil { record.assetTag = DeviceShelfAsset.newTag() }
             let isFirstScan = record.checks == 0
             if isFirstScan {
                 record.events.append(
@@ -382,9 +496,24 @@ enum DeviceShelfMerger {
             if record.vendor == nil || record.vendor?.isEmpty == true {
                 record.vendor = lan.vendor
             }
+            if record.model == nil || record.model?.isEmpty == true {
+                record.model = lan.model
+            }
+            if record.manufacturer == nil || record.manufacturer?.isEmpty == true {
+                record.manufacturer = lan.manufacturer
+            }
+            if record.version == nil || record.version?.isEmpty == true {
+                record.version = lan.version
+            }
+            if record.role == nil || record.role?.isEmpty == true {
+                record.role = lan.deviceType
+            }
+            if (record.services ?? []).isEmpty, !lan.services.isEmpty {
+                record.services = lan.services
+            }
             let guessed = DeviceClassifier.category(
                 vendor: record.vendor, hostname: record.hostname, ports: lan.openPorts,
-                isGateway: lan.isGateway)
+                isGateway: lan.isGateway, model: record.model, role: record.role)
             if record.category == .unknown || (record.alias == nil && record.category != guessed) {
                 if record.alias == nil { record.category = guessed }
             }

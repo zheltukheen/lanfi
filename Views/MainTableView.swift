@@ -703,6 +703,7 @@ extension Notification.Name {
     static let lanfiSelectBottomTab = Notification.Name("LanFi.selectBottomTab")
     static let lanfiShowInspector = Notification.Name("LanFi.showInspector")
     static let lanfiShowToolkit = Notification.Name("LanFi.showToolkit")
+    static let lanfiSelectShelfDevice = Notification.Name("LanFi.selectShelfDevice")
 }
 
 // MARK: - Subviews

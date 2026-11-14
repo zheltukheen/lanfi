@@ -8,7 +8,7 @@ final class MCPProtocolTests: XCTestCase {
         "lanfi_path_check", "lanfi_dns", "lanfi_dns_propagation", "lanfi_whois", "lanfi_geoip",
         "lanfi_tls", "lanfi_subnet", "lanfi_interfaces", "lanfi_routes", "lanfi_lan_scan",
         "lanfi_iperf3", "lanfi_speed_test", "lanfi_uptime", "lanfi_diagnostics", "lanfi_info",
-        "lanfi_spectrum", "lanfi_devices",
+        "lanfi_spectrum", "lanfi_devices", "lanfi_har",
     ]
 
     // MARK: - Handshake

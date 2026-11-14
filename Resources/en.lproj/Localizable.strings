@@ -1233,3 +1233,39 @@
 /* Traceroute metrics */
 "Reached" = "Reached";
 "Worst hop" = "Worst hop";
+
+/* Toolkit, LAN enrichment and MCP */
+"Manufacturer" = "Manufacturer";
+"Version" = "Version";
+"Role" = "Role";
+"Serial" = "Serial";
+"Make / model" = "Make / model";
+"Services" = "Services";
+"Advertised services" = "Advertised services";
+"Help" = "Help";
+"MCP" = "MCP";
+"Link" = "Link";
+"Other active interfaces (%lld)" = "Other active interfaces (%lld)";
+"%lld up · %lld tunnels · updated %@" = "%lld up · %lld tunnels · updated %@";
+"Live scan snapshot" = "Live scan snapshot";
+"Publish the latest scan for MCP clients" = "Publish the latest scan for MCP clients";
+"Snapshot file" = "Snapshot file";
+"Copy path" = "Copy path";
+"Copied" = "Copied";
+"MCP client" = "MCP client";
+"lanfi-cli path" = "lanfi-cli path";
+"Detect" = "Detect";
+"Use default" = "Use default";
+"Found" = "Found";
+"Client name" = "Client name";
+"Add this block to the MCP configuration of Claude Desktop, Claude Code, Cursor or another client:" = "Add this block to the MCP configuration of Claude Desktop, Claude Code, Cursor or another client:";
+"Copy client configuration" = "Copy client configuration";
+"What agents can do" = "What agents can do";
+"The server exposes scan analysis, channel and protocol recommendations, ping, traceroute, MTR, port and path checks, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, the Device Shelf, uptime, diagnostics and speed tests." = "The server exposes scan analysis, channel and protocol recommendations, ping, traceroute, MTR, port and path checks, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, the Device Shelf, uptime, diagnostics and speed tests.";
+"Open MCP documentation" = "Open MCP documentation";
+"The server runs over stdio, stays on this Mac and never uploads scan data." = "The server runs over stdio, stays on this Mac and never uploads scan data.";
+"Open LanFi Help" = "Open LanFi Help";
+"The help window covers the network toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, settings and keyboard shortcuts. It also opens with ⌘?." = "The help window covers the network toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, settings and keyboard shortcuts. It also opens with ⌘?.";
+"LanFi Help" = "LanFi Help";
+"Model" = "Model";
+"Inactive interfaces (%lld)" = "Inactive interfaces (%lld)";

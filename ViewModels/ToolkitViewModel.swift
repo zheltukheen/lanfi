@@ -24,6 +24,7 @@ final class ToolkitViewModel: ObservableObject {
     let lanScanner = LANScannerToolModel()
     let iperf3 = Iperf3ToolModel()
     let speedTest = SpeedTestToolModel()
+    let httpTraffic = HTTPTrafficToolModel()
 
     init() {
         if let raw = UserDefaults.standard.string(forKey: Self.selectionKey) {
