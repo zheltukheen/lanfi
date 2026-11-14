@@ -56,12 +56,16 @@ final class DeviceShelfViewModel: ObservableObject {
             case .warranty: if !device.warranty.needsAttention { return false }
             }
             guard !query.isEmpty else { return true }
-            let haystack = [
-                device.displayName, device.hostname ?? "", device.ip, device.mac ?? "",
-                device.vendor ?? "", device.manufacturer ?? "", device.model ?? "",
-                device.role ?? "", device.category.title, device.serviceLabels.joined(separator: " "),
-                device.assetTag ?? "", device.serialNumber ?? "", device.location ?? "",
-            ].joined(separator: " ").lowercased()
+            var parts: [String] = [device.displayName, device.ip, device.category.title]
+            for value in [
+                device.hostname, device.mac, device.vendor, device.manufacturer,
+                device.model, device.role, device.assetTag, device.serialNumber,
+                device.location,
+            ] {
+                if let value, !value.isEmpty { parts.append(value) }
+            }
+            parts.append(device.serviceLabels.joined(separator: " "))
+            let haystack = parts.joined(separator: " ").lowercased()
             return haystack.contains(query)
         }
     }
@@ -176,82 +180,88 @@ final class DeviceShelfViewModel: ObservableObject {
     // MARK: - Export
 
     var csv: String {
-        var rows = [
-            "name,ip,mac,vendor,manufacturer,model,version,role,services,category,online,open_ports,availability_percent,first_seen,last_seen,favourite,notes,asset_tag,serial_number,location,purchase_date,warranty_end,warranty_status"
-        ]
-        let formatter = ISO8601DateFormatter()
+        var rows = [Self.csvHeader]
         for device in devices {
-            let fields = [
-                device.displayName,
-                device.ip,
-                device.mac ?? "",
-                device.vendor ?? "",
-                device.manufacturer ?? "",
-                device.model ?? "",
-                device.version ?? "",
-                device.role ?? "",
-                device.serviceLabels.joined(separator: " "),
-                device.category.title,
-                device.isOnline ? "yes" : "no",
-                device.openPorts.map(String.init).joined(separator: " "),
-                device.availabilityPercent.map { String(format: "%.1f", $0) } ?? "",
-                formatter.string(from: device.firstSeen),
-                formatter.string(from: device.lastSeen),
-                device.isFavourite ? "yes" : "no",
-                device.notes ?? "",
-                device.assetTag ?? "",
-                device.serialNumber ?? "",
-                device.location ?? "",
-                device.purchaseDate.map { Self.day.string(from: $0) } ?? "",
-                device.warrantyEnd.map { Self.day.string(from: $0) } ?? "",
-                device.warranty.isKnown ? device.warranty.title : "",
-            ]
-            rows.append(fields.map(Self.escape).joined(separator: ","))
+            rows.append(csvFields(for: device).map(Self.escape).joined(separator: ","))
         }
         return rows.joined(separator: "\n") + "\n"
+    }
+
+    private static let csvHeader =
+        "name,ip,mac,vendor,manufacturer,model,version,role,services,category,online,open_ports,availability_percent,first_seen,last_seen,favourite,notes,asset_tag,serial_number,location,purchase_date,warranty_end,warranty_status"
+
+    /// Appending one field at a time keeps this inside the type checker's budget.
+    private func csvFields(for device: ShelfDevice) -> [String] {
+        let formatter = ISO8601DateFormatter()
+        var fields: [String] = []
+        fields.append(device.displayName)
+        fields.append(device.ip)
+        fields.append(device.mac ?? "")
+        fields.append(device.vendor ?? "")
+        fields.append(device.manufacturer ?? "")
+        fields.append(device.model ?? "")
+        fields.append(device.version ?? "")
+        fields.append(device.role ?? "")
+        fields.append(device.serviceLabels.joined(separator: " "))
+        fields.append(device.category.title)
+        fields.append(device.isOnline ? "yes" : "no")
+        fields.append(device.openPorts.map(String.init).joined(separator: " "))
+        fields.append(device.availabilityPercent.map { String(format: "%.1f", $0) } ?? "")
+        fields.append(formatter.string(from: device.firstSeen))
+        fields.append(formatter.string(from: device.lastSeen))
+        fields.append(device.isFavourite ? "yes" : "no")
+        fields.append(device.notes ?? "")
+        fields.append(device.assetTag ?? "")
+        fields.append(device.serialNumber ?? "")
+        fields.append(device.location ?? "")
+        fields.append(device.purchaseDate.map { Self.day.string(from: $0) } ?? "")
+        fields.append(device.warrantyEnd.map { Self.day.string(from: $0) } ?? "")
+        fields.append(device.warranty.isKnown ? device.warranty.title : "")
+        return fields
+    }
+
+    private func jsonRow(for device: ShelfDevice) -> [String: Any] {
+        var row: [String: Any] = [:]
+        row["name"] = device.displayName
+        row["ip"] = device.ip
+        row["category"] = device.category.rawValue
+        row["online"] = device.isOnline
+        row["openPorts"] = device.openPorts.map(Int.init)
+        row["favourite"] = device.isFavourite
+        row["riskScore"] = DeviceRiskCatalog.score(
+            for: DeviceRiskCatalog.findings(for: device.openPorts))
+        if let mac = device.mac { row["mac"] = mac }
+        if let vendor = device.vendor { row["vendor"] = vendor }
+        if let hostname = device.hostname { row["hostname"] = hostname }
+        if let model = device.model { row["model"] = model }
+        if let manufacturer = device.manufacturer { row["manufacturer"] = manufacturer }
+        if let version = device.version { row["version"] = version }
+        if let role = device.role { row["role"] = role }
+        if let services = device.services, !services.isEmpty { row["services"] = services }
+        if let availability = device.availabilityPercent {
+            row["availabilityPercent"] = (availability * 10).rounded() / 10
+        }
+        if let notes = device.notes { row["notes"] = notes }
+        if let assetTag = device.assetTag { row["assetTag"] = assetTag }
+        if let serial = device.serialNumber { row["serialNumber"] = serial }
+        if let location = device.location { row["location"] = location }
+        if let purchase = device.purchaseDate {
+            row["purchaseDate"] = Self.day.string(from: purchase)
+        }
+        if let end = device.warrantyEnd {
+            row["warrantyEnd"] = Self.day.string(from: end)
+            row["warrantyStatus"] = device.warranty.title
+        }
+        row["firstSeen"] = ISO8601DateFormatter().string(from: device.firstSeen)
+        row["lastSeen"] = ISO8601DateFormatter().string(from: device.lastSeen)
+        return row
     }
 
     var json: String {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let rows: [[String: Any]] = devices.map { device in
-            var row: [String: Any] = [
-                "name": device.displayName,
-                "ip": device.ip,
-                "category": device.category.rawValue,
-                "online": device.isOnline,
-                "openPorts": device.openPorts.map(Int.init),
-                "favourite": device.isFavourite,
-                "riskScore": DeviceRiskCatalog.score(
-                    for: DeviceRiskCatalog.findings(for: device.openPorts)),
-            ]
-            if let mac = device.mac { row["mac"] = mac }
-            if let vendor = device.vendor { row["vendor"] = vendor }
-            if let hostname = device.hostname { row["hostname"] = hostname }
-            if let model = device.model { row["model"] = model }
-            if let manufacturer = device.manufacturer { row["manufacturer"] = manufacturer }
-            if let version = device.version { row["version"] = version }
-            if let role = device.role { row["role"] = role }
-            if let services = device.services, !services.isEmpty { row["services"] = services }
-            if let availability = device.availabilityPercent {
-                row["availabilityPercent"] = (availability * 10).rounded() / 10
-            }
-            if let notes = device.notes { row["notes"] = notes }
-            if let assetTag = device.assetTag { row["assetTag"] = assetTag }
-            if let serial = device.serialNumber { row["serialNumber"] = serial }
-            if let location = device.location { row["location"] = location }
-            if let purchase = device.purchaseDate {
-                row["purchaseDate"] = Self.day.string(from: purchase)
-            }
-            if let end = device.warrantyEnd {
-                row["warrantyEnd"] = Self.day.string(from: end)
-                row["warrantyStatus"] = device.warranty.title
-            }
-            row["firstSeen"] = ISO8601DateFormatter().string(from: device.firstSeen)
-            row["lastSeen"] = ISO8601DateFormatter().string(from: device.lastSeen)
-            return row
-        }
+        let rows: [[String: Any]] = devices.map(jsonRow(for:))
         guard
             let data = try? JSONSerialization.data(
                 withJSONObject: ["devices": rows], options: [.prettyPrinted, .sortedKeys]),
