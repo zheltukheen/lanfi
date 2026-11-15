@@ -44,8 +44,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
-        MARKETING_VERSION: "5.2.0"
-        CURRENT_PROJECT_VERSION: "68"
+        MARKETING_VERSION: "5.3.0"
+        CURRENT_PROJECT_VERSION: "69"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
