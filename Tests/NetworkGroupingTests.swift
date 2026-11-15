@@ -27,6 +27,25 @@ final class NetworkGroupingTests: XCTestCase {
         XCTAssertTrue(groups.first(where: { $0.value == "Office" })?.subtitle.contains("best") == true)
     }
 
+    func testPhysicalAPGroupingUsesAdvertisedName() {
+        let networks = [
+            makeNetwork(id: "a", ssid: "Office", apName: "Lobby", band: .band24),
+            makeNetwork(id: "b", ssid: "Office", apName: "Lobby", band: .band5),
+            makeNetwork(id: "c", ssid: "Office", apName: nil, band: .band5),
+        ]
+        let rows = NetworkGrouper.rows(
+            for: networks, mode: .physicalAP, metricsByNetworkId: [:], annotationsByNetworkId: [:])
+
+        let groups = rows.compactMap { row -> NetworkGroup? in
+            if case .group(let group) = row { return group }
+            return nil
+        }
+        XCTAssertEqual(groups.count, 2)
+        let lobby = groups.first { $0.value == "Lobby" }
+        XCTAssertEqual(lobby?.networkCount, 2)
+        XCTAssertEqual(lobby?.bands.count, 2)
+    }
+
     func testBandAndVendorGrouping() {
         let networks = [
             makeNetwork(id: "a", band: .band24, vendor: "Acme"),
