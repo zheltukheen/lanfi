@@ -49,98 +49,14 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     var id: String { rawValue }
 
-    var title: String {
-        switch self {
-        case .internetCheck: return String(localized: "Internet Check")
-        case .ping: return String(localized: "Ping")
-        case .traceroute: return String(localized: "Traceroute")
-        case .mtr: return String(localized: "MTR")
-        case .visualTraceroute: return String(localized: "Visual Traceroute")
-        case .speedTest: return String(localized: "Speed Test")
-        case .dnsLookup: return String(localized: "DNS Lookup")
-        case .dnsPropagation: return String(localized: "DNS Propagation")
-        case .whois: return String(localized: "Whois")
-        case .geoIP: return String(localized: "GeoIP")
-        case .sslCertificate: return String(localized: "SSL Certificate")
-        case .portScan: return String(localized: "Port Scan")
-        case .pathCheck: return String(localized: "Path Check")
-        case .subnetCalculator: return String(localized: "Subnet Calculator")
-        case .iperf3: return String(localized: "iperf3")
-        case .httpTraffic: return String(localized: "HTTP Traffic")
-        case .advancedTools: return String(localized: "Advanced Tools")
-        case .networkMonitor: return String(localized: "Network Monitor")
-        case .uptimeMonitor: return String(localized: "Uptime Monitor")
-        case .lanScanner: return String(localized: "LAN Scanner")
-        case .wifiAnalyzer: return String(localized: "Wi-Fi Analyzer")
-        case .siteSurvey: return String(localized: "Site Survey")
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .internetCheck: return "stethoscope"
-        case .ping: return "dot.radiowaves.left.and.right"
-        case .traceroute: return "point.3.connected.trianglepath.dotted"
-        case .mtr: return "chart.line.uptrend.xyaxis"
-        case .visualTraceroute: return "map"
-        case .speedTest: return "speedometer"
-        case .dnsLookup: return "magnifyingglass"
-        case .dnsPropagation: return "globe"
-        case .whois: return "doc.text.magnifyingglass"
-        case .geoIP: return "mappin.and.ellipse"
-        case .sslCertificate: return "lock.shield"
-        case .portScan: return "square.grid.3x3"
-        case .pathCheck: return "arrow.triangle.branch"
-        case .subnetCalculator: return "number"
-        case .iperf3: return "arrow.up.arrow.down"
-        case .httpTraffic: return "list.bullet.rectangle.portrait"
-        case .advancedTools: return "terminal"
-        case .networkMonitor: return "waveform.path.ecg"
-        case .uptimeMonitor: return "clock.badge.checkmark"
-        case .lanScanner: return "desktopcomputer"
-        case .wifiAnalyzer: return "wifi"
-        case .siteSurvey: return "map"
-        }
-    }
-
-    var section: ToolboxSection {
-        switch self {
-        case .internetCheck, .ping, .traceroute, .mtr, .visualTraceroute, .speedTest:
-            return .diagnostics
-        case .dnsLookup, .dnsPropagation, .whois, .geoIP, .sslCertificate:
-            return .dnsDomains
-        case .portScan, .pathCheck, .subnetCalculator, .iperf3, .httpTraffic, .advancedTools:
-            return .networkTools
-        case .wifiAnalyzer, .siteSurvey:
-            return .wifi
-        case .networkMonitor, .uptimeMonitor, .lanScanner:
-            return .monitoring
-        }
-    }
+    var title: String { ToolRegistry.descriptor(for: self).title }
+    var icon: String { ToolRegistry.descriptor(for: self).icon }
+    var section: ToolboxSection { ToolRegistry.descriptor(for: self).section }
 
     /// Tools that are wired in this build. The rest stay visible with a
     /// "Planned" badge so the sidebar keeps Netutilus's information scent
     /// without pretending the screen works.
-    var isAvailable: Bool {
-        switch self {
-        case .internetCheck, .ping, .traceroute, .mtr, .visualTraceroute, .speedTest, .dnsLookup,
-            .sslCertificate, .portScan, .pathCheck, .subnetCalculator, .networkMonitor,
-            .uptimeMonitor, .lanScanner, .iperf3, .httpTraffic, .advancedTools, .wifiAnalyzer,
-            .siteSurvey, .dnsPropagation, .whois, .geoIP:
-            return true
-        }
-    }
+    var isAvailable: Bool { ToolRegistry.descriptor(for: self).isAvailable }
 
-    var plannedDetail: String {
-        switch self {
-        case .mtr: return String(localized: "Continuous per-hop loss and jitter.")
-        case .dnsPropagation: return String(localized: "Check a record across public resolvers.")
-        case .whois: return String(localized: "Domain, IP and AS registration data.")
-        case .geoIP: return String(localized: "City, country, provider and AS for an address.")
-        case .iperf3: return String(localized: "Throughput against your own iperf3 server.")
-        case .uptimeMonitor: return String(localized: "Scheduled checks, alerts and outage history.")
-        case .lanScanner: return String(localized: "ARP and Bonjour discovery with vendor, ports and alerts.")
-        default: return String(localized: "Planned for a later phase.")
-        }
-    }
+    var plannedDetail: String { ToolRegistry.descriptor(for: self).plannedDetail }
 }

@@ -3,6 +3,8 @@ packages:
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
     exactVersion: 2.10.1
+  LanFiCore:
+    path: Packages/LanFiCore
 
 options:
   bundleIdPrefix: ru.zheltukheen
@@ -38,6 +40,7 @@ targets:
         buildPhase: resources
     dependencies:
       - package: Sparkle
+      - package: LanFiCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
@@ -103,6 +106,7 @@ targets:
       - path: Models/HistoryStatistics.swift
       - path: Models/MonitorModels.swift
       - path: Models/MonitorAlertSettings.swift
+      - path: Models/ToolDescriptor.swift
       - path: Services/MonitorStore.swift
       - path: Models/ColumnCatalog.swift
       - path: Models/SignalDisplayMode.swift
@@ -215,6 +219,8 @@ targets:
       - path: Services/Toolkit/BonjourDiscovery.swift
       - path: Services/DiagnosticsHistoryStore.swift
       - path: Services/UptimeStore.swift
+    dependencies:
+      - package: LanFiCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.Tests

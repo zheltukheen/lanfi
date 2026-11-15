@@ -1,5 +1,7 @@
 import AppKit
+import LanFiCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @EnvironmentObject private var updater: UpdaterController
@@ -38,6 +40,8 @@ struct SettingsView: View {
 private struct GeneralSettingsView: View {
     @EnvironmentObject private var updater: UpdaterController
     @Environment(\.openWindow) private var openWindow
+    @State private var settings = AppSettingsStore.shared.settings
+    @State private var settingsMessage: String?
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
@@ -46,10 +50,13 @@ private struct GeneralSettingsView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
     }
 
-    private func binding(_ key: String, default defaultValue: Bool = true) -> Binding<Bool> {
+    private func binding<T>(_ keyPath: WritableKeyPath<AppSettings, T>) -> Binding<T> {
         Binding(
-            get: { UserDefaults.standard.object(forKey: key) as? Bool ?? defaultValue },
-            set: { UserDefaults.standard.set($0, forKey: key) }
+            get: { settings[keyPath: keyPath] },
+            set: { newValue in
+                settings[keyPath: keyPath] = newValue
+                AppSettingsStore.shared.save(settings)
+            }
         )
     }
 
@@ -81,27 +88,12 @@ private struct GeneralSettingsView: View {
             }
 
             Section("Appearance") {
-                Picker(
-                    "Theme",
-                    selection: Binding(
-                        get: { UserDefaults.standard.string(forKey: "LanFi.appearance") ?? "system" },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.appearance") }
-                    )
-                ) {
-                    Text("System").tag("system")
-                    Text("Light").tag("light")
-                    Text("Dark").tag("dark")
+                Picker("Theme", selection: binding(\.appearance)) {
+                    Text("System").tag(AppSettings.Appearance.system)
+                    Text("Light").tag(AppSettings.Appearance.light)
+                    Text("Dark").tag(AppSettings.Appearance.dark)
                 }
-                Picker(
-                    "Table row density",
-                    selection: Binding(
-                        get: {
-                            UserDefaults.standard.double(forKey: "LanFi.rowDensity") > 0
-                                ? UserDefaults.standard.double(forKey: "LanFi.rowDensity") : 30
-                        },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.rowDensity") }
-                    )
-                ) {
+                Picker("Table row density", selection: binding(\.rowDensity)) {
                     Text("Compact").tag(24.0)
                     Text("Standard").tag(30.0)
                     Text("Roomy").tag(38.0)
@@ -109,47 +101,19 @@ private struct GeneralSettingsView: View {
             }
 
             Section("Toolbar") {
-                Toggle("Search field", isOn: binding("LanFi.toolbar.search", default: true))
-                Toggle("Export menu", isOn: binding("LanFi.toolbar.export", default: true))
+                Toggle("Search field", isOn: binding(\.toolbarSearch))
+                Toggle("Export menu", isOn: binding(\.toolbarExport))
             }
 
             Section("Display") {
-                Toggle(
-                    "High contrast mode",
-                    isOn: Binding(
-                        get: { UserDefaults.standard.bool(forKey: "LanFi.highContrast") },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.highContrast") }
-                    )
-                )
-                .help("Increases contrast and border weight for low-vision use.")
-                Toggle(
-                    "Hide empty graphs",
-                    isOn: Binding(
-                        get: { UserDefaults.standard.bool(forKey: "LanFi.hideEmptyGraphs") },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.hideEmptyGraphs") }
-                    )
-                )
+                Toggle("High contrast mode", isOn: binding(\.highContrast))
+                    .help("Increases contrast and border weight for low-vision use.")
+                Toggle("Hide empty graphs", isOn: binding(\.hideEmptyGraphs))
                 Toggle(
                     "Show channel recommendations",
-                    isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "LanFi.graph.channel") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.channel") }
-                    )
-                )
-                Toggle(
-                    "Show security audit",
-                    isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "LanFi.graph.security") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.security") }
-                    )
-                )
-                Toggle(
-                    "Show channel occupancy",
-                    isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "LanFi.graph.occupancy") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.graph.occupancy") }
-                    )
-                )
+                    isOn: binding(\.showChannelRecommendations))
+                Toggle("Show security audit", isOn: binding(\.showSecurityAudit))
+                Toggle("Show channel occupancy", isOn: binding(\.showChannelOccupancy))
             }
 
             Section("Help") {
@@ -163,6 +127,15 @@ private struct GeneralSettingsView: View {
             }
 
             Section("Data") {
+                HStack {
+                    Button("Export Settings…") { exportSettings() }
+                    Button("Import Settings…") { importSettings() }
+                }
+                if let settingsMessage {
+                    Text(settingsMessage)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
                 Button("Open Application Support") {
                     let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                         .appendingPathComponent("LanFi", isDirectory: true)
@@ -175,6 +148,35 @@ private struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding(12)
+    }
+
+    private func exportSettings() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "LanFi-settings.json"
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try AppSettingsStore.shared.exportData().write(to: url, options: .atomic)
+            settingsMessage = "Settings exported."
+        } catch {
+            settingsMessage = "Export failed: \(error.localizedDescription)"
+        }
+    }
+
+    private func importSettings() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let data = try Data(contentsOf: url)
+            try AppSettingsStore.shared.importData(data)
+            settings = AppSettingsStore.shared.settings
+            settingsMessage = "Settings imported."
+        } catch {
+            settingsMessage = "Import failed: \(error.localizedDescription)"
+        }
     }
 }
 
