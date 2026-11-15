@@ -326,7 +326,7 @@ enum PcapAnalyzer {
     }
 }
 
-private extension Data {
+extension Data {
     func uint16(at offset: Int, littleEndian: Bool) -> UInt16 {
         guard offset + 2 <= count else { return 0 }
         let value = withUnsafeBytes { $0.loadUnaligned(fromByteOffset: offset, as: UInt16.self) }
@@ -375,13 +375,25 @@ struct CaptureSummary: Equatable {
 
 extension PcapAnalyzer {
     static func summary(data: Data) throws -> CaptureSummary {
-        let beacons = try parse(data: data)
-        let packets = try rawPackets(data)
+        let index = try PcapPacketIndex(data: data)
+        let beacons = parse(index: index)
         return CaptureSummary(
             beacons: beacons,
-            clients: clients(beacons: beacons, packets: packets),
-            security: securityReport(beacons: beacons, packets: packets)
+            clients: clients(beacons: beacons, packets: index),
+            security: securityReport(beacons: beacons, packets: index)
         )
+    }
+
+    static func parse(index: PcapPacketIndex) -> [CapturedBeacon] {
+        var beacons: [CapturedBeacon] = []
+        for (linkType, packet, timestamp) in index {
+            if let beacon = parsePacket(
+                packet, linkType: linkType, timestamp: timestamp, source: "pcap")
+            {
+                beacons.append(beacon)
+            }
+        }
+        return merge(beacons)
     }
 
     static func clients(data: Data) throws -> [CapturedClient] {
@@ -393,7 +405,9 @@ extension PcapAnalyzer {
 
     /// Associates every unicast MAC with the BSSID it talked to, keeping the
     /// last-seen time, best RSSI, frame mix and probe-request SSIDs.
-    static func clients(beacons: [CapturedBeacon], packets: [(UInt32, Data, Date)]) -> [CapturedClient] {
+    static func clients<P: Sequence>(
+        beacons: [CapturedBeacon], packets: P
+    ) -> [CapturedClient] where P.Element == (UInt32, Data, Date) {
         let accessPointMACs = Set(beacons.map { $0.bssid.uppercased() })
         var entries: [String: CapturedClient] = [:]
         for (linkType, packet, timestamp) in packets {
@@ -456,9 +470,9 @@ extension PcapAnalyzer {
 
     /// Counts EAPOL-Key exchanges, PMKIDs and management-frame disruption per
     /// BSSID. Read-only: nothing is framed, injected or deauthenticated.
-    static func securityReport(
-        beacons: [CapturedBeacon], packets: [(UInt32, Data, Date)]
-    ) -> CaptureSecurityReport {
+    static func securityReport<P: Sequence>(
+        beacons: [CapturedBeacon], packets: P
+    ) -> CaptureSecurityReport where P.Element == (UInt32, Data, Date) {
         var handshakes: [String: EAPOLHandshake] = [:]
         var counters: [String: ManagementCounters] = [:]
         var deauthTimes: [String: [Date]] = [:]
