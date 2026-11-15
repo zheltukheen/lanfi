@@ -49,6 +49,29 @@ final class OUIParserTests: XCTestCase {
         XCTAssertEqual(database.count, 3)
     }
 
+    func testCustomOverrideInvalidatesCachedLookup() {
+        let prefix = "00:1A:2C"
+        defer { OUIParser.removeOverride(prefix) }
+
+        XCTAssertTrue(OUIParser.setOverride(prefix: prefix, vendor: "First Vendor"))
+        XCTAssertEqual(OUIParser.vendor(for: "\(prefix):11:22:33"), "First Vendor")
+
+        XCTAssertTrue(OUIParser.setOverride(prefix: prefix, vendor: "Second Vendor"))
+        XCTAssertEqual(OUIParser.vendor(for: "\(prefix):11:22:33"), "Second Vendor")
+
+        OUIParser.removeOverride(prefix)
+        XCTAssertNotEqual(OUIParser.vendor(for: "\(prefix):11:22:33"), "Second Vendor")
+    }
+
+    func testCustomOverrideSupportsLongerPrefix() {
+        let prefix = "00:1A:2C:0"
+        defer { OUIParser.removeOverride(prefix) }
+
+        XCTAssertTrue(OUIParser.setOverride(prefix: prefix, vendor: "Long Prefix"))
+        XCTAssertEqual(OUIParser.vendor(for: "00:1A:2C:0A:11:22"), "Long Prefix")
+        XCTAssertNotEqual(OUIParser.vendor(for: "00:1A:2C:1A:11:22"), "Long Prefix")
+    }
+
     func testMacNormalizationAcceptsCommonFormats() {
         XCTAssertEqual(OUIParser.normalizedMAC("00:1a:2b:0c:11:22"), "001A2B0C1122")
         XCTAssertEqual(OUIParser.normalizedMAC("00-1A-2B-0C-11-22"), "001A2B0C1122")

@@ -25,7 +25,9 @@ struct OUIParser {
         "207693": "Lenovo (Beijing) Limited.",
     ]
 
+    private static let cacheLock = NSLock()
     private static var cached: [String: String]?
+    private static var cachedOverrides: [String: String]?
     private static let overrideKey = "LanFi.customOUIOverrides"
 
     /// Returns the best vendor name for a MAC address. The database contains
@@ -43,9 +45,20 @@ struct OUIParser {
     }
 
     static func customOverrides() -> [String: String] {
-        guard let data = UserDefaults.standard.data(forKey: overrideKey),
-            let decoded = try? JSONDecoder().decode([String: String].self, from: data)
-        else { return [:] }
+        cacheLock.lock()
+        if let cachedOverrides {
+            cacheLock.unlock()
+            return cachedOverrides
+        }
+        cacheLock.unlock()
+
+        let decoded =
+            UserDefaults.standard.data(forKey: overrideKey)
+            .flatMap { try? JSONDecoder().decode([String: String].self, from: $0) } ?? [:]
+
+        cacheLock.lock()
+        cachedOverrides = decoded
+        cacheLock.unlock()
         return decoded
     }
 
@@ -55,22 +68,29 @@ struct OUIParser {
         guard (6...9).contains(key.count), !value.isEmpty else { return false }
         var overrides = customOverrides()
         overrides[key] = value
-        if let data = try? JSONEncoder().encode(overrides) {
-            UserDefaults.standard.set(data, forKey: overrideKey)
-        }
+        guard let data = try? JSONEncoder().encode(overrides) else { return false }
+        UserDefaults.standard.set(data, forKey: overrideKey)
+        cacheLock.lock()
+        cachedOverrides = overrides
+        cacheLock.unlock()
         return true
     }
 
     static func removeOverride(_ prefix: String) {
         var overrides = customOverrides()
         overrides.removeValue(forKey: normalizedMAC(prefix))
-        if let data = try? JSONEncoder().encode(overrides) {
-            UserDefaults.standard.set(data, forKey: overrideKey)
-        }
+        guard let data = try? JSONEncoder().encode(overrides) else { return }
+        UserDefaults.standard.set(data, forKey: overrideKey)
+        cacheLock.lock()
+        cachedOverrides = overrides
+        cacheLock.unlock()
     }
 
     static func reload() {
+        cacheLock.lock()
         cached = nil
+        cachedOverrides = nil
+        cacheLock.unlock()
     }
 
     /// Longest-prefix lookup over a database of 6, 7, 8 or 9 hex characters.
@@ -104,6 +124,8 @@ struct OUIParser {
     }
 
     private static func db() -> [String: String] {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
         if let cached { return cached }
 
         var database = builtIn
