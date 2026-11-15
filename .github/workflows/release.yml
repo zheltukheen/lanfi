@@ -61,6 +61,9 @@ jobs:
           fi
           ./scripts/lint.sh
 
+      - name: Test core package
+        run: swift test --package-path Packages/LanFiCore
+
       - name: Test
         run: |
           set -o pipefail
