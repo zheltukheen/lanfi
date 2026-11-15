@@ -2,9 +2,23 @@ import Foundation
 import UserNotifications
 
 @MainActor
-final class MonitorNotifier {
+final class MonitorNotifier: NSObject, UNUserNotificationCenterDelegate {
     private let center = UNUserNotificationCenter.current()
     private var policy = MonitorAlertPolicy()
+
+    override init() {
+        super.init()
+        center.delegate = self
+    }
+
+    /// Show the banner even while LanFi is frontmost; otherwise macOS silently
+    /// drops the alert and the feature looks broken.
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        [.banner, .sound]
+    }
 
     func requestAuthorization() async -> Bool {
         do {
