@@ -102,7 +102,7 @@ struct LiveClientDiscoveryView: View {
                 _ = try await Task.detached(priority: .userInitiated) {
                     try await LiveCaptureService.capture(options)
                 }.value
-                let data = try Data(contentsOf: url)
+                let data = try PcapAnalyzer.mappedData(at: url)
                 let parsed = try await Task.detached(priority: .userInitiated) {
                     try PcapAnalyzer.clients(data: data)
                 }.value

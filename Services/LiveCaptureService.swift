@@ -128,7 +128,7 @@ enum LiveCaptureService {
             )
         }
         do {
-            _ = try PcapAnalyzer.parse(data: Data(contentsOf: options.outputURL))
+            _ = try PcapAnalyzer.parse(data: PcapAnalyzer.mappedData(at: options.outputURL))
         } catch let error as PcapAnalyzerError {
             throw LiveCaptureError.captureFailed(error.localizedDescription)
         } catch {

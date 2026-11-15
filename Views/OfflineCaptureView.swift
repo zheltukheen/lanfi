@@ -475,7 +475,7 @@ struct OfflineCaptureView: View {
         Task {
             do {
                 currentURL = url
-                let data = try Data(contentsOf: url)
+                let data = try PcapAnalyzer.mappedData(at: url)
                 let summary = try await Task.detached(priority: .userInitiated) {
                     try PcapAnalyzer.summary(data: data)
                 }.value

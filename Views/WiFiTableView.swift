@@ -155,7 +155,10 @@ struct WiFiTableView: NSViewRepresentable {
             }
         }
 
-        tableView.reloadData()
+        context.coordinator.reloadIfNeeded(
+            tableView,
+            rowIDs: viewModel.tableRows.map(\.id),
+            columnIDs: targetVisibleDefinitions.map(\.id))
         restoreSelection(in: tableView, coordinator: context.coordinator)
     }
 
@@ -206,6 +209,8 @@ struct WiFiTableView: NSViewRepresentable {
         var isUpdatingSelection = false
         var isUserResizingColumn = false
         var isAutoSizingColumns = false
+        private var lastRowIDs: [String] = []
+        private var lastColumnIDs: [String] = []
 
         private var pendingColumnWidths: [String: CGFloat] = [:]
         private var widthPersistWorkItem: DispatchWorkItem?
@@ -220,6 +225,29 @@ struct WiFiTableView: NSViewRepresentable {
 
         func numberOfRows(in tableView: NSTableView) -> Int {
             parent.viewModel.tableRows.count
+        }
+
+        /// Only reload the visible cells when the row/column structure did not
+        /// change. A full reload is still used for filter, sort and column
+        /// changes, where row identity or order changes.
+        func reloadIfNeeded(
+            _ tableView: NSTableView, rowIDs: [String], columnIDs: [String]
+        ) {
+            let structureChanged = rowIDs != lastRowIDs || columnIDs != lastColumnIDs
+            lastRowIDs = rowIDs
+            lastColumnIDs = columnIDs
+
+            guard !structureChanged else {
+                tableView.reloadData()
+                return
+            }
+            let visibleRange = tableView.rows(in: tableView.visibleRect)
+            guard visibleRange.length > 0, tableView.numberOfColumns > 0 else { return }
+            let visibleRows = IndexSet(
+                integersIn: visibleRange.location..<(visibleRange.location + visibleRange.length))
+            tableView.reloadData(
+                forRowIndexes: visibleRows,
+                columnIndexes: IndexSet(integersIn: 0..<tableView.numberOfColumns))
         }
 
         func tableView(_ tableView: NSTableView, isGroupRow row: Int) -> Bool {
