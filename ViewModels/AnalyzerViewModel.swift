@@ -3,6 +3,7 @@
 import Foundation
 import Combine
 import CoreWLAN
+import LanFiCore
 import AppKit
 import SwiftUI
 import CoreLocation
@@ -222,6 +223,9 @@ class AnalyzerViewModel: ObservableObject {
     func updateRefreshInterval(to newValue: Double) {
         refreshInterval = newValue
         UserDefaults.standard.set(newValue, forKey: refreshIntervalKey)
+        var settings = AppSettingsStore.shared.settings
+        settings.refreshInterval = newValue
+        AppSettingsStore.shared.save(settings)
         if loadedSession == nil {
             startScanningLoop()
         }

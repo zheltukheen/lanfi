@@ -225,6 +225,7 @@ Services/
   NetworkColumnFormatter.swift  Pure table formatting/sorting
 ViewModels/                  Analyzer, diagnostics and survey state
 Views/                       SwiftUI + AppKit table, charts, protocols, diagnostics, survey
+Packages/LanFiCore/          SwiftPM library seed: typed AppSettings + store
 Utils/                       Location permission, OUI vendor lookup
 Resources/                   OUI database, privacy manifest, Russian localization
 Casks/lanfi.rb                Homebrew cask (tap: zheltukheen/lanfi)

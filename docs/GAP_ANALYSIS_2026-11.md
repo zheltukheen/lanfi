@@ -14,10 +14,11 @@ speed**.
 
 | Metric | Value |
 | --- | ---: |
-| Swift files (Models/Services/ViewModels/Views/Utils/CLI) | 199 |
+| Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 358 |
+| Test methods | 360 app + 6 core |
 | Settings tabs | 11 |
+| SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
 | `UserDefaults` call sites | 59 |
 | App targets | 1 app + CLI + tests |
@@ -208,20 +209,29 @@ opens without a multi-gigabyte memory spike.
 
 ### Modularity
 
-- [ ] Extract SwiftPM modules: `LanFiCore` (models, parsers, analyzers,
-      stores), `LanFiProbes` (ICMP/TCP/DNS/TLS), `LanFiApp`.
+- [x] Seed `LanFiCore` as a SwiftPM library with typed settings and its own
+      `swift test` target. Models, parsers, analyzers and stores still live in
+      the app target.
+- [ ] Extract the rest of `LanFiCore` (models, parsers, analyzers, stores) and
+      `LanFiProbes` (ICMP/TCP/DNS/TLS); this needs a public-API pass.
 - [ ] Stop listing sources three times in `project.yml`; app, tests and CLI
       depend on packages instead.
-- [ ] Split `AnalyzerViewModel` (1490 lines), `MainTableView` (1314),
-      `ToolkitViewModel` (1311), `MCPToolkit` (1280).
-- [ ] Replace the `ToolboxTool` enum plus parallel switches and the separate
-      MCP catalogue with one `ToolDescriptor` registry.
-- [ ] Replace 67 string `UserDefaults` keys with a typed `AppSettings` model
-      with defaults, migration, export and import.
+- [x] Split `ToolkitViewModel` (1311 → 44 lines + 15 focused files).
+- [ ] Split `AnalyzerViewModel` (1490), `MainTableView` (1314) and
+      `MCPToolkit` (1280).
+- [x] Centralize `ToolboxTool` metadata in one `ToolRegistry` table, with a
+      test that every tool has exactly one descriptor.
+- [ ] Move view routing and the MCP tool spec into the registry so a new tool
+      is one descriptor plus one view.
+- [x] Introduce typed `AppSettings` with defaults, legacy migration and
+      export/import; General Settings already uses it.
+- [ ] Migrate the remaining 60-ish string keys (monitor, capture, survey,
+      diagnostics, MCP) into `AppSettings`.
 - [ ] Add dependency seams (clock, scanner, notifications, file store) and
       enable Swift 6 strict concurrency for the core module.
-- [ ] Make `swift-format` blocking in CI (currently `continue-on-error: true`);
-      add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
+- [x] Make `swift-format` blocking in CI and run `swift test` for the core
+      package.
+- [ ] Add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
 
 ### Settings
 
@@ -241,6 +251,18 @@ opens without a multi-gigabyte memory spike.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the third slice (2026-11-15)
+
+- First SwiftPM module: `Packages/LanFiCore` with `AppSettings` and
+  `AppSettingsStore` (defaults, legacy migration, export/import, write-through
+  legacy keys) and 6 package tests.
+- General Settings now edits typed `AppSettings`; export/import buttons write a
+  portable JSON file.
+- `ToolkitViewModel` split into 15 focused tool-model files.
+- `ToolRegistry` centralizes tool title/icon/section/availability metadata.
+- CI runs `swift test` for the core package and `swift-format` is blocking.
+- 360 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the second slice (2026-11-15)
 

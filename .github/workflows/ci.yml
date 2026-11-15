@@ -29,7 +29,6 @@ jobs:
           xcrun swift-format --version
 
       - name: Lint Swift
-        continue-on-error: true
         run: |
           if ! xcrun --find swift-format >/dev/null 2>&1; then
             brew install swift-format
@@ -43,6 +42,9 @@ jobs:
           else
             $FORMAT lint --recursive --configuration .swift-format --no-color-diagnostics .
           fi
+
+      - name: Run core package tests
+        run: swift test --package-path Packages/LanFiCore
 
       - name: Run tests
         run: |
