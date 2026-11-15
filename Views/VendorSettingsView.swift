@@ -207,6 +207,9 @@ private struct AlertSettingsView: View {
 }
 
 private struct WiFiSettingsView: View {
+    @EnvironmentObject private var analyzer: AnalyzerViewModel
+    @AppStorage("LanFi.scan.reduceInBackground") private var reduceInBackground = true
+
     var body: some View {
         Form {
             Section("Wi-Fi adapter") {
@@ -234,6 +237,10 @@ private struct WiFiSettingsView: View {
                         set: { UserDefaults.standard.set($0, forKey: "LanFi.scanOnLaunch") }
                     )
                 )
+                Toggle("Slow scans in background and Low Power Mode", isOn: $reduceInBackground)
+                    .onChange(of: reduceInBackground) { _ in
+                        analyzer.refreshScanCadence()
+                    }
                 LabeledContent("Location access") {
                     Text("Required for SSID/BSSID")
                         .foregroundColor(.secondary)

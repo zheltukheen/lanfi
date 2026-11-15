@@ -107,6 +107,7 @@ targets:
       - path: Models/MonitorModels.swift
       - path: Models/MonitorAlertSettings.swift
       - path: Models/ToolDescriptor.swift
+      - path: Models/ScanCadence.swift
       - path: Services/MonitorStore.swift
       - path: Models/ColumnCatalog.swift
       - path: Models/SignalDisplayMode.swift
@@ -184,6 +185,7 @@ targets:
       - path: Services/ScanReportExporter.swift
       - path: Models/ThroughputReport.swift
       - path: Services/SurveyInterpolator.swift
+      - path: Services/SurveyHeatmap.swift
       - path: Services/SurveyReportExporter.swift
       - path: Services/LiveCaptureService.swift
       - path: Services/RemoteSensorService.swift

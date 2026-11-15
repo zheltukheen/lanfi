@@ -61,6 +61,10 @@ class AnalyzerViewModel: ObservableObject {
     private var timer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var isScanning = false
+    private var isAppActive = true
+    private var isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
+
+    private static let backgroundScanKey = "LanFi.scan.reduceInBackground"
 
     /// When true the auto-refresh timer keeps running but skips scans, so
     /// the table stays frozen without tearing down the scanning loop.
@@ -184,7 +188,31 @@ class AnalyzerViewModel: ObservableObject {
         configureScheduledReports()
     }
 
+    private func setAppActive(_ active: Bool) {
+        guard isAppActive != active else { return }
+        isAppActive = active
+        refreshScanCadence()
+    }
+
+    private func setLowPowerMode(_ enabled: Bool) {
+        guard isLowPowerMode != enabled else { return }
+        isLowPowerMode = enabled
+        refreshScanCadence()
+    }
+
     private func setupBindings() {
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+            .sink { [weak self] _ in self?.setAppActive(true) }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: NSApplication.willResignActiveNotification)
+            .sink { [weak self] _ in self?.setAppActive(false) }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: .NSProcessInfoPowerStateDidChange)
+            .sink { [weak self] _ in
+                self?.setLowPowerMode(ProcessInfo.processInfo.isLowPowerModeEnabled)
+            }
+            .store(in: &cancellables)
+
         // Location Status Binding
         locationManager.$authorizationStatus
             .receive(on: RunLoop.main)
@@ -211,13 +239,28 @@ class AnalyzerViewModel: ObservableObject {
 
     func startScanningLoop() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
+        let interval = currentScanInterval
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, !self.isAutoScanPaused else { return }
                 self.refresh()
             }
         }
-        timer?.tolerance = max(0.2, refreshInterval * 0.1)
+        timer?.tolerance = max(0.2, interval * 0.1)
+    }
+
+    /// Rebuilds the timer after an activity, power or preference change.
+    func refreshScanCadence() {
+        guard loadedSession == nil else { return }
+        startScanningLoop()
+    }
+
+    private var currentScanInterval: TimeInterval {
+        let reduce = UserDefaults.standard.object(forKey: Self.backgroundScanKey) as? Bool ?? true
+        return ScanCadence(
+            baseInterval: refreshInterval, reduceInBackground: reduce,
+            lowPowerMode: isLowPowerMode
+        ).interval(isForeground: isAppActive)
     }
 
     func updateRefreshInterval(to newValue: Double) {

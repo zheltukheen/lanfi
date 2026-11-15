@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 366 app + 6 core |
+| Test methods | 375 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
@@ -133,16 +133,19 @@ timeline and at least one correctly deduplicated event per real change.
       scan; batch them into one published update per scan.
 - [ ] `WiFiTableView` calls `reloadData()` on every scan; use diffable or
       targeted row reloads and coalesce updates.
-- [ ] Survey heatmap computes the grid synchronously in the view body; move it
-      off-main with progressive tiles and a detail setting. NetSpot 6 now
-      advertises heatmap generation up to 18× faster, which sets the user
+- [x] Survey heatmap moved off-main: the grid is built from an immutable
+      `SurveyHeatmapRequest` in a detached task and the fingerprint now includes
+      RSSI and wall/AP geometry.
+- [ ] Progressive heatmap tiles and a Fast/Balanced/High detail setting.
+      NetSpot 6 advertises up to 18× faster generation, which sets the user
       expectation.
 - [ ] `PcapAnalyzer` reads the whole capture into `Data`; stream or mmap and
       derive summary/clients/security from one parsed packet index.
 - [ ] Exports and scheduled reports encode on the main actor; move to a
       background task.
-- [ ] Adaptive scan interval: pause on battery/background, faster when the
-      window is active.
+- [x] Adaptive scan interval: 15 s in the background, 30 s in Low Power Mode,
+      base interval when active, with a settings toggle and pure `ScanCadence`
+      tests.
 
 Acceptance: a 300-network scan applies filters and updates the table without a
 visible hitch; the OUI warm path does no JSON decoding; a 500 MB–1 GB pcap
@@ -254,6 +257,14 @@ opens without a multi-gigabyte memory spike.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the fifth slice (2026-11-15)
+
+- Adaptive scan cadence: foreground uses the user interval, background slows to
+  15 s and Low Power Mode to 30 s; a WiFi settings toggle can disable it.
+- Survey heatmap no longer blocks the view: immutable request → detached grid
+  build → published result; the key now invalidates on RSSI and wall/AP edits.
+- 375 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the fourth slice (2026-11-15)
 
