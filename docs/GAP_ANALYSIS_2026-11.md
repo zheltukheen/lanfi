@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | 199 |
 | Lines in those folders | ~42,000 |
-| Test methods | 332 |
+| Test methods | 342 |
 | Settings tabs | 11 |
 | Distinct `LanFi.*` preference keys | 67 |
 | `UserDefaults` call sites | 59 |
@@ -38,6 +38,7 @@ speed**.
 | P1.4 | Survey Planning 2.0 and active survey | Survey | High | L |
 | P1.5 | Combined report / case file | Workflow | Medium | S/M |
 | P1.6 | Shortcuts, App Intents, widgets, MCP actions | Integrations | Medium | M |
+| P1.7 | Known networks inventory and Wi-Fi QR | Workflow | Low | S |
 | P2.1 | Spectrum hub: Wi-Spy live, remote WLAN Pi, NetAlly | Hardware | High | L |
 | P2.2 | BLE/Zigbee interference sources | Hardware | Low | M |
 | P2.3 | Sandboxed MAS build split | Distribution | Medium | L |
@@ -104,8 +105,10 @@ Tasks:
 - [ ] Retention settings: 1 h / 24 h / 7 d / 30 d.
 - [ ] Per-network statistics: min/avg/max/p95 RSSI, SNR, utilization, uptime.
 - [ ] Event log: first seen, last seen, BSSID change, channel change, security
-      downgrade, PMF/WPS change, deauth burst (from captures).
+      downgrade, PMF/WPS change, deauth burst (from captures) and roaming
+      failure (from the Roaming Test).
 - [ ] Notification rules with quiet hours.
+- [ ] Before/after comparison over two periods or saved sessions.
 - [ ] Export and a timeline view.
 - [ ] Tests for retention, aggregation and event deduplication.
 
@@ -115,8 +118,9 @@ timeline and at least one correctly deduplicated event per real change.
 ## P0.4 — Performance hot spots
 
 - [x] `OUIParser.vendor` decodes custom overrides for every BSSID; cache and
-      invalidate on write. Preload the 1.7 MB database off the scan path and
-      consider a binary trie.
+      invalidate on write.
+- [ ] Preload the 1.7 MB OUI database off the scan path and consider a binary
+      trie instead of parsing text on the first scan.
 - [x] `NetworkAnalyzer.analyze` filters the whole network list per network and
       looks up findings with `first(where:)`; group by band once and index by
       id.
@@ -125,7 +129,9 @@ timeline and at least one correctly deduplicated event per real change.
 - [ ] `WiFiTableView` calls `reloadData()` on every scan; use diffable or
       targeted row reloads and coalesce updates.
 - [ ] Survey heatmap computes the grid synchronously in the view body; move it
-      off-main with progressive tiles and a detail setting.
+      off-main with progressive tiles and a detail setting. NetSpot 6 now
+      advertises heatmap generation up to 18× faster, which sets the user
+      expectation.
 - [ ] `PcapAnalyzer` reads the whole capture into `Data`; stream or mmap and
       derive summary/clients/security from one parsed packet index.
 - [ ] Exports and scheduled reports encode on the main actor; move to a
@@ -134,8 +140,8 @@ timeline and at least one correctly deduplicated event per real change.
       window is active.
 
 Acceptance: a 300-network scan applies filters and updates the table without a
-visible hitch; the OUI warm path does no JSON decoding; a 500 MB pcap opens
-without a multi-gigabyte memory spike.
+visible hitch; the OUI warm path does no JSON decoding; a 500 MB–1 GB pcap
+opens without a multi-gigabyte memory spike.
 
 ## P0.5 — Analyzer depth
 
@@ -145,10 +151,13 @@ without a multi-gigabyte memory spike.
 - [x] History statistics (min/avg/max/p95) in the inspector.
 - [ ] SSID overhead as a percentage of airtime (beacon airtime already exists).
 - [ ] Decoder to 802.11-2024/WPA3 v3.5: RSN Override, Wi-Fi Alliance
-      Capabilities, Extended BSS Load, MBSSID/non-transmitted BSSID.
-- [ ] 6 GHz PSC/RNR hints and SP/LPI labels.
-- [ ] Wi-Fi 8/802.11bn decoder versioning (certification expected 2028, not a
-      current blocker).
+      Capabilities, Extended BSS Load, MBSSID/non-transmitted BSSID, 320 MHz
+      and MLO fields. WPA3 Transition is already decoded — do not redo it.
+- [ ] 6 GHz PSC/RNR hints, SP/LPI labels and a “why is this AP not visible”
+      explanation (macOS filters standard-power APs from active scans).
+- [ ] Wi-Fi 8/802.11bn decoder versioning. Draft 2.0 entered working-group
+      ballot in August 2026; certification is expected in 2028, so this is
+      future-proofing, not a current blocker.
 
 ## P1 — New tools
 
@@ -160,26 +169,37 @@ without a multi-gigabyte memory spike.
       probes; correlate with Device Shelf.
 - [ ] **Survey Planning 2.0** — antenna patterns/import, wall and floor
       materials, cutouts, floor alignment, real-time preview, calibration
-      against measured samples.
-- [ ] **Active Survey** — throughput and latency per sample point, before/after
-      comparison.
+      against measured samples. `SurveyPredictor` currently uses free-space
+      path loss plus a fixed 12 dB per-floor loss; replace it with a
+      material-aware model.
+- [ ] **Active Survey** — throughput and latency per sample point, auto-walk
+      sampling every N seconds/metres, before/after comparison and a
+      multi-floor diff report.
 - [ ] **Combined report** — one PDF/HTML with scan, survey, security,
       diagnostics and speed test; branding and redaction.
 - [ ] **Shortcuts/App Intents/widgets** — scan, export, capture, speed test.
 - [ ] **MCP 2.0** — live actions (`scan now`, `start capture`, `survey sample`),
       not only the read-only snapshot.
+- [ ] **Known Networks / Wi-Fi QR** — inventory of saved networks, security and
+      last-joined metadata, plus a guest-network QR. Read-only first; editing
+      known networks is a separate, riskier step.
 
 ## P2 — Hardware and platform
 
-- [ ] Spectrum hub: live Wi-Spy, remote WLAN Pi spectrum, NetAlly NXT-2000.
+- [ ] Spectrum hub: live Wi-Spy, remote WLAN Pi spectrum, NetAlly NXT-2000,
+      and interferer classification.
 - [ ] BLE iBeacon/Eddystone scanner; Zigbee adapter support.
 - [ ] Privileged helper for capture (`SMAppService`) instead of an admin
-      password per capture; multi-channel/dwell capture plan; remote sensor
-      orchestration.
+      password per capture; multi-channel/dwell capture plan; orchestration of
+      multiple remote sensors.
+- [ ] Live deauth/disassoc/EAPOL counters during a capture, not only after the
+      file is analyzed.
 - [ ] Split a sandboxed Mac App Store build from the Developer ID build rather
       than trying to make one binary do both.
 - [ ] Native probe layer for diagnostics (today `DiagnosticsEngine` shells out
       to `/sbin/ping`; macOS 26 child processes can lose Local Network access).
+- [ ] Speed test: keep `networkQuality` as the transport but add a bufferbloat
+      grade and history per network over time.
 
 ---
 
@@ -243,6 +263,14 @@ without a multi-gigabyte memory spike.
 If the product stays a free home analyzer, stop after step 1 plus Security
 Watch/Roaming. If it targets WiFi Explorer Pro, passive scan, history and
 spectrum are required.
+
+## Non-goals
+
+- Ekahau-class predictive enterprise design and cloud planning. NetSpot 6
+  multi-floor planning with antennas and floor materials is the prosumer bar,
+  not a reason to build an enterprise RF planner.
+- Cloud accounts, mandatory telemetry or a hosted dashboard.
+- Windows/Linux ports before macOS signing and distribution are trustworthy.
 
 ## Sources
 
