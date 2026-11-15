@@ -205,7 +205,7 @@ struct MainTableView: View {
                 .frame(minWidth: 980, minHeight: 620)
         }
         .sheet(isPresented: $showingOfflineCapture) {
-            OfflineCaptureView()
+            OfflineCaptureView(monitor: viewModel.monitor)
         }
         .sheet(isPresented: $showingRemoteSensors) {
             RemoteSensorsView()

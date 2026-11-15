@@ -74,6 +74,18 @@ final class MonitorViewModel: ObservableObject {
         if changed { scheduleSave() }
     }
 
+    func ingestCapture(_ report: CaptureSecurityReport) {
+        guard isRecording else { return }
+        let previousEventIDs = Set(snapshot.events.map(\.id))
+        var updated = snapshot
+        guard updated.ingestCapture(report) else { return }
+        snapshot = updated
+        for event in updated.events where !previousEventIDs.contains(event.id) {
+            notifier.notify(event, settings: alerts)
+        }
+        scheduleSave()
+    }
+
     func requestNotificationPermission() async -> Bool {
         await notifier.requestAuthorization()
     }

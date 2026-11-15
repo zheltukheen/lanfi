@@ -44,6 +44,7 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
     case channelChanged
     case securityChanged
     case weakSignal
+    case deauthBurst
 
     var title: String {
         switch self {
@@ -53,6 +54,7 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
         case .channelChanged: return String(localized: "Channel changed")
         case .securityChanged: return String(localized: "Security changed")
         case .weakSignal: return String(localized: "Weak signal")
+        case .deauthBurst: return String(localized: "Deauth burst")
         }
     }
 }
@@ -289,6 +291,26 @@ struct MonitorSnapshot: Codable, Equatable {
             changed = true
         }
 
+        return changed
+    }
+
+    /// Folds capture-only findings into the same event stream as live scans.
+    @discardableResult
+    mutating func ingestCapture(
+        _ report: CaptureSecurityReport, at fallback: Date = Date()
+    ) -> Bool {
+        var changed = false
+        for counter in report.management where counter.burst {
+            let at = counter.lastSeen ?? fallback
+            let ssid =
+                peers.values.first {
+                    $0.bssid.caseInsensitiveCompare(counter.bssid) == .orderedSame
+                }?.ssid ?? ""
+            appendEvent(
+                .deauthBurst, at: at, bssid: counter.bssid, ssid: ssid,
+                detail: "\(counter.disruptionCount) deauth/disassoc frames in a burst")
+            changed = true
+        }
         return changed
     }
 
