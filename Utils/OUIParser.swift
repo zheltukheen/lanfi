@@ -25,8 +25,14 @@ struct OUIParser {
         "207693": "Lenovo (Beijing) Limited.",
     ]
 
+    struct OUIKey: Hashable {
+        let value: UInt64
+        let length: Int
+    }
+
     private static let cacheLock = NSLock()
     private static var cached: [String: String]?
+    private static var cachedIndex: [OUIKey: String]?
     private static var cachedOverrides: [String: String]?
     private static let overrideKey = "LanFi.customOUIOverrides"
 
@@ -41,7 +47,7 @@ struct OUIParser {
         }
 
         if let custom = lookup(mac: key, in: customOverrides()) { return custom }
-        return lookup(mac: key, in: db()) ?? "-"
+        return lookupPacked(mac: key, in: index()) ?? "-"
     }
 
     static func customOverrides() -> [String: String] {
@@ -91,11 +97,13 @@ struct OUIParser {
     static func preload() {
         _ = customOverrides()
         _ = db()
+        _ = index()
     }
 
     static func reload() {
         cacheLock.lock()
         cached = nil
+        cachedIndex = nil
         cachedOverrides = nil
         cacheLock.unlock()
     }
@@ -111,6 +119,34 @@ struct OUIParser {
             }
         }
         return nil
+    }
+
+    /// Longest-prefix lookup over a packed database. Avoids four string
+    /// allocations per BSSID on the hot scan path.
+    static func lookupPacked(mac: String, in index: [OUIKey: String]) -> String? {
+        let key = normalizedMAC(mac)
+        guard key.count >= 6, let value = UInt64(key.prefix(12), radix: 16) else { return nil }
+        for length in stride(from: min(9, key.count), through: 6, by: -1) {
+            let shift = (12 - length) * 4
+            let prefix = value >> UInt64(shift)
+            if let vendor = index[OUIKey(value: prefix, length: length)], !vendor.isEmpty {
+                return vendor
+            }
+        }
+        return nil
+    }
+
+    /// Builds the integer-key index used by `lookupPacked`.
+    static func packedIndex(from database: [String: String]) -> [OUIKey: String] {
+        var index: [OUIKey: String] = [:]
+        index.reserveCapacity(database.count)
+        for (prefix, vendor) in database {
+            guard (6...9).contains(prefix.count),
+                let value = UInt64(prefix, radix: 16)
+            else { continue }
+            index[OUIKey(value: value, length: prefix.count)] = vendor
+        }
+        return index
     }
 
     /// Parses the tab-separated database format: `<hex prefix>\t<vendor>`.
@@ -134,7 +170,23 @@ struct OUIParser {
         cacheLock.lock()
         defer { cacheLock.unlock() }
         if let cached { return cached }
+        let database = loadDatabase()
+        cached = database
+        return database
+    }
 
+    private static func index() -> [OUIKey: String] {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        if let cachedIndex { return cachedIndex }
+        let database = cached ?? loadDatabase()
+        cached = database
+        let index = packedIndex(from: database)
+        cachedIndex = index
+        return index
+    }
+
+    private static func loadDatabase() -> [String: String] {
         var database = builtIn
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let customURL = support.appendingPathComponent("LanFi/oui.txt")
@@ -152,7 +204,6 @@ struct OUIParser {
                 }
             }
         }
-        cached = database
         return database
     }
 

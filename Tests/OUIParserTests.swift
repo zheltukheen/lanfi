@@ -32,6 +32,21 @@ final class OUIParserTests: XCTestCase {
         XCTAssertNil(OUIParser.lookup(mac: "00:00:00:00:00:00", in: database))
     }
 
+    func testPackedIndexMatchesStringLookup() {
+        let database = [
+            "001A2B": "24-bit Vendor",
+            "001A2B0": "28-bit Vendor",
+            "001A2B0C1": "36-bit Vendor",
+        ]
+        let index = OUIParser.packedIndex(from: database)
+        for mac in ["00:1A:2B:0C:11:22", "00:1A:2B:0D:11:22", "00:1A:2B:FF:11:22"] {
+            XCTAssertEqual(
+                OUIParser.lookupPacked(mac: mac, in: index),
+                OUIParser.lookup(mac: mac, in: database))
+        }
+        XCTAssertNil(OUIParser.lookupPacked(mac: "00:00:00:00:00:00", in: index))
+    }
+
     func testDatabaseParserIgnoresMalformedLines() {
         let text = """
             # comment
