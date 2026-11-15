@@ -124,8 +124,9 @@ timeline and at least one correctly deduplicated event per real change.
 
 - [x] `OUIParser.vendor` decodes custom overrides for every BSSID; cache and
       invalidate on write.
-- [ ] Preload the 1.7 MB OUI database off the scan path and consider a binary
-      trie instead of parsing text on the first scan.
+- [x] Preload the 1.7 MB OUI database on a background task at launch.
+- [ ] Replace the text database with a binary trie if startup I/O becomes a
+      bottleneck.
 - [x] `NetworkAnalyzer.analyze` filters the whole network list per network and
       looks up findings with `first(where:)`; group by band once and index by
       id.
@@ -137,9 +138,9 @@ timeline and at least one correctly deduplicated event per real change.
 - [x] Survey heatmap moved off-main: the grid is built from an immutable
       `SurveyHeatmapRequest` in a detached task and the fingerprint now includes
       RSSI and wall/AP geometry.
-- [ ] Progressive heatmap tiles and a Fast/Balanced/High detail setting.
-      NetSpot 6 advertises up to 18× faster generation, which sets the user
-      expectation.
+- [x] Fast/Balanced/High heatmap detail setting (8/6/4 pt cells).
+- [ ] Progressive heatmap tiles so a detail change paints before the whole grid
+      is ready. NetSpot 6 advertises up to 18× faster generation.
 - [x] Captures are memory-mapped (`mappedIfSafe`) instead of copied into
       resident memory before parsing.
 - [ ] Stream packets and derive summary/clients/security from one parsed packet
@@ -226,8 +227,8 @@ opens without a multi-gigabyte memory spike.
 - [ ] Stop listing sources three times in `project.yml`; app, tests and CLI
       depend on packages instead.
 - [x] Split `ToolkitViewModel` (1311 → 44 lines + 15 focused files).
-- [ ] Split `AnalyzerViewModel` (1490), `MainTableView` (1314) and
-      `MCPToolkit` (1280).
+- [x] Split `MainTableView` (1314 → 252 lines + 6 focused files).
+- [ ] Split `AnalyzerViewModel` (1490) and `MCPToolkit` (1280).
 - [x] Centralize `ToolboxTool` metadata in one `ToolRegistry` table, with a
       test that every tool has exactly one descriptor.
 - [ ] Move view routing and the MCP tool spec into the registry so a new tool
@@ -269,6 +270,8 @@ opens without a multi-gigabyte memory spike.
   build → published result; the key now invalidates on RSSI and wall/AP edits.
 - `WiFiTableView` reloads only visible rows when the table structure is stable.
 - PCAP files are memory-mapped instead of being copied into memory.
+- OUI database warm-up moved to a background launch task.
+- `MainTableView` split into six focused files; heatmap detail selector added.
 - 375 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the fourth slice (2026-11-15)

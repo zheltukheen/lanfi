@@ -86,6 +86,13 @@ struct OUIParser {
         cacheLock.unlock()
     }
 
+    /// Warms both caches on a background task at launch so the first scan does
+    /// not pay for parsing the 1.7 MB database.
+    static func preload() {
+        _ = customOverrides()
+        _ = db()
+    }
+
     static func reload() {
         cacheLock.lock()
         cached = nil

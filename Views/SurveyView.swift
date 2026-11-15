@@ -12,6 +12,7 @@ struct SurveyView: View {
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
     @State private var predictiveMode = false
+    @AppStorage("LanFi.survey.heatmapDetail") private var heatmapDetail = "balanced"
     @State private var show3DFloors = false
     @State private var calibrating = false
     @State private var calibrationPoints: [SurveyPoint] = []
@@ -110,6 +111,18 @@ struct SurveyView: View {
                 .labelStyle(.iconOnly)
                 .help("Clear points")
                 .disabled(survey.samples.isEmpty)
+
+                Divider().frame(height: 20)
+
+                Picker("Heatmap detail", selection: $heatmapDetail) {
+                    Text("Fast").tag("fast")
+                    Text("Balanced").tag("balanced")
+                    Text("High").tag("high")
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 150)
+                .controlSize(.small)
+                .help("Heatmap detail: higher detail is slower on large plans")
 
                 Divider().frame(height: 20)
 
@@ -557,7 +570,8 @@ struct SurveyView: View {
         } else {
             GeometryReader { geo in
                 let rect = fittedRect(in: geo.size)
-                let cell: CGFloat = 6
+                let cell: CGFloat =
+                    heatmapDetail == "fast" ? 8 : (heatmapDetail == "high" ? 4 : 6)
                 let columns = max(1, Int(rect.width / cell))
                 let rows = max(1, Int(rect.height / cell))
                 let request = SurveyHeatmapRequest(
