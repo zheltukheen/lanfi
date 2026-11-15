@@ -441,24 +441,12 @@ class AnalyzerViewModel: ObservableObject {
             }
             try? data.write(to: url, options: .atomic)
         } else {
-            try? csvContent(for: networks).write(to: url, atomically: true, encoding: .utf8)
+            let exporter = ScanCSVExporter(
+                columns: columnDefinitions, formatter: columnFormatter,
+                expressions: expressionColumns, metrics: analysis.metricsByNetworkId)
+            try? exporter.make(networks: networks).write(to: url, atomically: true, encoding: .utf8)
         }
         sessionMessage = "Scheduled report saved: \(url.lastPathComponent)"
-    }
-
-    private func csvContent(for networks: [NetworkModel]) -> String {
-        let visibleColumns = columnDefinitions.sorted { $0.order < $1.order }.filter { $0.isVisible }
-        let headers = visibleColumns.map { "\"\($0.displayTitle)\"" }.joined(separator: ",")
-        var rows: [String] = []
-        for net in networks {
-            let fields = visibleColumns.map { col -> String in
-                let value = textForColumn(id: col.id, net: net)
-                let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
-                return "\"\(escaped)\""
-            }
-            rows.append(fields.joined(separator: ","))
-        }
-        return "\u{FEFF}" + ([headers] + rows).joined(separator: "\r\n") + "\r\n"
     }
 
     private func requestFilterUpdate() {
@@ -988,10 +976,13 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func exportCSV(networks: [NetworkModel], suffix: String) {
+        let exporter = ScanCSVExporter(
+            columns: columnDefinitions, formatter: columnFormatter,
+            expressions: expressionColumns, metrics: analysis.metricsByNetworkId)
         presentSavePanel(
             defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).csv",
             contentType: .commaSeparatedText,
-            content: csvContent(for: networks)
+            content: { exporter.make(networks: networks) }
         )
     }
 
@@ -1000,50 +991,36 @@ class AnalyzerViewModel: ObservableObject {
     }
 
     func exportJSON(networks: [NetworkModel], suffix: String) {
-        let payload = scanJSONPayload(networks: networks)
-
-        guard JSONSerialization.isValidJSONObject(payload),
-            let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
-            let string = String(data: data, encoding: .utf8)
-        else {
-            presentError("Could not encode scan results as JSON.")
-            return
-        }
-
+        let exporter = ScanJSONExporter(version: bundleVersion, analysis: analysis)
         presentSavePanel(
             defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).json",
             contentType: .json,
-            content: string
+            content: {
+                let payload = exporter.make(networks: networks)
+                guard JSONSerialization.isValidJSONObject(payload) else {
+                    throw ExportEncodingError.invalidJSON
+                }
+                let data = try JSONSerialization.data(
+                    withJSONObject: payload, options: [.prettyPrinted, .sortedKeys])
+                guard let string = String(data: data, encoding: .utf8) else {
+                    throw ExportEncodingError.invalidJSON
+                }
+                return string
+            }
         )
+    }
+
+    private enum ExportEncodingError: Error {
+        case invalidJSON
+    }
+
+    private var bundleVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     }
 
     /// Shared shape for the JSON export and the MCP live snapshot.
     private func scanJSONPayload(networks: [NetworkModel]) -> [String: Any] {
-        let payload: [String: Any] = [
-            "generator": "LanFi",
-            "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
-            "exportedAt": ISO8601DateFormatter().string(from: Date()),
-            "summary": [
-                "networks": networks.count,
-                "averageQuality": analysis.averageQuality,
-                "criticalSecurityFindings": analysis.criticalFindingCount,
-            ],
-            "networks": networks.map { networkJSON($0) },
-            "recommendations": WiFiBand.allCases.compactMap { band -> [String: Any]? in
-                guard let best = analysis.bestChannel(for: band) else { return nil }
-                return [
-                    "band": band.label,
-                    "channel": best.channel,
-                    "widthMHz": best.widthMHz,
-                    "score": best.score,
-                    "overlappingNetworks": best.overlappingCount,
-                    "coChannelNetworks": best.coChannelCount,
-                    "dfs": best.isDFS,
-                    "rationale": best.rationale,
-                ]
-            },
-        ]
-        return payload
+        ScanJSONExporter(version: bundleVersion, analysis: analysis).make(networks: networks)
     }
 
     private var lastMCPSnapshotDate = Date.distantPast
@@ -1306,64 +1283,7 @@ class AnalyzerViewModel: ObservableObject {
         )
     }
 
-    private func networkJSON(_ network: NetworkModel) -> [String: Any] {
-        var object: [String: Any] = [
-            "id": network.id,
-            "ssid": network.ssid,
-            "bssid": network.bssid,
-            "vendor": network.vendor,
-            "band": network.band.label,
-            "channel": network.channel,
-            "widthMHz": network.channelWidthMHz,
-            "generation": network.generation.label,
-            "security": network.security,
-            "signalDbm": network.signal,
-            "noiseDbm": network.noise.map { $0 as Any } ?? NSNull(),
-            "snrDb": network.snr.map { $0 as Any } ?? NSNull(),
-            "channelUtilizationPercent": network.channelUtilization.map { $0 as Any } ?? NSNull(),
-            "countryCode": network.countryCode.map { $0 as Any } ?? NSNull(),
-            "wpsEnabled": network.wpsEnabled.map { $0 as Any } ?? NSNull(),
-            "pmfRequired": network.pmfRequired.map { $0 as Any } ?? NSNull(),
-            "firstSeen": network.firstSeen.map { ISO8601DateFormatter().string(from: $0) as Any } ?? NSNull(),
-            "lastSeen": network.lastSeen.map { ISO8601DateFormatter().string(from: $0) as Any } ?? NSNull(),
-            "informationElements": network.informationElements.map { element in
-                [
-                    "id": element.elementId,
-                    "name": element.name,
-                    "length": element.length,
-                    "summary": element.summary,
-                ]
-            },
-        ]
-        if let metrics = analysis.metrics(for: network.id) {
-            object["qualityScore"] = metrics.qualityScore
-            object["congestionScore"] = metrics.congestionScore
-            object["securityScore"] = metrics.securityScore
-            object["overlappingNetworks"] = metrics.overlappingCount
-            object["issues"] = metrics.issues.map {
-                ["severity": $0.severity.label, "title": $0.title, "detail": $0.detail]
-            }
-        }
-        return object
-    }
-
     private func presentSaveData(defaultName: String, contentType: UTType, data: Data) {
-        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
-        let savePanel = NSSavePanel()
-        savePanel.allowedContentTypes = [contentType]
-        savePanel.canCreateDirectories = true
-        savePanel.nameFieldStringValue = defaultName
-        savePanel.beginSheetModal(for: window) { [weak self] response in
-            guard response == .OK, let url = savePanel.url else { return }
-            do {
-                try data.write(to: url, options: .atomic)
-            } catch {
-                self?.presentError("Could not save the capture: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    private func presentSavePanel(defaultName: String, contentType: UTType, content: String) {
         guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
         let savePanel = NSSavePanel()
         savePanel.allowedContentTypes = [contentType]
@@ -1373,7 +1293,31 @@ class AnalyzerViewModel: ObservableObject {
             guard response == .OK, let url = savePanel.url else { return }
             Task.detached(priority: .utility) {
                 do {
-                    try content.write(to: url, atomically: true, encoding: .utf8)
+                    try data.write(to: url, options: .atomic)
+                } catch {
+                    let message = "Could not save the capture: \(error.localizedDescription)"
+                    await MainActor.run {
+                        self?.presentError(message)
+                    }
+                }
+            }
+        }
+    }
+
+    private func presentSavePanel(
+        defaultName: String, contentType: UTType, content: @escaping () throws -> String
+    ) {
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [contentType]
+        savePanel.canCreateDirectories = true
+        savePanel.nameFieldStringValue = defaultName
+        savePanel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = savePanel.url else { return }
+            Task.detached(priority: .utility) {
+                do {
+                    let text = try content()
+                    try text.write(to: url, atomically: true, encoding: .utf8)
                 } catch {
                     let message = "Could not save the file: \(error.localizedDescription)"
                     await MainActor.run {
