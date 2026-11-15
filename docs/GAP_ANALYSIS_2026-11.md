@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | 199 |
 | Lines in those folders | ~42,000 |
-| Test methods | 342 |
+| Test methods | 352 |
 | Settings tabs | 11 |
 | Distinct `LanFi.*` preference keys | 67 |
 | `UserDefaults` call sites | 59 |
@@ -101,16 +101,17 @@ NetSpot has snapshots and zones.
 
 Tasks:
 
-- [ ] Append-only store (SQLite or JSONL) keyed by BSSID and timestamp.
-- [ ] Retention settings: 1 h / 24 h / 7 d / 30 d.
-- [ ] Per-network statistics: min/avg/max/p95 RSSI, SNR, utilization, uptime.
-- [ ] Event log: first seen, last seen, BSSID change, channel change, security
-      downgrade, PMF/WPS change, deauth burst (from captures) and roaming
-      failure (from the Roaming Test).
+- [x] Persistent store for the connected link (JSON snapshot today;
+      append-only SQLite/JSONL and all-BSSID samples are the next step).
+- [x] Retention settings: 1 h / 24 h / 7 d / 30 d.
+- [x] Connected-link statistics: min/avg/max/p95 RSSI and sample count.
+- [x] Event log: connected, disconnected, roamed, channel change, security
+      downgrade and weak-signal crossing.
+- [ ] PMF/WPS change, deauth burst (from captures) and roaming-failure events.
 - [ ] Notification rules with quiet hours.
 - [ ] Before/after comparison over two periods or saved sessions.
-- [ ] Export and a timeline view.
-- [ ] Tests for retention, aggregation and event deduplication.
+- [x] Timeline view and CSV export.
+- [x] Tests for events, retention and store round-trip.
 
 Acceptance: leave LanFi running for 24 hours, open the monitor, see a stable
 timeline and at least one correctly deduplicated event per real change.
@@ -240,6 +241,16 @@ opens without a multi-gigabyte memory spike.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the second slice (2026-11-15)
+
+- Wi-Fi Monitor MVP in the bottom panel: connected-link sampling, retention
+  picker, RSSI timeline, min/avg/max/p95, event log, CSV export and clear.
+- Event detection for connect, disconnect, roaming, channel change, security
+  downgrade and weak-signal crossing, with 10 unit tests.
+- Monitor samples are throttled (15 s–15 min depending on retention) and
+  persisted locally; the store trims by retention and caps samples/events.
+- 352 tests green; lint clean; universal Release build passes.
 
 ## Delivered in the first slice (2026-11-15)
 

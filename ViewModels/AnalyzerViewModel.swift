@@ -51,6 +51,7 @@ class AnalyzerViewModel: ObservableObject {
     private let coloringRuleStore = ColoringRuleStore()
     private let workspaceProfileStore = WorkspaceProfileStore()
     private let expressionColumnStore = ExpressionColumnStore()
+    let monitor = MonitorViewModel()
     private let refreshIntervalKey = "RefreshIntervalSeconds"
     private let historyWindowSeconds: TimeInterval = 180
 
@@ -292,6 +293,16 @@ class AnalyzerViewModel: ObservableObject {
 
         // Publish the whole history once per scan instead of once per network.
         history = updatedHistory
+
+        if let bssid = currentConnectedBSSID {
+            // A scan can occasionally omit the connected BSSID. Keep the last
+            // monitor state instead of recording a false disconnect.
+            if let connected = persistentNetworks.values.first(where: { $0.bssid == bssid }) {
+                monitor.ingest(connected: connected)
+            }
+        } else {
+            monitor.ingest(connected: nil)
+        }
 
         analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))
         applyFilters()

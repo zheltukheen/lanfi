@@ -178,6 +178,7 @@ struct MainTableView: View {
                             case 4: SpectrumView(viewModel: viewModel)
                             case 5: SignalHistoryView(viewModel: viewModel)
                             case 7: LiveCaptureView(viewModel: viewModel, embedded: true)
+                            case 8: MonitorView(monitor: viewModel.monitor)
                             default: InsightsView(viewModel: viewModel)
                             }
                         }
@@ -298,6 +299,13 @@ struct BottomPanelTabs: View {
                     icon: "clock.arrow.circlepath",
                     isSelected: selectedTab == 5,
                     action: { selectedTab = 5 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
+                    title: "Monitor",
+                    icon: "waveform.path.ecg.rectangle",
+                    isSelected: selectedTab == 8,
+                    action: { selectedTab = 8 }
                 )
                 Divider().frame(height: 18)
                 TabButton(

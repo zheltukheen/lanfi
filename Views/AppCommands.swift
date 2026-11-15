@@ -125,6 +125,7 @@ struct LanFiCommands: Commands {
                 Text("Spectrum").tag(4)
                 Text("History").tag(5)
                 Text("Capture").tag(7)
+                Text("Monitor").tag(8)
             }
 
             Button("Show Overview") { showPanel(0) }
@@ -143,6 +144,8 @@ struct LanFiCommands: Commands {
                 .keyboardShortcut("5", modifiers: [.command])
             Button("Show History") { showPanel(5) }
                 .keyboardShortcut("6", modifiers: [.command])
+            Button("Show Monitor") { showPanel(8) }
+                .keyboardShortcut("8", modifiers: [.command])
             Button("Show Internet Check") {
                 NotificationCenter.default.post(
                     name: .lanfiShowToolkit, object: nil,
