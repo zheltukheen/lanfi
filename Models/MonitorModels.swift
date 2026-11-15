@@ -45,6 +45,7 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
     case securityChanged
     case weakSignal
     case deauthBurst
+    case roamingFailure
 
     var title: String {
         switch self {
@@ -55,6 +56,7 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
         case .securityChanged: return String(localized: "Security changed")
         case .weakSignal: return String(localized: "Weak signal")
         case .deauthBurst: return String(localized: "Deauth burst")
+        case .roamingFailure: return String(localized: "Roaming failure")
         }
     }
 }
@@ -234,6 +236,13 @@ struct MonitorSnapshot: Codable, Equatable {
                 appendEvent(
                     .roamed, at: now, bssid: current.bssid, ssid: current.ssid,
                     detail: "\(previous.bssid) → \(current.bssid)")
+                if current.rssi <= -80 || current.rssi < previous.rssi - 10 {
+                    appendEvent(
+                        .roamingFailure, at: now, bssid: current.bssid, ssid: current.ssid,
+                        detail:
+                            "Roamed to a weaker link: \(current.rssi) dBm, was \(previous.rssi) dBm"
+                    )
+                }
                 changed = true
             } else if previous.channel != current.channel {
                 appendEvent(

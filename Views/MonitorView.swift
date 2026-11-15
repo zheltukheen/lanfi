@@ -357,6 +357,7 @@ struct MonitorView: View {
         case .securityChanged: return "lock.trianglebadge.exclamationmark"
         case .weakSignal: return "exclamationmark.triangle"
         case .deauthBurst: return "bolt.trianglebadge.exclamationmark"
+        case .roamingFailure: return "arrow.triangle.2.circlepath.circle"
         }
     }
 
@@ -369,6 +370,7 @@ struct MonitorView: View {
         case .securityChanged: return .red
         case .weakSignal: return .yellow
         case .deauthBurst: return .red
+        case .roamingFailure: return .orange
         }
     }
 

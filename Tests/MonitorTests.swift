@@ -47,6 +47,31 @@ final class MonitorTests: XCTestCase {
         XCTAssertEqual(snapshot.samples.count, 2)
     }
 
+    func testRoamToWeakerLinkEmitsRoamingFailure() {
+        var snapshot = MonitorSnapshot()
+        snapshot.ingest(
+            connected: makeNetwork(id: "a", bssid: "AA:BB:CC:DD:EE:01", signal: -55),
+            now: start, sampleInterval: 0)
+        snapshot.ingest(
+            connected: makeNetwork(id: "b", bssid: "AA:BB:CC:DD:EE:02", signal: -82),
+            now: start.addingTimeInterval(5), sampleInterval: 0)
+
+        XCTAssertTrue(snapshot.events.contains { $0.kind == .roamed })
+        XCTAssertTrue(snapshot.events.contains { $0.kind == .roamingFailure })
+    }
+
+    func testRoamToStrongerLinkDoesNotEmitRoamingFailure() {
+        var snapshot = MonitorSnapshot()
+        snapshot.ingest(
+            connected: makeNetwork(id: "a", bssid: "AA:BB:CC:DD:EE:01", signal: -70),
+            now: start, sampleInterval: 0)
+        snapshot.ingest(
+            connected: makeNetwork(id: "b", bssid: "AA:BB:CC:DD:EE:02", signal: -50),
+            now: start.addingTimeInterval(5), sampleInterval: 0)
+
+        XCTAssertFalse(snapshot.events.contains { $0.kind == .roamingFailure })
+    }
+
     func testChannelChangeEmitsEvent() {
         var snapshot = MonitorSnapshot()
         snapshot.ingest(
