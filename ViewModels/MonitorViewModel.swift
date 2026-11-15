@@ -19,10 +19,15 @@ final class MonitorViewModel: ObservableObject {
             scheduleSave(immediately: true)
         }
     }
+    @Published var alerts: MonitorAlertSettings = .default {
+        didSet { saveAlerts() }
+    }
 
     private static let recordingKey = "LanFi.monitor.recording"
     private static let retentionKey = "LanFi.monitor.retention"
+    private static let alertsKey = "LanFi.monitor.alerts"
     private let store = MonitorStore()
+    private let notifier = MonitorNotifier()
     private var saveTask: Task<Void, Never>?
 
     init() {
@@ -33,6 +38,11 @@ final class MonitorViewModel: ObservableObject {
             ?? .day
         isRecording = savedRecording
         retention = savedRetention
+        if let data = defaults.data(forKey: Self.alertsKey),
+            let decoded = try? JSONDecoder().decode(MonitorAlertSettings.self, from: data)
+        {
+            alerts = decoded
+        }
 
         var loaded = store.load()
         loaded.trim(retention: savedRetention.interval, now: Date())
@@ -48,11 +58,19 @@ final class MonitorViewModel: ObservableObject {
     func ingest(connected: NetworkModel?) {
         guard isRecording else { return }
 
+        let previousEventIDs = Set(snapshot.events.map(\.id))
         var updated = snapshot
         let changed = updated.ingest(
             connected: connected, now: Date(), sampleInterval: retention.sampleInterval)
         snapshot = updated
+        for event in updated.events where !previousEventIDs.contains(event.id) {
+            notifier.notify(event, settings: alerts)
+        }
         if changed { scheduleSave() }
+    }
+
+    func requestNotificationPermission() async -> Bool {
+        await notifier.requestAuthorization()
     }
 
     func clear() {
@@ -60,6 +78,11 @@ final class MonitorViewModel: ObservableObject {
         saveTask = nil
         snapshot = .empty
         store.clear()
+    }
+
+    private func saveAlerts() {
+        guard let data = try? JSONEncoder().encode(alerts) else { return }
+        UserDefaults.standard.set(data, forKey: Self.alertsKey)
     }
 
     private func scheduleSave(immediately: Bool = false) {

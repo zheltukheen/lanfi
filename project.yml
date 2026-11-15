@@ -102,6 +102,7 @@ targets:
       - path: Models/NetworkHistory.swift
       - path: Models/HistoryStatistics.swift
       - path: Models/MonitorModels.swift
+      - path: Models/MonitorAlertSettings.swift
       - path: Services/MonitorStore.swift
       - path: Models/ColumnCatalog.swift
       - path: Models/SignalDisplayMode.swift

@@ -9,6 +9,7 @@ import UniformTypeIdentifiers
 struct MonitorView: View {
     @ObservedObject var monitor: MonitorViewModel
     @State private var showingClear = false
+    @State private var showingAlerts = false
     @State private var exportError: String?
 
     var body: some View {
@@ -34,6 +35,9 @@ struct MonitorView: View {
                     .padding(12)
                 }
             }
+        }
+        .sheet(isPresented: $showingAlerts) {
+            MonitorAlertSettingsView(monitor: monitor)
         }
         .alert("Clear monitor history?", isPresented: $showingClear) {
             Button("Clear", role: .destructive) { monitor.clear() }
@@ -79,6 +83,12 @@ struct MonitorView: View {
                     .foregroundColor(.secondary)
             }
 
+            Button {
+                showingAlerts = true
+            } label: {
+                Image(systemName: monitor.alerts.anyEnabled ? "bell.badge" : "bell")
+            }
+            .help("Monitor alerts")
             Button("Export CSV") { exportCSV() }
                 .disabled(monitor.samples.isEmpty)
             Button("Clear") { showingClear = true }

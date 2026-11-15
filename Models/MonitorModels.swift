@@ -37,7 +37,7 @@ enum MonitorRetention: String, CaseIterable, Identifiable, Codable, Hashable {
     }
 }
 
-enum MonitorEventKind: String, Codable, CaseIterable, Sendable {
+enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
     case connected
     case disconnected
     case roamed
