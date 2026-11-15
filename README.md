@@ -186,7 +186,8 @@ remaining gaps are tracked in
 LanFi already leads on interpretation (quality, channel advice, security audit).
 The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
-[`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
+[`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md). The post-parity November
+2026 review is in [`docs/GAP_ANALYSIS_2026-11.md`](docs/GAP_ANALYSIS_2026-11.md).
 
 Delivered through 4.12.1: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column
