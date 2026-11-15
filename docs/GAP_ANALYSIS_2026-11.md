@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 377 app + 6 core |
+| Test methods | 379 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
@@ -147,9 +147,9 @@ timeline and at least one correctly deduplicated event per real change.
       resident memory before parsing.
 - [ ] Stream packets and derive summary/clients/security from one parsed packet
       index instead of multiple passes.
-- [x] Export file writes run on a background task.
-- [ ] Move CSV/JSON encoding itself off the main actor; the current export
-      still builds the string on main.
+- [x] CSV/JSON encoding moved into pure `ScanCSVExporter` and
+      `ScanJSONExporter` values; the save panel then encodes and writes both on
+      a background task.
 - [x] Adaptive scan interval: 15 s in the background, 30 s in Low Power Mode,
       base interval when active, with a settings toggle and pure `ScanCadence`
       tests.
@@ -231,7 +231,8 @@ opens without a multi-gigabyte memory spike.
       depend on packages instead.
 - [x] Split `ToolkitViewModel` (1311 → 44 lines + 15 focused files).
 - [x] Split `MainTableView` (1314 → 252 lines + 6 focused files).
-- [ ] Split `AnalyzerViewModel` (1490) and `MCPToolkit` (1280).
+- [ ] Split `AnalyzerViewModel` (1490) and `MCPToolkit` (1280); export
+      responsibilities are now extracted, but the view model is still large.
 - [x] Centralize `ToolboxTool` metadata in one `ToolRegistry` table, with a
       test that every tool has exactly one descriptor.
 - [ ] Move view routing and the MCP tool spec into the registry so a new tool
@@ -271,8 +272,9 @@ opens without a multi-gigabyte memory spike.
   with the string lookup for 24/28/36-bit prefixes.
 - Heatmaps stream in chunks instead of waiting for the whole grid; detail
   selector is Fast/Balanced/High.
-- Export file writes moved to a background task.
-- 377 app tests + 6 core tests green; universal Release build passes.
+- Export encoding moved out of `AnalyzerViewModel` into testable exporters;
+  file writing runs on a background task.
+- 379 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the fifth slice (2026-11-15)
 

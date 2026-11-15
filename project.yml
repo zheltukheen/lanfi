@@ -186,6 +186,8 @@ targets:
       - path: Models/ThroughputReport.swift
       - path: Services/SurveyInterpolator.swift
       - path: Services/SurveyHeatmap.swift
+      - path: Services/ScanCSVExporter.swift
+      - path: Services/ScanJSONExporter.swift
       - path: Services/SurveyReportExporter.swift
       - path: Services/LiveCaptureService.swift
       - path: Services/RemoteSensorService.swift
