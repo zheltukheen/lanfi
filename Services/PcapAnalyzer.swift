@@ -26,6 +26,12 @@ enum PcapAnalyzerError: LocalizedError {
 /// Offline 802.11 capture reader. Supports classic pcap and pcapng with
 /// radiotap (link type 127) or bare 802.11 (105) frames.
 enum PcapAnalyzer {
+    /// Memory-maps large captures so opening a 1 GB file does not copy the
+    /// whole thing into resident memory before the first packet is parsed.
+    static func mappedData(at url: URL) throws -> Data {
+        try Data(contentsOf: url, options: .mappedIfSafe)
+    }
+
     static func parse(data: Data) throws -> [CapturedBeacon] {
         guard data.count >= 4 else { throw PcapAnalyzerError.unsupported("Capture is too small.") }
         let magic = data.uint32(at: 0, littleEndian: true)
