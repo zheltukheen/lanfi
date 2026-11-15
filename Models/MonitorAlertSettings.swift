@@ -7,6 +7,7 @@ struct MonitorAlertSettings: Codable, Equatable {
     var channelChange: Bool = false
     var securityChange: Bool = true
     var deauthBurst: Bool = true
+    var roamingFailure: Bool = true
 
     var quietHoursEnabled: Bool = false
     var quietStartHour: Int = 22
@@ -17,6 +18,7 @@ struct MonitorAlertSettings: Codable, Equatable {
 
     var anyEnabled: Bool {
         weakSignal || disconnect || roam || channelChange || securityChange || deauthBurst
+            || roamingFailure
     }
 
     func isEnabled(for kind: MonitorEventKind) -> Bool {
@@ -27,12 +29,14 @@ struct MonitorAlertSettings: Codable, Equatable {
         case .channelChanged: return channelChange
         case .securityChanged: return securityChange
         case .deauthBurst: return deauthBurst
+        case .roamingFailure: return roamingFailure
         case .connected: return false
         }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case weakSignal, disconnect, roam, channelChange, securityChange, deauthBurst
+        case weakSignal, disconnect, roam, channelChange, securityChange, deauthBurst,
+            roamingFailure
         case quietHoursEnabled, quietStartHour, quietEndHour, cooldownMinutes
     }
 
@@ -46,6 +50,8 @@ struct MonitorAlertSettings: Codable, Equatable {
         channelChange = try container.decodeIfPresent(Bool.self, forKey: .channelChange) ?? false
         securityChange = try container.decodeIfPresent(Bool.self, forKey: .securityChange) ?? true
         deauthBurst = try container.decodeIfPresent(Bool.self, forKey: .deauthBurst) ?? true
+        roamingFailure =
+            try container.decodeIfPresent(Bool.self, forKey: .roamingFailure) ?? true
         quietHoursEnabled =
             try container.decodeIfPresent(Bool.self, forKey: .quietHoursEnabled) ?? false
         quietStartHour = try container.decodeIfPresent(Int.self, forKey: .quietStartHour) ?? 22

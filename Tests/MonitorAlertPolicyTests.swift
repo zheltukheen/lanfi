@@ -23,6 +23,7 @@ final class MonitorAlertPolicyTests: XCTestCase {
                 .utf8)
         let settings = try JSONDecoder().decode(MonitorAlertSettings.self, from: data)
         XCTAssertTrue(settings.deauthBurst)
+        XCTAssertTrue(settings.roamingFailure)
     }
 
     func testDisabledKindIsIgnored() {

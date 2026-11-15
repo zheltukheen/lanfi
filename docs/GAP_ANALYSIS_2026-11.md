@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 383 app + 6 core |
+| Test methods | 385 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
@@ -112,7 +112,8 @@ Tasks:
       downgrade, PMF loss, WPS enabled and weak-signal crossing.
 - [x] Deauth-burst events from capture security reports, with an alert toggle
       and foreground notification.
-- [ ] Roaming-failure events (needs the Roaming Test).
+- [x] Roaming-failure events when a roam lands on a much weaker link
+      (≤ −80 dBm or >10 dB worse); a full Roaming Test is still open.
 - [x] Notification rules with quiet hours and per-kind cooldown.
 - [x] Before/after comparison for the last 1 h / 6 h / 24 h.
 - [x] Timeline view, peer list and CSV exports (connected samples, visible
@@ -276,7 +277,9 @@ opens without a multi-gigabyte memory spike.
 - CSV/JSON shaping moved to pure exporters and encoded on a background task.
 - Deauth-burst findings from offline/live capture analysis now become Monitor
   events with their own alert toggle.
-- 383 app tests + 6 core tests green; universal Release build passes.
+- Roaming failures are detected when a BSSID transition lands on a much weaker
+  link; alert toggle included.
+- 385 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the sixth slice (2026-11-15)
 
