@@ -98,10 +98,12 @@ class AnalyzerViewModel: ObservableObject {
     @Published var networks: [NetworkModel] = []
     @Published var baseFilteredNetworks: [NetworkModel] = []
     @Published var currentConnectedBSSID: String? = nil
-    @Published var signalHistory: [String: [Int]] = [:]
-    @Published var noiseHistory: [String: [Int?]] = [:]
-    @Published var snrHistory: [String: [Int?]] = [:]
-    @Published var utilizationHistory: [String: [Int?]] = [:]
+    @Published private(set) var history = NetworkHistory()
+
+    var signalHistory: [String: [Int]] { history.signal }
+    var noiseHistory: [String: [Int?]] { history.noise }
+    var snrHistory: [String: [Int?]] { history.snr }
+    var utilizationHistory: [String: [Int?]] { history.utilization }
     @Published private(set) var analysis: AnalysisReport = .empty
     @Published private(set) var annotations: [String: NetworkAnnotation] = [:]
     @Published private(set) var sessions: [ScanSession] = []
@@ -266,13 +268,15 @@ class AnalyzerViewModel: ObservableObject {
 
     private func mergeNetworks(_ newScan: [NetworkModel]) {
         let now = Date()
+        let maxPoints = maxHistoryPoints()
+        var updatedHistory = history
 
         // 1. Update Existing
         for net in newScan {
             let existing = persistentNetworks[net.id]
             let updated = observing(net: net, existing: existing, now: now)
             persistentNetworks[net.id] = updated
-            updateSignalHistory(for: updated)
+            updatedHistory.record(updated, maxPoints: maxPoints)
         }
 
         // 2. Cleanup Old
@@ -283,11 +287,11 @@ class AnalyzerViewModel: ObservableObject {
 
         for key in keysToRemove {
             persistentNetworks.removeValue(forKey: key)
-            signalHistory.removeValue(forKey: key)
-            noiseHistory.removeValue(forKey: key)
-            snrHistory.removeValue(forKey: key)
-            utilizationHistory.removeValue(forKey: key)
+            updatedHistory.remove(key)
         }
+
+        // Publish the whole history once per scan instead of once per network.
+        history = updatedHistory
 
         analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))
         applyFilters()
@@ -342,31 +346,6 @@ class AnalyzerViewModel: ObservableObject {
             firstSeen: firstSeen,
             lastSeen: now
         )
-    }
-
-    private func updateSignalHistory(for net: NetworkModel) {
-        let maxPoints = maxHistoryPoints()
-        var history = signalHistory[net.id] ?? []
-        history.append(net.signal)
-        if history.count > maxPoints {
-            history.removeFirst(history.count - maxPoints)
-        }
-        signalHistory[net.id] = history
-
-        var noise = noiseHistory[net.id] ?? []
-        noise.append(net.noise)
-        if noise.count > maxPoints { noise.removeFirst(noise.count - maxPoints) }
-        noiseHistory[net.id] = noise
-
-        var snr = snrHistory[net.id] ?? []
-        snr.append(net.snr)
-        if snr.count > maxPoints { snr.removeFirst(snr.count - maxPoints) }
-        snrHistory[net.id] = snr
-
-        var utilization = utilizationHistory[net.id] ?? []
-        utilization.append(net.channelUtilization)
-        if utilization.count > maxPoints { utilization.removeFirst(utilization.count - maxPoints) }
-        utilizationHistory[net.id] = utilization
     }
 
     // MARK: - Filtering & Sorting
@@ -727,7 +706,7 @@ class AnalyzerViewModel: ObservableObject {
         persistentNetworks = Dictionary(uniqueKeysWithValues: session.networks.map { ($0.id, $0) })
         annotations = session.annotations
         annotationStore.replaceAll(session.annotations)
-        signalHistory = [:]
+        history = NetworkHistory()
         selectedNetworkId = nil
         analysis = NetworkAnalyzer.analyze(networks: session.networks)
         sessionMessage = "Session “\(session.displayName)” · \(session.networkCount) networks"
@@ -740,6 +719,7 @@ class AnalyzerViewModel: ObservableObject {
         loadedSession = nil
         sessionMessage = nil
         persistentNetworks.removeAll()
+        history = NetworkHistory()
         analysis = .empty
         applyFilters()
         startScanningLoop()

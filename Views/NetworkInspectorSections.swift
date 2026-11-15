@@ -88,30 +88,45 @@ struct HistoryInspectorSection: View {
         return result
     }
 
+    private var statistics: HistoryStatistics? {
+        viewModel.history.signalStatistics(for: network.id)
+    }
+
     var body: some View {
         GroupBox {
-            if points.isEmpty {
-                Text("Collecting samples…")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 80)
-            } else {
-                Chart(points) { point in
-                    LineMark(
-                        x: .value("Sample", point.id / 3),
-                        y: .value("dB", point.value)
+            VStack(alignment: .leading, spacing: 6) {
+                if points.isEmpty {
+                    Text("Collecting samples…")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 80)
+                } else {
+                    Chart(points) { point in
+                        LineMark(
+                            x: .value("Sample", point.id / 3),
+                            y: .value("dB", point.value)
+                        )
+                        .foregroundStyle(by: .value("Metric", point.series))
+                        .interpolationMethod(.stepEnd)
+                    }
+                    .chartYScale(domain: -105...5)
+                    .chartXAxis(.hidden)
+                    .frame(height: 120)
+                    .accessibilityLabel("Signal, noise and SNR history")
+                    .accessibilityValue(
+                        points.suffix(6).map { "\($0.series) \($0.value) dB" }.joined(separator: ", ")
                     )
-                    .foregroundStyle(by: .value("Metric", point.series))
-                    .interpolationMethod(.stepEnd)
                 }
-                .chartYScale(domain: -105...5)
-                .chartXAxis(.hidden)
-                .frame(height: 120)
-                .accessibilityLabel("Signal, noise and SNR history")
-                .accessibilityValue(
-                    points.suffix(6).map { "\($0.series) \($0.value) dB" }.joined(separator: ", ")
-                )
+
+                if let statistics {
+                    Text(
+                        "Min \(statistics.minimum) · Avg \(statistics.averageRounded) · Max \(statistics.maximum) · p95 \(statistics.p95) dBm"
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
             }
+            .padding(4)
         } label: {
             Label("Signal / noise / SNR", systemImage: "chart.xyaxis.line")
         }
@@ -126,32 +141,47 @@ struct UtilizationInspectorSection: View {
         (viewModel.utilizationHistory[network.id] ?? []).compactMap { $0 }
     }
 
+    private var statistics: HistoryStatistics? {
+        viewModel.history.utilizationStatistics(for: network.id)
+    }
+
     var body: some View {
         GroupBox {
-            if values.isEmpty {
-                Text("AP does not advertise channel utilization (BSS Load).")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 70)
-            } else {
-                Chart(Array(values.enumerated()), id: \.offset) { item in
-                    AreaMark(
-                        x: .value("Sample", item.offset),
-                        y: .value("Utilization %", item.element)
-                    )
-                    .foregroundStyle(Color.orange.opacity(0.25))
-                    LineMark(
-                        x: .value("Sample", item.offset),
-                        y: .value("Utilization %", item.element)
-                    )
-                    .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 6) {
+                if values.isEmpty {
+                    Text("AP does not advertise channel utilization (BSS Load).")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 70)
+                } else {
+                    Chart(Array(values.enumerated()), id: \.offset) { item in
+                        AreaMark(
+                            x: .value("Sample", item.offset),
+                            y: .value("Utilization %", item.element)
+                        )
+                        .foregroundStyle(Color.orange.opacity(0.25))
+                        LineMark(
+                            x: .value("Sample", item.offset),
+                            y: .value("Utilization %", item.element)
+                        )
+                        .foregroundStyle(.orange)
+                    }
+                    .chartYScale(domain: 0...100)
+                    .chartXAxis(.hidden)
+                    .frame(height: 100)
+                    .accessibilityLabel("Channel utilization history")
+                    .accessibilityValue("Latest \(values.last ?? 0) percent, maximum \(values.max() ?? 0) percent")
                 }
-                .chartYScale(domain: 0...100)
-                .chartXAxis(.hidden)
-                .frame(height: 100)
-                .accessibilityLabel("Channel utilization history")
-                .accessibilityValue("Latest \(values.last ?? 0) percent, maximum \(values.max() ?? 0) percent")
+
+                if let statistics {
+                    Text(
+                        "Min \(statistics.minimum)% · Avg \(statistics.averageRounded)% · Max \(statistics.maximum)% · p95 \(statistics.p95)%"
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
             }
+            .padding(4)
         } label: {
             HStack {
                 Label("Channel utilization", systemImage: "gauge.with.dots.needle.67percent")

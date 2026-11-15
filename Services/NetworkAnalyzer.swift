@@ -167,9 +167,14 @@ enum NetworkAnalyzer {
 
         var metrics: [String: NetworkMetrics] = [:]
         metrics.reserveCapacity(networks.count)
+        let networksByBand = Dictionary(grouping: networks, by: \.band)
+        let networksByID = networks.reduce(into: [String: NetworkModel]()) { index, network in
+            index[network.id] = network
+        }
 
         for network in networks {
-            metrics[network.id] = metricsFor(network, among: networks)
+            metrics[network.id] = metricsFor(
+                network, amongSameBand: networksByBand[network.band] ?? [])
         }
 
         let bands = reportableBands(in: networks)
@@ -180,7 +185,7 @@ enum NetworkAnalyzer {
 
         let findings = metrics.values
             .flatMap { metric -> [SecurityFinding] in
-                guard let network = networks.first(where: { $0.id == metric.networkId }) else { return [] }
+                guard let network = networksByID[metric.networkId] else { return [] }
                 return metric.securityIssues.map { issue in
                     SecurityFinding(
                         id: "\(metric.networkId)-\(issue.id)",
@@ -214,12 +219,18 @@ enum NetworkAnalyzer {
     }
 
     static func metricsFor(_ network: NetworkModel, among networks: [NetworkModel]) -> NetworkMetrics {
-        let sameBand = networks.filter { $0.band == network.band && $0.id != network.id }
+        metricsFor(
+            network, amongSameBand: networks.filter { $0.band == network.band })
+    }
+
+    private static func metricsFor(
+        _ network: NetworkModel, amongSameBand sameBand: [NetworkModel]
+    ) -> NetworkMetrics {
         var load = 0.0
         var overlapping = 0
         var coChannel = 0
 
-        for other in sameBand {
+        for other in sameBand where other.id != network.id {
             let fraction = overlapFraction(network, other)
             guard fraction > 0 else { continue }
             overlapping += 1
