@@ -3,6 +3,7 @@ import Foundation
 enum NetworkGroupMode: String, CaseIterable, Identifiable, Codable {
     case none
     case ssid
+    case physicalAP
     case band
     case vendor
     case security
@@ -13,6 +14,7 @@ enum NetworkGroupMode: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .none: return "None"
         case .ssid: return "SSID"
+        case .physicalAP: return "Access point"
         case .band: return "Band"
         case .vendor: return "Vendor"
         case .security: return "Security"
@@ -78,6 +80,10 @@ enum NetworkGrouper {
             switch mode {
             case .none: return ""
             case .ssid: return value.displaySSID
+            case .physicalAP:
+                let name = value.apName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                if !name.isEmpty { return name }
+                return value.bssid.isEmpty ? "Unknown access point" : value.bssid
             case .band: return value.band.label
             case .vendor: return value.vendor == "-" ? "Unknown vendor" : value.vendor
             case .security: return value.security

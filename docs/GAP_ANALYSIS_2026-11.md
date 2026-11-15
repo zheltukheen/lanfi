@@ -139,8 +139,9 @@ without a multi-gigabyte memory spike.
 
 ## P0.5 — Analyzer depth
 
-- [ ] Group by inferred physical AP across 2.4/5/6 GHz; today grouping is
-      SSID/band/vendor/security only.
+- [x] Group by advertised AP name across 2.4/5/6 GHz; unnamed radios stay as
+      separate BSSID groups.
+- [ ] Infer co-located radios for APs that do not advertise a name.
 - [x] History statistics (min/avg/max/p95) in the inspector.
 - [ ] SSID overhead as a percentage of airtime (beacon airtime already exists).
 - [ ] Decoder to 802.11-2024/WPA3 v3.5: RSN Override, Wi-Fi Alliance
@@ -227,7 +228,8 @@ without a multi-gigabyte memory spike.
   per network.
 - Rolling history moved into `NetworkHistory`; one published update per scan.
 - Signal and utilization inspectors show min/avg/max/p95.
-- 341 tests green; lint clean; universal Release build passes.
+- Grouping by advertised AP name (`Access point` mode).
+- 342 tests green; lint clean; universal Release build passes.
 
 ## Delivery order
 
