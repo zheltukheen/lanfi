@@ -13,6 +13,12 @@ enum LanFiMain {
 }
 
 struct LanFiApp: App {
+    init() {
+        Task.detached(priority: .utility) {
+            OUIParser.preload()
+        }
+    }
+
     // ViewModel создается здесь и живет все время работы приложения
     @StateObject private var viewModel = AnalyzerViewModel()
     @StateObject private var uiState = AppUIState()
