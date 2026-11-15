@@ -47,7 +47,7 @@ surfaced with severity and remediation hints.
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
 | Toolkit | One window with search and recents: Internet Check verdict, native ICMP/TCP ping, traceroute, visual traceroute, MTR, DNS lookup, DNS propagation, Whois/RDAP, GeoIP, port scan, path check, SSL certificate, subnet calculator, iperf3, speed-test history/schedule and network monitor |
-| Monitoring | Wi-Fi Monitor timeline for the connected link (roaming, channel and security events, CSV, quiet-hour alerts); Uptime Monitor for HTTP/TCP targets with notifications and menu-bar status; LAN Scanner with ARP/ICMP/TCP, Bonjour names, OUI vendors, open ports and Network Guard |
+| Monitoring | Wi-Fi Monitor timeline for the connected link plus all-BSSID aggregates (roaming, channel, PMF/WPS and security events, CSV, quiet-hour alerts); Uptime Monitor for HTTP/TCP targets with notifications and menu-bar status; LAN Scanner with ARP/ICMP/TCP, Bonjour names, OUI vendors, open ports and Network Guard |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
 | Survey | Floor-plan import, click-to-sample RSSI and a heatmap overlay (survey-lite) |
 | Vendors | 58k-prefix offline OUI database from IEEE and Wireshark, with 24/28/36-bit longest-prefix matching ([sources](docs/VENDOR_DATA.md)) |

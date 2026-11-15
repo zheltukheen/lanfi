@@ -298,14 +298,15 @@ class AnalyzerViewModel: ObservableObject {
         // Publish the whole history once per scan instead of once per network.
         history = updatedHistory
 
+        let visible = Array(persistentNetworks.values)
         if let bssid = currentConnectedBSSID {
             // A scan can occasionally omit the connected BSSID. Keep the last
             // monitor state instead of recording a false disconnect.
-            if let connected = persistentNetworks.values.first(where: { $0.bssid == bssid }) {
-                monitor.ingest(connected: connected)
+            if let connected = visible.first(where: { $0.bssid == bssid }) {
+                monitor.ingest(connected: connected, visible: visible)
             }
         } else {
-            monitor.ingest(connected: nil)
+            monitor.ingest(connected: nil, visible: visible)
         }
 
         analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))

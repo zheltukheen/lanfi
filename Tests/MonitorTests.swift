@@ -93,6 +93,85 @@ final class MonitorTests: XCTestCase {
         XCTAssertEqual(snapshot.events.filter { $0.kind == .disconnected }.count, 1)
     }
 
+    func testVisibleNetworksBuildPeerAggregates() {
+        var snapshot = MonitorSnapshot()
+        let first = makeNetwork(id: "a", bssid: "AA:BB:CC:DD:EE:01", signal: -50)
+        let second = makeNetwork(id: "b", bssid: "AA:BB:CC:DD:EE:02", signal: -70)
+
+        snapshot.ingest(
+            connected: first, visible: [first, second], now: start, sampleInterval: 0)
+        snapshot.ingest(
+            connected: first, visible: [first, second], now: start.addingTimeInterval(5),
+            sampleInterval: 0)
+
+        XCTAssertEqual(snapshot.peers.count, 2)
+        let peer = snapshot.peers["a"]
+        XCTAssertEqual(peer?.samples, 2)
+        XCTAssertEqual(peer?.rssiMin, -50)
+        XCTAssertEqual(peer?.rssiMax, -50)
+        XCTAssertEqual(peer?.averageRSSI, -50)
+        XCTAssertEqual(snapshot.peers["b"]?.averageRSSI, -70)
+    }
+
+    func testPMFLossEmitsSecurityEvent() {
+        var snapshot = MonitorSnapshot()
+        snapshot.ingest(
+            connected: makeNetwork(id: "a", pmfRequired: true), now: start, sampleInterval: 0)
+        snapshot.ingest(
+            connected: makeNetwork(id: "a", pmfRequired: false),
+            now: start.addingTimeInterval(5), sampleInterval: 0)
+
+        let event = snapshot.events.last
+        XCTAssertEqual(event?.kind, .securityChanged)
+        XCTAssertTrue(event?.detail.contains("PMF") == true)
+    }
+
+    func testWPSEnabledEmitsSecurityEvent() {
+        var snapshot = MonitorSnapshot()
+        snapshot.ingest(
+            connected: makeNetwork(id: "a", wpsEnabled: false), now: start, sampleInterval: 0)
+        snapshot.ingest(
+            connected: makeNetwork(id: "a", wpsEnabled: true),
+            now: start.addingTimeInterval(5), sampleInterval: 0)
+
+        let event = snapshot.events.last
+        XCTAssertEqual(event?.kind, .securityChanged)
+        XCTAssertTrue(event?.detail.contains("WPS") == true)
+    }
+
+    func testComparisonComparesCurrentAndPreviousWindows() {
+        let now = start.addingTimeInterval(3_600)
+        let current = MonitorSample(
+            network: makeNetwork(id: "a", signal: -50), at: now.addingTimeInterval(-60))
+        let previous = MonitorSample(
+            network: makeNetwork(id: "a", signal: -70), at: now.addingTimeInterval(-3_600 - 60))
+
+        let comparison = MonitorComparison(
+            samples: [current, previous], window: 3_600, now: now)
+
+        XCTAssertEqual(comparison.currentAverage, -50)
+        XCTAssertEqual(comparison.previousAverage, -70)
+        XCTAssertEqual(comparison.currentSamples, 1)
+        XCTAssertEqual(comparison.previousSamples, 1)
+        XCTAssertEqual(comparison.delta, 20)
+    }
+
+    func testComparisonWithoutPreviousWindowHasNoDelta() {
+        let now = start
+        let sample = MonitorSample(network: makeNetwork(id: "a", signal: -55), at: now)
+        let comparison = MonitorComparison(samples: [sample], window: 3_600, now: now)
+
+        XCTAssertNil(comparison.previousAverage)
+        XCTAssertNil(comparison.delta)
+    }
+
+    func testLegacySnapshotWithoutPeersDecodes() throws {
+        let data = Data(#"{"samples":[],"events":[]}"#.utf8)
+        let snapshot = try JSONDecoder().decode(MonitorSnapshot.self, from: data)
+        XCTAssertTrue(snapshot.peers.isEmpty)
+        XCTAssertNil(snapshot.state)
+    }
+
     func testStoreRoundTripAndRetention() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("LanFi-monitor-tests-\(UUID().uuidString)", isDirectory: true)
