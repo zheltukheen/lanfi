@@ -612,11 +612,10 @@ struct SurveyView: View {
                         if heatGridRequestKey != request.key {
                             heatGrid = nil
                         }
-                        let grid = await Task.detached(priority: .userInitiated) {
-                            request.build()
-                        }.value
-                        guard !Task.isCancelled else { return }
-                        heatGrid = grid
+                        for await grid in request.stream() {
+                            guard !Task.isCancelled else { return }
+                            heatGrid = grid
+                        }
                         heatGridRequestKey = request.key
                     }
                     .accessibilityLabel(String(localized: "Floor plan heatmap"))

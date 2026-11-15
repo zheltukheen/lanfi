@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 375 app + 6 core |
+| Test methods | 377 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
@@ -125,7 +125,9 @@ timeline and at least one correctly deduplicated event per real change.
 - [x] `OUIParser.vendor` decodes custom overrides for every BSSID; cache and
       invalidate on write.
 - [x] Preload the 1.7 MB OUI database on a background task at launch.
-- [ ] Replace the text database with a binary trie if startup I/O becomes a
+- [x] Pack the OUI database into an integer-key index; lookup no longer allocates
+      four prefix strings per BSSID.
+- [ ] Move the index to a persisted binary file if startup parsing becomes a
       bottleneck.
 - [x] `NetworkAnalyzer.analyze` filters the whole network list per network and
       looks up findings with `first(where:)`; group by band once and index by
@@ -139,14 +141,15 @@ timeline and at least one correctly deduplicated event per real change.
       `SurveyHeatmapRequest` in a detached task and the fingerprint now includes
       RSSI and wall/AP geometry.
 - [x] Fast/Balanced/High heatmap detail setting (8/6/4 pt cells).
-- [ ] Progressive heatmap tiles so a detail change paints before the whole grid
-      is ready. NetSpot 6 advertises up to 18× faster generation.
+- [x] Progressive heatmap tiles: the grid is streamed in 16-row chunks, so the
+      first rows paint before the full plan finishes.
 - [x] Captures are memory-mapped (`mappedIfSafe`) instead of copied into
       resident memory before parsing.
 - [ ] Stream packets and derive summary/clients/security from one parsed packet
       index instead of multiple passes.
-- [ ] Exports and scheduled reports encode on the main actor; move to a
-      background task.
+- [x] Export file writes run on a background task.
+- [ ] Move CSV/JSON encoding itself off the main actor; the current export
+      still builds the string on main.
 - [x] Adaptive scan interval: 15 s in the background, 30 s in Low Power Mode,
       base interval when active, with a settings toggle and pure `ScanCadence`
       tests.
@@ -261,6 +264,15 @@ opens without a multi-gigabyte memory spike.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the sixth slice (2026-11-15)
+
+- OUI lookup packed into an integer-key index; a regression test compares it
+  with the string lookup for 24/28/36-bit prefixes.
+- Heatmaps stream in chunks instead of waiting for the whole grid; detail
+  selector is Fast/Balanced/High.
+- Export file writes moved to a background task.
+- 377 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the fifth slice (2026-11-15)
 

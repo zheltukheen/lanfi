@@ -1371,10 +1371,15 @@ class AnalyzerViewModel: ObservableObject {
         savePanel.nameFieldStringValue = defaultName
         savePanel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = savePanel.url else { return }
-            do {
-                try content.write(to: url, atomically: true, encoding: .utf8)
-            } catch {
-                self?.presentError("Could not save the file: \(error.localizedDescription)")
+            Task.detached(priority: .utility) {
+                do {
+                    try content.write(to: url, atomically: true, encoding: .utf8)
+                } catch {
+                    let message = "Could not save the file: \(error.localizedDescription)"
+                    await MainActor.run {
+                        self?.presentError(message)
+                    }
+                }
             }
         }
     }

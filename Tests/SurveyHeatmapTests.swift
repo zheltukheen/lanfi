@@ -31,6 +31,25 @@ final class SurveyHeatmapTests: XCTestCase {
         XCTAssertNotEqual(request(rssi: -50).key, request(rssi: -70).key)
     }
 
+    func testStreamYieldsPartialGridsBeforeCompletion() async {
+        let sample = SurveySample(
+            id: UUID(), x: 0.5, y: 0.5, rssi: -50, ssid: "Office",
+            bssid: "AA:BB:CC:DD:EE:01", recordedAt: Date())
+        let request = SurveyHeatmapRequest(
+            columns: 2, rows: 3, cellSize: 50, pixelWidth: 100, pixelHeight: 150,
+            samples: [sample], walls: [], obstacles: [], accessPoints: [],
+            predictiveMode: false, planWidthMeters: 30)
+
+        var grids: [HeatGridCache.Grid] = []
+        for await grid in request.stream(chunkRows: 1) {
+            grids.append(grid)
+        }
+
+        XCTAssertGreaterThanOrEqual(grids.count, 2)
+        XCTAssertEqual(grids.last?.cells.compactMap { $0 }.count, 6)
+        XCTAssertEqual(grids.first?.cells.compactMap { $0 }.count, 2)
+    }
+
     func testPredictiveRequestUsesAccessPoint() {
         let ap = SurveyAccessPoint.new(x: 0.5, y: 0.5, band: "5GHz", channel: 36, txPowerDbm: 20)
         let request = SurveyHeatmapRequest(

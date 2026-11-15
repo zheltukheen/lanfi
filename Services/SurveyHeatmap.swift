@@ -42,6 +42,40 @@ struct SurveyHeatmapRequest {
         return parts.joined(separator: "|")
     }
 
+    /// Yields the grid after every `chunkRows` rows, then a final complete
+    /// grid. The view can paint the first rows while the rest is computed.
+    func stream(chunkRows: Int = 16) -> AsyncStream<HeatGridCache.Grid> {
+        AsyncStream { continuation in
+            let task = Task.detached(priority: .userInitiated) {
+                var cells = [Int?](repeating: nil, count: max(0, columns * rows))
+                guard columns > 0, rows > 0, pixelWidth > 0, pixelHeight > 0 else {
+                    continuation.yield(
+                        HeatGridCache.Grid(columns: columns, rows: rows, cells: cells))
+                    continuation.finish()
+                    return
+                }
+
+                let chunk = max(1, chunkRows)
+                for row in 0..<rows {
+                    if Task.isCancelled { break }
+                    let ny = (Double(row) * cellSize + cellSize / 2) / pixelHeight
+                    for column in 0..<columns {
+                        let nx = (Double(column) * cellSize + cellSize / 2) / pixelWidth
+                        cells[row * columns + column] = estimate(nx: nx, ny: ny)
+                    }
+                    if (row + 1) % chunk == 0 {
+                        continuation.yield(
+                            HeatGridCache.Grid(columns: columns, rows: rows, cells: cells))
+                    }
+                }
+                continuation.yield(
+                    HeatGridCache.Grid(columns: columns, rows: rows, cells: cells))
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
     func build() -> HeatGridCache.Grid {
         var cells = [Int?](repeating: nil, count: columns * rows)
         guard columns > 0, rows > 0, pixelWidth > 0, pixelHeight > 0 else {
