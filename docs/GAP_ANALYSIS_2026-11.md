@@ -1,0 +1,256 @@
+# Gap analysis — November 2026
+
+Status: **active plan**. Baseline: LanFi 5.2.0 (build 68).
+Scope: post-Netutilus parity, compared with WiFi Explorer Pro 3.10, NetSpot 6,
+Airtool 2 and the public macOS Wi-Fi APIs.
+
+This document intentionally goes beyond
+[`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) and
+[`NETUTILUS_PARITY.md`](NETUTILUS_PARITY.md): those tracks are shipped. The
+remaining work is **trust, continuity, professional depth and engineering
+speed**.
+
+## Baseline
+
+| Metric | Value |
+| --- | ---: |
+| Swift files (Models/Services/ViewModels/Views/Utils/CLI) | 199 |
+| Lines in those folders | ~42,000 |
+| Test methods | 332 |
+| Settings tabs | 11 |
+| Distinct `LanFi.*` preference keys | 67 |
+| `UserDefaults` call sites | 59 |
+| App targets | 1 app + CLI + tests |
+| Third-party runtime dependencies | Sparkle only |
+
+## Priority summary
+
+| # | Item | Area | Impact | Effort |
+| --- | --- | --- | --- | --- |
+| P0.1 | Developer ID, notarization and TCC self-check | Trust / data access | Critical | M |
+| P0.2 | Passive/directed scan and 6 GHz SP visibility | Analyzer | High | M |
+| P0.3 | Persistent Wi-Fi Monitor with events and alerts | New tool | High | M |
+| P0.4 | OUI/analyzer/history/table performance hot spots | Speed | High | S/M |
+| P0.5 | Group by physical AP, history statistics | Analyzer depth | Medium | S/M |
+| P1.1 | Security Watch: rogue AP, evil twin, live deauth | New tool | High | M |
+| P1.2 | Roaming and band-steering test | New tool | High | M |
+| P1.3 | Client analytics from captures | New tool | Medium | M/L |
+| P1.4 | Survey Planning 2.0 and active survey | Survey | High | L |
+| P1.5 | Combined report / case file | Workflow | Medium | S/M |
+| P1.6 | Shortcuts, App Intents, widgets, MCP actions | Integrations | Medium | M |
+| P2.1 | Spectrum hub: Wi-Spy live, remote WLAN Pi, NetAlly | Hardware | High | L |
+| P2.2 | BLE/Zigbee interference sources | Hardware | Low | M |
+| P2.3 | Sandboxed MAS build split | Distribution | Medium | L |
+| P2.4 | 802.11-2024/802.11bn decoder readiness | Future | Low | S |
+
+---
+
+## P0.1 — Signing, notarization and TCC
+
+Ad-hoc signing is not only a Gatekeeper problem. SSID/BSSID live behind
+Location Services (TCC), and Apple DTS states that TCC needs a stable
+code-signing identity: not unsigned, not ad-hoc. macOS 14.4 removed the
+`airport` CLI and `wdutil` redacts BSSIDs; macOS 26/27 reports show SSID
+redaction when Location Services is unavailable.
+
+Current state: `build.sh` signs with `codesign --sign -` by default and
+`project.yml` sets `CODE_SIGN_IDENTITY: "-"`.
+
+Tasks:
+
+- [ ] Apple Developer Program, Developer ID Application certificate.
+- [ ] Sign nested Sparkle/XPC code individually; hardened runtime; timestamp.
+- [ ] `notarytool submit --wait`, staple DMG and ZIP.
+- [ ] Add a launch-time self-check: if scan results have empty SSID/BSSID while
+      Wi-Fi is on, show a diagnostic instead of an empty table.
+- [ ] Document the permission reset risk after updates in `DISTRIBUTION.md`.
+
+Acceptance: a clean Mac downloads the DMG, launches without a Gatekeeper
+workaround, grants Location Services once, and keeps SSID/BSSID after an
+update.
+
+## P0.2 — Passive and directed scan
+
+`WiFiScanner` only performs an active `scanForNetworks`. WiFi Explorer Pro 3
+ships active, passive and directed modes. macOS filters standard-power 6 GHz
+APs from active scans; passive scanning is the documented workaround. It also
+finds beacon-only and hidden networks and gives a more honest channel load.
+
+Hardware caveat: on Apple N1 (M5 Pro/Max, M5 Air, A18 Pro) rapid channel
+switching is unreliable for third-party apps; both WiFi Explorer and Airtool
+document this. The feature needs a capability matrix and a clear fallback.
+
+Tasks:
+
+- [ ] Scan mode model (`active`, `passive`, `directed`) with a capability probe.
+- [ ] Passive engine over the monitor interface, channel list and dwell time.
+- [ ] 6 GHz PSC/RNR-aware channel list; SP/LPI labelling where available.
+- [ ] UI: mode picker, unsupported-hardware explanation, progress.
+- [ ] Tests for channel planning and merge behaviour; hardware smoke test.
+
+Acceptance: on supported Macs, passive mode discovers a 6 GHz SP AP that the
+active scan omits; on N1 Macs the UI explains why it is unavailable instead of
+failing silently.
+
+## P0.3 — Persistent Wi-Fi Monitor
+
+Today history is 180 seconds in memory; alerts are limited to weak signal, open
+network and channel change. WiFi Explorer Pro 3 has a History inspector;
+NetSpot has snapshots and zones.
+
+Tasks:
+
+- [ ] Append-only store (SQLite or JSONL) keyed by BSSID and timestamp.
+- [ ] Retention settings: 1 h / 24 h / 7 d / 30 d.
+- [ ] Per-network statistics: min/avg/max/p95 RSSI, SNR, utilization, uptime.
+- [ ] Event log: first seen, last seen, BSSID change, channel change, security
+      downgrade, PMF/WPS change, deauth burst (from captures).
+- [ ] Notification rules with quiet hours.
+- [ ] Export and a timeline view.
+- [ ] Tests for retention, aggregation and event deduplication.
+
+Acceptance: leave LanFi running for 24 hours, open the monitor, see a stable
+timeline and at least one correctly deduplicated event per real change.
+
+## P0.4 — Performance hot spots
+
+- [x] `OUIParser.vendor` decodes custom overrides for every BSSID; cache and
+      invalidate on write. Preload the 1.7 MB database off the scan path and
+      consider a binary trie.
+- [x] `NetworkAnalyzer.analyze` filters the whole network list per network and
+      looks up findings with `first(where:)`; group by band once and index by
+      id.
+- [x] Four `@Published` history dictionaries are written once per network per
+      scan; batch them into one published update per scan.
+- [ ] `WiFiTableView` calls `reloadData()` on every scan; use diffable or
+      targeted row reloads and coalesce updates.
+- [ ] Survey heatmap computes the grid synchronously in the view body; move it
+      off-main with progressive tiles and a detail setting.
+- [ ] `PcapAnalyzer` reads the whole capture into `Data`; stream or mmap and
+      derive summary/clients/security from one parsed packet index.
+- [ ] Exports and scheduled reports encode on the main actor; move to a
+      background task.
+- [ ] Adaptive scan interval: pause on battery/background, faster when the
+      window is active.
+
+Acceptance: a 300-network scan applies filters and updates the table without a
+visible hitch; the OUI warm path does no JSON decoding; a 500 MB pcap opens
+without a multi-gigabyte memory spike.
+
+## P0.5 — Analyzer depth
+
+- [ ] Group by inferred physical AP across 2.4/5/6 GHz; today grouping is
+      SSID/band/vendor/security only.
+- [x] History statistics (min/avg/max/p95) in the inspector.
+- [ ] SSID overhead as a percentage of airtime (beacon airtime already exists).
+- [ ] Decoder to 802.11-2024/WPA3 v3.5: RSN Override, Wi-Fi Alliance
+      Capabilities, Extended BSS Load, MBSSID/non-transmitted BSSID.
+- [ ] 6 GHz PSC/RNR hints and SP/LPI labels.
+- [ ] Wi-Fi 8/802.11bn decoder versioning (certification expected 2028, not a
+      current blocker).
+
+## P1 — New tools
+
+- [ ] **Security Watch** — rogue AP/evil twin, security downgrade, live
+      deauth/disassoc; build on the existing EAPOL/PMKID audit.
+- [ ] **Roaming Test** — BSSID transitions, 802.11k/v/r, sticky client, band
+      steering, reconnect time, packet loss.
+- [ ] **Client Analytics** — per-client airtime, retries, association timeline,
+      probes; correlate with Device Shelf.
+- [ ] **Survey Planning 2.0** — antenna patterns/import, wall and floor
+      materials, cutouts, floor alignment, real-time preview, calibration
+      against measured samples.
+- [ ] **Active Survey** — throughput and latency per sample point, before/after
+      comparison.
+- [ ] **Combined report** — one PDF/HTML with scan, survey, security,
+      diagnostics and speed test; branding and redaction.
+- [ ] **Shortcuts/App Intents/widgets** — scan, export, capture, speed test.
+- [ ] **MCP 2.0** — live actions (`scan now`, `start capture`, `survey sample`),
+      not only the read-only snapshot.
+
+## P2 — Hardware and platform
+
+- [ ] Spectrum hub: live Wi-Spy, remote WLAN Pi spectrum, NetAlly NXT-2000.
+- [ ] BLE iBeacon/Eddystone scanner; Zigbee adapter support.
+- [ ] Privileged helper for capture (`SMAppService`) instead of an admin
+      password per capture; multi-channel/dwell capture plan; remote sensor
+      orchestration.
+- [ ] Split a sandboxed Mac App Store build from the Developer ID build rather
+      than trying to make one binary do both.
+- [ ] Native probe layer for diagnostics (today `DiagnosticsEngine` shells out
+      to `/sbin/ping`; macOS 26 child processes can lose Local Network access).
+
+---
+
+## Engineering work
+
+### Modularity
+
+- [ ] Extract SwiftPM modules: `LanFiCore` (models, parsers, analyzers,
+      stores), `LanFiProbes` (ICMP/TCP/DNS/TLS), `LanFiApp`.
+- [ ] Stop listing sources three times in `project.yml`; app, tests and CLI
+      depend on packages instead.
+- [ ] Split `AnalyzerViewModel` (1490 lines), `MainTableView` (1314),
+      `ToolkitViewModel` (1311), `MCPToolkit` (1280).
+- [ ] Replace the `ToolboxTool` enum plus parallel switches and the separate
+      MCP catalogue with one `ToolDescriptor` registry.
+- [ ] Replace 67 string `UserDefaults` keys with a typed `AppSettings` model
+      with defaults, migration, export and import.
+- [ ] Add dependency seams (clock, scanner, notifications, file store) and
+      enable Swift 6 strict concurrency for the core module.
+- [ ] Make `swift-format` blocking in CI (currently `continue-on-error: true`);
+      add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
+
+### Settings
+
+- Scanning: mode, bands, adaptive interval, pause on battery/background,
+  channel dwell.
+- Monitoring: retention, sampling, event selection, thresholds, quiet hours,
+  menu-bar metric.
+- Capture: helper, default interface, channel plan, auto-analyze, storage
+  limit, redaction.
+- Survey: units, heatmap detail, default materials, antenna library.
+- Reports: format, sections, branding, schedule, redaction.
+- Privacy: external lookup toggles, crash-report opt-in, export redaction.
+- Units: dBm/%/both, MHz/GHz, date/time, CSV delimiter.
+- Advanced: full settings export/import, reset, log level, update channel.
+- Accessibility: colorblind-safe palette, reduce motion, font size.
+- Automation: launch at login, Shortcuts, MCP autostart.
+
+---
+
+## Delivered in the first slice (2026-11-15)
+
+- OUI custom-override cache with write invalidation and a lock around both
+  caches.
+- Analyzer indexes networks by band and id instead of scanning the full list
+  per network.
+- Rolling history moved into `NetworkHistory`; one published update per scan.
+- Signal and utilization inspectors show min/avg/max/p95.
+- 341 tests green; lint clean; universal Release build passes.
+
+## Delivery order
+
+1. **Now (1–2 weeks):** P0.1 pipeline; P0.4 quick wins; P0.5 grouping and
+   history stats; P0.3 MVP.
+2. **Next (3–6 weeks):** P0.2 passive scan; P1 Security Watch and Roaming Test;
+   combined report; Shortcuts/App Intents; MCP actions.
+3. **Later (quarter):** Survey Planning 2.0, spectrum hub, client analytics,
+   sandbox/MAS split, BLE/Zigbee, 802.11bn readiness.
+
+If the product stays a free home analyzer, stop after step 1 plus Security
+Watch/Roaming. If it targets WiFi Explorer Pro, passive scan, history and
+spectrum are required.
+
+## Sources
+
+- [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorerpro3/),
+  [documentation](https://docs.intuitibits.com/wifiexplorerpro3/),
+  [release notes](https://www.intuitibits.com/release-notes/wifiexplorerpro3/)
+- [NetSpot 6 multi-floor planning](https://www.netspotapp.com/help/netspot-6-0-with-multi-floor-planning/)
+- [Airtool 2 release notes](https://www.intuitibits.com/release-notes/airtool2/),
+  [packet captures](https://docs.intuitibits.com/airtool2/about-packet-captures)
+- [macwifi: CoreWLAN, Developer ID and Location Services](https://pkg.go.dev/github.com/jaisonerick/macwifi-cli)
+- [Apple forum: SSID missing since macOS 14.4](https://developer.apple.com/forums/thread/756344)
+- [Apple forum: Local Network and child processes](https://developer.apple.com/forums/thread/856661)
+- [ABI Research: Wi-Fi 8/802.11bn timeline](https://www.abiresearch.com/market-research/insight/7788568-wi-fi-8-presents-both-lucrative-opportunit)
