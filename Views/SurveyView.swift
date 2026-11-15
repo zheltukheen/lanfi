@@ -16,7 +16,8 @@ struct SurveyView: View {
     @State private var calibrating = false
     @State private var calibrationPoints: [SurveyPoint] = []
     @State private var showingClearConfirm = false
-    @StateObject private var heatGridCache = HeatGridCache()
+    @State private var heatGrid: HeatGridCache.Grid?
+    @State private var heatGridRequestKey = ""
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -559,14 +560,14 @@ struct SurveyView: View {
                 let cell: CGFloat = 6
                 let columns = max(1, Int(rect.width / cell))
                 let rows = max(1, Int(rect.height / cell))
-                let heatGrid = heatGridCache.grid(
-                    columns: columns, rows: rows,
-                    key: heatGridKey(columns: columns, rows: rows)
-                ) { column, row in
-                    let nx = (Double(column) * Double(cell) + Double(cell) / 2) / Double(rect.width)
-                    let ny = (Double(row) * Double(cell) + Double(cell) / 2) / Double(rect.height)
-                    return estimateRSSI(nx: nx, ny: ny)
-                }
+                let request = SurveyHeatmapRequest(
+                    columns: columns, rows: rows, cellSize: Double(cell),
+                    pixelWidth: Double(rect.width), pixelHeight: Double(rect.height),
+                    samples: displayedSamples, walls: survey.walls,
+                    obstacles: survey.obstacles, accessPoints: survey.accessPoints,
+                    predictiveMode: predictiveMode,
+                    planWidthMeters: survey.project.planWidthMeters ?? 30
+                )
                 ZStack(alignment: .topLeading) {
                     Color(nsColor: .underPageBackgroundColor)
                     if let image = survey.floorPlanImage {
@@ -577,7 +578,9 @@ struct SurveyView: View {
                             .position(x: rect.midX, y: rect.midY)
                     }
                     Canvas { context, _ in
-                        drawHeatGrid(context: context, rect: rect, grid: heatGrid, cell: cell)
+                        if let heatGrid {
+                            drawHeatGrid(context: context, rect: rect, grid: heatGrid, cell: cell)
+                        }
                         for sample in displayedSamples {
                             let point = CGPoint(
                                 x: rect.minX + sample.x * rect.width,
@@ -591,6 +594,17 @@ struct SurveyView: View {
                         drawCalibration(context: context, rect: rect)
                     }
                     .allowsHitTesting(false)
+                    .task(id: request.key) {
+                        if heatGridRequestKey != request.key {
+                            heatGrid = nil
+                        }
+                        let grid = await Task.detached(priority: .userInitiated) {
+                            request.build()
+                        }.value
+                        guard !Task.isCancelled else { return }
+                        heatGrid = grid
+                        heatGridRequestKey = request.key
+                    }
                     .accessibilityLabel(String(localized: "Floor plan heatmap"))
                     .accessibilityValue(
                         String(
@@ -794,25 +808,6 @@ struct SurveyView: View {
             x: nx, y: ny, samples: displayedSamples, walls: survey.walls,
             obstacles: survey.obstacles
         )
-    }
-
-    /// Fingerprint of everything that invalidates the interpolated grid:
-    /// mode, cell geometry and the identity of samples, walls and rooms.
-    private func heatGridKey(columns: Int, rows: Int) -> String {
-        var parts = [
-            "\(columns)x\(rows)",
-            "w:\(survey.walls.count):\(survey.walls.map(\.id.uuidString).joined(separator: ","))",
-            "o:\(survey.obstacles.count):\(survey.obstacles.map(\.id.uuidString).joined(separator: ","))",
-        ]
-        if predictiveMode && !survey.accessPoints.isEmpty {
-            parts.append("predictive")
-            parts.append("ap:\(survey.accessPoints.map(\.id.uuidString).joined(separator: ","))")
-            parts.append("plan:\(survey.project.planWidthMeters ?? 30)")
-        } else {
-            parts.append("measured")
-            parts.append("s:\(displayedSamples.map(\.id.uuidString).joined(separator: ","))")
-        }
-        return parts.joined(separator: "|")
     }
 
     private func drawHeatGrid(
