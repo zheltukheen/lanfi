@@ -1,5 +1,40 @@
 # Changelog
 
+## 5.3.0 — 2026-11-15
+
+### Added
+- **Wi-Fi Monitor.** The Wi-Fi workspace now keeps a rolling monitor for the
+  connected link and all visible access points: 1 h / 24 h / 7 d / 30 d
+  retention, RSSI timeline, min/avg/max/p95, peer aggregates, CSV export and a
+  before/after comparison for 1 h / 6 h / 24 h.
+- **Monitor events and alerts.** Connect, disconnect, roaming, channel change,
+  security downgrade, PMF loss, WPS enabled and weak-signal crossings are
+  recorded. Optional macOS notifications support per-kind toggles, quiet hours
+  (including overnight), a cooldown and foreground banners.
+- **Access point grouping.** Scans can be grouped by advertised AP name so the
+  2.4/5/6 GHz radios of one AP collapse into a single group; unnamed radios stay
+  separate BSSID groups.
+- **History statistics.** Signal and utilization inspectors show min/avg/max/p95
+  for the rolling window.
+- **Typed settings export/import.** General, display and toolbar preferences
+  are stored as a typed `AppSettings` model and can be exported or imported as
+  JSON. Legacy `LanFi.*` keys are written through for compatibility.
+
+### Changed
+- **Faster scans.** Custom OUI overrides are cached, the analyzer indexes
+  networks by band and id instead of rescanning the full list, and rolling
+  history is published once per scan instead of once per network.
+- **Toolkit structure.** `ToolkitViewModel` is split into 15 focused tool-model
+  files; tool metadata now lives in one `ToolRegistry` table.
+- **Build structure.** The first local SwiftPM module, `LanFiCore`, now owns the
+  typed settings store and runs its own `swift test` suite. CI runs the core
+  tests and `swift-format` is blocking.
+
+### Fixed
+- Monitor alerts are presented while LanFi is frontmost.
+- Older `monitor.json` files without peer or PMF/WPS fields decode instead of
+  discarding history.
+
 ## 5.2.0 — 2026-11-14
 
 ### Added
