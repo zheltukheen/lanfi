@@ -6,6 +6,7 @@ struct MonitorAlertSettings: Codable, Equatable {
     var roam: Bool = false
     var channelChange: Bool = false
     var securityChange: Bool = true
+    var deauthBurst: Bool = true
 
     var quietHoursEnabled: Bool = false
     var quietStartHour: Int = 22
@@ -15,7 +16,7 @@ struct MonitorAlertSettings: Codable, Equatable {
     static let `default` = MonitorAlertSettings()
 
     var anyEnabled: Bool {
-        weakSignal || disconnect || roam || channelChange || securityChange
+        weakSignal || disconnect || roam || channelChange || securityChange || deauthBurst
     }
 
     func isEnabled(for kind: MonitorEventKind) -> Bool {
@@ -25,8 +26,31 @@ struct MonitorAlertSettings: Codable, Equatable {
         case .roamed: return roam
         case .channelChanged: return channelChange
         case .securityChanged: return securityChange
+        case .deauthBurst: return deauthBurst
         case .connected: return false
         }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case weakSignal, disconnect, roam, channelChange, securityChange, deauthBurst
+        case quietHoursEnabled, quietStartHour, quietEndHour, cooldownMinutes
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        weakSignal = try container.decodeIfPresent(Bool.self, forKey: .weakSignal) ?? true
+        disconnect = try container.decodeIfPresent(Bool.self, forKey: .disconnect) ?? true
+        roam = try container.decodeIfPresent(Bool.self, forKey: .roam) ?? false
+        channelChange = try container.decodeIfPresent(Bool.self, forKey: .channelChange) ?? false
+        securityChange = try container.decodeIfPresent(Bool.self, forKey: .securityChange) ?? true
+        deauthBurst = try container.decodeIfPresent(Bool.self, forKey: .deauthBurst) ?? true
+        quietHoursEnabled =
+            try container.decodeIfPresent(Bool.self, forKey: .quietHoursEnabled) ?? false
+        quietStartHour = try container.decodeIfPresent(Int.self, forKey: .quietStartHour) ?? 22
+        quietEndHour = try container.decodeIfPresent(Int.self, forKey: .quietEndHour) ?? 7
+        cooldownMinutes = try container.decodeIfPresent(Int.self, forKey: .cooldownMinutes) ?? 5
     }
 
     func isQuiet(at date: Date, calendar: Calendar = .current) -> Bool {

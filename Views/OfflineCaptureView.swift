@@ -5,6 +5,7 @@ struct OfflineCaptureView: View {
     @Environment(\.dismiss) private var dismiss
     private let initialURL: URL?
     private let embedded: Bool
+    private let monitor: MonitorViewModel?
     @State private var beacons: [CapturedBeacon] = []
     @State private var fileName = ""
     @State private var errorMessage: String?
@@ -20,9 +21,13 @@ struct OfflineCaptureView: View {
     @State private var searchText = ""
     @State private var currentURL: URL?
 
-    init(initialURL: URL? = nil, embedded: Bool = false) {
+    init(
+        initialURL: URL? = nil, embedded: Bool = false,
+        monitor: MonitorViewModel? = nil
+    ) {
         self.initialURL = initialURL
         self.embedded = embedded
+        self.monitor = monitor
     }
 
     var body: some View {
@@ -485,6 +490,7 @@ struct OfflineCaptureView: View {
                     beacons = summary.beacons
                     clients = summary.clients
                     security = summary.security
+                    monitor?.ingestCapture(summary.security)
                     if summary.beacons.isEmpty { errorMessage = "No beacons or probe responses found." }
                 }
             } catch {

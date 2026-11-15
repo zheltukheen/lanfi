@@ -23,6 +23,7 @@ struct MonitorAlertSettingsView: View {
                     Toggle("Roaming between access points", isOn: $monitor.alerts.roam)
                     Toggle("Channel change", isOn: $monitor.alerts.channelChange)
                     Toggle("Security downgrade", isOn: $monitor.alerts.securityChange)
+                    Toggle("Deauth burst", isOn: $monitor.alerts.deauthBurst)
                 }
 
                 Section("Quiet hours") {

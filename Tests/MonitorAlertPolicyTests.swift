@@ -17,6 +17,14 @@ final class MonitorAlertPolicyTests: XCTestCase {
             detail: "test")
     }
 
+    func testLegacyAlertSettingsDecodeWithDeauthDefault() throws {
+        let data = Data(
+            #"{"weakSignal":false,"disconnect":true,"roam":false,"channelChange":false,"securityChange":true}"#
+                .utf8)
+        let settings = try JSONDecoder().decode(MonitorAlertSettings.self, from: data)
+        XCTAssertTrue(settings.deauthBurst)
+    }
+
     func testDisabledKindIsIgnored() {
         var settings = MonitorAlertSettings()
         settings.weakSignal = false

@@ -356,6 +356,7 @@ struct MonitorView: View {
         case .channelChanged: return "antenna.radiowaves.left.and.right"
         case .securityChanged: return "lock.trianglebadge.exclamationmark"
         case .weakSignal: return "exclamationmark.triangle"
+        case .deauthBurst: return "bolt.trianglebadge.exclamationmark"
         }
     }
 
@@ -367,6 +368,7 @@ struct MonitorView: View {
         case .channelChanged: return .orange
         case .securityChanged: return .red
         case .weakSignal: return .yellow
+        case .deauthBurst: return .red
         }
     }
 

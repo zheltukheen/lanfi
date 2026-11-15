@@ -172,6 +172,17 @@ final class MonitorTests: XCTestCase {
         XCTAssertNil(snapshot.state)
     }
 
+    func testDeauthBurstFromCaptureBecomesEvent() {
+        var snapshot = MonitorSnapshot()
+        let counter = ManagementCounters(
+            bssid: "AA:BB:CC:DD:EE:01", deauth: 6, burst: true, lastSeen: start)
+        let report = CaptureSecurityReport(management: [counter])
+
+        XCTAssertTrue(snapshot.ingestCapture(report))
+        XCTAssertEqual(snapshot.events.last?.kind, .deauthBurst)
+        XCTAssertTrue(snapshot.events.last?.detail.contains("6") == true)
+    }
+
     func testStoreRoundTripAndRetention() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("LanFi-monitor-tests-\(UUID().uuidString)", isDirectory: true)

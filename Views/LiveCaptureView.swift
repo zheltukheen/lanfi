@@ -42,7 +42,7 @@ struct LiveCaptureView: View {
         }
         .frame(width: embedded ? nil : 590)
         .sheet(isPresented: $showingAnalysis) {
-            OfflineCaptureView(initialURL: completedURL)
+            OfflineCaptureView(initialURL: completedURL, monitor: viewModel.monitor)
         }
         .onAppear {
             interfaces = LiveCaptureService.interfaceNames()
