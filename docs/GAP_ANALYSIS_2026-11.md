@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | 199 |
 | Lines in those folders | ~42,000 |
-| Test methods | 352 |
+| Test methods | 358 |
 | Settings tabs | 11 |
 | Distinct `LanFi.*` preference keys | 67 |
 | `UserDefaults` call sites | 59 |
@@ -108,7 +108,7 @@ Tasks:
 - [x] Event log: connected, disconnected, roamed, channel change, security
       downgrade and weak-signal crossing.
 - [ ] PMF/WPS change, deauth burst (from captures) and roaming-failure events.
-- [ ] Notification rules with quiet hours.
+- [x] Notification rules with quiet hours and per-kind cooldown.
 - [ ] Before/after comparison over two periods or saved sessions.
 - [x] Timeline view and CSV export.
 - [x] Tests for events, retention and store round-trip.
@@ -246,11 +246,14 @@ opens without a multi-gigabyte memory spike.
 
 - Wi-Fi Monitor MVP in the bottom panel: connected-link sampling, retention
   picker, RSSI timeline, min/avg/max/p95, event log, CSV export and clear.
+- Monitor alerts: per-kind toggles, quiet hours (including overnight), 0–60 min
+  cooldown and an explicit macOS notification-permission request. 6 policy
+  tests cover disabled kinds, quiet hours, overnight ranges and cooldown.
 - Event detection for connect, disconnect, roaming, channel change, security
   downgrade and weak-signal crossing, with 10 unit tests.
 - Monitor samples are throttled (15 s–15 min depending on retention) and
   persisted locally; the store trims by retention and caps samples/events.
-- 352 tests green; lint clean; universal Release build passes.
+- 358 tests green; lint clean; universal Release build passes.
 
 ## Delivered in the first slice (2026-11-15)
 
