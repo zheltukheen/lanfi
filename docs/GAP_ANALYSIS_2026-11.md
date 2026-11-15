@@ -229,12 +229,13 @@ opens without a multi-gigabyte memory spike.
 - Monitoring: retention, sampling, event selection, thresholds, quiet hours,
   menu-bar metric.
 - Capture: helper, default interface, channel plan, auto-analyze, storage
-  limit, redaction.
-- Survey: units, heatmap detail, default materials, antenna library.
-- Reports: format, sections, branding, schedule, redaction.
+  folder and limit, redaction.
+- Survey: units, heatmap detail, default wall/floor materials, antenna library.
+- Reports: format, sections, branding/logo, schedule, redaction.
 - Privacy: external lookup toggles, crash-report opt-in, export redaction.
 - Units: dBm/%/both, MHz/GHz, date/time, CSV delimiter.
-- Advanced: full settings export/import, reset, log level, update channel.
+- Advanced: full settings export/import, reset, log level, update channel,
+  feature flags.
 - Accessibility: colorblind-safe palette, reduce motion, font size.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
