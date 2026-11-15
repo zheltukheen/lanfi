@@ -111,6 +111,8 @@ struct MonitorLinkState: Codable, Equatable, Sendable {
     let security: String
     let securityScore: Int
     let rssi: Int
+    let pmfRequired: Bool?
+    let wpsEnabled: Bool?
 
     init(network: NetworkModel) {
         bssid = network.bssid
@@ -119,6 +121,56 @@ struct MonitorLinkState: Codable, Equatable, Sendable {
         security = network.security
         securityScore = NetworkAnalyzer.securityScore(for: network)
         rssi = network.signal
+        pmfRequired = network.pmfRequired
+        wpsEnabled = network.wpsEnabled
+    }
+}
+
+/// Per-BSSID aggregate for every network seen during a monitor sample.
+/// Raw samples are kept only for the connected link; peers are cheap enough to
+/// keep for every visible AP without growing the store linearly with time.
+struct MonitorPeer: Codable, Identifiable, Equatable, Sendable {
+    let id: String
+    let bssid: String
+    var ssid: String
+    var band: String
+    var channel: Int
+    var security: String
+    var rssiMin: Int
+    var rssiMax: Int
+    var rssiSum: Int
+    var samples: Int
+    var lastSeen: Date
+
+    var averageRSSI: Int {
+        guard samples > 0 else { return 0 }
+        return Int((Double(rssiSum) / Double(samples)).rounded())
+    }
+
+    init(network: NetworkModel, at: Date) {
+        id = network.id
+        bssid = network.bssid
+        ssid = network.displaySSID
+        band = network.band.label
+        channel = network.channel
+        security = network.security
+        rssiMin = network.signal
+        rssiMax = network.signal
+        rssiSum = network.signal
+        samples = 1
+        lastSeen = at
+    }
+
+    mutating func observe(_ network: NetworkModel, at: Date) {
+        ssid = network.displaySSID
+        band = network.band.label
+        channel = network.channel
+        security = network.security
+        rssiMin = min(rssiMin, network.signal)
+        rssiMax = max(rssiMax, network.signal)
+        rssiSum += network.signal
+        samples += 1
+        lastSeen = at
     }
 }
 
@@ -130,10 +182,27 @@ struct MonitorLinkState: Codable, Equatable, Sendable {
 struct MonitorSnapshot: Codable, Equatable {
     var samples: [MonitorSample] = []
     var events: [MonitorEvent] = []
+    var peers: [String: MonitorPeer] = [:]
     var state: MonitorLinkState?
     var lastSampleAt: Date?
 
     static let empty = MonitorSnapshot()
+
+    init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case samples, events, peers, state, lastSampleAt
+    }
+
+    /// Tolerates monitor files written before `peers` and PMF/WPS were added.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        samples = try container.decodeIfPresent([MonitorSample].self, forKey: .samples) ?? []
+        events = try container.decodeIfPresent([MonitorEvent].self, forKey: .events) ?? []
+        peers = try container.decodeIfPresent([String: MonitorPeer].self, forKey: .peers) ?? [:]
+        state = try container.decodeIfPresent(MonitorLinkState.self, forKey: .state)
+        lastSampleAt = try container.decodeIfPresent(Date.self, forKey: .lastSampleAt)
+    }
 
     var statistics: HistoryStatistics? {
         HistoryStatistics(values: samples.map(\.rssi))
@@ -143,7 +212,8 @@ struct MonitorSnapshot: Codable, Equatable {
     /// be written to disk.
     @discardableResult
     mutating func ingest(
-        connected: NetworkModel?, now: Date, sampleInterval: TimeInterval
+        connected: NetworkModel?, visible: [NetworkModel] = [], now: Date,
+        sampleInterval: TimeInterval
     ) -> Bool {
         guard let connected else {
             guard let previous = state else { return false }
@@ -170,10 +240,20 @@ struct MonitorSnapshot: Codable, Equatable {
                 changed = true
             }
 
+            var securityReasons: [String] = []
             if current.securityScore < previous.securityScore {
+                securityReasons.append("\(previous.security) → \(current.security)")
+            }
+            if previous.pmfRequired == true, current.pmfRequired != true {
+                securityReasons.append("PMF no longer required")
+            }
+            if previous.wpsEnabled != true, current.wpsEnabled == true {
+                securityReasons.append("WPS enabled")
+            }
+            if !securityReasons.isEmpty {
                 appendEvent(
                     .securityChanged, at: now, bssid: current.bssid, ssid: current.ssid,
-                    detail: "\(previous.security) → \(current.security)")
+                    detail: securityReasons.joined(separator: " · "))
                 changed = true
             }
 
@@ -197,6 +277,15 @@ struct MonitorSnapshot: Codable, Equatable {
         {
             samples.append(MonitorSample(network: connected, at: now))
             lastSampleAt = now
+            let observed = visible.isEmpty ? [connected] : visible
+            for network in observed {
+                if var peer = peers[network.id] {
+                    peer.observe(network, at: now)
+                    peers[network.id] = peer
+                } else {
+                    peers[network.id] = MonitorPeer(network: network, at: now)
+                }
+            }
             changed = true
         }
 
@@ -210,6 +299,11 @@ struct MonitorSnapshot: Codable, Equatable {
         let cutoff = now.addingTimeInterval(-retention)
         samples = Array(samples.filter { $0.at >= cutoff }.suffix(max(1, maximumSamples)))
         events = Array(events.filter { $0.at >= cutoff }.suffix(max(1, maximumEvents)))
+        peers = peers.filter { $0.value.lastSeen >= cutoff }
+        if peers.count > 500 {
+            let keep = peers.sorted { $0.value.lastSeen > $1.value.lastSeen }.prefix(500)
+            peers = Dictionary(uniqueKeysWithValues: keep.map { ($0.key, $0.value) })
+        }
         if let lastSampleAt, lastSampleAt < cutoff {
             self.lastSampleAt = nil
             state = nil
@@ -227,7 +321,58 @@ struct MonitorSnapshot: Codable, Equatable {
     }
 }
 
+struct MonitorComparison: Equatable {
+    let currentAverage: Int?
+    let previousAverage: Int?
+    let currentSamples: Int
+    let previousSamples: Int
+
+    var delta: Int? {
+        guard let currentAverage, let previousAverage else { return nil }
+        return currentAverage - previousAverage
+    }
+
+    init(samples: [MonitorSample], window: TimeInterval, now: Date = Date()) {
+        let currentStart = now.addingTimeInterval(-window)
+        let previousStart = currentStart.addingTimeInterval(-window)
+        let current = samples.filter { $0.at >= currentStart && $0.at <= now }
+        let previous = samples.filter { $0.at >= previousStart && $0.at < currentStart }
+        currentSamples = current.count
+        previousSamples = previous.count
+        currentAverage = Self.average(current)
+        previousAverage = Self.average(previous)
+    }
+
+    private static func average(_ samples: [MonitorSample]) -> Int? {
+        guard !samples.isEmpty else { return nil }
+        let total = samples.reduce(0) { $0 + $1.rssi }
+        return Int((Double(total) / Double(samples.count)).rounded())
+    }
+}
+
 enum MonitorCSV {
+    static func make(peers: [MonitorPeer]) -> String {
+        var lines = ["bssid,ssid,band,channel,security,samples,rssi_min,rssi_max,rssi_avg,last_seen"]
+        let formatter = ISO8601DateFormatter()
+        for peer in peers {
+            lines.append(
+                [
+                    escape(peer.bssid),
+                    escape(peer.ssid),
+                    escape(peer.band),
+                    String(peer.channel),
+                    escape(peer.security),
+                    String(peer.samples),
+                    String(peer.rssiMin),
+                    String(peer.rssiMax),
+                    String(peer.averageRSSI),
+                    formatter.string(from: peer.lastSeen),
+                ].joined(separator: ",")
+            )
+        }
+        return lines.joined(separator: "\n") + "\n"
+    }
+
     static func make(samples: [MonitorSample]) -> String {
         var lines = ["timestamp,bssid,ssid,rssi,snr,channel,band,utilization,security"]
         let formatter = ISO8601DateFormatter()

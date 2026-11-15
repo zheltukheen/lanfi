@@ -51,17 +51,22 @@ final class MonitorViewModel: ObservableObject {
 
     var samples: [MonitorSample] { snapshot.samples }
     var events: [MonitorEvent] { snapshot.events }
+    var peers: [MonitorPeer] {
+        snapshot.peers.values.sorted { $0.averageRSSI > $1.averageRSSI }
+    }
     var lastSample: MonitorSample? { snapshot.samples.last }
     var statistics: HistoryStatistics? { snapshot.statistics }
     var csv: String { MonitorCSV.make(samples: snapshot.samples) }
+    var peersCSV: String { MonitorCSV.make(peers: peers) }
 
-    func ingest(connected: NetworkModel?) {
+    func ingest(connected: NetworkModel?, visible: [NetworkModel] = []) {
         guard isRecording else { return }
 
         let previousEventIDs = Set(snapshot.events.map(\.id))
         var updated = snapshot
         let changed = updated.ingest(
-            connected: connected, now: Date(), sampleInterval: retention.sampleInterval)
+            connected: connected, visible: visible, now: Date(),
+            sampleInterval: retention.sampleInterval)
         snapshot = updated
         for event in updated.events where !previousEventIDs.contains(event.id) {
             notifier.notify(event, settings: alerts)

@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 360 app + 6 core |
+| Test methods | 366 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
@@ -102,17 +102,20 @@ NetSpot has snapshots and zones.
 
 Tasks:
 
-- [x] Persistent store for the connected link (JSON snapshot today;
-      append-only SQLite/JSONL and all-BSSID samples are the next step).
+- [x] Persistent store: connected-link raw samples plus per-BSSID aggregates
+      for every visible network (JSON snapshot today; SQLite/JSONL if volume
+      grows).
 - [x] Retention settings: 1 h / 24 h / 7 d / 30 d.
-- [x] Connected-link statistics: min/avg/max/p95 RSSI and sample count.
+- [x] Connected-link statistics (min/avg/max/p95) and peer aggregates
+      (min/max/avg, sample count, last seen).
 - [x] Event log: connected, disconnected, roamed, channel change, security
-      downgrade and weak-signal crossing.
-- [ ] PMF/WPS change, deauth burst (from captures) and roaming-failure events.
+      downgrade, PMF loss, WPS enabled and weak-signal crossing.
+- [ ] Deauth-burst (from captures) and roaming-failure events.
 - [x] Notification rules with quiet hours and per-kind cooldown.
-- [ ] Before/after comparison over two periods or saved sessions.
-- [x] Timeline view and CSV export.
-- [x] Tests for events, retention and store round-trip.
+- [x] Before/after comparison for the last 1 h / 6 h / 24 h.
+- [x] Timeline view, peer list and CSV exports (connected samples, visible
+      networks).
+- [x] Tests for events, retention, peers, comparison and store round-trip.
 
 Acceptance: leave LanFi running for 24 hours, open the monitor, see a stable
 timeline and at least one correctly deduplicated event per real change.
@@ -251,6 +254,16 @@ opens without a multi-gigabyte memory spike.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the fourth slice (2026-11-15)
+
+- All-BSSID aggregates: every visible network now tracks min/max/avg RSSI,
+  sample count, channel, security and last-seen time; a peer table and a
+  separate networks CSV expose them.
+- PMF loss and WPS-enabled transitions join the security event stream.
+- Before/after comparison for 1 h / 6 h / 24 h with a signed dBm delta and
+  sample counts.
+- 366 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the third slice (2026-11-15)
 
