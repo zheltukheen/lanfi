@@ -16,7 +16,7 @@ speed**.
 | --- | ---: |
 | Swift files (Models/Services/ViewModels/Views/Utils/CLI) | ~214 |
 | Lines in those folders | ~42,000 |
-| Test methods | 379 app + 6 core |
+| Test methods | 381 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
 | Distinct `LanFi.*` preference keys | 67 |
@@ -145,8 +145,9 @@ timeline and at least one correctly deduplicated event per real change.
       first rows paint before the full plan finishes.
 - [x] Captures are memory-mapped (`mappedIfSafe`) instead of copied into
       resident memory before parsing.
-- [ ] Stream packets and derive summary/clients/security from one parsed packet
-      index instead of multiple passes.
+- [x] `PcapPacketIndex` indexes offsets/lengths/link type/timestamp without
+      copying packet bytes; `summary` slices packets on demand for beacons,
+      clients and security.
 - [x] CSV/JSON encoding moved into pure `ScanCSVExporter` and
       `ScanJSONExporter` values; the save panel then encodes and writes both on
       a background task.
@@ -265,6 +266,13 @@ opens without a multi-gigabyte memory spike.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the seventh slice (2026-11-15)
+
+- Packet-indexed PCAP decoding: header-only index, on-demand packet slices, and
+  the same summary/clients/security pipeline without an array of every packet.
+- CSV/JSON shaping moved to pure exporters and encoded on a background task.
+- 381 app tests + 6 core tests green; universal Release build passes.
 
 ## Delivered in the sixth slice (2026-11-15)
 

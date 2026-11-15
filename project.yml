@@ -203,6 +203,7 @@ targets:
       - path: Services/DiagnosticsBundleExporter.swift
       - path: Services/PcapExporter.swift
       - path: Services/PcapAnalyzer.swift
+      - path: Services/PcapPacketIndex.swift
       - path: Services/GenericScanImporter.swift
       - path: Services/HardwareInventory.swift
       - path: Services/SystemInterfaceScanner.swift
