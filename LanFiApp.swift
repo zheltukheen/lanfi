@@ -28,8 +28,10 @@ struct LanFiApp: App {
     @StateObject private var interfaces = InterfacesViewModel()
     @StateObject private var toolkit = ToolkitViewModel()
     @StateObject private var uptime = UptimeMonitor()
+    @StateObject private var meter = MenuBarMeterModel()
     @AppStorage("LanFi.highContrast") private var highContrast = false
     @AppStorage("LanFi.appearance") private var appearance = "system"
+    @AppStorage("LanFi.hasCompletedFirstRun") private var hasCompletedFirstRun = false
 
     private var preferredAppearance: ColorScheme? {
         switch appearance {
@@ -55,6 +57,18 @@ struct LanFiApp: App {
                 .environmentObject(toolkit)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
+                .onAppear { meter.start() }
+                .sheet(
+                    isPresented: Binding(
+                        get: { !hasCompletedFirstRun },
+                        set: { presented in
+                            if !presented { hasCompletedFirstRun = true }
+                        })
+                ) {
+                    FirstRunView(
+                        onAllowLocation: { viewModel.requestLocationAuthorization() },
+                        onFinish: { hasCompletedFirstRun = true })
+                }
                 .onOpenURL { url in
                     guard let link = DeepLink.parse(url) else { return }
                     switch link {
@@ -100,13 +114,16 @@ struct LanFiApp: App {
                         // Opt-in weekly vendor database refresh; no-ops unless enabled and stale.
                         Task { await OUIUpdater.runScheduledUpdateIfNeeded() }
                     }
+                    meter.setApplicationActive(newPhase == .active)
                 }
         }
         .commands {
             LanFiCommands(
                 viewModel: viewModel,
                 uiState: uiState,
-                updater: updater
+                updater: updater,
+                diagnostics: diagnostics,
+                survey: survey
             )
         }
 
@@ -144,11 +161,11 @@ struct LanFiApp: App {
         }
 
         MenuBarExtra {
-            MenuBarView(viewModel: viewModel, diagnostics: diagnostics, uptime: uptime)
+            MenuBarView(
+                viewModel: viewModel, diagnostics: diagnostics, uptime: uptime, meter: meter)
         } label: {
-            Label(
-                "LanFi",
-                systemImage: uptime.downCount > 0 ? "exclamationmark.triangle" : "wifi")
+            MenuBarLabel(
+                meter: meter, viewModel: viewModel, diagnostics: diagnostics, uptime: uptime)
         }
         .menuBarExtraStyle(.window)
     }

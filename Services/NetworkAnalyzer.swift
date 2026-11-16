@@ -141,6 +141,13 @@ struct AnalysisReport {
     }
 }
 
+extension ChannelRecommendation {
+    /// 6 GHz PSC channels stay discoverable by active scans.
+    var isPreferredScanningChannel: Bool {
+        NetworkAnalyzer.isPreferredScanningChannel(band: band, channel: channel)
+    }
+}
+
 // MARK: - Analyzer
 
 /// Pure, deterministic analysis of a Wi-Fi scan. No CoreWLAN or UI
@@ -555,6 +562,13 @@ enum NetworkAnalyzer {
             if lhs.band != rhs.band { return lhs.band.rawValue < rhs.band.rawValue }
             return lhs.channel < rhs.channel
         }
+    }
+
+    /// 6 GHz Preferred Scanning Channels. An AP on one of these channels is
+    /// found by a normal active scan; one on any other 6 GHz channel often is
+    /// not, which is the most common reason a working AP looks invisible.
+    static func isPreferredScanningChannel(band: WiFiBand, channel: Int) -> Bool {
+        band == .band6 && NetworkModel.preferredScanningChannels6GHz.contains(channel)
     }
 
     private static func strengthWeight(rssi: Int) -> Double {

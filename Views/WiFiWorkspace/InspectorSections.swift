@@ -124,6 +124,14 @@ struct QualityInspectorSection: View {
                             .font(.caption.bold())
                             .foregroundColor(.green)
                     }
+                    if recommendation.isPreferredScanningChannel {
+                        Label(
+                            "PSC channel — active scans probe it, so 6 GHz clients find it",
+                            systemImage: "dot.radiowaves.left.and.right"
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    }
                 }
 
                 if let issue = metrics.issues.first {

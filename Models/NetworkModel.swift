@@ -208,6 +208,23 @@ struct NetworkModel: Identifiable, Equatable, Codable {
         band == .band5 && (52...144).contains(channel)
     }
 
+    /// 6 GHz Preferred Scanning Channels: the 20 MHz channels an active scan
+    /// probes first, and therefore the ones an AP must use to stay findable.
+    static let preferredScanningChannels6GHz: Set<Int> = [
+        5, 21, 37, 53, 69, 85, 101, 117, 133, 149, 165, 181, 197, 213, 229,
+    ]
+
+    var isPreferredScanningChannel: Bool {
+        band == .band6 && Self.preferredScanningChannels6GHz.contains(channel)
+    }
+
+    /// Beacon airtime as a share of the channel's airtime, in percent.
+    /// `beaconAirtime` is milliseconds per second, so the percentage is /10.
+    var ssidOverheadPercent: Double? {
+        guard let beaconAirtime, beaconAirtime > 0 else { return nil }
+        return min(100, beaconAirtime / 10)
+    }
+
     /// Primary channel centre frequency in MHz, derived from the channel plan.
     var frequencyMHz: Int? {
         if let centerFrequency { return centerFrequency }

@@ -3,37 +3,114 @@ import LanFiCore
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// Sidebar settings (D6). The screens themselves are unchanged; only the
+/// navigation moved from a eleven-tab TabView to a grouped sidebar, and the
+/// last section is remembered across launches.
 struct SettingsView: View {
     @EnvironmentObject private var updater: UpdaterController
     @EnvironmentObject private var diagnostics: DiagnosticsViewModel
     @EnvironmentObject private var analyzer: AnalyzerViewModel
 
+    @AppStorage("LanFi.settings.section") private var storedSection = SettingsSection.general.rawValue
+
+    private var selection: Binding<String> { $storedSection }
+
+    private var section: SettingsSection {
+        SettingsSection(rawValue: storedSection) ?? .general
+    }
+
     var body: some View {
-        TabView {
-            GeneralSettingsView()
-                .tabItem { Label("General", systemImage: "gearshape") }
-            AlertSettingsView()
-                .tabItem { Label("Alerts", systemImage: "bell") }
-            WiFiSettingsView()
-                .tabItem { Label("Wi-Fi", systemImage: "wifi") }
-            VendorSettingsView()
-                .tabItem { Label("Vendors", systemImage: "building.2") }
-            ColorRulesSettingsView(viewModel: analyzer)
-                .tabItem { Label("Colors", systemImage: "paintpalette") }
-            ExpressionColumnsSettingsView(viewModel: analyzer)
-                .tabItem { Label("Columns", systemImage: "tablecells") }
-            DiagnosticsSettingsView()
-                .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
-            HardwareSettingsView()
-                .tabItem { Label("Hardware", systemImage: "cable.connector") }
-            AutomationSettingsView(viewModel: analyzer)
-                .tabItem { Label("Automation", systemImage: "clock.arrow.circlepath") }
-            ControllersSettingsView()
-                .tabItem { Label("Controllers", systemImage: "server.rack") }
-            MCPSettingsView()
-                .tabItem { Label("MCP", systemImage: "sparkles") }
+        NavigationSplitView {
+            List(selection: selection) {
+                Section("Application") {
+                    rows([.general, .alerts, .wifi])
+                }
+                Section("Analysis") {
+                    rows([.vendors, .colors, .columns, .diagnostics, .hardware])
+                }
+                Section("Integrations") {
+                    rows([.automation, .controllers, .mcp])
+                }
+            }
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
+        } detail: {
+            detail
+                .frame(minWidth: 460, maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 620, height: 540)
+        .frame(width: 820, height: 580)
+    }
+
+    private func rows(_ sections: [SettingsSection]) -> some View {
+        ForEach(sections) { item in
+            Label(item.title, systemImage: item.icon)
+                .tag(item.rawValue)
+        }
+    }
+
+    @ViewBuilder
+    private var detail: some View {
+        switch section {
+        case .general: GeneralSettingsView()
+        case .alerts: AlertSettingsView()
+        case .wifi: WiFiSettingsView()
+        case .vendors: VendorSettingsView()
+        case .colors: ColorRulesSettingsView(viewModel: analyzer)
+        case .columns: ExpressionColumnsSettingsView(viewModel: analyzer)
+        case .diagnostics: DiagnosticsSettingsView()
+        case .hardware: HardwareSettingsView()
+        case .automation: AutomationSettingsView(viewModel: analyzer)
+        case .controllers: ControllersSettingsView()
+        case .mcp: MCPSettingsView()
+        }
+    }
+}
+
+private enum SettingsSection: String, CaseIterable, Identifiable {
+    case general
+    case alerts
+    case wifi
+    case vendors
+    case colors
+    case columns
+    case diagnostics
+    case hardware
+    case automation
+    case controllers
+    case mcp
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .general: return String(localized: "General")
+        case .alerts: return String(localized: "Alerts")
+        case .wifi: return String(localized: "Wi-Fi")
+        case .vendors: return String(localized: "Vendors")
+        case .colors: return String(localized: "Colors")
+        case .columns: return String(localized: "Columns")
+        case .diagnostics: return String(localized: "Diagnostics")
+        case .hardware: return String(localized: "Hardware")
+        case .automation: return String(localized: "Automation")
+        case .controllers: return String(localized: "Controllers")
+        case .mcp: return String(localized: "MCP")
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .general: return "gearshape"
+        case .alerts: return "bell"
+        case .wifi: return "wifi"
+        case .vendors: return "building.2"
+        case .colors: return "paintpalette"
+        case .columns: return "tablecells"
+        case .diagnostics: return "stethoscope"
+        case .hardware: return "cable.connector"
+        case .automation: return "clock.arrow.circlepath"
+        case .controllers: return "server.rack"
+        case .mcp: return "sparkles"
+        }
     }
 }
 
@@ -56,6 +133,20 @@ private struct GeneralSettingsView: View {
             set: { newValue in
                 settings[keyPath: keyPath] = newValue
                 AppSettingsStore.shared.save(settings)
+            }
+        )
+    }
+
+    private func menuBarBinding<T>(
+        _ keyPath: WritableKeyPath<AppSettings.MenuBarMeterSettings, T>
+    ) -> Binding<T> {
+        Binding(
+            get: { settings.menuBar[keyPath: keyPath] },
+            set: { newValue in
+                var updated = settings
+                updated.menuBar[keyPath: keyPath] = newValue
+                settings = updated
+                AppSettingsStore.shared.save(updated)
             }
         )
     }
@@ -94,10 +185,32 @@ private struct GeneralSettingsView: View {
                     Text("Dark").tag(AppSettings.Appearance.dark)
                 }
                 Picker("Table row density", selection: binding(\.rowDensity)) {
-                    Text("Compact").tag(24.0)
-                    Text("Standard").tag(30.0)
-                    Text("Roomy").tag(38.0)
+                    ForEach(TableDensity.allCases) { density in
+                        Text(density.title).tag(density.rawValue)
+                    }
                 }
+            }
+
+            Section("Menu bar meter") {
+                Picker("Label", selection: menuBarBinding(\.labelStyle)) {
+                    Text("Icon only").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconOnly)
+                    Text("Icon + number").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconAndNumber)
+                    Text("Icon + graph").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconAndGraph)
+                    Text("Icon + graph + number").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconGraphAndNumber)
+                }
+                Picker("Metric", selection: menuBarBinding(\.metric)) {
+                    Text("Throughput").tag(AppSettings.MenuBarMeterSettings.Metric.throughput)
+                    Text("Signal").tag(AppSettings.MenuBarMeterSettings.Metric.signal)
+                    Text("Quality").tag(AppSettings.MenuBarMeterSettings.Metric.quality)
+                    Text("Latency").tag(AppSettings.MenuBarMeterSettings.Metric.latency)
+                }
+                Picker("Throughput unit", selection: menuBarBinding(\.unit)) {
+                    Text("bit/s").tag(AppSettings.MenuBarMeterSettings.Unit.bits)
+                    Text("byte/s").tag(AppSettings.MenuBarMeterSettings.Unit.bytes)
+                }
+                Text("Counters are sampled every 2 s, and every 30 s while LanFi is in the background.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
 
             Section("Toolbar") {

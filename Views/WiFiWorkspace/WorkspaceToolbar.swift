@@ -256,6 +256,7 @@ struct ToolbarView: View {
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
                 .help("Settings & Monitoring Control")
+                .accessibilityLabel("Scan settings")
             }
 
             // 3. Search

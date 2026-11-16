@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 struct LanFiCommands: Commands {
     @Environment(\.openWindow) private var openWindow
@@ -7,6 +8,8 @@ struct LanFiCommands: Commands {
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var uiState: AppUIState
     @ObservedObject var updater: UpdaterController
+    @ObservedObject var diagnostics: DiagnosticsViewModel
+    @ObservedObject var survey: SurveyViewModel
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
@@ -122,6 +125,7 @@ struct LanFiCommands: Commands {
                 Text("Overview").tag(0)
                 Text("Profile").tag(1)
                 Text("Raw Data").tag(3)
+                Text("All Bands").tag(9)
                 Text("Spectrum").tag(4)
                 Text("History").tag(5)
                 Text("Capture").tag(7)
@@ -146,6 +150,8 @@ struct LanFiCommands: Commands {
                 .keyboardShortcut("6", modifiers: [.command])
             Button("Show Monitor") { showPanel(8) }
                 .keyboardShortcut("8", modifiers: [.command])
+            Button("Show All Bands") { showPanel(9) }
+                .keyboardShortcut("9", modifiers: [.command])
             Button("Show Internet Check") {
                 NotificationCenter.default.post(
                     name: .lanfiShowToolkit, object: nil,
@@ -191,6 +197,13 @@ struct LanFiCommands: Commands {
 
             Divider()
 
+            Button("Export Combined Report…") {
+                exportCombinedReport()
+            }
+            .keyboardShortcut("e", modifiers: [.command, .option])
+
+            Divider()
+
             Button("Export Filter Profile…") {
                 viewModel.exportFilterProfile()
             }
@@ -208,6 +221,39 @@ struct LanFiCommands: Commands {
                 openWindow(id: "help")
             }
         }
+    }
+
+    /// One HTML file with the scan, survey, security findings, diagnostics,
+    /// speed history and monitor events — the handover document.
+    private func exportCombinedReport() {
+        let report = CombinedReportBuilder.make(
+            networks: viewModel.networks,
+            analysis: viewModel.analysis,
+            survey: survey.project,
+            diagnostics: diagnostics.report,
+            speedTests: ThroughputHistoryStore().load(),
+            events: viewModel.monitor.events
+        )
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.html]
+        panel.nameFieldStringValue = "LanFi-report-\(Self.dateStamp()).html"
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try CombinedReportExporter.html(for: report)
+                .write(to: url, atomically: true, encoding: .utf8)
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = String(localized: "Could not export the report")
+            alert.informativeText = error.localizedDescription
+            alert.runModal()
+        }
+    }
+
+    private static func dateStamp() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
     }
 
     /// Bottom panels live inside the Wi-Fi analyzer workspace, so opening one

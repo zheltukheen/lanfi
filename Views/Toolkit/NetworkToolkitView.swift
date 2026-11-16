@@ -218,6 +218,7 @@ struct NetworkToolkitView: View {
             }
             .buttonStyle(.borderless)
             .help("LanFi Help")
+            .accessibilityLabel("Open LanFi Help")
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 10)
@@ -269,6 +270,10 @@ struct NetworkToolkitView: View {
             AdvancedToolsToolView()
         case .wifiAnalyzer:
             WiFiAnalyzerToolView()
+        case .roamingTest:
+            RoamingTestToolView(analyzer: analyzer)
+        case .knownNetworks:
+            KnownNetworksToolView(analyzer: analyzer)
         case .siteSurvey:
             SurveyView(analyzer: analyzer, survey: survey)
         }

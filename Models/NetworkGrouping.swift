@@ -76,11 +76,16 @@ enum NetworkGrouper {
             return networks.map(NetworkTableRow.network)
         }
 
+        let coLocatedKeys = mode == .physicalAP ? CoLocatedAPDetector.groupKeys(for: networks) : [:]
+
         let grouped = Dictionary(grouping: networks) { value in
             switch mode {
             case .none: return ""
             case .ssid: return value.displaySSID
             case .physicalAP:
+                if let key = coLocatedKeys[value.id] {
+                    return Self.label(forCoLocatedKey: key)
+                }
                 let name = value.apName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
                 if !name.isEmpty { return name }
                 return value.bssid.isEmpty ? "Unknown access point" : value.bssid
@@ -115,5 +120,26 @@ enum NetworkGrouper {
             rows.append(contentsOf: members.map(NetworkTableRow.network))
         }
         return rows
+    }
+
+    /// Co-located keys carry their own prefix; the label is what the sidebar
+    /// renders, so drop it and fall back to a readable title.
+    private static func label(forCoLocatedKey key: String) -> String {
+        let parts = key.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+        guard parts.count == 2 else { return key }
+        switch parts[0] {
+        case "model":
+            let fields = parts[1].split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
+            let vendor = fields.first.map(String.init) ?? ""
+            let model = fields.count > 1 ? String(fields[1]) : ""
+            if !model.isEmpty {
+                return vendor.isEmpty ? model : "\(vendor) \(model)"
+            }
+            return vendor.isEmpty ? "Unknown access point" : vendor
+        case "name":
+            return String(parts[1])
+        default:
+            return String(parts[1])
+        }
     }
 }

@@ -187,7 +187,12 @@ LanFi already leads on interpretation (quality, channel advice, security audit).
 The remaining gap to paid analyzers is distribution, workflow and survey
 features. The prioritised plan — with sources and acceptance criteria — lives in
 [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md). The post-parity November
-2026 review is in [`docs/GAP_ANALYSIS_2026-11.md`](docs/GAP_ANALYSIS_2026-11.md).
+2026 review is in [`docs/GAP_ANALYSIS_2026-11.md`](docs/GAP_ANALYSIS_2026-11.md);
+it also carries the design track (tokens, all-band overview, table density,
+menu-bar meter) that decides how the analysis above actually looks. The review
+that fed it — NetWorker Pro, AirRadar 8, PeakHour 6 and an Unstore buyer's
+notes — is in
+[`docs/REFERENCE_APPS_REVIEW_2026-11.md`](docs/REFERENCE_APPS_REVIEW_2026-11.md).
 
 Delivered through 4.12.1: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column

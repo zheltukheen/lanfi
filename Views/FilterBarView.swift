@@ -9,10 +9,25 @@ struct FilterBarView: View {
     @State private var showCategoryFilters = false
     @State private var showCustomFilters = false
 
-    private let sortOptions: [ColumnId] = [
-        .signal, .quality, .networkName, .channel, .band, .security,
-        .vendor, .lastSeen, .seen, .maxRate,
-    ]
+    private struct SortOption: Identifiable {
+        let column: ColumnId
+        let title: String
+        var id: String { column.rawValue }
+    }
+
+    /// Sort options follow the visible table columns in column order, minus the
+    /// identity columns (see `ColumnId.isSortableOption`), so a new or renamed
+    /// column shows up here without a second list to maintain.
+    private var sortOptions: [SortOption] {
+        viewModel.columnDefinitions
+            .sorted { $0.order < $1.order }
+            .filter { $0.isVisible }
+            .compactMap { definition in
+                guard let column = ColumnId(rawValue: definition.id), column.isSortableOption
+                else { return nil }
+                return SortOption(column: column, title: definition.displayTitle)
+            }
+    }
 
     private let signalPresets: [Double] = [-100, -90, -80, -70, -60, -50]
 
@@ -87,14 +102,14 @@ struct FilterBarView: View {
     private var sortMenu: some View {
         HStack(spacing: 2) {
             Menu {
-                ForEach(sortOptions, id: \.self) { option in
+                ForEach(sortOptions) { option in
                     Button {
-                        viewModel.currentSortKey = option.rawValue
+                        viewModel.currentSortKey = option.column.rawValue
                     } label: {
-                        if viewModel.currentSortKey == option.rawValue {
-                            Label(option.defaultTitle, systemImage: "checkmark")
+                        if viewModel.currentSortKey == option.column.rawValue {
+                            Label(option.title, systemImage: "checkmark")
                         } else {
-                            Text(option.defaultTitle)
+                            Text(option.title)
                         }
                     }
                 }
@@ -117,8 +132,12 @@ struct FilterBarView: View {
     }
 
     private var sortTitle: String {
-        sortOptions.first { $0.rawValue == viewModel.currentSortKey }?.defaultTitle
-            ?? ColumnId.signal.defaultTitle
+        if let key = viewModel.currentSortKey,
+            let definition = viewModel.columnDefinitions.first(where: { $0.id == key })
+        {
+            return definition.displayTitle
+        }
+        return ColumnId.signal.defaultTitle
     }
 
     private var groupMenu: some View {

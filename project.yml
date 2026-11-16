@@ -102,6 +102,7 @@ targets:
     sources:
       - path: Tests
       - path: Models/NetworkModel.swift
+      - path: Models/RFOverviewLayout.swift
       - path: Models/NetworkHistory.swift
       - path: Models/HistoryStatistics.swift
       - path: Models/MonitorModels.swift
@@ -110,12 +111,23 @@ targets:
       - path: Models/ScanCadence.swift
       - path: Services/MonitorStore.swift
       - path: Models/ColumnCatalog.swift
+      - path: Models/TablePresentation.swift
+      - path: Models/HistoryChartMode.swift
+      - path: Models/VisibilityAdvice.swift
+      - path: Models/WorkspacePlaceholder.swift
       - path: Models/SignalDisplayMode.swift
       - path: Models/ProtocolProfile.swift
       - path: Models/DiagnosticsModel.swift
       - path: Models/NetworkAnnotation.swift
       - path: Models/ScanSession.swift
       - path: Models/NetworkGrouping.swift
+      - path: Models/ScanHealth.swift
+      - path: Models/CoLocatedAPDetector.swift
+      - path: Models/RoamingTest.swift
+      - path: Models/KnownNetwork.swift
+      - path: Models/LinkTelemetry.swift
+      - path: Models/CombinedReport.swift
+      - path: Services/CombinedReportExporter.swift
       - path: Models/Survey.swift
       - path: Models/SystemInterface.swift
       - path: Models/ColumnProfile.swift
@@ -184,6 +196,7 @@ targets:
       - path: Services/ControllerService.swift
       - path: Services/ScanReportExporter.swift
       - path: Models/ThroughputReport.swift
+      - path: Models/ThroughputSample.swift
       - path: Services/SurveyInterpolator.swift
       - path: Services/SurveyHeatmap.swift
       - path: Services/ScanCSVExporter.swift

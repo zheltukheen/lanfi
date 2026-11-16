@@ -75,6 +75,41 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertThrowsError(try store.importData(Data("not json".utf8)))
     }
 
+    func testMenuBarMeterDefaultsAndLegacyMirror() {
+        let store = AppSettingsStore(defaults: defaults)
+        XCTAssertEqual(store.settings.menuBar.metric, .throughput)
+        XCTAssertEqual(store.settings.menuBar.labelStyle, .iconAndGraph)
+        XCTAssertEqual(store.settings.menuBar.unit, .bits)
+
+        var settings = store.settings
+        settings.menuBar.metric = .latency
+        settings.menuBar.labelStyle = .iconAndNumber
+        settings.menuBar.unit = .bytes
+        store.save(settings)
+
+        XCTAssertEqual(defaults.string(forKey: "LanFi.menuBar.metric"), "latency")
+        XCTAssertEqual(defaults.string(forKey: "LanFi.menuBar.style"), "iconAndNumber")
+        XCTAssertEqual(defaults.string(forKey: "LanFi.menuBar.unit"), "bytes")
+
+        let reloaded = AppSettingsStore(defaults: defaults)
+        XCTAssertEqual(reloaded.settings.menuBar, settings.menuBar)
+    }
+
+    func testSettingsWithoutMenuBarKeyStillDecode() throws {
+        // Settings written before the menu-bar meter existed must keep their values.
+        var settings = AppSettings()
+        settings.appearance = .dark
+        var object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(settings))
+        if var dictionary = object as? [String: Any] {
+            dictionary.removeValue(forKey: "menuBarMeter")
+            object = dictionary
+        }
+        let data = try JSONSerialization.data(withJSONObject: object)
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: data)
+        XCTAssertEqual(decoded.appearance, .dark)
+        XCTAssertEqual(decoded.menuBar, AppSettings.MenuBarMeterSettings())
+    }
+
     func testNormalizeClampsUnsupportedValues() {
         var settings = AppSettings()
         settings.rowDensity = 99

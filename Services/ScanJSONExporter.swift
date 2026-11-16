@@ -47,6 +47,8 @@ struct ScanJSONExporter {
             "signalDbm": network.signal,
             "noiseDbm": network.noise.map { $0 as Any } ?? NSNull(),
             "snrDb": network.snr.map { $0 as Any } ?? NSNull(),
+            "ssidOverheadPercent": network.ssidOverheadPercent.map { $0 as Any } ?? NSNull(),
+            "preferredScanningChannel": network.isPreferredScanningChannel,
             "channelUtilizationPercent": network.channelUtilization.map { $0 as Any } ?? NSNull(),
             "countryCode": network.countryCode.map { $0 as Any } ?? NSNull(),
             "wpsEnabled": network.wpsEnabled.map { $0 as Any } ?? NSNull(),

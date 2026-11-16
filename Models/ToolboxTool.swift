@@ -45,6 +45,8 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case uptimeMonitor
     case lanScanner
     case wifiAnalyzer
+    case roamingTest
+    case knownNetworks
     case siteSurvey
 
     var id: String { rawValue }

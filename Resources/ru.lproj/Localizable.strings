@@ -1305,3 +1305,13 @@
 "LanFi Help" = "Справка LanFi";
 "Model" = "Модель";
 "Inactive interfaces (%lld)" = "Неактивные интерфейсы (%lld)";
+
+/* All-band RF overview */
+"All Bands" = "Все диапазоны";
+"Best channel" = "Лучший канал";
+"Overlapping airtime" = "Перекрытие эфира";
+"Network width" = "Ширина сети";
+"No networks in this band" = "В этом диапазоне нет сетей";
+"Busiest channel" = "Самый загруженный канал";
+"Strongest signal" = "Сильнейший сигнал";
+"No overlap" = "Без перекрытий";

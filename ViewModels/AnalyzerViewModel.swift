@@ -107,7 +107,17 @@ class AnalyzerViewModel: ObservableObject {
     @Published private(set) var history = NetworkHistory()
 
     var signalHistory: [String: [Int]] { history.signal }
+
+    /// Noise samples aligned with `signalHistory`; `nil` where CoreWLAN did not
+    /// report a noise floor for that scan.
     var noiseHistory: [String: [Int?]] { history.noise }
+
+    /// Other radios of the same physical access point, inferred when the AP does
+    /// not advertise an AP name.
+    func coLocatedSiblings(for network: NetworkModel) -> [NetworkModel] {
+        CoLocatedAPDetector.coLocatedSiblings(of: network, in: networks)
+    }
+
     var snrHistory: [String: [Int?]] { history.snr }
     var utilizationHistory: [String: [Int?]] { history.utilization }
     @Published private(set) var analysis: AnalysisReport = .empty
@@ -166,6 +176,8 @@ class AnalyzerViewModel: ObservableObject {
     @Published var isLocationAuthorized = false
     @Published var errorMessage: String?
     @Published private(set) var lastScanDate: Date?
+    /// Why the last scan has (or has not) usable rows; drives the workspace banner.
+    @Published private(set) var scanHealth: ScanHealth = .healthy
 
     // MARK: - Initialization
     init() {
@@ -295,19 +307,26 @@ class AnalyzerViewModel: ObservableObject {
                 self.errorMessage = nil
                 self.currentConnectedBSSID = currentBSSID
                 self.lastScanDate = Date()
+                self.scanHealth = ScanHealthEvaluator.evaluate(
+                    networks: scannedList, errorMessage: nil,
+                    isLocationAuthorized: self.isLocationAuthorized)
                 self.mergeNetworks(scannedList)
 
             } catch let error as WiFiError {
                 // Обработка типизированных ошибок
                 if case .interfaceNotFound = error {
-                    self.errorMessage = "Wi-Fi is off"
+                    self.errorMessage = nil
+                    self.scanHealth = .noWiFiHardware
                 } else if case .wifiPoweredOff = error {
                     self.errorMessage = "Wi-Fi is off"
+                    self.scanHealth = .scanFailed("Wi-Fi is off")
                 } else {
                     self.errorMessage = error.localizedDescription
+                    self.scanHealth = .scanFailed(error.localizedDescription)
                 }
             } catch {
                 self.errorMessage = error.localizedDescription
+                self.scanHealth = .scanFailed(error.localizedDescription)
             }
         }
     }
@@ -950,6 +969,12 @@ class AnalyzerViewModel: ObservableObject {
 
     // 3. Публичные методы для геолокации (нужны для кнопок в UI)
     // Чтобы не обращаться к приватному locationManager из View
+    /// Hides the identifier banner for the current session; the next scan with
+    /// redacted identifiers brings it back.
+    func dismissScanHealth() {
+        scanHealth = .healthy
+    }
+
     func requestLocationAuthorization() {
         locationManager.requestAuthorization()
     }

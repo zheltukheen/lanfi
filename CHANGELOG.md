@@ -1,5 +1,81 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **All-band RF overview.** A new bottom-panel tab draws every nearby access
+  point as a frequency span on 2.4, 5 and 6 GHz side by side, shades the
+  regions where two or more networks collide and marks the recommended channel
+  for each band; clicking a span selects the network. Fresh installs open on it,
+  existing layouts keep their stored tab.
+- **Design tokens.** Shared spacing, radius, stroke and semantic colour tokens
+  plus `AppCard`, `SectionLabel`, `StatusPill`, `StatTile` and `BandChip`. The
+  RF overview is the first screen built on them.
+- **Menu-bar live meter.** The menu-bar item can show a Canvas sparkline of the
+  last 60 throughput samples, a live number (throughput, signal, quality or
+  latency) or the icon alone, in bit/s or byte/s. The popover adds a throughput
+  block, a connected-link block with band, channel and width, a latency strip
+  from diagnostics, an on-demand public IP with country, and the existing
+  alerts and uptime rows. Counters come from `getifaddrs` for the primary and
+  Wi-Fi interfaces and the sampler slows to one tick every 30 s in the
+  background.
+- **Table presentation.** Compact/standard/roomy density now drives the AppKit
+  row height and cell font; signal and quality cells paint a colour bar in its
+  own gutter beside the number (never underneath it), and the header marks the
+  active grouping. Band and security stay text-only.
+- **Column-driven sort menu.** The sort menu is generated from the visible table
+  columns in column order and skips identity columns (network name, BSSID, AP
+  name, annotations), so new and renamed columns appear without a second list.
+- **Single sort indicator.** The header no longer appends its own arrow; only
+  AppKit's sort indicator is shown.
+
+- **Signal history shows noise.** The history chart has a Signal / Noise /
+  Both switch; noise is dashed so it never competes with the signal trace and is
+  hidden in percent mode, where it has no meaning.
+- **First run and empty states.** A fresh install opens on one screen explaining
+  what LanFi shows, why macOS needs Location Services and that nothing leaves
+  the Mac. The workspace now names its state instead of showing an empty table:
+  no scan, no networks, no permission, no Wi-Fi hardware, failed scan, stale
+  data or over-filtering, each with the action that fixes it.
+- **Why a network is hard to see.** The inspector explains 6 GHz PSC and
+  non-PSC channels, DFS sharing and hidden SSIDs, and lists the other radios of
+  the same access point when LanFi infers them.
+- **Chart style tokens.** `ChartStyle` now defines the axis, grid, cursor and
+  tooltip look used by the history and occupancy charts.
+- **Roaming Test.** A new Wi-Fi tool shows the connected BSSID's 802.11k/v/r
+  support, the BSSID transitions and failed roams from the Wi-Fi Monitor, and
+  sticky-client and band-steering verdicts. A walk test starts a fresh window.
+- **Known Networks and Wi-Fi QR.** The toolkit lists the network names saved in
+  System Settings (names only — never passwords), shows which are in range, and
+  turns a user-typed password into a guest QR code.
+- **Shortcuts and App Intents.** Scan summary, connected network and speed test
+  are available to Shortcuts, with suggested phrases.
+- **Link inspector block.** The inspector starts with the live connected link:
+  transmit rate with min/avg/max over 60 samples, channel and width, noise, PHY
+  and the beacon's NSS capability (labelled as capability, since CoreWLAN does
+  not expose live MCS/NSS).
+- **Combined report.** `Data → Export Combined Report…` writes one HTML file
+  with the scan and quality, survey summary, security findings, diagnostics,
+  recent speed tests and monitor events.
+
+### Changed
+- **Settings sidebar.** Settings moved from eleven tabs to a grouped sidebar;
+  the last section is remembered.
+
+- **Relative seen times.** First Seen and Last Seen read "5 minutes ago" under
+  a day and fall back to an absolute date-time after that.
+- **SSID overhead in the inspector.** Beacon airtime as a share of airtime is
+  now visible in the inspector's technical specs, not only as a column.
+- **Column header tooltips.** Every column explains its domain terms in plain
+  language (BSS Load, PMF, puncturing, wide channels).
+
+### Changed
+- **Roadmap.** The November gap analysis now includes a design and presentation
+  track (tokens and shared components, all-band RF overview, table density,
+  menu-bar meter) and new items taken from a review of NetWorker Pro,
+  AirRadar 8, PeakHour 6 and an Unstore buyer's guide, recorded in
+  `docs/REFERENCE_APPS_REVIEW_2026-11.md`.
+
 ## 5.3.0 — 2026-11-15
 
 ### Added

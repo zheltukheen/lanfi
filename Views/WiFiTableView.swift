@@ -11,6 +11,9 @@ extension NSUserInterfaceItemIdentifier {
 
 struct WiFiTableView: NSViewRepresentable {
     @ObservedObject var viewModel: AnalyzerViewModel
+    /// Persisted row height in points; @AppStorage keeps the AppKit table in
+    /// sync when the density picker changes.
+    @AppStorage("LanFi.rowDensity") private var rowDensity: Double = 30
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -34,8 +37,7 @@ struct WiFiTableView: NSViewRepresentable {
         tableView.gridStyleMask = []
 
         // A little more breathing room per row; keeps the table compact but readable.
-        let density = UserDefaults.standard.double(forKey: "LanFi.rowDensity")
-        tableView.rowHeight = density > 0 ? density : 30
+        tableView.rowHeight = TableDensity.resolve(rowHeight: rowDensity).rowHeight
         tableView.intercellSpacing = NSSize(width: 0, height: 2)
 
         tableView.headerView = NSTableHeaderView()
@@ -85,6 +87,13 @@ struct WiFiTableView: NSViewRepresentable {
         }
         let targetVisibleDefinitions = targetDefinitions.filter { $0.isVisible }
 
+        // D3: the density picker drives the AppKit row height and cell font.
+        let density = TableDensity.resolve(rowHeight: rowDensity)
+        if abs(tableView.rowHeight - density.rowHeight) > 0.5 {
+            tableView.rowHeight = density.rowHeight
+            tableView.reloadData()
+        }
+
         context.coordinator.isProgrammaticUpdate = true
 
         let currentColumnIdentifiers = Set(tableView.tableColumns.map { $0.identifier.rawValue })
@@ -111,7 +120,13 @@ struct WiFiTableView: NSViewRepresentable {
                 tableView.addTableColumn(column)
             }
 
+            let columnId = ColumnId(rawValue: def.id)
+            let headerText = TableHeaderDecoration.title(
+                base: def.displayTitle,
+                isGrouped: viewModel.groupMode != .none
+                    && def.id == targetVisibleDefinitions.first?.id)
             if column.title != def.displayTitle { column.title = def.displayTitle }
+            column.headerToolTip = columnId?.headerTip
             // Never fight the user while a header divider is being dragged.
             if !context.coordinator.isUserResizingColumn,
                 abs(column.width - def.width) > 1.0
@@ -119,13 +134,13 @@ struct WiFiTableView: NSViewRepresentable {
                 column.width = def.width
             }
             if let headerCell = column.headerCell as? PaddedHeaderCell {
-                if headerCell.stringValue != def.displayTitle { headerCell.stringValue = def.displayTitle }
+                if headerCell.stringValue != headerText { headerCell.stringValue = headerText }
                 if headerCell.alignment != def.alignment.nsTextAlignment {
                     headerCell.alignment = def.alignment.nsTextAlignment
                 }
                 headerCell.lineBreakMode = .byTruncatingTail
             } else {
-                let headerCell = PaddedHeaderCell(textCell: def.displayTitle)
+                let headerCell = PaddedHeaderCell(textCell: headerText)
                 headerCell.alignment = def.alignment.nsTextAlignment
                 headerCell.lineBreakMode = .byTruncatingTail
                 column.headerCell = headerCell
@@ -314,13 +329,21 @@ struct WiFiTableView: NSViewRepresentable {
             let isConnected = (network.bssid == parent.viewModel.currentConnectedBSSID)
             let alignment =
                 parent.viewModel.columnDefinitions.first(where: { $0.id == colId })?.alignment.nsTextAlignment ?? .left
+            let visual = ColumnId(rawValue: colId).flatMap { column in
+                TableMicroVisualFactory.visual(
+                    for: column, network: network,
+                    qualityScore: parent.viewModel.metrics(for: network)?.qualityScore)
+            }
+            let density = TableDensity.resolve(rowHeight: parent.rowDensity)
 
             cellView?.configure(
                 text: text,
                 isConnected: isConnected,
                 alignment: alignment,
                 highlightConnected: parent.viewModel.highlightConnectedNetworks,
-                vendor: colId == ColumnId.vendor.rawValue ? network.vendor : nil
+                vendor: colId == ColumnId.vendor.rawValue ? network.vendor : nil,
+                visual: visual,
+                fontSize: density.fontSize
             )
             return cellView
         }
