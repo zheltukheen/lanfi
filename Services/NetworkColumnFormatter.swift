@@ -44,11 +44,11 @@ struct NetworkColumnFormatter {
         case .count: return "\(network.count)"
         case .countryCode: return network.countryCode ?? "-"
         case .fastTransition: return formatOptionalBool(network.fastTransition)
-        case .firstSeen: return formatDate(network.firstSeen)
+        case .firstSeen: return Self.formatSeen(network.firstSeen)
         case .generation: return network.generationLabel
         case .ieCount: return formatOptionalInt(network.ieCount)
         case .ieTotalLength: return formatOptionalInt(network.ieTotalLength)
-        case .lastSeen: return formatDate(network.lastSeen)
+        case .lastSeen: return Self.formatSeen(network.lastSeen)
         case .maxBasicRate: return network.maxBasicRateLabel
         case .maxRate: return network.maxRateLabel
         case .minBasicRate: return network.minBasicRateLabel
@@ -62,6 +62,8 @@ struct NetworkColumnFormatter {
         case .security: return network.security
         case .seen: return "\(network.seen)"
         case .signal: return Self.formatSignal(network.signal, mode: signalDisplayMode)
+        case .ssidOverhead:
+            return network.ssidOverheadPercent.map { String(format: "%.1f%%", $0) } ?? "-"
         case .snr: return network.snrLabel
         case .stations: return formatOptionalInt(network.stations)
         case .streams: return formatOptionalInt(network.streams)
@@ -150,6 +152,8 @@ struct NetworkColumnFormatter {
             return first.signal < second.signal
         case .snr:
             return compareOptional(first.snr, second.snr)
+        case .ssidOverhead:
+            return compareOptional(first.ssidOverheadPercent, second.ssidOverheadPercent)
         case .stations:
             return compareOptional(first.stations, second.stations)
         case .streams:
@@ -168,6 +172,22 @@ struct NetworkColumnFormatter {
         case .wideChannel:
             return (first.channelWidthMHz >= 80 ? 1 : 0) < (second.channelWidthMHz >= 80 ? 1 : 0)
         }
+    }
+
+    // MARK: - Seen time
+
+    /// Relative time for anything younger than a day ("5 minutes ago"), an
+    /// absolute date-time otherwise. `locale` is injectable for tests.
+    static func formatSeen(_ date: Date?, now: Date = Date(), locale: Locale = .current) -> String {
+        guard let date else { return "-" }
+        let age = now.timeIntervalSince(date)
+        guard age >= 0, age < relativeSeenCutoff else {
+            return absoluteDateFormatter.string(from: date)
+        }
+        seenLock.lock()
+        defer { seenLock.unlock() }
+        relativeSeenFormatter.locale = locale
+        return relativeSeenFormatter.localizedString(for: date, relativeTo: now)
     }
 
     // MARK: - Signal formatting
@@ -256,11 +276,6 @@ struct NetworkColumnFormatter {
         return value ? "Yes" : "No"
     }
 
-    private func formatDate(_ date: Date?) -> String {
-        guard let date else { return "-" }
-        return Self.dateFormatter.string(from: date)
-    }
-
     private func formatDuration(seconds: Int) -> String {
         let hours = seconds / 3600
         let minutes = (seconds % 3600) / 60
@@ -274,7 +289,14 @@ struct NetworkColumnFormatter {
         return "\(secs)s"
     }
 
-    private static let dateFormatter: DateFormatter = {
+    static let relativeSeenCutoff: TimeInterval = 24 * 60 * 60
+    private static let seenLock = NSLock()
+    private static let relativeSeenFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter
+    }()
+    private static let absoluteDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .medium

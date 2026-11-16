@@ -57,8 +57,31 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Models/Survey.swift` / `ViewModels/SurveyViewModel.swift` — floor-plan survey
   and heatmap samples.
 - `Services/UpdaterController.swift` — Sparkle 2 update controller.
+- `Models/ThroughputSample.swift` / `Services/ThroughputSampler.swift` /
+  `ViewModels/MenuBarMeterModel.swift` / `Views/MenuBarSparkline.swift` — the
+  menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
+  counter reader, the 60-sample rolling model (2 s active, 30 s background) and
+  the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/TablePresentation.swift` — table density presets, the signal/quality
+  bar values and header decoration, all pure and tested. In-cell visuals are
+  allowed in the Signal and Quality columns only, beside the number; every other
+  column stays text-only (see the presentation rules in the gap analysis).
 - `Services/NetworkColumnFormatter.swift` — pure cell text and sort comparison
   for every column, so the whole catalog can be tested without a UI.
+- `Models/RoamingTest.swift` — 802.11k/v/r capability detection from IEs and
+  `fastTransition`, BSSID transitions from monitor samples, and sticky-client /
+  band-steering verdicts. See `Views/Toolkit/RoamingTestToolView.swift`.
+- `Models/KnownNetwork.swift` — `networksetup` output parser and the `WIFI:`
+  QR payload with spec escaping. `Services/KnownNetworksService.swift` shells
+  out read-only; LanFi never reads saved Wi-Fi passwords.
+- `Models/LinkTelemetry.swift` / `ViewModels/ConnectedLinkMonitor.swift` /
+  `Views/WiFiWorkspace/LinkInspectorSection.swift` — 5 s link sampling and the
+  inspector's Link block. NSS is a beacon capability, not a live measurement.
+- `Models/CombinedReport.swift` / `Services/CombinedReportExporter.swift` — the
+  pure combined-report value and its self-contained HTML renderer; exported
+  from the Data menu.
+- `Services/LanFiIntents.swift` — App Intents (scan, connected network, speed
+  test) and Shortcut phrases.
 - `Services/NetworkAnalyzer.swift` — pure scoring/analysis:
   - 0–100 quality score from signal, SNR, congestion, utilization, security;
   - spectral-overlap fractions from primary channel + width;
@@ -74,6 +97,10 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Views/MainTableView.swift` — the Wi-Fi workspace: toolbar, top-row
   filter bar, split panes, inspector, permission onboarding, status bar,
   bottom-panel tabs. It is embedded in the toolkit (`embedded: true`).
+  `Models/WorkspacePlaceholder.swift` decides what an empty workspace says;
+  `Views/WiFiWorkspace/FirstRunView.swift` is the one-time onboarding sheet.
+- `Models/VisibilityAdvice.swift` — plain-language PSC/DFS/hidden-SSID hints used
+  by the inspector and the empty workspace.
 - `Views/FilterBarView.swift` — band chips, signal threshold, sort, grouping,
   saved rules and quick filters in the window's top row.
 - `Views/InsightsView.swift` — summary cards, channel recommendations, grouped
@@ -84,7 +111,17 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `ViewModels/DiagnosticsViewModel.swift` — diagnostics run/monitor state.
 - `ViewModels/SurveyViewModel.swift` — survey project and floor-plan state.
 - `Views/SpectrumView.swift` — per-band Canvas spectrum with hit testing.
-- `Views/SignalHistoryView.swift` — Swift Charts signal history with cursor.
+- `Models/RFOverviewLayout.swift` / `Views/RFOverviewView.swift` — all-band RF
+  overview: pure MHz geometry (spans, overlap regions, recommended-channel
+  marker) tested in `Tests/RFOverviewLayoutTests.swift`, drawn as three band
+  panels with click-to-select.
+- `Views/DesignSystem.swift` — `DesignToken` (spacing/radius/stroke),
+  `AppPalette` (semantic and band colours) and the shared `AppCard`,
+  `SectionLabel`, `StatusPill`, `StatTile` and `BandChip`. New screens use
+  these instead of literal radii and tints.
+- `Views/SignalHistoryView.swift` — Swift Charts signal history with cursor and a
+  signal / noise / both mode. `Views/ChartStyle.swift` holds the shared axis,
+  grid, cursor and tooltip tokens for every Swift Charts surface.
 - `Views/RawDataView.swift` — expandable IE table.
 - `Models/ToolboxTool.swift` — toolkit catalogue and sidebar sections.
 - `Models/ToolkitModels.swift` — probe value types, DNS records, verdicts.
@@ -139,14 +176,20 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `LanFi.filterBand24|filterBand5|filterBand6` — band filters.
 - `LanFi.minSignal`, `LanFi.removeAfter` — signal threshold and expiry.
 - `LanFi.signalUnit`, `LanFi.highlightConnected` — display options.
+- `LanFi.menuBar.metric|style|unit` — menu-bar meter metric, label style and
+  throughput unit (mirrored from `AppSettings.menuBar`).
+- `LanFi.historyChart.mode` — signal / noise / both for the history chart.
+- `LanFi.hasCompletedFirstRun` — the first-run screen is shown once.
+- `LanFi.settings.section` — the last selected sidebar section in Settings.
 - `LanFi.sortKey`, `LanFi.sortAscending` — table sort.
 - `LanFi.showInspector`, `LanFi.bottomTab` — layout
 - `LanFi.toolkit.selection`, `LanFi.toolkit.sidebarWidth` — toolkit selection
   and sidebar width.
 - `LanFi.inspectorWidth`, `LanFi.bottomPanelHeight` — analyzer panel geometry.
   (`0` Overview, `1` Profile, `3` Raw Data, `4` Spectrum, `5` History,
-  `7` Capture; `2` Interfaces and `6` Diagnostics were retired into the
-  Network Toolkit and are migrated to Overview).
+  `7` Capture, `8` Monitor, `9` All Bands; `2` Interfaces and `6` Diagnostics
+  were retired into the Network Toolkit and are migrated to Overview).
+  Fresh installs default to `9`; stored values are never rewritten.
 - `LanFi.groupMode` — none/SSID/band/vendor/security grouping.
 - `LanFi.speedTestSchedule`, `LanFi.lanGuardEnabled` — toolkit schedules/guard.
 - `speed-tests.json`, `uptime.json`, `lan-guard.json` live under

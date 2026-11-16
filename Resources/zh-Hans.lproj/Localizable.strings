@@ -1268,3 +1268,13 @@
 "LanFi Help" = "LanFi 帮助";
 "Model" = "型号";
 "Inactive interfaces (%lld)" = "未启用的接口（%lld）";
+
+/* All-band RF overview */
+"All Bands" = "所有频段";
+"Best channel" = "最佳信道";
+"Overlapping airtime" = "重叠占用";
+"Network width" = "网络宽度";
+"No networks in this band" = "此频段内没有网络";
+"Busiest channel" = "最繁忙的信道";
+"Strongest signal" = "最强信号";
+"No overlap" = "无重叠";

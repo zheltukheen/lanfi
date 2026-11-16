@@ -459,10 +459,13 @@ struct InsightsView: View {
                 }
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
-                        AxisGridLine()
+                        AxisGridLine(stroke: ChartStyle.gridStroke)
+                            .foregroundStyle(ChartStyle.gridColor)
                         AxisValueLabel {
                             if let count = value.as(Int.self) {
-                                Text("\(count)").font(.caption2)
+                                Text("\(count)")
+                                    .font(ChartStyle.axisLabelFont)
+                                    .foregroundColor(ChartStyle.axisLabelColor)
                             }
                         }
                     }

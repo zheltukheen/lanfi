@@ -35,6 +35,19 @@ struct MainTableView: View {
         max(150, min(600, CGFloat(storedBottomPanelHeight) - bottomPanelDragOffset))
     }
 
+    /// What the workspace should say instead of an empty table.
+    private var placeholder: WorkspacePlaceholder {
+        WorkspacePlaceholderEvaluator.evaluate(
+            scanHealth: viewModel.scanHealth,
+            visibleCount: viewModel.networks.count,
+            totalCount: viewModel.totalNetworkCount,
+            hasActiveFilters: viewModel.hasActiveFilters,
+            lastScan: viewModel.lastScanDate,
+            isSessionLoaded: viewModel.loadedSession != nil,
+            scanInterval: viewModel.refreshInterval
+        )
+    }
+
     var body: some View {
         VStack(spacing: 0) {
 
@@ -61,6 +74,10 @@ struct MainTableView: View {
                                 ErrorBanner(message: err, onClose: { viewModel.errorMessage = nil })
                             }
 
+                            if viewModel.scanHealth.requiresBanner {
+                                ScanHealthBanner(viewModel: viewModel, health: viewModel.scanHealth)
+                            }
+
                             if let session = viewModel.loadedSession {
                                 HStack(spacing: 8) {
                                     Label("Session: \(session.displayName)", systemImage: "clock.arrow.circlepath")
@@ -80,14 +97,25 @@ struct MainTableView: View {
                                     if !viewModel.isLocationAuthorized {
                                         CompactPermissionBanner(viewModel: viewModel)
                                     }
+                                    if case .staleData = placeholder, !viewModel.networks.isEmpty {
+                                        StaleDataBanner(
+                                            lastScan: viewModel.lastScanDate,
+                                            onRefresh: { viewModel.refresh() })
+                                    }
                                     ZStack {
                                         WiFiTableView(viewModel: viewModel)
                                             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                                        if viewModel.networks.isEmpty && viewModel.errorMessage == nil {
+                                        if viewModel.networks.isEmpty {
                                             EmptyScanView(
-                                                hasNetworks: viewModel.totalNetworkCount > 0,
-                                                hasActiveFilters: viewModel.hasActiveFilters,
+                                                placeholder: placeholder,
+                                                onRefresh: { viewModel.refresh() },
+                                                onAllowLocation: {
+                                                    viewModel.requestLocationAuthorization()
+                                                },
+                                                onOpenSettings: {
+                                                    viewModel.openSystemLocationSettings()
+                                                },
                                                 onClearFilters: { viewModel.clearAllFilters() }
                                             )
                                         }
@@ -179,6 +207,7 @@ struct MainTableView: View {
                             case 5: SignalHistoryView(viewModel: viewModel)
                             case 7: LiveCaptureView(viewModel: viewModel, embedded: true)
                             case 8: MonitorView(monitor: viewModel.monitor)
+                            case 9: RFOverviewView(viewModel: viewModel)
                             default: InsightsView(viewModel: viewModel)
                             }
                         }

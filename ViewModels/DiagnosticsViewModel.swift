@@ -35,6 +35,25 @@ final class DiagnosticsViewModel: ObservableObject {
         return "\(report.summary) · \(Int(report.duration * 1000)) ms"
     }
 
+    /// Public round-trip latency from the last run, for the menu-bar meter.
+    var publicLatencyMilliseconds: Int? {
+        guard
+            let check = report?.checks.first(where: {
+                $0.id == "latency" || $0.title == "Public latency"
+            })
+        else { return nil }
+        let value = check.value.replacingOccurrences(of: " ms", with: "")
+        return Double(value).map { Int($0.rounded()) }
+    }
+
+    /// Round-trip checks shown as a compact latency strip in the popover.
+    var latencyChecks: [DiagnosticCheck] {
+        guard let report else { return [] }
+        return report.checks.filter {
+            $0.category == .performance || ($0.category == .dns && $0.value.contains("ms"))
+        }
+    }
+
     func run() async {
         guard !isRunning else { return }
         isRunning = true

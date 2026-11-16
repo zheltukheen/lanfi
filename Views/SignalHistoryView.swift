@@ -13,8 +13,13 @@ struct SignalHistoryView: View {
     @State private var hoverLocation: CGPoint? = nil
     @State private var hoverIndex: Int? = nil
     @State private var zoom = 1.0
+    @AppStorage("LanFi.historyChart.mode") private var chartModeRaw = HistoryChartMode.signal.rawValue
     @Environment(\.openWindow) private var openWindow
     var isFullScreen = false
+
+    private var chartMode: HistoryChartMode {
+        HistoryChartMode(rawValue: chartModeRaw) ?? .signal
+    }
 
     // Константы масштаба
     private let minDbm: Double = -100
@@ -22,6 +27,8 @@ struct SignalHistoryView: View {
 
     var body: some View {
         let isPercent = viewModel.signalDisplayMode == .percent
+        // Noise has no percent representation, so percent mode stays signal-only.
+        let mode: HistoryChartMode = isPercent ? .signal : chartMode
 
         // 1. Вычисляем пределы по оси X
         let chartNetworks = viewModel.chartNetworks
@@ -34,7 +41,12 @@ struct SignalHistoryView: View {
         let visibleSpan = max(2, Int(Double(xDomainMax) / max(zoom, 1)))
         let xDomainMin = max(0, xDomainMax - visibleSpan)
 
-        let observed = chartNetworks.flatMap { viewModel.signalHistory[$0.id] ?? [] }
+        let signalObserved = chartNetworks.flatMap { viewModel.signalHistory[$0.id] ?? [] }
+        let noiseObserved =
+            mode.showsNoise
+            ? chartNetworks.flatMap { (viewModel.noiseHistory[$0.id] ?? []).compactMap { $0 } }
+            : []
+        let observed = signalObserved + noiseObserved
         let observedMin = observed.min() ?? Int(minDbm)
         let observedMax = observed.max() ?? Int(maxDbm)
         let span = max(12, observedMax - observedMin)
@@ -69,6 +81,27 @@ struct SignalHistoryView: View {
                             isSelected: isSelected,
                             interpolation: .stepEnd
                         )
+                    }
+
+                    // Noise floor for the same samples: dashed and dimmed so it
+                    // never competes with the signal trace.
+                    if mode.showsNoise,
+                        let noise = viewModel.noiseHistory[network.id], !noise.isEmpty
+                    {
+                        ForEach(Array(noise.enumerated()), id: \.offset) { index, value in
+                            if let value {
+                                LineMark(
+                                    x: .value("Time", index),
+                                    y: .value("Noise", Double(value)),
+                                    series: .value("ID", "noise-\(network.id)")
+                                )
+                                .foregroundStyle(
+                                    ChartStyle.noiseColor.opacity(ChartStyle.noiseOpacity)
+                                )
+                                .lineStyle(ChartStyle.noiseStroke)
+                                .interpolationMethod(.stepEnd)
+                            }
+                        }
                     }
 
                     // Рисуем подпись жестко справа
@@ -107,21 +140,23 @@ struct SignalHistoryView: View {
         .chartYAxis {
             if isPercent {
                 AxisMarks(position: .leading, values: [0, 25, 50, 75, 100]) { value in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4, 4])).foregroundStyle(
-                        Color.gray.opacity(0.3))
+                    AxisGridLine(stroke: ChartStyle.gridStroke).foregroundStyle(ChartStyle.gridColor)
                     AxisValueLabel {
                         if let intValue = value.as(Int.self) {
-                            Text("\(intValue)%").font(.caption2).foregroundColor(.secondary)
+                            Text("\(intValue)%")
+                                .font(ChartStyle.axisLabelFont)
+                                .foregroundColor(ChartStyle.axisLabelColor)
                         }
                     }
                 }
             } else {
                 AxisMarks(position: .leading, values: .automatic(desiredCount: 6)) { value in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4, 4])).foregroundStyle(
-                        Color.gray.opacity(0.3))
+                    AxisGridLine(stroke: ChartStyle.gridStroke).foregroundStyle(ChartStyle.gridColor)
                     AxisValueLabel {
                         if let doubleValue = value.as(Double.self) {
-                            Text("\(Int(doubleValue)) dBm").font(.caption2).foregroundColor(.secondary)
+                            Text("\(Int(doubleValue)) dBm")
+                                .font(ChartStyle.axisLabelFont)
+                                .foregroundColor(ChartStyle.axisLabelColor)
                         }
                     }
                 }
@@ -163,6 +198,24 @@ struct SignalHistoryView: View {
         .padding(.trailing, 16)
         .overlay(alignment: .topTrailing) {
             HStack(spacing: 6) {
+                Picker("History mode", selection: $chartModeRaw) {
+                    ForEach(HistoryChartMode.allCases) { item in
+                        Text(item.title).tag(item.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 148)
+                .disabled(isPercent)
+                .help(
+                    isPercent
+                        ? "Noise is only available in dBm mode"
+                        : "Show signal, noise or both")
+                if mode == .both {
+                    Text("solid signal · dashed noise")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
                 Button {
                     zoom = min(8, zoom * 1.5)
                 } label: {
@@ -198,14 +251,25 @@ struct SignalHistoryView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityChartDescriptor(
             SignalHistoryDescriptor(
-                series: chartNetworks.compactMap { network in
-                    guard let history = viewModel.signalHistory[network.id], !history.isEmpty else { return nil }
-                    return SignalSeries(
-                        name: network.displayName,
-                        values: history.map {
-                            isPercent ? viewModel.convertToPercent($0) : Double($0)
+                series: chartNetworks.flatMap { network -> [SignalSeries] in
+                    guard let history = viewModel.signalHistory[network.id], !history.isEmpty
+                    else { return [] }
+                    var series = [
+                        SignalSeries(
+                            name: network.displayName,
+                            values: history.map {
+                                isPercent ? viewModel.convertToPercent($0) : Double($0)
+                            }
+                        )
+                    ]
+                    if mode.showsNoise, let noise = viewModel.noiseHistory[network.id] {
+                        let values = noise.compactMap { $0 }.map(Double.init)
+                        if !values.isEmpty {
+                            series.append(
+                                SignalSeries(name: "\(network.displayName) noise", values: values))
                         }
-                    )
+                    }
+                    return series
                 },
                 isPercent: isPercent,
                 maxPoints: maxDataPoints,
@@ -235,16 +299,14 @@ struct SignalHistoryView: View {
     private func cursorOverlay(isPercent: Bool, maxDataPoints: Int) -> some ChartContent {
         if let idx = hoverIndex {
             RuleMark(x: .value("Cursor", idx))
-                .foregroundStyle(Color.primary.opacity(0.35))
-                .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
+                .foregroundStyle(ChartStyle.cursorColor)
+                .lineStyle(ChartStyle.cursorStroke)
                 .annotation(position: .top, alignment: .center) {
                     let secondsAgo = Int((Double(maxDataPoints - 1 - idx) * viewModel.refreshInterval).rounded())
                     Text(formatTimeAgo(seconds: secondsAgo))
-                        .font(.caption2)
-                        .padding(4)
-                        .background(Color(nsColor: .controlBackgroundColor))
-                        .cornerRadius(4)
+                        .font(ChartStyle.axisLabelFont)
                         .foregroundColor(.primary)
+                        .chartTooltipSurface()
                 }
 
             if let selectedId = viewModel.selectedNetworkId,
@@ -254,8 +316,12 @@ struct SignalHistoryView: View {
 
                 let signal = history[idx]
                 let val = isPercent ? viewModel.convertToPercent(signal) : Double(signal)
-                let label = isPercent ? "\(Int(val))%" : "\(signal) dBm"
                 let color = viewModel.colorFor(networkId: selectedId)
+                let noise: Int? = {
+                    guard let samples = viewModel.noiseHistory[selectedId], idx < samples.count
+                    else { return nil }
+                    return samples[idx]
+                }()
 
                 PointMark(
                     x: .value("Cursor", idx),
@@ -268,13 +334,18 @@ struct SignalHistoryView: View {
                         .overlay(Circle().stroke(.white, lineWidth: 1))
                 }
                 .annotation(position: .topLeading, spacing: 0) {
-                    Text(label)
-                        .font(.caption2.bold())
-                        .padding(4)
-                        .background(color)
-                        .cornerRadius(4)
-                        .foregroundColor(.white)
-                        .offset(x: -10, y: -10)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(isPercent ? "\(Int(val))%" : "\(signal) dBm")
+                            .font(ChartStyle.axisLabelFont.bold())
+                            .foregroundStyle(color)
+                        if let noise {
+                            Text("\(noise) dBm noise")
+                                .font(ChartStyle.axisLabelFont)
+                                .foregroundStyle(ChartStyle.noiseColor)
+                        }
+                    }
+                    .chartTooltipSurface(tint: color)
+                    .offset(x: -10, y: -10)
                 }
             }
         }

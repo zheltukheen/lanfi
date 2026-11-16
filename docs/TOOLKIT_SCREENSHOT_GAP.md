@@ -44,5 +44,7 @@ already at parity, what is missing, and the order in which the gaps are closed._
    iperf3 control layout done; Internet Check Quick/Full, Uptime mail targets
    and the final Russian cross-screen audit are done.
 
-Phases 1–3 are shipped. Phase 4 and the final design pass remain.
+Phases 1–3 are shipped. Phase 4 remains, and the cross-screen design pass is
+tracked as the D-series in
+[`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md).
 Each phase gets tests for its pure logic, a screenshot check and a commit.

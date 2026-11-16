@@ -102,6 +102,12 @@ enum ToolRegistry {
             tool: .wifiAnalyzer, title: String(localized: "Wi-Fi Analyzer"),
             icon: "wifi", section: .wifi),
         ToolDescriptor(
+            tool: .roamingTest, title: String(localized: "Roaming Test"),
+            icon: "arrow.triangle.2.circlepath", section: .wifi),
+        ToolDescriptor(
+            tool: .knownNetworks, title: String(localized: "Known Networks"),
+            icon: "wifi.router", section: .wifi),
+        ToolDescriptor(
             tool: .siteSurvey, title: String(localized: "Site Survey"),
             icon: "map", section: .wifi),
     ]

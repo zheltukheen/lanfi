@@ -56,6 +56,8 @@ struct NetworkInspectorView: View {
 
                         Divider()
 
+                        LinkInspectorSection(network: network)
+
                         // Quality, issues, history and utilization
                         if let metrics = viewModel.metrics(for: network) {
                             IssuesInspectorSection(network: network, metrics: metrics)
@@ -72,6 +74,14 @@ struct NetworkInspectorView: View {
                             ClientsInspectorSection(network: network)
                             MLOInspectorSection(network: network)
                             RegulatoryInspectorSection(network: network)
+                            VisibilityInspectorSection(network: network)
+                            CoLocatedRadiosInspectorSection(
+                                network: network,
+                                siblings: viewModel.coLocatedSiblings(for: network),
+                                onSelect: { sibling in
+                                    viewModel.selectedNetworkId = sibling.id
+                                }
+                            )
                             OtherRadiosInspectorSection()
                         }
 
@@ -181,6 +191,11 @@ struct NetworkInspectorView: View {
                                 }
                                 if let snr = network.snr {
                                     DetailRow(label: "SNR", value: "\(snr) dB")
+                                }
+                                if let overhead = network.ssidOverheadPercent {
+                                    DetailRow(
+                                        label: "SSID overhead",
+                                        value: String(format: "%.1f%% of airtime", overhead))
                                 }
 
                                 // Безопасное разворачивание

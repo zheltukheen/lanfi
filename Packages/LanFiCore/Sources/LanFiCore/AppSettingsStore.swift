@@ -84,6 +84,21 @@ public final class AppSettingsStore {
             defaults.object(forKey: "LanFi.scanOnLaunch") as? Bool ?? true
         let interval = defaults.double(forKey: "RefreshIntervalSeconds")
         if interval >= 0.5 { migrated.refreshInterval = interval }
+        if let rawMetric = defaults.string(forKey: "LanFi.menuBar.metric"),
+            let metric = AppSettings.MenuBarMeterSettings.Metric(rawValue: rawMetric)
+        {
+            migrated.menuBar.metric = metric
+        }
+        if let rawStyle = defaults.string(forKey: "LanFi.menuBar.style"),
+            let style = AppSettings.MenuBarMeterSettings.LabelStyle(rawValue: rawStyle)
+        {
+            migrated.menuBar.labelStyle = style
+        }
+        if let rawUnit = defaults.string(forKey: "LanFi.menuBar.unit"),
+            let unit = AppSettings.MenuBarMeterSettings.Unit(rawValue: rawUnit)
+        {
+            migrated.menuBar.unit = unit
+        }
         migrated.normalize()
         return migrated
     }
@@ -100,5 +115,8 @@ public final class AppSettingsStore {
         defaults.set(settings.toolbarExport, forKey: "LanFi.toolbar.export")
         defaults.set(settings.scanOnLaunch, forKey: "LanFi.scanOnLaunch")
         defaults.set(settings.refreshInterval, forKey: "RefreshIntervalSeconds")
+        defaults.set(settings.menuBar.metric.rawValue, forKey: "LanFi.menuBar.metric")
+        defaults.set(settings.menuBar.labelStyle.rawValue, forKey: "LanFi.menuBar.style")
+        defaults.set(settings.menuBar.unit.rawValue, forKey: "LanFi.menuBar.unit")
     }
 }

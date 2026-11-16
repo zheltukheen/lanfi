@@ -1268,3 +1268,13 @@
 "LanFi Help" = "LanFi-Hilfe";
 "Model" = "Modell";
 "Inactive interfaces (%lld)" = "Inaktive Schnittstellen (%lld)";
+
+/* All-band RF overview */
+"All Bands" = "Alle Bänder";
+"Best channel" = "Bester Kanal";
+"Overlapping airtime" = "Überlappende Sendezeit";
+"Network width" = "Netzwerkbreite";
+"No networks in this band" = "Keine Netzwerke in diesem Band";
+"Busiest channel" = "Am stärksten belegter Kanal";
+"Strongest signal" = "Stärkstes Signal";
+"No overlap" = "Keine Überlappung";

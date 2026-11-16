@@ -39,6 +39,13 @@ struct BottomPanelTabs: View {
 
             TabGroup("RF") {
                 TabButton(
+                    title: "All Bands",
+                    icon: "rectangle.split.3x1",
+                    isSelected: selectedTab == 9,
+                    action: { selectedTab = 9 }
+                )
+                Divider().frame(height: 18)
+                TabButton(
                     title: "Spectrum",
                     icon: "waveform.path.ecg",
                     isSelected: selectedTab == 4,

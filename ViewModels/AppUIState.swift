@@ -2,7 +2,9 @@ import Foundation
 
 final class AppUIState: ObservableObject {
     @Published var showInspector: Bool = true { didSet { store() } }
-    @Published var selectedBottomTab: Int = 0 { didSet { store() } }
+    /// Fresh installs open on the all-band RF overview; existing layouts keep
+    /// whatever bottom tab they stored.
+    @Published var selectedBottomTab: Int = 9 { didSet { store() } }
     @Published var customIntervalText: String = ""
     @Published var showingCustomIntervalAlert: Bool = false
 
@@ -20,14 +22,14 @@ final class AppUIState: ObservableObject {
         if layoutVersion < 4 {
             // 2.3: Overview, Spectrum, History, Profile, Interfaces, Raw, Diagnostics
             // 2.4: Overview, Profile, Interfaces, Raw, Spectrum, History, Diagnostics
-            let old =
-                defaults.object(forKey: "LanFi.bottomTab") != nil
-                ? defaults.integer(forKey: "LanFi.bottomTab")
-                : 0
-            let mapped = [0: 0, 1: 4, 2: 5, 3: 1, 4: 2, 5: 3, 6: 6][old] ?? 0
-            selectedBottomTab = mapped
+            // A fresh install has no stored tab and keeps the all-bands default.
+            if defaults.object(forKey: "LanFi.bottomTab") != nil {
+                let old = defaults.integer(forKey: "LanFi.bottomTab")
+                let mapped = [0: 0, 1: 4, 2: 5, 3: 1, 4: 2, 5: 3, 6: 6][old] ?? 0
+                selectedBottomTab = mapped
+                defaults.set(mapped, forKey: "LanFi.bottomTab")
+            }
             defaults.set(Self.tabLayoutVersion, forKey: "LanFi.tabLayoutVersion")
-            defaults.set(mapped, forKey: "LanFi.bottomTab")
         } else if defaults.object(forKey: "LanFi.bottomTab") != nil {
             selectedBottomTab = defaults.integer(forKey: "LanFi.bottomTab")
         }

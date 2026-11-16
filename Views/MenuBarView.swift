@@ -1,18 +1,24 @@
-import SwiftUI
 import AppKit
+import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var diagnostics: DiagnosticsViewModel
     @ObservedObject var uptime: UptimeMonitor
+    @ObservedObject var meter: MenuBarMeterModel
     @Environment(\.openWindow) private var openWindow
+    @AppStorage("LanFi.menuBar.unit") private var unitRaw = "bits"
+
+    private var unit: ThroughputFormatter.Unit {
+        unitRaw == "bytes" ? .bytes : .bits
+    }
 
     private var statusColor: Color {
         switch diagnostics.overall {
-        case .pass: return .green
-        case .warning: return .orange
-        case .fail: return .red
-        default: return .gray
+        case .pass: return AppPalette.ok
+        case .warning: return AppPalette.warning
+        case .fail: return AppPalette.danger
+        default: return AppPalette.muted
         }
     }
 
@@ -22,88 +28,26 @@ struct MenuBarView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if !viewModel.menuBarAlerts.isEmpty {
-                VStack(alignment: .leading, spacing: 5) {
-                    ForEach(viewModel.menuBarAlerts.prefix(3)) { alert in
-                        HStack(alignment: .top, spacing: 6) {
-                            Image(
-                                systemName: alert.severity == .critical
-                                    ? "exclamationmark.triangle.fill"
-                                    : alert.severity == .warning ? "exclamationmark.circle.fill" : "info.circle.fill"
-                            )
-                            .foregroundColor(
-                                alert.severity == .critical
-                                    ? .red : alert.severity == .warning ? .orange : .blue)
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(alert.title).font(.caption.bold())
-                                Text(alert.detail)
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(2)
-                            }
-                        }
-                    }
-                }
-                .padding(8)
-                .background(Color.orange.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+            alerts
 
             HStack(alignment: .firstTextBaseline) {
-                Text("LanFi")
-                    .font(.headline)
+                Text("LanFi").font(.headline)
                 Spacer()
                 Text("\(viewModel.networks.count) networks")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
 
-            if let connected {
-                HStack(spacing: 8) {
-                    Image(systemName: "wifi")
-                        .foregroundColor(.accentColor)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(connected.displaySSID)
-                            .font(.caption.bold())
-                            .lineLimit(1)
-                        Text("\(connected.signal) dBm · Ch \(connected.channel) · \(connected.bandLabel)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    Text("\(viewModel.metrics(for: connected)?.qualityScore ?? 0)")
-                        .font(.caption.bold())
-                        .foregroundColor(.green)
-                }
-                .padding(8)
-                .background(Color.secondary.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
-                Text("Not connected to a Wi-Fi network")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 7, height: 7)
-                Text("Diagnostics: \(diagnostics.overall.label)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Button("Run") {
-                    Task { await diagnostics.run() }
-                }
-                .controlSize(.mini)
-                .disabled(diagnostics.isRunning)
-            }
+            throughputCard
+            linkCard
+            latencyCard
+            publicIPRow
 
             if !uptime.targets.isEmpty {
                 HStack(spacing: 6) {
                     Circle()
-                        .fill(uptime.downCount > 0 ? Color.red : Color.green)
+                        .fill(uptime.downCount > 0 ? AppPalette.danger : AppPalette.ok)
                         .frame(width: 7, height: 7)
                     Text(
                         uptime.downCount > 0
@@ -114,10 +58,7 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
                     Spacer()
                     Button("Open") {
-                        NotificationCenter.default.post(
-                            name: .lanfiShowToolkit, object: nil,
-                            userInfo: ["tool": ToolboxTool.uptimeMonitor.rawValue])
-                        openWindow(id: "main")
+                        showTool(.uptimeMonitor)
                     }
                     .controlSize(.mini)
                 }
@@ -154,7 +95,207 @@ struct MenuBarView: View {
             }
             .keyboardShortcut("q")
         }
-        .padding(12)
-        .frame(width: 300)
+        .padding(DesignToken.Spacing.medium)
+        .frame(width: 320)
+        .onAppear { meter.start() }
+    }
+
+    // MARK: - Blocks
+
+    @ViewBuilder
+    private var alerts: some View {
+        if !viewModel.menuBarAlerts.isEmpty {
+            VStack(alignment: .leading, spacing: 5) {
+                ForEach(viewModel.menuBarAlerts.prefix(3)) { alert in
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(
+                            systemName: alert.severity == .critical
+                                ? "exclamationmark.triangle.fill"
+                                : alert.severity == .warning
+                                    ? "exclamationmark.circle.fill" : "info.circle.fill"
+                        )
+                        .foregroundColor(
+                            alert.severity == .critical
+                                ? AppPalette.danger
+                                : alert.severity == .warning ? AppPalette.warning : AppPalette.info)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(alert.title).font(.caption.bold())
+                            Text(alert.detail)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .lineLimit(2)
+                        }
+                    }
+                }
+            }
+            .padding(DesignToken.Spacing.small)
+            .background(
+                AppPalette.warning.opacity(0.08),
+                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        }
+    }
+
+    private var throughputCard: some View {
+        AppCard(padding: DesignToken.Spacing.small) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    SectionLabel(text: "Throughput")
+                    Spacer()
+                    if let primary = meter.primaryRate {
+                        Text(primary.interfaceName)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                MenuBarSparkline(values: meter.samples, tint: AppPalette.info)
+                    .frame(height: 28)
+                HStack(spacing: DesignToken.Spacing.medium) {
+                    StatTile(
+                        value: ThroughputFormatter.rate(
+                            meter.primaryRate?.receivedBytesPerSecond ?? 0, unit: unit),
+                        label: "Download", tint: AppPalette.ok)
+                    StatTile(
+                        value: ThroughputFormatter.rate(
+                            meter.primaryRate?.sentBytesPerSecond ?? 0, unit: unit),
+                        label: "Upload", tint: AppPalette.info)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var linkCard: some View {
+        if let connected {
+            AppCard(padding: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    Image(systemName: "wifi")
+                        .foregroundColor(AppPalette.band(connected.band))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(connected.displaySSID)
+                            .font(.caption.bold())
+                            .lineLimit(1)
+                        Text(
+                            "\(connected.bandLabel) · Ch \(connected.channel) · \(connected.channelWidthMHz) MHz · \(connected.maxRateLabel) Mbit/s"
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        Text("\(connected.signal) dBm · SNR \(connected.snrLabel)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(viewModel.metrics(for: connected)?.qualityScore ?? 0)")
+                            .font(.title3.weight(.semibold))
+                            .foregroundColor(
+                                AppPalette.quality(
+                                    viewModel.metrics(for: connected)?.qualityScore ?? 0))
+                        SectionLabel(text: "Quality")
+                    }
+                }
+            }
+        } else {
+            HStack(spacing: 6) {
+                Image(systemName: "wifi.slash").foregroundColor(.secondary)
+                Text("Not connected to a Wi-Fi network")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private var latencyCard: some View {
+        AppCard(padding: DesignToken.Spacing.small) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(statusColor)
+                        .frame(width: 7, height: 7)
+                    SectionLabel(text: "Diagnostics")
+                    Spacer()
+                    Text(diagnostics.overall.label)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Button("Run") {
+                        Task { await diagnostics.run() }
+                    }
+                    .controlSize(.mini)
+                    .disabled(diagnostics.isRunning)
+                }
+                if diagnostics.latencyChecks.isEmpty {
+                    Text("Run diagnostics to measure gateway and public latency.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(diagnostics.latencyChecks.prefix(3)) { check in
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(color(for: check.status))
+                                .frame(width: 5, height: 5)
+                            Text(check.title)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(check.value)
+                                .font(.caption2.monospacedDigit())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var publicIPRow: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Image(systemName: "globe")
+                    .foregroundColor(.secondary)
+                if let ip = meter.publicIP {
+                    Text(ip)
+                        .font(.caption.monospaced())
+                    if let country = meter.publicCountry, !country.isEmpty {
+                        Text(country)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                } else if meter.isLookingUpPublicIP {
+                    ProgressView().controlSize(.mini)
+                } else {
+                    Text("Public IP not checked")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Button(meter.publicIP == nil ? "Look up" : "Refresh") {
+                    meter.refreshPublicIP()
+                }
+                .controlSize(.mini)
+                .disabled(meter.isLookingUpPublicIP)
+            }
+            if let error = meter.publicIPError {
+                Text(error)
+                    .font(.caption2)
+                    .foregroundColor(AppPalette.danger)
+                    .lineLimit(2)
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func color(for status: DiagnosticStatus) -> Color {
+        switch status {
+        case .pass: return AppPalette.ok
+        case .warning: return AppPalette.warning
+        case .fail: return AppPalette.danger
+        default: return AppPalette.muted
+        }
+    }
+
+    private func showTool(_ tool: ToolboxTool) {
+        NotificationCenter.default.post(
+            name: .lanfiShowToolkit, object: nil,
+            userInfo: ["tool": tool.rawValue])
+        openWindow(id: "main")
     }
 }

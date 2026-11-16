@@ -42,6 +42,7 @@ enum ColumnId: String, CaseIterable, Codable {
     case security
     case seen
     case signal
+    case ssidOverhead
     case stations
     case streams
     case type
@@ -89,12 +90,113 @@ enum ColumnId: String, CaseIterable, Codable {
         case .security: return String(localized: "Security")
         case .seen: return String(localized: "Seen")
         case .signal: return String(localized: "Signal")
+        case .ssidOverhead: return String(localized: "SSID Overhead")
         case .stations: return String(localized: "Stations")
         case .streams: return String(localized: "Streams")
         case .type: return String(localized: "Type")
         case .uptime: return String(localized: "Uptime")
         case .vendor: return String(localized: "Vendor")
         case .wideChannel: return String(localized: "Wide Channel")
+        }
+    }
+
+    /// Identity columns name a row instead of describing it, so sorting by them
+    /// is meaningless and they never appear in the sort menu. The menu is built
+    /// from the visible table columns, not from a hand-maintained list.
+    var isSortableOption: Bool {
+        switch self {
+        case .networkName, .bssid, .apName, .annotations:
+            return false
+        default:
+            return true
+        }
+    }
+
+    /// Plain-language explanation for the column header tooltip. Domain terms
+    /// get a short definition so the table can stay compact.
+    var headerTip: String {
+        switch self {
+        case .amendments:
+            return String(
+                localized: "Wi-Fi generations the network supports: Wi-Fi 4 (802.11n) through Wi-Fi 7 (802.11be).")
+        case .beaconAirtime:
+            return String(
+                localized:
+                    "Share of airtime this network spends on beacons alone. Higher means more overhead for everyone.")
+        case .beaconInterval:
+            return String(
+                localized: "How often the network announces itself (target beacon transmission time), in milliseconds.")
+        case .beaconMode:
+            return String(localized: "Mode advertised inside the beacon, which can differ from the operating mode.")
+        case .beaconRate:
+            return String(localized: "Data rate used for Beacon frames, in Mbit/s.")
+        case .centerFrequency:
+            return String(
+                localized: "Centre frequency of the whole channel in MHz. Useful for wide 80/160 MHz channels.")
+        case .channelUtilization:
+            return String(localized: "BSS Load: the percentage of time the access point reports the channel as busy.")
+        case .channel:
+            return String(
+                localized:
+                    "Primary channel number. 5 GHz channels 52–144 are DFS: radar shares them, so they may be quieter but less predictable."
+            )
+        case .congestion:
+            return String(
+                localized: "LanFi's congestion estimate: nearby networks sharing the same channels, weighted by signal."
+            )
+        case .count:
+            return String(localized: "How many scans in this session have seen the network.")
+        case .fastTransition:
+            return String(
+                localized:
+                    "802.11r fast roaming. PMF (Protected Management Frames, 802.11w) is shown in Security and Annotations."
+            )
+        case .firstSeen:
+            return String(localized: "When this session first saw the network.")
+        case .generation:
+            return String(localized: "Highest Wi-Fi generation (PHY) the network advertises.")
+        case .ieCount:
+            return String(localized: "Number of information elements in the beacon or probe response.")
+        case .ieTotalLength:
+            return String(localized: "Total length of the advertised information elements in bytes.")
+        case .lastSeen:
+            return String(localized: "When the network was last heard. Relative under a day, absolute after that.")
+        case .protectionMode:
+            return String(
+                localized:
+                    "802.11 protection mode: how legacy and modern clients are kept from colliding (RTS/CTS or CTS-to-self)."
+            )
+        case .puncturing:
+            return String(
+                localized:
+                    "Punctured subchannels in a wide channel: the access point avoids the marked parts of the band.")
+        case .quality:
+            return String(
+                localized: "LanFi's 0–100 quality score from signal, noise, congestion, channel load and security.")
+        case .seen:
+            return String(localized: "Seconds since the network was last heard, refreshed on every scan.")
+        case .signal:
+            return String(
+                localized:
+                    "Received signal strength (RSSI) in dBm, or percent. Closer to 0 is stronger; −67 dBm is a good video call."
+            )
+        case .snr:
+            return String(localized: "Signal-to-noise ratio in dB: signal minus noise. 25 dB or more is healthy.")
+        case .ssidOverhead:
+            return String(
+                localized:
+                    "Airtime the SSID's beacons take from the channel. A dash means the network advertises no SSID.")
+        case .streams:
+            return String(
+                localized: "Spatial streams the access point advertises. More streams mean more theoretical throughput."
+            )
+        case .uptime:
+            return String(localized: "How long the network has been visible in this session.")
+        case .wideChannel:
+            return String(
+                localized: "Yes when the channel is 80 MHz or wider. Wide channels are faster but collide more.")
+        default:
+            return defaultTitle
         }
     }
 
@@ -118,6 +220,8 @@ enum ColumnId: String, CaseIterable, Codable {
             return 75
         case .centerFrequency, .countryCode, .fastTransition, .beaconMode, .beaconAirtime, .channelUtilization:
             return 110
+        case .ssidOverhead:
+            return 90
         case .firstSeen, .lastSeen, .uptime:
             return 130
         case .networkName:
@@ -141,7 +245,8 @@ enum ColumnId: String, CaseIterable, Codable {
         switch self {
         case .signal, .channel, .channelWidth, .count, .seen, .clients, .stations, .streams, .noise, .snr,
             .centerFrequency, .channelUtilization, .beaconInterval, .beaconRate, .beaconAirtime, .maxRate, .minRate,
-            .maxBasicRate, .minBasicRate, .ieCount, .ieTotalLength, .uptime, .quality, .congestion:
+            .maxBasicRate, .minBasicRate, .ieCount, .ieTotalLength, .uptime, .quality, .congestion,
+            .ssidOverhead:
             return .right
         case .wideChannel, .fastTransition:
             return .center
@@ -167,7 +272,8 @@ enum ColumnId: String, CaseIterable, Codable {
         .security, .vendor, .bssid, .generation, .maxRate, .mode, .snr, .noise,
         .seen, .lastSeen, .firstSeen, .uptime, .congestion, .channelUtilization,
         .clients, .stations, .streams, .countryCode, .fastTransition,
-        .protectionMode, .beaconInterval, .beaconRate, .beaconAirtime, .wideChannel,
+        .protectionMode, .beaconInterval, .beaconRate, .beaconAirtime, .ssidOverhead,
+        .wideChannel,
         .centerFrequency, .basicRates, .minRate, .minBasicRate,
         .maxBasicRate, .amendments, .annotations, .apName, .count, .ieCount,
         .ieTotalLength, .type, .beaconMode, .puncturing,
