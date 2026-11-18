@@ -62,20 +62,19 @@ final class VisualTracerouteToolModel: ObservableObject {
         task = Task { [weak self] in
             guard let self else { return }
             do {
-                try await self.stream(host: targetHost, maxHops: limit, probe: .icmp)
+                // Same runner and probe strategy as the plain Traceroute screen:
+                // one implementation, so both screens agree on a host.
+                let report = try await SystemTracerouteRunner().trace(
+                    host: targetHost, maxHops: limit, waitSeconds: 2, probes: 1,
+                    resolveNames: false)
                 if Task.isCancelled { return }
-
-                // ICMP replies (or the whole hop list) can be filtered; retry
-                // once with the classic UDP probes when nothing came back.
-                if self.hops.allSatisfy({ $0.hop.address == nil }) {
-                    self.phase = .retrying
-                    self.probe = .udp
-                    self.hops = []
-                    self.currentAddress = nil
-                    self.currentMilliseconds = nil
-                    try await self.stream(host: targetHost, maxHops: limit, probe: .udp)
+                self.hops = report.hops.map { VisualTracerouteHop(hop: $0, geo: nil) }
+                for hop in report.hops where hop.address != nil {
+                    guard let address = hop.address,
+                        VisualTracerouteFilter.isPublic(address)
+                    else { continue }
+                    self.locate(address: address, ttl: hop.ttl)
                 }
-                if Task.isCancelled { return }
                 self.phase = .idle
                 self.currentAddress = nil
                 self.currentMilliseconds = nil
@@ -87,23 +86,6 @@ final class VisualTracerouteToolModel: ObservableObject {
                 self.errorMessage = error.localizedDescription
                 self.phase = .idle
                 self.task = nil
-            }
-        }
-    }
-
-    private func stream(
-        host: String, maxHops: Int, probe: TracerouteProbe
-    ) async throws {
-        let stream = SystemTracerouteRunner().stream(
-            host: host, maxHops: maxHops, waitSeconds: 2, probes: 1,
-            resolveNames: false, probe: probe)
-        for try await hop in stream {
-            if Task.isCancelled { return }
-            hops.append(VisualTracerouteHop(hop: hop, geo: nil))
-            currentAddress = hop.address
-            currentMilliseconds = hop.averageMilliseconds
-            if let address = hop.address, VisualTracerouteFilter.isPublic(address) {
-                locate(address: address, ttl: hop.ttl)
             }
         }
     }
@@ -160,6 +142,22 @@ final class VisualTracerouteToolModel: ObservableObject {
         phase = .idle
         currentAddress = nil
         currentMilliseconds = nil
+    }
+
+    /// Plain-text route, identical in shape to the Traceroute screen's copy.
+    var copyText: String {
+        var lines = ["LanFi traceroute \(host)", ""]
+        for hop in hops {
+            let location = [hop.geo?.city, hop.geo?.country]
+                .compactMap { $0 }
+                .filter { !$0.isEmpty }
+                .joined(separator: ", ")
+            let latency = hop.hop.averageMilliseconds.map { String(format: "%.1f ms", $0) } ?? ""
+            lines.append(
+                "\(hop.id)\t\(hop.hop.address ?? "*")\t\(hop.hop.hostname ?? "")\t\(latency)\t\(location)"
+            )
+        }
+        return lines.joined(separator: "\n")
     }
 
     func clear() {

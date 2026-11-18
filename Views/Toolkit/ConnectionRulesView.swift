@@ -82,6 +82,7 @@ struct ConnectionRulesView: View {
             }
         }
         .appContentPadding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .sheet(item: $editor) { draft in
             BlockRuleEditorSheet(draft: draft) { rule in
                 rules.add(rule)

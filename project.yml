@@ -23,6 +23,78 @@ settings:
     CODE_SIGN_IDENTITY: "-"
     ENABLE_HARDENED_RUNTIME: YES
 
+targetTemplates:
+  SharedToolchainSources:
+    sources:
+      - path: Models/NetworkModel.swift
+      - path: Models/MCPToolSpec.swift
+      - path: Models/ProtocolProfile.swift
+      - path: Models/DiagnosticsModel.swift
+      - path: Models/SixGHzOperationInfo.swift
+      - path: Models/ReducedNeighborReport.swift
+      - path: Models/Survey.swift
+      - path: Models/SurveyGeo.swift
+      - path: Models/SurveyPlanning.swift
+      - path: Models/ClientAnalytics.swift
+      - path: Models/OpenConnections.swift
+      - path: Models/ConnectionRules.swift
+      - path: Models/ProcessTraffic.swift
+      - path: Models/SystemInterface.swift
+      - path: Models/CaptureSecurity.swift
+      - path: Models/HARTraffic.swift
+      - path: Models/HARRedaction.swift
+      - path: Models/HARExport.swift
+      - path: Services/HARTrafficAnalyzer.swift
+      - path: Models/SurveyAccessPoint.swift
+      - path: Models/MLOInfo.swift
+      - path: Models/MLOGroup.swift
+      - path: Models/ToolkitModels.swift
+      - path: Models/SubnetCalculator.swift
+      - path: Models/PortSpec.swift
+      - path: Services/Toolkit/DNSMessage.swift
+      - path: Services/Toolkit/PingService.swift
+      - path: Services/Toolkit/DNSClient.swift
+      - path: Services/Toolkit/PortScanner.swift
+      - path: Services/Toolkit/TLSCertificateInspector.swift
+      - path: Services/Toolkit/TracerouteParser.swift
+      - path: Services/Toolkit/TracerouteRunner.swift
+      - path: Models/MTRModels.swift
+      - path: Models/Iperf3Models.swift
+      - path: Models/NetworkRoute.swift
+      - path: Models/UptimeModels.swift
+      - path: Models/LANModels.swift
+      - path: Models/DNSPropagationModels.swift
+      - path: Services/Toolkit/ServiceBannerProbe.swift
+      - path: Models/WhoisModels.swift
+      - path: Models/GeoIPModels.swift
+      - path: Services/GeoIPClient.swift
+      - path: Services/WhoisClient.swift
+      - path: Services/UptimeStore.swift
+      - path: Services/Toolkit/MTRService.swift
+      - path: Models/DiagnosticsVerdict.swift
+      - path: Models/EHTPuncturing.swift
+      - path: Models/SpectrumSweep.swift
+      - path: Models/DeviceShelfModels.swift
+      - path: Services/DeviceShelfStore.swift
+      - path: Services/LocalNetworkAccess.swift
+      - path: Models/ThroughputReport.swift
+      - path: Services/SurveyInterpolator.swift
+      - path: Services/NetworkAnalyzer.swift
+      - path: Services/ProtocolAnalyzer.swift
+      - path: Services/DiagnosticsHistoryStore.swift
+      - path: Services/PcapAnalyzer.swift
+      - path: Services/PcapPacketIndex.swift
+      - path: Services/SystemInterfaceScanner.swift
+      - path: Services/InformationElementParser.swift
+      - path: Services/SpectrumCSVImporter.swift
+      - path: Utils/OUIParser.swift
+      - path: Utils/MCPPaths.swift
+      - path: Services/Toolkit/LANScannerService.swift
+      - path: Services/Toolkit/BonjourDiscovery.swift
+      - path: Services/DiagnosticsHistoryStore.swift
+      - path: Services/UptimeStore.swift
+
+
 targets:
   LanFi:
     type: application
@@ -110,9 +182,9 @@ targets:
     type: bundle.unit-test
     platform: macOS
     deploymentTarget: "14.0"
+    templates: [SharedToolchainSources]
     sources:
       - path: Tests
-      - path: Models/NetworkModel.swift
       - path: Models/RFOverviewLayout.swift
       - path: Models/SparklineGeometry.swift
       - path: Models/NetworkHistory.swift
@@ -121,7 +193,6 @@ targets:
       - path: Models/MonitorAlertSettings.swift
       - path: Models/ToolDescriptor.swift
       - path: Models/ToolRouting.swift
-      - path: Models/MCPToolSpec.swift
       - path: Models/ScanCadence.swift
       - path: Services/MonitorStore.swift
       - path: Models/ColumnCatalog.swift
@@ -130,8 +201,6 @@ targets:
       - path: Models/VisibilityAdvice.swift
       - path: Models/WorkspacePlaceholder.swift
       - path: Models/SignalDisplayMode.swift
-      - path: Models/ProtocolProfile.swift
-      - path: Models/DiagnosticsModel.swift
       - path: Models/NetworkAnnotation.swift
       - path: Models/ScanSession.swift
       - path: Models/NetworkGrouping.swift
@@ -142,18 +211,8 @@ targets:
       - path: Models/KnownNetwork.swift
       - path: Models/LinkTelemetry.swift
       - path: Models/CombinedReport.swift
-      - path: Models/SixGHzOperationInfo.swift
-      - path: Models/ReducedNeighborReport.swift
       - path: Models/SecurityWatch.swift
       - path: Services/CombinedReportExporter.swift
-      - path: Models/Survey.swift
-      - path: Models/SurveyGeo.swift
-      - path: Models/SurveyPlanning.swift
-      - path: Models/ClientAnalytics.swift
-      - path: Models/OpenConnections.swift
-      - path: Models/ConnectionRules.swift
-      - path: Models/ProcessTraffic.swift
-      - path: Models/SystemInterface.swift
       - path: Models/ColumnProfile.swift
       - path: Models/RemoteSensor.swift
       - path: Models/MenuBarAlert.swift
@@ -163,51 +222,14 @@ targets:
       - path: Models/ProximityBeacon.swift
       - path: Models/WorkspaceProfile.swift
       - path: Models/CaptureProfile.swift
-      - path: Models/CaptureSecurity.swift
-      - path: Models/HARTraffic.swift
-      - path: Models/HARRedaction.swift
-      - path: Models/HARExport.swift
-      - path: Services/HARTrafficAnalyzer.swift
       - path: Models/ExpressionColumn.swift
-      - path: Models/SurveyAccessPoint.swift
-      - path: Models/MLOInfo.swift
-      - path: Models/MLOGroup.swift
-      - path: Models/ToolkitModels.swift
-      - path: Models/SubnetCalculator.swift
-      - path: Models/PortSpec.swift
-      - path: Services/Toolkit/DNSMessage.swift
-      - path: Services/Toolkit/PingService.swift
-      - path: Services/Toolkit/DNSClient.swift
-      - path: Services/Toolkit/PortScanner.swift
-      - path: Services/Toolkit/TLSCertificateInspector.swift
-      - path: Services/Toolkit/TracerouteParser.swift
-      - path: Services/Toolkit/TracerouteRunner.swift
-      - path: Models/MTRModels.swift
       - path: Models/SpeedTestHistory.swift
-      - path: Models/Iperf3Models.swift
       - path: Models/Iperf3History.swift
-      - path: Models/NetworkRoute.swift
-      - path: Models/UptimeModels.swift
-      - path: Models/LANModels.swift
-      - path: Models/DNSPropagationModels.swift
       - path: Models/DNSMailModels.swift
       - path: Services/DNSMailLookupService.swift
-      - path: Services/Toolkit/ServiceBannerProbe.swift
-      - path: Models/WhoisModels.swift
-      - path: Models/GeoIPModels.swift
       - path: Models/VisualTracerouteModels.swift
-      - path: Services/GeoIPClient.swift
-      - path: Services/WhoisClient.swift
-      - path: Services/UptimeStore.swift
       - path: Services/UptimeMonitor.swift
-      - path: Services/Toolkit/MTRService.swift
-      - path: Models/DiagnosticsVerdict.swift
       - path: Models/ToolboxTool.swift
-      - path: Models/EHTPuncturing.swift
-      - path: Models/SpectrumSweep.swift
-      - path: Models/DeviceShelfModels.swift
-      - path: Services/DeviceShelfStore.swift
-      - path: Services/LocalNetworkAccess.swift
       - path: Services/WakeOnLAN.swift
       - path: Services/QRCodeImage.swift
       - path: Services/DeviceLabelPDF.swift
@@ -220,9 +242,7 @@ targets:
       - path: Models/ControllerAccount.swift
       - path: Services/ControllerService.swift
       - path: Services/ScanReportExporter.swift
-      - path: Models/ThroughputReport.swift
       - path: Models/ThroughputSample.swift
-      - path: Services/SurveyInterpolator.swift
       - path: Services/SurveyHeatmap.swift
       - path: Services/ScanCSVExporter.swift
       - path: Services/ScanJSONExporter.swift
@@ -230,33 +250,23 @@ targets:
       - path: Services/LiveCaptureService.swift
       - path: Services/RemoteSensorService.swift
       - path: Services/RemoteCaptureService.swift
-      - path: Services/NetworkAnalyzer.swift
-      - path: Services/ProtocolAnalyzer.swift
       - path: Services/DiagnosticsEngine.swift
-      - path: Services/DiagnosticsHistoryStore.swift
       - path: Services/DeepLink.swift
       - path: Services/TechnicalLocalizer.swift
       - path: Services/CrashLogger.swift
       - path: Services/OUIUpdater.swift
       - path: Services/DiagnosticsBundleExporter.swift
       - path: Services/PcapExporter.swift
-      - path: Services/PcapAnalyzer.swift
-      - path: Services/PcapPacketIndex.swift
       - path: Services/GenericScanImporter.swift
       - path: Services/HardwareInventory.swift
-      - path: Services/SystemInterfaceScanner.swift
       - path: Services/APNameDetector.swift
       - path: Services/NetworkColumnFormatter.swift
-      - path: Services/InformationElementParser.swift
       - path: Services/SecurityParser.swift
       - path: Services/SpectrumCapabilities.swift
       - path: Services/ScanHardwareProbe.swift
       - path: Services/RFExplorerProtocol.swift
-      - path: Services/SpectrumCSVImporter.swift
       - path: Services/HeatPalette.swift
-      - path: Utils/OUIParser.swift
       - path: Utils/DemoData.swift
-      - path: Utils/MCPPaths.swift
       - path: CLI/ScanExport.swift
       - path: CLI/MCPToolkit.swift
       - path: CLI/MCPToolkit+Arguments.swift
@@ -265,10 +275,6 @@ targets:
       - path: CLI/MCPToolkit+Scan.swift
       - path: CLI/MCPToolkit+ServiceTools.swift
       - path: CLI/MCPProtocol.swift
-      - path: Services/Toolkit/LANScannerService.swift
-      - path: Services/Toolkit/BonjourDiscovery.swift
-      - path: Services/DiagnosticsHistoryStore.swift
-      - path: Services/UptimeStore.swift
     dependencies:
       - package: LanFiCore
     settings:
@@ -281,74 +287,9 @@ targets:
     type: tool
     platform: macOS
     deploymentTarget: "13.0"
+    templates: [SharedToolchainSources]
     sources:
       - CLI
-      - Utils/MCPPaths.swift
-      - Utils/OUIParser.swift
-      - Models/NetworkModel.swift
-      - Models/MCPToolSpec.swift
-      - Models/ToolkitModels.swift
-      - Models/SubnetCalculator.swift
-      - Models/SpectrumSweep.swift
-      - Services/SpectrumCSVImporter.swift
-      - Models/DeviceShelfModels.swift
-      - Services/DeviceShelfStore.swift
-      - Services/LocalNetworkAccess.swift
-      - Models/PortSpec.swift
-      - Models/NetworkRoute.swift
-      - Models/SystemInterface.swift
-      - Models/UptimeModels.swift
-      - Models/WhoisModels.swift
-      - Models/GeoIPModels.swift
-      - Models/DNSPropagationModels.swift
-      - Models/LANModels.swift
-      - Models/MTRModels.swift
-      - Models/Iperf3Models.swift
-      - Models/ThroughputReport.swift
-      - Models/DiagnosticsModel.swift
-      - Models/DiagnosticsVerdict.swift
-      - Services/UptimeStore.swift
-      - Services/DiagnosticsHistoryStore.swift
-      - Services/SystemInterfaceScanner.swift
-      - Services/WhoisClient.swift
-      - Services/GeoIPClient.swift
-      - Services/Toolkit/DNSMessage.swift
-      - Services/Toolkit/DNSClient.swift
-      - Services/Toolkit/PingService.swift
-      - Services/Toolkit/TracerouteParser.swift
-      - Services/Toolkit/TracerouteRunner.swift
-      - Services/Toolkit/MTRService.swift
-      - Services/Toolkit/PortScanner.swift
-      - Services/Toolkit/TLSCertificateInspector.swift
-      - Services/Toolkit/ServiceBannerProbe.swift
-      - Services/Toolkit/LANScannerService.swift
-      - Services/Toolkit/BonjourDiscovery.swift
-      - Models/ProtocolProfile.swift
-      - Models/SixGHzOperationInfo.swift
-      - Models/ReducedNeighborReport.swift
-      - Services/PcapPacketIndex.swift
-      - Models/ClientAnalytics.swift
-      - Models/OpenConnections.swift
-      - Models/ProcessTraffic.swift
-      - Models/ConnectionRules.swift
-      - Models/Survey.swift
-      - Models/SurveyGeo.swift
-      - Models/SurveyAccessPoint.swift
-      - Models/SurveyPlanning.swift
-      - Services/SurveyInterpolator.swift
-      - Models/MLOInfo.swift
-      - Models/MLOGroup.swift
-      - Models/EHTPuncturing.swift
-      - Services/NetworkAnalyzer.swift
-      - Services/ProtocolAnalyzer.swift
-      - Services/PcapAnalyzer.swift
-      - Models/CaptureSecurity.swift
-      - Models/HARTraffic.swift
-      - Models/HARRedaction.swift
-      - Models/HARExport.swift
-      - Services/HARTrafficAnalyzer.swift
-      - Services/InformationElementParser.swift
-      - Utils/OUIParser.swift
     dependencies:
       - package: LanFiCore
     settings:

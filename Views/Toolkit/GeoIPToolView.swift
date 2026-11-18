@@ -41,10 +41,13 @@ struct GeoIPToolView: View {
     private var controls: some View {
         ToolkitCard {
             HStack(spacing: 10) {
-                TextField("IP address or hostname", text: $model.query)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 280)
-                    .onSubmit { model.run() }
+                ToolTargetField(
+                    text: $model.query, placeholder: "IP address or hostname",
+                    onSubmit: { model.run() }
+                )
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: 280)
+                .onSubmit { model.run() }
                 Button("Look Up") { model.run() }
                     .buttonStyle(.borderedProminent)
                     .disabled(model.isRunning)

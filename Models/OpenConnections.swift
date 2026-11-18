@@ -12,6 +12,12 @@ struct OpenConnection: Identifiable, Equatable {
     let state: String
 
     var isListening: Bool { state == "LISTEN" }
+
+    /// One tab-separated line, used by copy actions and context menus.
+    var contextText: String {
+        [process, String(pid), user, protocolName, local, remote, state]
+            .joined(separator: "\t")
+    }
     var remoteHost: String {
         guard let colon = remote.lastIndex(of: ":") else { return remote }
         return String(remote[..<colon])

@@ -62,9 +62,7 @@ struct SSLToolView: View {
     private var controls: some View {
         ToolkitCard {
             HStack(spacing: 10) {
-                TextField("Host", text: $model.host)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 260)
+                ToolTargetField(text: $model.host, onSubmit: { model.run() })
                 TextField("Port", text: $model.portText)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 70)

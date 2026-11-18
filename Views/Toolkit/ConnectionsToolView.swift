@@ -50,14 +50,17 @@ struct ConnectionsToolView: View {
 
             Divider()
 
-            switch tab {
-            case "traffic":
-                ProcessTrafficToolView(rules: rules)
-            case "rules":
-                ConnectionRulesView(rules: rules)
-            default:
-                OpenConnectionsToolView(rules: rules)
+            Group {
+                switch tab {
+                case "traffic":
+                    ProcessTrafficToolView(rules: rules)
+                case "rules":
+                    ConnectionRulesView(rules: rules)
+                default:
+                    OpenConnectionsToolView(rules: rules)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .onAppear {
             if toolkit.selection == .processTraffic { tab = "traffic" }

@@ -1,3 +1,4 @@
+import AppKit
 import MapKit
 import SwiftUI
 
@@ -26,10 +27,9 @@ struct VisualTracerouteToolView: View {
     private var controls: some View {
         ToolkitCard {
             HStack(spacing: 10) {
-                TextField("Host or IP address", text: $model.host)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 260)
-                    .onSubmit { model.run() }
+                ToolTargetField(
+                    text: $model.host, placeholder: "Host or IP address",
+                    onSubmit: { model.run() })
                 Stepper("Max hops: \(model.maxHops)", value: $model.maxHops, in: 1...40)
                     .font(.caption)
                 if model.isRunning {
@@ -39,6 +39,10 @@ struct VisualTracerouteToolView: View {
                     Button("Trace") { model.run() }
                         .buttonStyle(.borderedProminent)
                 }
+                Button("Copy") { copyRoute() }
+                    .buttonStyle(.bordered)
+                    .disabled(model.hops.isEmpty)
+                    .help("Copy the hop list as text")
                 Button("Clear") { model.clear() }
                     .buttonStyle(.borderless)
                     .disabled(model.hops.isEmpty)
@@ -335,6 +339,11 @@ struct VisualTracerouteToolView: View {
                 .fill(isCurrent ? Color.accentColor.opacity(0.12) : Color.clear)
         )
         .accessibilityElement(children: .combine)
+    }
+
+    private func copyRoute() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(model.copyText, forType: .string)
     }
 
     private func locationTitle(_ hop: VisualTracerouteHop) -> String {

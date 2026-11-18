@@ -3,6 +3,20 @@ import SwiftUI
 
 struct DNSToolView: View {
     @ObservedObject var model: DNSToolModel
+    @ObservedObject var propagation: DNSPropagationToolModel
+
+    private enum Section: String, CaseIterable, Identifiable {
+        case lookup, propagation
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .lookup: return String(localized: "Lookup")
+            case .propagation: return String(localized: "Propagation")
+            }
+        }
+    }
+
+    @State private var section: Section = .lookup
 
     private enum SortKey: String, CaseIterable, Identifiable {
         case type, name, ttl, priority, value
@@ -38,21 +52,56 @@ struct DNSToolView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                controls
-                if let error = model.errorMessage {
-                    ToolkitErrorBanner(message: error)
-                }
-                switch model.tab {
-                case .records:
-                    recordsContent
-                case .mail:
-                    mailContent
-                case .reports:
-                    reportsContent
+                sectionPicker
+                if section == .lookup {
+                    controls
+                    if let error = model.errorMessage {
+                        ToolkitErrorBanner(message: error)
+                    }
+                    switch model.tab {
+                    case .records:
+                        recordsContent
+                    case .mail:
+                        mailContent
+                    case .reports:
+                        reportsContent
+                    }
+                } else {
+                    DNSPropagationToolView(model: propagation, embedded: true)
                 }
             }
             .appContentPadding()
         }
+        .onAppear { syncPropagationHost() }
+        .onChange(of: model.host) { _ in syncPropagationHost() }
+        .onChange(of: propagation.host) { _ in
+            if section == .propagation, propagation.host != model.host {
+                model.host = propagation.host
+            }
+        }
+    }
+
+    private var sectionPicker: some View {
+        HStack(spacing: 10) {
+            Picker("Section", selection: $section) {
+                ForEach(Section.allCases) { item in
+                    Text(item.title).tag(item)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 220)
+            Text("One name, two questions: what does it resolve to now, and does every resolver agree?")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+            Spacer()
+        }
+    }
+
+    private func syncPropagationHost() {
+        guard !model.host.isEmpty, propagation.host != model.host else { return }
+        propagation.host = model.host
     }
 
     // MARK: - Controls
@@ -61,9 +110,8 @@ struct DNSToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("Domain", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 260)
+                    ToolTargetField(
+                        text: $model.host, placeholder: "Domain", onSubmit: { model.run() })
                     Picker("Mode", selection: $model.tab) {
                         ForEach(DNSLookupTab.allCases) { tab in
                             Text(tab.title).tag(tab)

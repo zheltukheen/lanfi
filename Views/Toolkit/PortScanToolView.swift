@@ -80,9 +80,8 @@ struct PortScanToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("Host", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 190)
+                    ToolTargetField(
+                        text: $model.host, maxWidth: 190, onSubmit: { model.run() })
                     TextField("21-23,80,443", text: $model.portSpec)
                         .textFieldStyle(.roundedBorder)
                         .frame(minWidth: 220, maxWidth: 380)

@@ -316,69 +316,41 @@ struct OpenConnectionsToolView: View {
     private var table: some View {
         Table(tableRows) {
             TableColumn("Process") { row in
-                switch row {
-                case .group(let group):
-                    HStack(spacing: 6) {
-                        Button {
-                            toggle(group.id)
-                        } label: {
-                            Image(
-                                systemName: expanded.contains(group.id)
-                                    ? "chevron.down" : "chevron.right"
-                            )
-                            .font(.caption2)
-                            .frame(width: 12)
-                        }
-                        .buttonStyle(.plain)
-                        Text(group.displayProcess)
-                            .font(.caption.weight(.medium))
-                        Text("\(group.connections.count)")
-                            .font(.caption2.monospacedDigit())
-                            .padding(.horizontal, 5)
-                            .background(Color.secondary.opacity(0.12), in: Capsule())
-                    }
-                case .connection(let connection):
-                    HStack(spacing: 5) {
-                        if !rules.rules.isEmpty,
-                            ConnectionBlockRuleMatcher.matches(connection, rules: rules.rules)
-                        {
-                            Image(systemName: "shield.fill")
-                                .font(.caption2)
-                                .foregroundColor(AppPalette.warning)
-                                .help("Matches a block rule")
-                        }
-                        Text(connection.process)
-                    }
-                    .padding(.leading, 18)
-                }
+                rowCell(row) { processCell(row) }
             }
             .width(min: 170, ideal: 230)
             TableColumn("PID") { row in
-                Text(pidLabel(row)).monospacedDigit()
-                    .foregroundColor(isGroup(row) ? .secondary : .primary)
+                rowCell(row) {
+                    Text(pidLabel(row)).monospacedDigit()
+                        .foregroundColor(isGroup(row) ? .secondary : .primary)
+                }
             }
             .width(AppColumnWidth.short)
             TableColumn("User") { row in
-                Text(primary(row)?.user ?? "—")
+                rowCell(row) { Text(primary(row)?.user ?? "—") }
             }
             .width(AppColumnWidth.compact)
             TableColumn("Proto") { row in
-                Text(primary(row)?.protocolName ?? "—")
+                rowCell(row) { Text(primary(row)?.protocolName ?? "—") }
             }
             .width(AppColumnWidth.short)
             TableColumn("Local") { row in
-                Text(isGroup(row) ? localLabel(row) : (primary(row)?.local ?? "—"))
-                    .monospaced()
+                rowCell(row) {
+                    Text(isGroup(row) ? localLabel(row) : (primary(row)?.local ?? "—"))
+                        .monospaced()
+                }
             }
             .width(AppColumnWidth.long)
             TableColumn("Remote") { row in
-                Text(remoteLabel(row))
-                    .monospaced()
-                    .foregroundColor(isGroup(row) ? .secondary : .primary)
+                rowCell(row) {
+                    Text(remoteLabel(row))
+                        .monospaced()
+                        .foregroundColor(isGroup(row) ? .secondary : .primary)
+                }
             }
             .width(AppColumnWidth.long)
             TableColumn("State") { row in
-                stateLabel(row)
+                rowCell(row) { stateLabel(row) }
             }
             .width(AppColumnWidth.compact)
             TableColumn("") { row in
@@ -393,11 +365,100 @@ struct OpenConnectionsToolView: View {
                     .help("Terminate the process owning this row")
                     blockMenu(row)
                 }
+                .contextMenu { rowMenu(row) }
             }
             .width(58)
         }
         .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
         .appTableSurface()
+    }
+
+    /// A whole-row click target: a group row expands from anywhere on the row,
+    /// not only from the disclosure chevron, and a right-click opens the menu
+    /// for that specific group or socket.
+    private func rowCell<Content: View>(
+        _ row: TableRow, @ViewBuilder _ content: () -> Content
+    ) -> some View {
+        content()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .onTapGesture { activate(row) }
+            .contextMenu { rowMenu(row) }
+    }
+
+    @ViewBuilder
+    private func processCell(_ row: TableRow) -> some View {
+        switch row {
+        case .group(let group):
+            HStack(spacing: 6) {
+                Button {
+                    toggle(group.id)
+                } label: {
+                    Image(
+                        systemName: expanded.contains(group.id)
+                            ? "chevron.down" : "chevron.right"
+                    )
+                    .font(.caption2)
+                    .frame(width: 12)
+                }
+                .buttonStyle(.plain)
+                Text(group.displayProcess)
+                    .font(.caption.weight(.medium))
+                Text("\(group.connections.count)")
+                    .font(.caption2.monospacedDigit())
+                    .padding(.horizontal, 5)
+                    .background(Color.secondary.opacity(0.12), in: Capsule())
+            }
+        case .connection(let connection):
+            HStack(spacing: 5) {
+                if !rules.rules.isEmpty,
+                    ConnectionBlockRuleMatcher.matches(connection, rules: rules.rules)
+                {
+                    Image(systemName: "shield.fill")
+                        .font(.caption2)
+                        .foregroundColor(AppPalette.warning)
+                        .help("Matches a block rule")
+                }
+                Text(connection.process)
+            }
+            .padding(.leading, 18)
+        }
+    }
+
+    @ViewBuilder
+    private func rowMenu(_ row: TableRow) -> some View {
+        switch row {
+        case .group(let group):
+            Button(expanded.contains(group.id) ? "Collapse group" : "Expand group") {
+                toggle(group.id)
+            }
+            Button("Copy group") {
+                let lines = [group.displayProcess, group.local, group.stateSummary]
+                copyToPasteboard(lines.joined(separator: "\t"))
+            }
+            Divider()
+            blockMenu(row)
+            Button("Terminate \(group.displayProcess)", role: .destructive) {
+                prepareKill(row)
+            }
+        case .connection(let connection):
+            Button("Copy socket") { copyToPasteboard(connection.contextText) }
+            Divider()
+            blockMenu(row)
+            Button("Terminate \(connection.process)", role: .destructive) {
+                prepareKill(row)
+            }
+        }
+    }
+
+    private func activate(_ row: TableRow) {
+        guard case .group(let group) = row else { return }
+        toggle(group.id)
+    }
+
+    private func copyToPasteboard(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 
     // MARK: Row helpers
@@ -568,7 +629,7 @@ enum SocketGroupMode: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .socket: return String(localized: "By socket")
-        case .process: return String(localized: "By process")
+        case .process: return String(localized: "By application")
         }
     }
 }

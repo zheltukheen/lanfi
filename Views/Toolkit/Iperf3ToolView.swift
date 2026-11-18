@@ -38,9 +38,9 @@ struct Iperf3ToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("Server", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 240)
+                    ToolTargetField(
+                        text: $model.host, placeholder: "Server", maxWidth: 240,
+                        onSubmit: { model.run() })
                     TextField("5201", text: $model.portText)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 70)

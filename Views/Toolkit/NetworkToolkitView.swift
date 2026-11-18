@@ -249,9 +249,7 @@ struct NetworkToolkitView: View {
         case .speedTest:
             SpeedTestToolView(model: toolkit.speedTest)
         case .dnsLookup:
-            DNSToolView(model: toolkit.dns)
-        case .dnsPropagation:
-            DNSPropagationToolView(model: toolkit.dnsPropagation)
+            DNSToolView(model: toolkit.dns, propagation: toolkit.dnsPropagation)
         case .whois:
             WhoisToolView(model: toolkit.whois)
         case .geoIP:

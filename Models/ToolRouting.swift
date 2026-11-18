@@ -16,7 +16,6 @@ enum ToolScreen: String, CaseIterable, Sendable {
     case speedTest
 
     case dnsLookup
-    case dnsPropagation
     case whois
     case geoIP
     case sslCertificate

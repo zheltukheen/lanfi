@@ -56,10 +56,13 @@ struct WhoisToolView: View {
     private var controls: some View {
         ToolkitCard {
             HStack(spacing: 10) {
-                TextField("example.com", text: $model.query)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 300)
-                    .onSubmit { model.run() }
+                ToolTargetField(
+                    text: $model.query, placeholder: "Domain or IP",
+                    onSubmit: { model.run() }
+                )
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: 300)
+                .onSubmit { model.run() }
                 Button("Look Up") { model.run() }
                     .buttonStyle(.borderedProminent)
                     .disabled(model.isRunning)
