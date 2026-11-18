@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 final class SurveyGeoTests: XCTestCase {
     private let sampleGPX = """
         <?xml version="1.0"?>

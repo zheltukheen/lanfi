@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 final class ConnectionRulesTests: XCTestCase {
     private func connection(
         process: String = "Safari", pid: Int = 42, user: String = "demo",

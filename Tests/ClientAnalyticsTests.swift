@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 final class ClientAnalyticsTests: XCTestCase {
     private func network(
         _ bssid: String, ssid: String = "Office", clients: Int? = nil, utilization: Int? = nil

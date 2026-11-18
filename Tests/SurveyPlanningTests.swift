@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 final class SurveyPlanningTests: XCTestCase {
     func testFreeSpaceRadiusNarrowsWithHigherTarget() {
         let easy = SurveyPlanRequest(widthMeters: 20, heightMeters: 12, targetRSSI: -75)
