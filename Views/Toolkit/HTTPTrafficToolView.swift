@@ -49,7 +49,7 @@ struct HTTPTrafficToolView: View {
                     .padding(.vertical, 40)
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -134,9 +134,55 @@ struct HTTPTrafficToolView: View {
 
     // MARK: - Requests
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case status, method, host, path, type, size, time
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .status: return String(localized: "Status")
+            case .method: return String(localized: "Method")
+            case .host: return String(localized: "Host")
+            case .path: return String(localized: "Path")
+            case .type: return String(localized: "Type")
+            case .size: return String(localized: "Size")
+            case .time: return String(localized: "Time")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .time
+    @State private var sortAscending = false
+
+    private func sortedEntries(_ rows: [HAREntry]) -> [HAREntry] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .status: return lhs.response.status < rhs.response.status
+            case .method:
+                return lhs.request.method.localizedStandardCompare(rhs.request.method)
+                    == .orderedAscending
+            case .host: return lhs.host.localizedStandardCompare(rhs.host) == .orderedAscending
+            case .path: return lhs.path.localizedStandardCompare(rhs.path) == .orderedAscending
+            case .type:
+                return lhs.response.mimeType.localizedStandardCompare(rhs.response.mimeType)
+                    == .orderedAscending
+            case .size: return lhs.sizeBytes < rhs.sizeBytes
+            case .time: return lhs.duration < rhs.duration
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     private var requestTable: some View {
         ToolkitCard(padding: 0) {
-            Table(model.entries, selection: $model.selectedEntryID) {
+            HStack {
+                TableSortControl(
+                    options: SortKey.allCases.map { ($0, $0.title) },
+                    selection: $sortKey, ascending: $sortAscending)
+                Spacer()
+            }
+            .padding(.horizontal, DesignToken.Spacing.card)
+            .padding(.top, DesignToken.Spacing.medium)
+            Table(sortedEntries(model.entries), selection: $model.selectedEntryID) {
                 TableColumn("Status") { entry in
                     Text(entry.statusLabel)
                         .font(.caption.monospaced())
@@ -157,7 +203,7 @@ struct HTTPTrafficToolView: View {
                 TableColumn("Type") { entry in
                     Text(entry.response.mimeType).lineLimit(1)
                 }
-                .width(130)
+                .width(AppColumnWidth.medium)
                 TableColumn("Size") { entry in
                     Text(HARTrafficAnalyzer.bytes(entry.sizeBytes))
                 }

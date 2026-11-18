@@ -25,7 +25,7 @@ struct CustomFiltersView: View {
                 Spacer()
                 Button("Close") { dismiss() }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
             Divider()
 
             HStack(spacing: 0) {
@@ -80,6 +80,7 @@ struct CustomFiltersView: View {
                     Image(systemName: "plus")
                 }
                 .help("New filter")
+                .accessibilityLabel("New filter")
                 Spacer()
                 if let selected, !selected.isBuiltIn {
                     Button(role: .destructive) {
@@ -94,7 +95,7 @@ struct CustomFiltersView: View {
                 }
             }
             .buttonStyle(.borderless)
-            .padding(8)
+            .padding(DesignToken.Spacing.small)
         }
     }
 
@@ -108,7 +109,7 @@ struct CustomFiltersView: View {
                         if filter.isBuiltIn {
                             Text("AUTOMATIC")
                                 .font(.system(size: 8, weight: .bold))
-                                .padding(.horizontal, 5)
+                                .padding(.horizontal, DesignToken.Spacing.tight)
                                 .padding(.vertical, 2)
                                 .background(Color.accentColor.opacity(0.12))
                                 .clipShape(Capsule())
@@ -161,7 +162,7 @@ struct CustomFiltersView: View {
                         }
                     }
                 }
-                .padding(16)
+                .padding(DesignToken.Spacing.large)
             }
         } else {
             VStack(spacing: 8) {
@@ -206,9 +207,9 @@ struct CustomFiltersView: View {
                         Spacer()
                     }
                 }
-                .padding(7)
+                .padding(DesignToken.Spacing.small)
                 .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 7))
+                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
             }
         }
     }

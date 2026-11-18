@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 import CoreWLAN
 
@@ -34,7 +35,7 @@ actor WiFiScanner {
 
     private static func performScan() throws -> [NetworkModel] {
         let client = CWWiFiClient.shared()
-        let preferred = UserDefaults.standard.string(forKey: "LanFi.wifiInterface")
+        let preferred = UserDefaults.standard.string(forKey: AppSettingsKey.wifiInterface.rawValue)
         let interface = preferred.flatMap { client.interface(withName: $0) } ?? client.interface()
         guard let interface else {
             throw WiFiError.interfaceNotFound
@@ -304,5 +305,16 @@ actor WiFiScanner {
 enum WiFiInterfaceCatalog {
     static func names() -> [String] {
         (CWWiFiClient.shared().interfaceNames() ?? []).sorted()
+    }
+
+    /// Interface that `WiFiScanner` will use: the explicit Settings choice when
+    /// present, otherwise the system's default Wi-Fi interface.
+    static func activeName() -> String? {
+        if let preferred = UserDefaults.standard.string(forKey: AppSettingsKey.wifiInterface.rawValue),
+            !preferred.isEmpty
+        {
+            return preferred
+        }
+        return CWWiFiClient.shared().interface()?.interfaceName
     }
 }

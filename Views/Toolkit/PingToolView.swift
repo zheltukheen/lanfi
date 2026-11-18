@@ -5,6 +5,33 @@ import SwiftUI
 struct PingToolView: View {
     @ObservedObject var model: PingToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case sequence, roundTrip, status
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .sequence: return "#"
+            case .roundTrip: return String(localized: "Round trip")
+            case .status: return String(localized: "Status")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .sequence
+    @State private var sortAscending = true
+
+    private func sortedSamples(_ rows: [PingSample]) -> [PingSample] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .sequence: return lhs.sequence < rhs.sequence
+            case .roundTrip:
+                return (lhs.rttMilliseconds ?? .infinity) < (rhs.rttMilliseconds ?? .infinity)
+            case .status: return (lhs.succeeded ? 1 : 0) < (rhs.succeeded ? 1 : 0)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -27,7 +54,7 @@ struct PingToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -159,9 +186,21 @@ struct PingToolView: View {
                         }
                     }
                 }
-                .chartYAxisLabel("ms")
+                .chartXAxis { chartAxis }
+                .chartYAxis { chartAxis }
+                .chartYAxisLabel("ms", position: .leading)
                 .frame(height: 150)
             }
+        }
+    }
+
+    private var chartAxis: some AxisContent {
+        AxisMarks { _ in
+            AxisGridLine(stroke: ChartStyle.gridStroke)
+                .foregroundStyle(ChartStyle.gridColor)
+            AxisValueLabel()
+                .font(ChartStyle.axisLabelFont)
+                .foregroundStyle(ChartStyle.axisLabelColor)
         }
     }
 
@@ -170,16 +209,19 @@ struct PingToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Probes")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text("\(stats.samples.count)")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(stats.samples) {
+                Table(sortedSamples(stats.samples)) {
                     TableColumn("#") { sample in
                         Text("\(sample.sequence)")
                             .font(.caption.monospacedDigit())
@@ -189,7 +231,7 @@ struct PingToolView: View {
                         Text(ToolkitFormat.milliseconds(sample.rttMilliseconds))
                             .font(.caption.monospacedDigit())
                     }
-                    .width(110)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Status") { sample in
                         Text(
                             sample.succeeded

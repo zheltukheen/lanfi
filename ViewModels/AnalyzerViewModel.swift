@@ -43,7 +43,7 @@ struct FilterColumn: Identifiable, Hashable {
 class AnalyzerViewModel: ObservableObject {
 
     // MARK: - Dependencies
-    private let scanner = WiFiScanner()  // Actor
+    private let scanner: any WiFiScanning
     private let locationManager = LocationManager()
     private let annotationStore = AnnotationStore()
     private let sessionStore = SessionStore()
@@ -53,7 +53,9 @@ class AnalyzerViewModel: ObservableObject {
     private let workspaceProfileStore = WorkspaceProfileStore()
     private let expressionColumnStore = ExpressionColumnStore()
     let monitor = MonitorViewModel()
-    private let refreshIntervalKey = "RefreshIntervalSeconds"
+    /// P0.2 scan modes: active, passive and directed listening.
+    let passiveScan = PassiveScanViewModel()
+    private let refreshIntervalKey = AppSettingsKey.refreshInterval.rawValue
     private let historyWindowSeconds: TimeInterval = 180
 
     // MARK: - Internal State
@@ -61,10 +63,15 @@ class AnalyzerViewModel: ObservableObject {
     private var timer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var isScanning = false
+    #if DEBUG
+        /// Snapshot harness only: blocks live scans and Location updates so the
+        /// seeded fixtures stay exactly as captured.
+        private var isDemoSeeded = false
+    #endif
     private var isAppActive = true
     private var isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
 
-    private static let backgroundScanKey = "LanFi.scan.reduceInBackground"
+    private static let backgroundScanKey = AppSettingsKey.scanReduceInBackground.rawValue
 
     /// When true the auto-refresh timer keeps running but skips scans, so
     /// the table stays frozen without tearing down the scanning loop.
@@ -180,8 +187,12 @@ class AnalyzerViewModel: ObservableObject {
     @Published private(set) var scanHealth: ScanHealth = .healthy
 
     // MARK: - Initialization
-    init() {
+    init(scanner: any WiFiScanning = WiFiScanner()) {
+        self.scanner = scanner
         setupBindings()
+        passiveScan.onNetworks = { [weak self] networks in
+            self?.ingestPassiveNetworks(networks)
+        }
         annotations = annotationStore.annotations
         sessions = sessionStore.sessions()
         columnProfiles = columnProfileStore.profiles()
@@ -194,7 +205,7 @@ class AnalyzerViewModel: ObservableObject {
         loadPreferences()
         loadColumnSettings()
         // Стартуем сканирование сразу, но реальные данные пойдут только после разрешения Location
-        if UserDefaults.standard.object(forKey: "LanFi.scanOnLaunch") as? Bool ?? true {
+        if UserDefaults.standard.object(forKey: AppSettingsKey.scanOnLaunch.rawValue) as? Bool ?? true {
             startScanningLoop()
         }
         configureScheduledReports()
@@ -231,6 +242,9 @@ class AnalyzerViewModel: ObservableObject {
             .sink { [weak self] status in
                 guard let self = self else { return }
                 let authorized = (status == .authorizedAlways || status == .authorized)
+                #if DEBUG
+                    if self.isDemoSeeded { return }
+                #endif
                 self.isLocationAuthorized = authorized
                 if authorized {
                     self.refresh()
@@ -286,9 +300,64 @@ class AnalyzerViewModel: ObservableObject {
         }
     }
 
+    #if DEBUG
+        /// Snapshot harness only: fills the table with deterministic fixtures so
+        /// screenshots do not depend on Location access or the current radio.
+        func seedDemoData() {
+            isDemoSeeded = true
+            timer?.invalidate()
+            timer = nil
+            loadedSession = nil
+            isAutoScanPaused = true
+            isLocationAuthorized = true
+            let demo = DemoData.networks()
+            persistentNetworks = Dictionary(uniqueKeysWithValues: demo.map { ($0.id, $0) })
+            let connected = demo.first {
+                $0.ssid == "LanFi-Office" && $0.band == .band5
+            }
+            currentConnectedBSSID = connected?.bssid
+            selectedNetworkId = connected?.id
+            lastScanDate = Date()
+            scanHealth = .healthy
+            history = NetworkHistory()
+            analysis = NetworkAnalyzer.analyze(networks: demo)
+            applyFilters()
+        }
+    #endif
+
+    // MARK: - Scan modes
+
+    /// Switches how the analyzer collects networks. Passive and directed runs
+    /// are on demand, so the automatic timer pauses while they are selected and
+    /// resumes with active mode.
+    func selectScanMode(_ mode: ScanMode) {
+        guard loadedSession == nil else { return }
+        passiveScan.selectMode(mode)
+        isAutoScanPaused = mode != .active
+        if mode == .active {
+            startScanningLoop()
+            refresh()
+        }
+    }
+
+    /// Merges a passive/directed capture into the same persistent list, so
+    /// history, annotations and analysis keep working.
+    func ingestPassiveNetworks(_ networks: [NetworkModel]) {
+        guard !networks.isEmpty else { return }
+        errorMessage = nil
+        lastScanDate = Date()
+        scanHealth = ScanHealthEvaluator.evaluate(
+            networks: networks, errorMessage: nil,
+            isLocationAuthorized: isLocationAuthorized)
+        mergeNetworks(networks)
+    }
+
     // MARK: - Refresh Logic (Async/Await)
 
     func refresh() {
+        #if DEBUG
+            guard !isDemoSeeded else { return }
+        #endif
         guard !isScanning, loadedSession == nil else { return }
         supportedChannels = SpectrumCapabilities.current()
         isScanning = true
@@ -434,11 +503,11 @@ class AnalyzerViewModel: ObservableObject {
         scheduledReportTimer?.invalidate()
         scheduledReportTimer = nil
         let defaults = UserDefaults.standard
-        guard defaults.bool(forKey: "LanFi.reports.enabled"),
-            let folder = defaults.string(forKey: "LanFi.reports.folder"),
+        guard defaults.bool(forKey: AppSettingsKey.reportsEnabled.rawValue),
+            let folder = defaults.string(forKey: AppSettingsKey.reportsFolder.rawValue),
             !folder.isEmpty
         else { return }
-        let minutes = max(defaults.integer(forKey: "LanFi.reports.minutes"), 5)
+        let minutes = max(defaults.integer(forKey: AppSettingsKey.reportsMinutes.rawValue), 5)
         scheduledReportTimer = Timer.scheduledTimer(withTimeInterval: Double(minutes) * 60, repeats: true) {
             [weak self] _ in
             Task { @MainActor in self?.writeScheduledReport() }
@@ -447,8 +516,10 @@ class AnalyzerViewModel: ObservableObject {
 
     func writeScheduledReport() {
         let defaults = UserDefaults.standard
-        guard let folder = defaults.string(forKey: "LanFi.reports.folder"), !folder.isEmpty else { return }
-        let format = defaults.string(forKey: "LanFi.reports.format") ?? "CSV"
+        guard let folder = defaults.string(forKey: AppSettingsKey.reportsFolder.rawValue), !folder.isEmpty else {
+            return
+        }
+        let format = defaults.string(forKey: AppSettingsKey.reportsFormat.rawValue) ?? "CSV"
         let ext = format == "PDF" ? "pdf" : "csv"
         let url = URL(fileURLWithPath: folder, isDirectory: true)
             .appendingPathComponent("LanFi-Report-\(Self.fileTimestamp()).\(ext)")
@@ -1054,7 +1125,7 @@ class AnalyzerViewModel: ObservableObject {
     /// recompute many times per second while the user types.
     private func publishMCPSnapshotIfNeeded() {
         let defaults = UserDefaults.standard
-        guard (defaults.object(forKey: "LanFi.mcp.publishSnapshot") as? Bool) ?? true else {
+        guard (defaults.object(forKey: AppSettingsKey.mcpPublishSnapshot.rawValue) as? Bool) ?? true else {
             return
         }
         let now = Date()
@@ -1066,10 +1137,10 @@ class AnalyzerViewModel: ObservableObject {
 
     private func refreshMenuBarAlerts() {
         let defaults = UserDefaults.standard
-        let weak = defaults.object(forKey: "LanFi.alerts.weakSignal") as? Bool ?? true
-        let open = defaults.object(forKey: "LanFi.alerts.openNetwork") as? Bool ?? true
-        let channel = defaults.object(forKey: "LanFi.alerts.channelChange") as? Bool ?? true
-        let previous = defaults.object(forKey: "LanFi.alerts.lastConnectedChannel") as? Int
+        let weak = defaults.object(forKey: AppSettingsKey.alertsWeakSignal.rawValue) as? Bool ?? true
+        let open = defaults.object(forKey: AppSettingsKey.alertsOpenNetwork.rawValue) as? Bool ?? true
+        let channel = defaults.object(forKey: AppSettingsKey.alertsChannelChange.rawValue) as? Bool ?? true
+        let previous = defaults.object(forKey: AppSettingsKey.alertsLastConnectedChannel.rawValue) as? Int
         menuBarAlerts = MenuBarAlertEngine.compute(
             networks: networks,
             connectedBSSID: currentConnectedBSSID,
@@ -1079,7 +1150,7 @@ class AnalyzerViewModel: ObservableObject {
             previousChannel: previous
         )
         if let connected = networks.first(where: { $0.bssid == currentConnectedBSSID }) {
-            defaults.set(connected.channel, forKey: "LanFi.alerts.lastConnectedChannel")
+            defaults.set(connected.channel, forKey: AppSettingsKey.alertsLastConnectedChannel.rawValue)
         }
     }
 
@@ -1383,12 +1454,12 @@ class AnalyzerViewModel: ObservableObject {
 
     func saveColumnSettings() {
         if let data = try? JSONEncoder().encode(columnDefinitions) {
-            UserDefaults.standard.set(data, forKey: "WifiColumns_v4")
+            UserDefaults.standard.set(data, forKey: AppSettingsKey.wifiColumns.rawValue)
         }
     }
 
     private func loadColumnSettings() {
-        if let data = UserDefaults.standard.data(forKey: "WifiColumns_v4"),
+        if let data = UserDefaults.standard.data(forKey: AppSettingsKey.wifiColumns.rawValue),
             let saved = try? JSONDecoder().decode([ColumnDefinition].self, from: data)
         {
             columnDefinitions = normalizeColumnDefinitions(saved)
@@ -1432,44 +1503,44 @@ class AnalyzerViewModel: ObservableObject {
         let savedInterval = defaults.double(forKey: refreshIntervalKey)
         if savedInterval >= 0.5 { refreshInterval = savedInterval }
 
-        if defaults.object(forKey: "LanFi.filterBand24") != nil {
-            filterBand24 = defaults.bool(forKey: "LanFi.filterBand24")
+        if defaults.object(forKey: AppSettingsKey.filterBand24.rawValue) != nil {
+            filterBand24 = defaults.bool(forKey: AppSettingsKey.filterBand24.rawValue)
         }
-        if defaults.object(forKey: "LanFi.filterBand5") != nil {
-            filterBand5 = defaults.bool(forKey: "LanFi.filterBand5")
+        if defaults.object(forKey: AppSettingsKey.filterBand5.rawValue) != nil {
+            filterBand5 = defaults.bool(forKey: AppSettingsKey.filterBand5.rawValue)
         }
-        if defaults.object(forKey: "LanFi.filterBand6") != nil {
-            filterBand6 = defaults.bool(forKey: "LanFi.filterBand6")
+        if defaults.object(forKey: AppSettingsKey.filterBand6.rawValue) != nil {
+            filterBand6 = defaults.bool(forKey: AppSettingsKey.filterBand6.rawValue)
         }
-        if defaults.object(forKey: "LanFi.filterOther") != nil {
-            filterOther = defaults.bool(forKey: "LanFi.filterOther")
+        if defaults.object(forKey: AppSettingsKey.filterOther.rawValue) != nil {
+            filterOther = defaults.bool(forKey: AppSettingsKey.filterOther.rawValue)
         }
-        if defaults.object(forKey: "LanFi.filterWiFi7") != nil {
-            filterWiFi7 = defaults.bool(forKey: "LanFi.filterWiFi7")
+        if defaults.object(forKey: AppSettingsKey.filterWiFi7.rawValue) != nil {
+            filterWiFi7 = defaults.bool(forKey: AppSettingsKey.filterWiFi7.rawValue)
         }
-        if defaults.object(forKey: "LanFi.minSignal") != nil {
-            minSignalThreshold = defaults.double(forKey: "LanFi.minSignal")
+        if defaults.object(forKey: AppSettingsKey.minSignal.rawValue) != nil {
+            minSignalThreshold = defaults.double(forKey: AppSettingsKey.minSignal.rawValue)
         }
-        if let rawRemove = defaults.object(forKey: "LanFi.removeAfter") as? Double,
+        if let rawRemove = defaults.object(forKey: AppSettingsKey.removeAfter.rawValue) as? Double,
             let interval = NetworkRemovalInterval(rawValue: rawRemove)
         {
             removeAfterInterval = interval
         }
-        if let rawUnit = defaults.string(forKey: "LanFi.signalUnit"),
+        if let rawUnit = defaults.string(forKey: AppSettingsKey.signalUnit.rawValue),
             let mode = SignalDisplayMode(rawValue: rawUnit)
         {
             signalDisplayMode = mode
         }
-        if defaults.object(forKey: "LanFi.highlightConnected") != nil {
-            highlightConnectedNetworks = defaults.bool(forKey: "LanFi.highlightConnected")
+        if defaults.object(forKey: AppSettingsKey.highlightConnected.rawValue) != nil {
+            highlightConnectedNetworks = defaults.bool(forKey: AppSettingsKey.highlightConnected.rawValue)
         }
-        if let sortKey = defaults.string(forKey: "LanFi.sortKey"), ColumnId(rawValue: sortKey) != nil {
+        if let sortKey = defaults.string(forKey: AppSettingsKey.sortKey.rawValue), ColumnId(rawValue: sortKey) != nil {
             currentSortKey = sortKey
         }
-        if defaults.object(forKey: "LanFi.sortAscending") != nil {
-            isSortAscending = defaults.bool(forKey: "LanFi.sortAscending")
+        if defaults.object(forKey: AppSettingsKey.sortAscending.rawValue) != nil {
+            isSortAscending = defaults.bool(forKey: AppSettingsKey.sortAscending.rawValue)
         }
-        if let rawGroup = defaults.string(forKey: "LanFi.groupMode"),
+        if let rawGroup = defaults.string(forKey: AppSettingsKey.groupMode.rawValue),
             let mode = NetworkGroupMode(rawValue: rawGroup)
         {
             groupMode = mode
@@ -1479,20 +1550,20 @@ class AnalyzerViewModel: ObservableObject {
     private func savePreferences() {
         let defaults = UserDefaults.standard
         defaults.set(refreshInterval, forKey: refreshIntervalKey)
-        defaults.set(filterBand24, forKey: "LanFi.filterBand24")
-        defaults.set(filterBand5, forKey: "LanFi.filterBand5")
-        defaults.set(filterBand6, forKey: "LanFi.filterBand6")
-        defaults.set(filterOther, forKey: "LanFi.filterOther")
-        defaults.set(filterWiFi7, forKey: "LanFi.filterWiFi7")
-        defaults.set(minSignalThreshold, forKey: "LanFi.minSignal")
-        defaults.set(removeAfterInterval.rawValue, forKey: "LanFi.removeAfter")
-        defaults.set(signalDisplayMode.rawValue, forKey: "LanFi.signalUnit")
-        defaults.set(highlightConnectedNetworks, forKey: "LanFi.highlightConnected")
+        defaults.set(filterBand24, forKey: AppSettingsKey.filterBand24.rawValue)
+        defaults.set(filterBand5, forKey: AppSettingsKey.filterBand5.rawValue)
+        defaults.set(filterBand6, forKey: AppSettingsKey.filterBand6.rawValue)
+        defaults.set(filterOther, forKey: AppSettingsKey.filterOther.rawValue)
+        defaults.set(filterWiFi7, forKey: AppSettingsKey.filterWiFi7.rawValue)
+        defaults.set(minSignalThreshold, forKey: AppSettingsKey.minSignal.rawValue)
+        defaults.set(removeAfterInterval.rawValue, forKey: AppSettingsKey.removeAfter.rawValue)
+        defaults.set(signalDisplayMode.rawValue, forKey: AppSettingsKey.signalUnit.rawValue)
+        defaults.set(highlightConnectedNetworks, forKey: AppSettingsKey.highlightConnected.rawValue)
         if let currentSortKey {
-            defaults.set(currentSortKey, forKey: "LanFi.sortKey")
+            defaults.set(currentSortKey, forKey: AppSettingsKey.sortKey.rawValue)
         }
-        defaults.set(isSortAscending, forKey: "LanFi.sortAscending")
-        defaults.set(groupMode.rawValue, forKey: "LanFi.groupMode")
+        defaults.set(isSortAscending, forKey: AppSettingsKey.sortAscending.rawValue)
+        defaults.set(groupMode.rawValue, forKey: AppSettingsKey.groupMode.rawValue)
     }
 
     private func maxHistoryPoints() -> Int {

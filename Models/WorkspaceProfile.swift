@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 struct WorkspaceProfile: Codable, Identifiable {
@@ -28,7 +29,7 @@ struct WorkspaceProfile: Codable, Identifiable {
 
 final class WorkspaceProfileStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.workspaceProfiles"
+    private let key = AppSettingsKey.workspaceProfiles.rawValue
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 

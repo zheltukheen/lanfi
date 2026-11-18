@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 import SwiftUI
 
@@ -7,7 +8,7 @@ final class ToolkitViewModel: ObservableObject {
         didSet { UserDefaults.standard.set(selection.rawValue, forKey: Self.selectionKey) }
     }
 
-    private static let selectionKey = "LanFi.toolkit.selection"
+    private static let selectionKey = AppSettingsKey.toolkitSelection.rawValue
 
     let ping = PingToolModel()
     let dns = DNSToolModel()

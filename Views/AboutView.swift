@@ -58,7 +58,7 @@ struct AboutView: View {
                     .multilineTextAlignment(.center)
             }
         }
-        .padding(26)
+        .padding(DesignToken.Spacing.section)
         .frame(width: 430, height: 520)
         .background(Color(nsColor: .windowBackgroundColor))
     }

@@ -97,6 +97,7 @@ final class WiFiTableCellView: NSTableCellView {
 
     /// Bar sits in its own gutter to the left of the number, never under it.
     private var barConstraints: [NSLayoutConstraint] = []
+    private var barWidthConstraint: NSLayoutConstraint?
     private var textAfterBarConstraint: NSLayoutConstraint?
 
     override init(frame frameRect: NSRect) {
@@ -119,9 +120,11 @@ final class WiFiTableCellView: NSTableCellView {
         iconConstraint = textFieldLabel.leadingAnchor.constraint(equalTo: vendorIcon.trailingAnchor, constant: 5)
         textAfterBarConstraint = textFieldLabel.leadingAnchor.constraint(
             equalTo: microVisualView.trailingAnchor, constant: 6)
+        let barWidth = microVisualView.widthAnchor.constraint(equalToConstant: 34)
+        barWidthConstraint = barWidth
         barConstraints = [
             microVisualView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-            microVisualView.widthAnchor.constraint(equalToConstant: 34),
+            barWidth,
             microVisualView.heightAnchor.constraint(equalToConstant: 6),
             microVisualView.centerYAnchor.constraint(equalTo: centerYAnchor),
         ]
@@ -148,6 +151,7 @@ final class WiFiTableCellView: NSTableCellView {
         style: TableCellStyle = .standard,
         vendor: String? = nil,
         visual: TableMicroVisual? = nil,
+        columnWidth: CGFloat? = nil,
         fontSize: CGFloat = NSFont.systemFontSize
     ) {
         if visual == nil, let symbol = VendorIconProvider.symbol(for: vendor) {
@@ -160,7 +164,10 @@ final class WiFiTableCellView: NSTableCellView {
         textFieldLabel.stringValue = text
         textFieldLabel.toolTip = text
         textFieldLabel.setAccessibilityLabel(text)
-        textFieldLabel.alignment = alignment
+        // A right-aligned number would drift away from its bar in a wide
+        // column, leaving a visual gap. Bar cells keep the number directly
+        // after the bar and leave the slack on the right.
+        textFieldLabel.alignment = visual == nil ? alignment : .left
 
         let baseFont = NSFont.systemFont(ofSize: fontSize)
         let baseColor = (style == .secondary) ? NSColor.secondaryLabelColor : NSColor.labelColor
@@ -170,6 +177,12 @@ final class WiFiTableCellView: NSTableCellView {
         if highlightConnected && isConnected {
             textFieldLabel.font = NSFont.boldSystemFont(ofSize: fontSize)
             textFieldLabel.textColor = NSColor.systemBlue
+        }
+
+        if let columnWidth {
+            // The bar grows with its column instead of staying a fixed 34 pt.
+            let width = min(max(columnWidth * 0.38, 28), 72)
+            barWidthConstraint?.constant = width
         }
 
         apply(visual: visual)

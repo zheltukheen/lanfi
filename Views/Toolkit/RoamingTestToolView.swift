@@ -5,6 +5,35 @@ import SwiftUI
 /// be band-steered.
 struct RoamingTestToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
+
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case when, from, to, signal
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .when: return String(localized: "When")
+            case .from: return String(localized: "From")
+            case .to: return String(localized: "To")
+            case .signal: return String(localized: "Signal")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .when
+    @State private var sortAscending = false
+
+    private func sortedTransitions(_ rows: [RoamTransition]) -> [RoamTransition] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .when: return lhs.at < rhs.at
+            case .from:
+                return lhs.fromBSSID.localizedStandardCompare(rhs.fromBSSID) == .orderedAscending
+            case .to: return lhs.toBSSID.localizedStandardCompare(rhs.toBSSID) == .orderedAscending
+            case .signal: return lhs.rssiAfter < rhs.rssiAfter
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
     @State private var walkStart: Date?
 
     private var samples: [MonitorSample] {
@@ -46,7 +75,7 @@ struct RoamingTestToolView: View {
                 }
                 events
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -173,28 +202,33 @@ struct RoamingTestToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "BSSID transitions")
+                    if !assessment.transitions.isEmpty {
+                        TableSortControl(
+                            options: SortKey.allCases.map { ($0, $0.title) },
+                            selection: $sortKey, ascending: $sortAscending)
+                    }
                     Spacer()
                     Text("\(assessment.transitions.count)")
                         .font(.caption2.monospacedDigit())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
                 if assessment.transitions.isEmpty {
                     Text("No BSSID changes in the window yet. Start a walk test and move around the coverage area.")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.bottom, 14)
+                        .padding(.horizontal, DesignToken.Spacing.card)
+                        .padding(.bottom, DesignToken.Spacing.card)
                 } else {
-                    Table(Array(assessment.transitions.reversed().prefix(20))) {
+                    Table(sortedTransitions(Array(assessment.transitions.prefix(20)))) {
                         TableColumn("When") { transition in
                             Text(transition.at.formatted(date: .omitted, time: .standard))
                                 .font(.caption2)
                         }
-                        .width(90)
+                        .width(AppColumnWidth.compact)
                         TableColumn("From") { transition in
                             Text(transition.fromBSSID).font(.caption2.monospaced())
                         }
@@ -206,7 +240,7 @@ struct RoamingTestToolView: View {
                                 .font(.caption2.monospacedDigit())
                                 .foregroundColor(transition.isFailure ? .red : .secondary)
                         }
-                        .width(150)
+                        .width(AppColumnWidth.wide)
                     }
                     .frame(
                         height: ToolkitTableHeight.rows(
@@ -227,15 +261,15 @@ struct RoamingTestToolView: View {
                         .font(.caption2.monospacedDigit())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
                 if roamEvents.isEmpty {
                     Text("No roam events recorded by the Wi-Fi Monitor yet.")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.bottom, 14)
+                        .padding(.horizontal, DesignToken.Spacing.card)
+                        .padding(.bottom, DesignToken.Spacing.card)
                 } else {
                     ForEach(Array(roamEvents.reversed())) { event in
                         HStack(alignment: .top, spacing: 8) {
@@ -252,10 +286,10 @@ struct RoamingTestToolView: View {
                             }
                             Spacer()
                         }
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, DesignToken.Spacing.card)
                         .padding(.vertical, 3)
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, DesignToken.Spacing.compact)
                 }
             }
         }

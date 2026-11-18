@@ -1,8 +1,16 @@
 import Foundation
 import UserNotifications
 
+/// Notification seam: the monitor raises events through this protocol so its
+/// tests do not need `UNUserNotificationCenter`.
 @MainActor
-final class MonitorNotifier: NSObject, UNUserNotificationCenterDelegate {
+protocol MonitorNotifying: AnyObject {
+    func notify(_ event: MonitorEvent, settings: MonitorAlertSettings)
+    func requestAuthorization() async -> Bool
+}
+
+@MainActor
+final class MonitorNotifier: NSObject, MonitorNotifying, UNUserNotificationCenterDelegate {
     private let center = UNUserNotificationCenter.current()
     private var policy = MonitorAlertPolicy()
 

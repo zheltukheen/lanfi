@@ -44,6 +44,8 @@ enum MCPToolkit {
         case "lanfi_har": return har(arguments)
         case "lanfi_spectrum": return spectrum(arguments)
         case "lanfi_devices": return devices(arguments)
+        case "lanfi_client_analytics": return clientAnalytics(arguments)
+        case "lanfi_survey_plan": return surveyPlan(arguments)
         // Network probes
         case "lanfi_ping": return await ping(arguments)
         case "lanfi_traceroute": return await traceroute(arguments)
@@ -61,6 +63,7 @@ enum MCPToolkit {
         case "lanfi_lan_scan": return await lanScan(arguments)
         case "lanfi_iperf3": return await iperf3(arguments)
         case "lanfi_speed_test": return await speedTest(arguments)
+        case "lanfi_open_connections": return await openConnections(arguments)
         case "lanfi_uptime": return uptime()
         case "lanfi_diagnostics": return diagnostics()
         case "lanfi_info": return info()
@@ -109,6 +112,10 @@ enum MCPToolkit {
                     "limit": ["type": "integer", "description": "Requests to list, default 50, max 500."],
                 ],
                 required: ["path"]),
+            tool(
+                "lanfi_client_analytics",
+                "Per-access-point advertised client load from the latest scan (or an exported scan JSON): clients, utilization, busiest APs and plain-language insights.",
+                properties: ["path": pathProperty]),
             tool(
                 "lanfi_spectrum",
                 "Analyse a hardware spectrum trace exported as CSV (RF Explorer or Wi-Spy Chanalyzer, one contiguous sweep): span, noise floor, peak, per-band strongest signal and the share of the trace above -70/-60/-50 dBm.",
@@ -283,6 +290,26 @@ enum MCPToolkit {
                 "Apple networkQuality throughput, latency and bufferbloat grade.",
                 properties: [
                     "timeout": ["type": "integer", "description": "Seconds (5-60, default 20)."]
+                ]),
+            tool(
+                "lanfi_survey_plan",
+                "Plan access-point placement for a rectangular floor: free-space radius from tx power and target RSSI, grid AP positions, spacing, estimated coverage and notes.",
+                properties: [
+                    "widthMeters": ["type": "number", "description": "Default 20."],
+                    "heightMeters": ["type": "number", "description": "Default 12."],
+                    "targetRSSI": ["type": "integer", "description": "Default -65 dBm."],
+                    "txPowerDbm": ["type": "number", "description": "Default 20 dBm."],
+                    "band": ["type": "string", "description": "2.4GHz, 5GHz or 6GHz (default 5GHz)."],
+                    "channel": ["type": "integer", "description": "Default 36."],
+                ]),
+            tool(
+                "lanfi_open_connections",
+                "TCP connections on this Mac from read-only lsof: process, PID, user, protocol, local/remote endpoint and state. Other users' sockets may be hidden without root.",
+                properties: [
+                    "listeners": [
+                        "type": "boolean", "description": "Include listening sockets. Default false.",
+                    ],
+                    "limit": ["type": "integer", "description": "Default 500, max 2000."],
                 ]),
             tool(
                 "lanfi_uptime",
@@ -715,6 +742,83 @@ enum MCPToolkit {
             "returned": devices.count,
             "devices": devices,
         ])
+    }
+
+    private static func clientAnalytics(_ arguments: [String: Any]) -> MCPToolOutcome {
+        do {
+            let scan = try ScanExport.loadDefault(string(arguments, "path"))
+            let snapshot = ClientAnalyticsSnapshot.build(networks: scan.networks)
+            let accessPoints = snapshot.busiestAccessPoints.map { row -> [String: Any] in
+                [
+                    "bssid": row.bssid,
+                    "ssid": row.ssid,
+                    "band": row.band,
+                    "channel": row.channel,
+                    "clients": row.clients,
+                    "utilizationPercent": row.utilization as Any,
+                    "rssi": row.signal,
+                ]
+            }
+            return .json([
+                "advertisedClients": snapshot.advertisedClients,
+                "accessPoints": snapshot.accessPointCount,
+                "reportingAccessPoints": snapshot.busiestAccessPoints.count,
+                "idleAccessPoints": snapshot.idleAccessPoints,
+                "accessPointLoad": accessPoints,
+                "insights": snapshot.insights,
+            ])
+        } catch {
+            return .error(error.localizedDescription)
+        }
+    }
+
+    private static func surveyPlan(_ arguments: [String: Any]) -> MCPToolOutcome {
+        let request = SurveyPlanRequest(
+            widthMeters: max(1, double(arguments, "widthMeters") ?? 20),
+            heightMeters: max(1, double(arguments, "heightMeters") ?? 12),
+            targetRSSI: int(arguments, "targetRSSI") ?? -65,
+            txPowerDbm: double(arguments, "txPowerDbm") ?? 20,
+            band: string(arguments, "band") ?? "5GHz",
+            channel: int(arguments, "channel") ?? 36
+        )
+        let plan = SurveyPlanner.plan(request)
+        return .json([
+            "accessPointCount": plan.accessPointCount,
+            "radiusMeters": (plan.radiusMeters * 10).rounded() / 10,
+            "spacingMeters": (plan.spacingMeters * 10).rounded() / 10,
+            "estimatedCoveragePercent": (plan.estimatedCoveragePercent * 10).rounded() / 10,
+            "accessPoints": plan.accessPoints.map { ["x": $0.x, "y": $0.y] },
+            "notes": plan.notes,
+        ])
+    }
+
+    private static func openConnections(_ arguments: [String: Any]) async -> MCPToolOutcome {
+        do {
+            let rows = try await OpenConnectionsService.fetch(
+                includeListeners: flag(arguments, "listeners"))
+            let limit = max(1, min(int(arguments, "limit") ?? 500, 2000))
+            let groups = OpenConnectionsParser.byProcess(rows).map { group in
+                ["process": group.process, "connections": group.count] as [String: Any]
+            }
+            return .json([
+                "count": rows.count,
+                "returned": min(rows.count, limit),
+                "processes": groups,
+                "connections": rows.prefix(limit).map { row -> [String: Any] in
+                    [
+                        "process": row.process,
+                        "pid": row.pid,
+                        "user": row.user,
+                        "protocol": row.protocolName,
+                        "local": row.local,
+                        "remote": row.remote,
+                        "state": row.state,
+                    ]
+                },
+            ])
+        } catch {
+            return .error(error.localizedDescription)
+        }
     }
 
     private static func name(_ severity: DeviceRiskFinding.Severity) -> String {

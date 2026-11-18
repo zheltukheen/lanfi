@@ -1,3 +1,4 @@
+import LanFiCore
 import AppKit
 import Foundation
 
@@ -13,7 +14,7 @@ struct ColoringRule: Codable, Identifiable, Equatable {
 
 final class ColoringRuleStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.coloringRules"
+    private let key = AppSettingsKey.coloringRules.rawValue
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [ColoringRule] {

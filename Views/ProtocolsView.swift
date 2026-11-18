@@ -46,7 +46,7 @@ struct ProtocolsView: View {
                     }
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
         }
     }
 
@@ -81,7 +81,7 @@ struct ProtocolsView: View {
                     .foregroundColor(.accentColor)
             }
         }
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
         .background(
             LinearGradient(
                 colors: [bandColor(profile.band).opacity(0.16), Color(nsColor: .controlBackgroundColor)],
@@ -89,9 +89,9 @@ struct ProtocolsView: View {
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
                 .stroke(bandColor(profile.band).opacity(0.25), lineWidth: 1)
         )
     }
@@ -111,10 +111,10 @@ struct ProtocolsView: View {
                     .lineLimit(1)
             }
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.orange.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     // MARK: - No selection
@@ -183,7 +183,7 @@ struct ProtocolsView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
         }
     }
 
@@ -197,10 +197,12 @@ struct ProtocolsView: View {
                 .foregroundColor(tint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(9)
+        .padding(DesignToken.Spacing.small)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.12), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
+                Color.secondary.opacity(0.12), lineWidth: 1))
     }
 
     private func distributionCard(
@@ -226,17 +228,19 @@ struct ProtocolsView: View {
 
             Spacer(minLength: 0)
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, minHeight: 318, maxHeight: 318, alignment: .topLeading)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.12), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
+                Color.secondary.opacity(0.12), lineWidth: 1))
     }
 
     private func bandBadge(_ band: WiFiBand) -> some View {
         Text(band.label)
             .font(.caption2.bold())
-            .padding(.horizontal, 6)
+            .padding(.horizontal, DesignToken.Spacing.tight)
             .padding(.vertical, 2)
             .foregroundColor(bandColor(band))
             .background(bandColor(band).opacity(0.12))
@@ -289,7 +293,7 @@ private struct ProtocolBlockCard: View {
                         Circle()
                             .fill(factColor(fact.status))
                             .frame(width: 5, height: 5)
-                            .padding(.top, 5)
+                            .padding(.top, DesignToken.Spacing.tight)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(LocalizedStringKey(fact.label))
                                 .font(.caption2)
@@ -310,14 +314,16 @@ private struct ProtocolBlockCard: View {
 
             Spacer(minLength: 0)
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, minHeight: 318, maxHeight: 318, alignment: .topLeading)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 9))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
         .overlay(
-            RoundedRectangle(cornerRadius: 9)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
                 .stroke(statusColor.opacity(0.25), lineWidth: 1)
         )
+        // One VoiceOver stop per block instead of a dozen unlabelled fact dots.
+        .accessibilityElement(children: .combine)
     }
 
     private var statusColor: Color {

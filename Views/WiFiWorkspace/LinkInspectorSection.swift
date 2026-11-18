@@ -33,6 +33,8 @@ struct LinkInspectorSection: View {
                     DetailRow(
                         label: "Noise",
                         value: (monitor.noise ?? network.noise).map { "\($0) dBm" } ?? "—")
+                    DetailRow(label: "Cipher", value: network.security)
+                    DetailRow(label: "BSSID", value: network.bssid.isEmpty ? "—" : network.bssid)
                 }
 
                 if let minimum = summary.rateMin, let maximum = summary.rateMax,
@@ -54,7 +56,7 @@ struct LinkInspectorSection: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
         } label: {
             Label("Link", systemImage: "antenna.radiowaves.left.and.right")
         }

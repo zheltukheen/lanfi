@@ -3,6 +3,62 @@
 ## Unreleased
 
 ### Added
+- **Every preference is a typed setting.** `AppSettingsKey` in `LanFiCore` is
+  now the single catalogue of the 73 persisted keys, so no call site spells a
+  `LanFi.*` string any more. `AppSettings` gained typed sections for scanning,
+  alerts, monitor, capture, survey, reports, MCP, automation, display,
+  interface and layout, each migrated from its legacy key and mirrored back so
+  `@AppStorage` readers stay live. Values an older screen still writes directly
+  are re-read before every save, so changing the theme no longer rolls back a
+  report or MCP setting; import stays authoritative.
+- **Dependency seams and a Swift 6 core.** `LanFiCore` now compiles in the
+  Swift 6 language mode with an injectable clock, settings storage,
+  notification poster and file store, and `AppSettingsStore` gained
+  `export(to:)`/`importSettings(from:)`. The app mirrors the pattern: the
+  analyzer takes any `WiFiScanning`, the monitor takes a clock and any
+  `MonitorNotifying`, on top of the existing `UserNotifying` seam.
+- **Connections became a firewall console.** Sockets group by local endpoint
+  or process, Traffic groups by app or process, both with disclosure rows, and
+  every row can terminate its owning process (SIGTERM, own processes only) or
+  create a local block rule by application, process, PID, port, remote host or
+  user. Rules are persisted in `~/Library/Application Support/LanFi/` and mark
+  matching sockets; LanFi installs no packet filter or root helper, and the
+  screen says so. The tool now lives under Monitoring, not Network Tools, and
+  gained a Rules tab.
+- **Sortable columns everywhere.** Every toolkit table — DNS answers and
+  propagation, port scan (TCP and UDP), path check, traceroute, MTR, ping,
+  TLS chain, uptime checks, speed-test and iperf3 history, Whois events, HTTP
+  requests, roaming transitions, routing table, client analytics, live client
+  discovery, remote sensors, controller access points, and offline capture
+  beacons/clients/security — now exposes all its columns through the sort
+  control. The comparison grid and Offline Capture's management table sort from
+  clickable headers.
+- **Seeded screenshot harness.** `scripts/visual-check.sh` now launches the
+  Debug snapshot harness with `--demo`, which seeds deterministic Wi-Fi,
+  survey and uptime fixtures (`Utils/DemoData.swift`, Debug-only, never
+  written to disk) and blocks live scans, so screenshots no longer depend on
+  Location access or the reviewer's network. It also captures the README/site
+  gallery at a fixed 1180×760 pt window and exports `docs/images/*.webp` plus
+  `site/assets/*.webp` with cwebp (ffmpeg fallback).
+- **Task-oriented Help.** The Help window now answers six "what do you want to
+  do" questions — first scan, inspect connections, diagnose a slow link,
+  measure coverage, find the app using bandwidth, and set up/automate — instead
+  of listing product areas. Each topic opens with one bundled screenshot of the
+  screen it uses (`Resources/help-*.png`, captured in English from the snapshot
+  harness) and task steps; search matches titles, steps and screenshot captions
+  in both English and Russian.
+- **Chart explainer.** The All Bands chart has a "What is this?" popover that
+  decodes bar width, height, overlap shading, the recommended-channel marker and
+  click-to-select, using the same swatches as the legend.
+- **Passive and directed scanning (P0.2).** A scan-mode picker adds monitor-mode
+  passive listening and per-channel directed listening beside the normal active
+  scan. The plan is 6 GHz aware: PSC channels come first, Reduced Neighbor
+  Report channels are promoted ahead of a blind sweep, non-PSC 6 GHz channels
+  that active scans skip are included, and 6 GHz entries are labelled LPI/SP
+  while 5 GHz DFS entries are marked. The sheet shows dwell per channel, total
+  sweep time, live progress and an explanation when Apple N1 hardware cannot
+  switch channels reliably. Passive rows merge into the same table, history and
+  analysis as active scans.
 - **All-band RF overview.** A new bottom-panel tab draws every nearby access
   point as a frequency span on 2.4, 5 and 6 GHz side by side, shades the
   regions where two or more networks collide and marks the recommended channel
@@ -57,10 +113,105 @@
 - **Combined report.** `Data → Export Combined Report…` writes one HTML file
   with the scan and quality, survey summary, security findings, diagnostics,
   recent speed tests and monitor events.
+- **6 GHz power mode.** The HE Operation element's 6 GHz Operation Information
+  is decoded, so a 6 GHz network now shows whether its AP runs Low Power Indoor,
+  Standard Power or Very Low Power (regulatory info is domain-dependent; the
+  labels follow the US/FCC meaning).
+- **Security Watch.** A new Wi-Fi tool flags a possible evil twin (one BSSID of
+  an SSID open/WEP while another uses WPA2 or better, unless the radios are
+  proven co-located), security downgrades to legacy WPA, randomized BSSIDs next
+  to registered hardware, and deauth bursts observed by a packet capture in the
+  last 15 minutes. Read-only heuristics with an "Open Capture" action; macOS
+  offers apps no passive deauth feed.
+- **Reduced Neighbor Report.** Element 201 is decoded into neighbour operating
+  class, channel, BSSID, short SSID, BSS parameters, 20 MHz PSD and MLD
+  parameters, listed in the raw IE view.
+- **One toolbar treatment.** `ToolbarIconButton` and `appToolbarChrome` give the
+  Wi-Fi workspace and the toolkit header the same control height, radius,
+  stroke and icon+label rule; refresh/pause, settings, export, inspector,
+  diagnostics, location and Help use them.
+- **Scanning interface label.** The workspace toolbar shows
+  "Scanning with <interface>" beside the scan controls, resolving the
+  Settings → Wi-Fi choice or the system default to match the scanner.
+- **Sparkline geometry.** The menu-bar sparkline is drawn from the pure
+  `SparklineGeometry` and shared `ChartStyle` sparkline tokens and covered by
+  geometry tests.
+- **Per-network speed-test history.** Each speed test records the connected
+  SSID/BSSID and the History tab groups tests by network with a picker, latest
+  down/up, latency delta, averages and bufferbloat grade. Older history entries
+  without a network still load and appear as "Not recorded".
+
+### Changed
+- **Menu-bar label legibility.** The `MenuBarExtra` label renders monochrome as
+  a template image and VoiceOver reads one combined label instead of separate
+  glyphs.
+- **Icon audit.** Icon-only controls in the chart toolbars, filter bar,
+  spectrum/history zoom, device shelf, remote sensors, uptime, controllers and
+  notification banner now carry tooltips and accessibility labels, and the
+  toolkit status tones follow the semantic palette.
+- **One chart language.** The Canvas spectrum uses the shared chart tokens for
+  its grid, labels, hover cursor and readouts, and the Uptime and Ping latency
+  charts share the same axes as the history charts.
+- **Pinned Link block.** The inspector keeps the live Link block above the
+  scrolling detail sections and adds cipher and BSSID to it.
+- **Menu-bar Open.** "Open LanFi" now lands on the all-band RF overview.
+
+### Added
+- **802.11 IE decoder depth.** Extended BSS Load (193) reports MU-MIMO station
+  count, stream underutilization and secondary 20/40/80 MHz utilization;
+  Multiple BSSID (71) lists non-transmitted profiles and their BSSID indices.
+- **Distribution guide.** `DISTRIBUTION.md` documents why ad-hoc updates can
+  reset Location Services and how to recover, plus the signing/notary checklist.
+- **Colour-blind-friendly palette (D7).** Settings → Appearance switches
+  status, quality and band colours to the Okabe–Ito blue/amber/magenta set,
+  with a live swatch preview.
+- **MCP actions for the new tools (P1.6).** `lanfi_client_analytics`,
+  `lanfi_survey_plan` and `lanfi_open_connections` join the CLI catalogue, with
+  schema/definition and handler tests; the CLI target now compiles the shared
+  analytics, survey and connection models.
+- **Accessibility labels (D7, partial).** Shared status pills, metrics and tab
+  bar expose combined labels; Survey's icon-only controls and the GPX map have
+  explicit VoiceOver labels and values.
+- **Open Connections (P1.8).** Read-only `lsof -nP -iTCP` inventory: process,
+  PID, user, protocol, local/remote endpoint and state, optional listening
+  sockets, filtering and copy. No shell, no privileges, no telemetry.
+- **Client Analytics (P1.3).** Per-AP advertised client load, channel
+  utilization, optional monitor-captured clients (MAC/vendor/frames/RSSI/probes)
+  and plain-language insights. New Wi-Fi toolkit tool with tests.
+- **GPS survey map (P1.9).** Import/export GPX walks, optional per-sample
+  latitude/longitude, a MapKit sheet with track and sample markers, and tagging
+  the newest sample with the current (Wi-Fi-derived) location.
+- **Survey Planning 2.0 + Active Survey (P1.4).** Free-space AP layout planning
+  with a coverage estimate and one-click placement, plus a gap grid, next-target
+  hint and completion percentage for the walk-through.
+- **Launch at login and updates.** General settings gained `SMAppService` login
+  item control, Sparkle auto-check toggle, last-check time, release notes and
+  Homebrew helpers.
+- **Design system.** Shared `appSheet`, `AppSheetHeader`, `AppColumnWidth` and
+  `appTableSurface` replace per-screen sheet sizes, table surfaces and column
+  widths; settings now use reusable cards and spacing tokens.
 
 ### Changed
 - **Settings sidebar.** Settings moved from eleven tabs to a grouped sidebar;
   the last section is remembered.
+- **Live row density.** The row-density setting now drives one shared table
+  style across the toolkit and Settings through a live `@AppStorage` modifier;
+  no relaunch is needed.
+- **One tab strip.** The Wi-Fi workspace's bottom tabs now use the reusable
+  `AppTabBar`, so tab type, spacing and selection styling have a single source.
+- **Known Networks detail.** Saved networks are selectable rows with a detail
+  pane (live radio details or a "not in range" explanation); the guest QR sheet
+  was rebuilt so the code, fields and payload fit without clipping.
+- **Blank survey plans.** Site Survey can now create an image-less plan from
+  real metre dimensions and draw on a labelled grid, instead of requiring an
+  imported floor-plan image.
+- **GPX route drawing.** The survey map now renders imported/bundled GPX walks
+  as a real MapKit polyline with coloured RSSI markers, a bundled demo walk and
+  current-location tagging.
+- **Column-aware bars.** Signal and quality bars scale with their column width
+  and the number sits directly beside the bar, closing the gap in wide columns.
+- **Unified tabs.** LAN Scanner and survey planning now use the same `AppTabBar`
+  as the Wi-Fi workspace; the old segmented and private tab styles are gone.
 
 - **Relative seen times.** First Seen and Last Seen read "5 minutes ago" under
   a day and fall back to an absolute date-time after that.

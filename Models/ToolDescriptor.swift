@@ -14,11 +14,15 @@ struct ToolDescriptor: Identifiable, Sendable {
     let section: ToolboxSection
     let isAvailable: Bool
     let plannedDetail: String
+    /// A screen that lives as a tab inside another tool: deep links still
+    /// resolve it, but the sidebar lists the host once.
+    let showsInSidebar: Bool
 
     init(
         tool: ToolboxTool, title: String, icon: String, section: ToolboxSection,
         isAvailable: Bool = true,
-        plannedDetail: String = String(localized: "Planned for a later phase.")
+        plannedDetail: String = String(localized: "Planned for a later phase."),
+        showsInSidebar: Bool = true
     ) {
         self.tool = tool
         self.title = title
@@ -26,6 +30,7 @@ struct ToolDescriptor: Identifiable, Sendable {
         self.section = section
         self.isAvailable = isAvailable
         self.plannedDetail = plannedDetail
+        self.showsInSidebar = showsInSidebar
     }
 }
 
@@ -85,6 +90,16 @@ enum ToolRegistry {
             tool: .httpTraffic, title: String(localized: "HTTP Traffic"),
             icon: "list.bullet.rectangle.portrait", section: .networkTools),
         ToolDescriptor(
+            tool: .openConnections, title: String(localized: "Connections"),
+            icon: "arrow.triangle.branch", section: .monitoring,
+            plannedDetail: String(localized: "TCP connections and the processes that own them.")),
+        ToolDescriptor(
+            tool: .processTraffic, title: String(localized: "Connections"),
+            icon: "arrow.up.arrow.down.circle", section: .monitoring,
+            plannedDetail: String(localized: "Per-process receive and send rates from nettop."),
+            // Rendered as the Traffic tab of the Connections tool.
+            showsInSidebar: false),
+        ToolDescriptor(
             tool: .advancedTools, title: String(localized: "Advanced Tools"),
             icon: "terminal", section: .networkTools),
         ToolDescriptor(
@@ -107,6 +122,13 @@ enum ToolRegistry {
         ToolDescriptor(
             tool: .knownNetworks, title: String(localized: "Known Networks"),
             icon: "wifi.router", section: .wifi),
+        ToolDescriptor(
+            tool: .securityWatch, title: String(localized: "Security Watch"),
+            icon: "shield.lefthalf.filled", section: .wifi),
+        ToolDescriptor(
+            tool: .clientAnalytics, title: String(localized: "Client Analytics"),
+            icon: "person.3", section: .wifi,
+            plannedDetail: String(localized: "Per-AP client load, captured clients and probe patterns.")),
         ToolDescriptor(
             tool: .siteSurvey, title: String(localized: "Site Survey"),
             icon: "map", section: .wifi),

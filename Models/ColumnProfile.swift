@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 struct ColumnProfile: Codable, Identifiable {
@@ -13,7 +14,7 @@ struct ColumnProfile: Codable, Identifiable {
 
 final class ColumnProfileStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.columnProfiles"
+    private let key = AppSettingsKey.columnProfiles.rawValue
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 

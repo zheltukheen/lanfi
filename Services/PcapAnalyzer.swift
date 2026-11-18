@@ -12,6 +12,29 @@ struct CapturedBeacon: Identifiable, Equatable {
     let clientCount: Int?
     let timestamp: Date
     let source: String
+    /// Channel centre frequency from the radiotap header, when the capture
+    /// recorded it. 6 GHz beacons have no DS Parameter Set, so this is the
+    /// only reliable way to place them in the right band.
+    let frequencyMHz: Int?
+
+    init(
+        id: String, bssid: String, ssid: String, channel: Int?, rssi: Int?,
+        security: String, isEHT: Bool, informationElements: [InformationElement],
+        clientCount: Int?, timestamp: Date, source: String, frequencyMHz: Int? = nil
+    ) {
+        self.id = id
+        self.bssid = bssid
+        self.ssid = ssid
+        self.channel = channel
+        self.rssi = rssi
+        self.security = security
+        self.isEHT = isEHT
+        self.informationElements = informationElements
+        self.clientCount = clientCount
+        self.timestamp = timestamp
+        self.source = source
+        self.frequencyMHz = frequencyMHz
+    }
 }
 
 enum PcapAnalyzerError: LocalizedError {
@@ -187,10 +210,12 @@ enum PcapAnalyzer {
     ) -> CapturedBeacon? {
         var frame = packet
         var rssi: Int?
+        var frequencyMHz: Int?
         if linkType == 127 {
             guard let parsed = parseRadiotap(packet) else { return nil }
             frame = packet.subdata(in: parsed.headerLength..<packet.count)
             rssi = parsed.rssi
+            frequencyMHz = parsed.frequencyMHz
         }
         guard frame.count >= 36 else { return nil }
         let frameControl = frame.uint16(at: 0, littleEndian: true)
@@ -228,22 +253,45 @@ enum PcapAnalyzer {
                 break
             }
         }
+        if channel == nil, let frequencyMHz {
+            channel = channelNumber(forFrequency: frequencyMHz)
+        }
         return CapturedBeacon(
             id: "\(bssid)-\(ssid)",
             bssid: bssid, ssid: ssid.isEmpty ? "Hidden" : ssid,
             channel: channel, rssi: rssi, security: security,
             isEHT: isEHT, informationElements: parsedIE.elements,
-            clientCount: parsedIE.clients, timestamp: timestamp, source: source
+            clientCount: parsedIE.clients, timestamp: timestamp, source: source,
+            frequencyMHz: frequencyMHz
         )
     }
 
-    private static func parseRadiotap(_ packet: Data) -> (headerLength: Int, rssi: Int?)? {
+    /// 802.11 channel number for a centre frequency. 6 GHz channel 1 is
+    /// 5955 MHz, so 5950 + 5·n covers the whole band, including 320 MHz
+    /// channels whose centre falls outside it (guarded by the caller).
+    static func channelNumber(forFrequency frequency: Int) -> Int? {
+        switch frequency {
+        case 2412...2472, 2484:
+            return frequency == 2484 ? 14 : (frequency - 2407) / 5
+        case 5000...5895:
+            return (frequency - 5000) / 5
+        case 5950...7125:
+            return (frequency - 5950) / 5
+        default:
+            return nil
+        }
+    }
+
+    private static func parseRadiotap(
+        _ packet: Data
+    ) -> (headerLength: Int, rssi: Int?, frequencyMHz: Int?)? {
         guard packet.count >= 8, packet[0] == 0 else { return nil }
         let headerLength = Int(packet.uint16(at: 2, littleEndian: true))
         guard headerLength >= 8, headerLength <= packet.count else { return nil }
         let present = packet.uint32(at: 4, littleEndian: true)
         var offset = 8
         var rssi: Int?
+        var frequencyMHz: Int?
         for bit in 0..<32 {
             guard present & (1 << UInt32(bit)) != 0 else { continue }
             let alignment: Int
@@ -266,16 +314,21 @@ enum PcapAnalyzer {
             case 21: alignment = 2; size = 12
             case 22: alignment = 8; size = 12
             case 23, 24: alignment = 2; size = 12
-            default: return (headerLength, rssi)
+            default: return (headerLength, rssi, frequencyMHz)
             }
             offset = (offset + alignment - 1) & ~(alignment - 1)
-            guard offset + size <= headerLength else { return (headerLength, rssi) }
+            guard offset + size <= headerLength else {
+                return (headerLength, rssi, frequencyMHz)
+            }
             if bit == 5 {
                 rssi = Int(Int8(bitPattern: packet[offset]))
             }
+            if bit == 3, offset + 2 <= packet.count {
+                frequencyMHz = Int(packet.uint16(at: offset, littleEndian: true))
+            }
             offset += size
         }
-        return (headerLength, rssi)
+        return (headerLength, rssi, frequencyMHz)
     }
 
     private static func rsnSecurity(_ data: Data) -> String {

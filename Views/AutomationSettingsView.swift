@@ -1,11 +1,12 @@
+import LanFiCore
 import SwiftUI
 
 struct AutomationSettingsView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
-    @State private var enabled = UserDefaults.standard.bool(forKey: "LanFi.reports.enabled")
-    @State private var minutes = max(UserDefaults.standard.integer(forKey: "LanFi.reports.minutes"), 15)
-    @State private var folder = UserDefaults.standard.string(forKey: "LanFi.reports.folder") ?? ""
-    @State private var format = UserDefaults.standard.string(forKey: "LanFi.reports.format") ?? "CSV"
+    @State private var enabled = UserDefaults.standard.bool(forKey: AppSettingsKey.reportsEnabled.rawValue)
+    @State private var minutes = max(UserDefaults.standard.integer(forKey: AppSettingsKey.reportsMinutes.rawValue), 15)
+    @State private var folder = UserDefaults.standard.string(forKey: AppSettingsKey.reportsFolder.rawValue) ?? ""
+    @State private var format = UserDefaults.standard.string(forKey: AppSettingsKey.reportsFormat.rawValue) ?? "CSV"
 
     var body: some View {
         Form {
@@ -30,10 +31,10 @@ struct AutomationSettingsView: View {
                     Button("Choose…") { chooseFolder() }
                 }
                 Button("Save settings") {
-                    UserDefaults.standard.set(enabled, forKey: "LanFi.reports.enabled")
-                    UserDefaults.standard.set(minutes, forKey: "LanFi.reports.minutes")
-                    UserDefaults.standard.set(folder, forKey: "LanFi.reports.folder")
-                    UserDefaults.standard.set(format, forKey: "LanFi.reports.format")
+                    UserDefaults.standard.set(enabled, forKey: AppSettingsKey.reportsEnabled.rawValue)
+                    UserDefaults.standard.set(minutes, forKey: AppSettingsKey.reportsMinutes.rawValue)
+                    UserDefaults.standard.set(folder, forKey: AppSettingsKey.reportsFolder.rawValue)
+                    UserDefaults.standard.set(format, forKey: AppSettingsKey.reportsFormat.rawValue)
                     viewModel.configureScheduledReports()
                 }
                 Button("Write report now") {
@@ -50,7 +51,7 @@ struct AutomationSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
     }
 
     private func chooseFolder() {

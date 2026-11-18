@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 struct RemoteSensor: Codable, Identifiable, Equatable {
@@ -34,7 +35,7 @@ struct RemoteNetwork: Identifiable, Equatable {
 
 final class RemoteSensorStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.remoteSensors"
+    private let key = AppSettingsKey.remoteSensors.rawValue
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

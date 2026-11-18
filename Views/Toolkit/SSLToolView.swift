@@ -4,6 +4,38 @@ import SwiftUI
 struct SSLToolView: View {
     @ObservedObject var model: SSLToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case subject, issuer, notBefore, notAfter
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .subject: return String(localized: "Subject")
+            case .issuer: return String(localized: "Issuer")
+            case .notBefore: return String(localized: "Not before")
+            case .notAfter: return String(localized: "Not after")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .subject
+    @State private var sortAscending = true
+
+    private func sortedCertificates(_ rows: [TLSCertificate]) -> [TLSCertificate] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .subject:
+                return lhs.subject.localizedStandardCompare(rhs.subject) == .orderedAscending
+            case .issuer:
+                return lhs.issuer.localizedStandardCompare(rhs.issuer) == .orderedAscending
+            case .notBefore:
+                return (lhs.notBefore ?? .distantPast) < (rhs.notBefore ?? .distantPast)
+            case .notAfter:
+                return (lhs.notAfter ?? .distantPast) < (rhs.notAfter ?? .distantPast)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -23,7 +55,7 @@ struct SSLToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -95,16 +127,19 @@ struct SSLToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Chain")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text("Checked \(report.checkedAt.formatted(date: .omitted, time: .standard))")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(report.certificates) {
+                Table(sortedCertificates(report.certificates)) {
                     TableColumn("Subject") { certificate in
                         Text(certificate.subject)
                             .font(.caption)
@@ -121,13 +156,13 @@ struct SSLToolView: View {
                             .font(.caption.monospacedDigit())
                             .foregroundColor(.secondary)
                     }
-                    .width(110)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Not after") { certificate in
                         Text(ToolkitFormat.date(certificate.notAfter))
                             .font(.caption.monospacedDigit())
                             .foregroundColor(.secondary)
                     }
-                    .width(110)
+                    .width(AppColumnWidth.compact)
                 }
                 .frame(height: min(CGFloat(report.certificates.count) * 26 + 28, 360))
             }

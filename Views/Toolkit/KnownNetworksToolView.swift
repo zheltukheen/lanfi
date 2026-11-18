@@ -1,24 +1,52 @@
 import AppKit
 import SwiftUI
 
-/// Read-only inventory of networks saved in System Settings, with an on-demand
-/// guest QR code. LanFi never reads or stores Wi-Fi passwords: the password in
-/// the QR sheet is typed by the user and only used to build the payload.
+/// Read-only inventory of networks saved in System Settings. Selecting a row
+/// opens everything LanFi can legitimately show: the saved name, whether it is
+/// in range now, and the live radio details. Passwords are never read; the QR
+/// sheet builds a guest code from a password the user types.
 struct KnownNetworksToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
 
     @State private var networks: [KnownNetwork] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var selectedSSID: String?
     @State private var shareTarget: KnownNetwork?
+
+    private var selectedNetwork: KnownNetwork? {
+        networks.first { $0.id == selectedSSID } ?? networks.first
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Divider()
-            content
+            if let errorMessage {
+                ToolkitErrorBanner(message: errorMessage)
+                    .appContentPadding()
+                Spacer()
+            } else if networks.isEmpty {
+                ToolkitEmptyState(
+                    icon: "wifi.router",
+                    title: "No saved networks",
+                    message:
+                        "Join a network in System Settings and reload. LanFi lists saved names only and cannot show or export their passwords."
+                )
+                Spacer()
+            } else {
+                HSplitView {
+                    list
+                        .frame(minWidth: 260, idealWidth: 300, maxWidth: 360)
+                    detail
+                        .frame(minWidth: 420, maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
         }
         .task { await load() }
+        .onAppear {
+            if selectedSSID == nil { selectedSSID = networks.first?.id }
+        }
         .sheet(item: $shareTarget) { network in
             KnownNetworkQRSheet(
                 ssid: network.ssid,
@@ -49,61 +77,155 @@ struct KnownNetworksToolView: View {
             .disabled(isLoading)
         }
         .padding(.horizontal, 18)
-        .padding(.vertical, 12)
+        .padding(.vertical, DesignToken.Spacing.medium)
+    }
+
+    private var list: some View {
+        List(selection: $selectedSSID) {
+            ForEach(networks) { network in
+                row(network)
+                    .tag(network.id)
+                    .contextMenu {
+                        Button("Create QR Code…") { shareTarget = network }
+                    }
+            }
+        }
+        .listStyle(.inset)
+    }
+
+    private func row(_ network: KnownNetwork) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: matched(network.ssid) == nil ? "wifi.slash" : "wifi")
+                .font(.system(size: 13))
+                .foregroundColor(
+                    matched(network.ssid) == nil ? .secondary : AppPalette.ok
+                )
+                .frame(width: 18)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(network.ssid)
+                    .font(.callout)
+                    .lineLimit(1)
+                Text(
+                    matched(network.ssid).map { "In range · \($0.bandLabel) ch \($0.channel)" }
+                        ?? "Not in range"
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 2)
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder
-    private var content: some View {
-        if let errorMessage {
-            ToolkitErrorBanner(message: errorMessage)
-                .padding(18)
-            Spacer()
-        } else if networks.isEmpty {
-            ToolkitEmptyState(
-                icon: "wifi.router",
-                title: "No saved networks",
-                message:
-                    "Join a network in System Settings and reload. LanFi lists saved names only and cannot show or export their passwords."
-            )
-            Spacer()
-        } else {
-            Table(networks) {
-                TableColumn("Network") { network in
-                    Text(network.ssid).font(.callout)
+    private var detail: some View {
+        if let network = selectedNetwork {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    detailHeader(network)
+                    radioDetails(network)
+                    qrCard(network)
                 }
-                TableColumn("Now") { network in
-                    if let match = matched(network.ssid) {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(AppPalette.band(match.band))
-                                .frame(width: 6, height: 6)
-                            Text("\(match.bandLabel) · Ch \(match.channel) · \(match.signal) dBm")
-                                .font(.caption2)
-                        }
-                    } else {
-                        Text("Not in range")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                .appContentPadding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        } else {
+            ToolkitEmptyState(
+                icon: "wifi.router", title: "Select a network",
+                message: "Pick a saved network to see its details.")
+        }
+    }
+
+    private func detailHeader(_ network: KnownNetwork) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "wifi.router")
+                .font(.system(size: 30))
+                .foregroundColor(.accentColor)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(network.ssid).font(.title2.bold()).textSelection(.enabled)
+                Text("Saved in System Settings · names only")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            ToolkitStatusPill(
+                text: matched(network.ssid) == nil ? "Not in range" : "In range",
+                tone: matched(network.ssid) == nil ? .neutral : .good)
+        }
+    }
+
+    @ViewBuilder
+    private func radioDetails(_ network: KnownNetwork) -> some View {
+        if let match = matched(network.ssid) {
+            ToolkitCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    ToolkitSectionLabel(text: "Live radio")
+                    LazyVGrid(
+                        columns: [GridItem(.flexible()), GridItem(.flexible())],
+                        alignment: .leading, spacing: 10
+                    ) {
+                        DetailRow(label: "Band", value: match.bandLabel)
+                        DetailRow(label: "Channel", value: "\(match.channel)")
+                        DetailRow(
+                            label: "Width",
+                            value: match.channelWidthLabel == "-"
+                                ? "—" : "\(match.channelWidthLabel) MHz")
+                        DetailRow(label: "Security", value: match.security)
+                        DetailRow(
+                            label: "BSSID",
+                            value: match.bssid.isEmpty ? "—" : match.bssid)
+                        DetailRow(label: "Signal", value: "\(match.signal) dBm")
+                        DetailRow(
+                            label: "Quality",
+                            value: analyzer.metrics(for: match).map { "\($0.qualityScore)" } ?? "—")
+                        DetailRow(label: "Generation", value: match.generationLabel)
                     }
                 }
-                TableColumn("Security") { network in
-                    Text(matched(network.ssid)?.security ?? "—")
+            }
+        } else {
+            ToolkitCard {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "wifi.slash").foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("This network is not visible right now").font(.callout.weight(.semibold))
+                        Text(
+                            "System Settings still remembers it, but no beacon with this SSID is in the current scan. Move closer, enable the radio, or reload."
+                        )
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                }
-                TableColumn("") { network in
-                    Button {
-                        shareTarget = network
-                    } label: {
-                        Label("QR", systemImage: "qrcode")
-                            .font(.caption2)
+                        .fixedSize(horizontal: false, vertical: true)
                     }
-                    .buttonStyle(.borderless)
-                    .help("Create a guest QR code for this network")
                 }
-                .width(56)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private func qrCard(_ network: KnownNetwork) -> some View {
+        ToolkitCard {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "qrcode")
+                    .font(.title3)
+                    .foregroundColor(.accentColor)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Guest QR code").font(.callout.weight(.semibold))
+                    Text(
+                        "Create a QR code for guests. You type the password; LanFi does not read the saved one and never stores it."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Button {
+                    shareTarget = network
+                } label: {
+                    Label("Create QR…", systemImage: "qrcode")
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
         }
     }
 
@@ -128,6 +250,7 @@ struct KnownNetworksToolView: View {
             KnownNetworksService().preferredNetworks()
         }.value
         networks = names
+        if selectedSSID == nil { selectedSSID = names.first?.id }
         if names.isEmpty {
             errorMessage =
                 "macOS returned no saved networks. This can happen when Wi-Fi is off or System Settings has no preferred networks."
@@ -150,59 +273,48 @@ private struct KnownNetworkQRSheet: View {
     }
 
     private var image: NSImage? {
-        QRCode.image(for: payload, scale: 8)
+        QRCode.image(for: payload, scale: 10)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Guest QR code").font(.title3.bold())
-            Text(
-                "The password is only used to build this code. LanFi does not store it and cannot read the saved password from System Settings."
-            )
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-
-            Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 10) {
-                GridRow {
-                    Text("Network").font(.caption).foregroundColor(.secondary)
-                    Text(ssid).font(.callout).textSelection(.enabled)
-                }
-                GridRow {
-                    Text("Security").font(.caption).foregroundColor(.secondary)
-                    Picker("Security", selection: $security) {
-                        ForEach(WiFiQRPayload.Security.allCases) { option in
-                            Text(option.title).tag(option)
-                        }
-                    }
-                    .labelsHidden()
-                    .frame(width: 190)
-                }
-                GridRow {
-                    Text("Password").font(.caption).foregroundColor(.secondary)
-                    SecureField("Network password", text: $password)
-                        .textFieldStyle(.roundedBorder)
-                        .disabled(security == .open)
-                }
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Guest QR code").font(.title3.bold())
+                Text("Scanning joins the network without typing the password.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
 
-            HStack(alignment: .top, spacing: 18) {
-                if let image {
-                    Image(nsImage: image)
-                        .interpolation(.none)
-                        .frame(width: 180, height: 180)
-                        .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
-                } else {
-                    Text("QR generation failed.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Payload").font(.caption2).foregroundColor(.secondary)
-                    Text(payload)
-                        .font(.caption.monospaced())
-                        .textSelection(.enabled)
-                        .lineLimit(4)
+            HStack(alignment: .top, spacing: 22) {
+                VStack(alignment: .leading, spacing: 12) {
+                    field("Network") {
+                        Text(ssid)
+                            .font(.callout)
+                            .lineLimit(1)
+                            .textSelection(.enabled)
+                    }
+                    field("Security") {
+                        Picker("Security", selection: $security) {
+                            ForEach(WiFiQRPayload.Security.allCases) { option in
+                                Text(option.title).tag(option)
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(width: 210)
+                    }
+                    field("Password") {
+                        SecureField("Network password", text: $password)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 240)
+                            .disabled(security == .open)
+                    }
+                    Text(
+                        "The password is only used to build this code. LanFi does not store it and cannot read the saved password from System Settings."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
                     Button(didCopy ? "Copied" : "Copy payload") {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(payload, forType: .string)
@@ -211,16 +323,49 @@ private struct KnownNetworkQRSheet: View {
                     .controlSize(.small)
                     .disabled(security != .open && password.isEmpty)
                 }
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                VStack(spacing: 8) {
+                    if let image {
+                        Image(nsImage: image)
+                            .interpolation(.none)
+                            .resizable()
+                            .frame(width: 220, height: 220)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+                    } else {
+                        RoundedRectangle(cornerRadius: DesignToken.Radius.card)
+                            .fill(Color.secondary.opacity(0.1))
+                            .frame(width: 220, height: 220)
+                            .overlay(
+                                Text("QR generation failed")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary))
+                    }
+                    Text(payload)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                        .frame(width: 220)
+                        .textSelection(.enabled)
+                }
             }
-            .padding(.top, 4)
 
             HStack {
-                Button("Close") { dismiss() }
                 Spacer()
+                Button("Close") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
             }
         }
-        .padding(18)
-        .frame(width: 520)
+        .appSheet(width: DesignToken.Layout.sheetWidth)
+    }
+
+    private func field<Content: View>(
+        _ label: LocalizedStringKey, @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label).font(.caption).foregroundColor(.secondary)
+            content()
+        }
     }
 }

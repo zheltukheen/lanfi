@@ -57,7 +57,7 @@ struct InterfacesView: View {
                                     CompactInterfaceRow(interface: item)
                                 }
                             }
-                            .padding(.top, 6)
+                            .padding(.top, DesignToken.Spacing.tight)
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "eye.slash")
@@ -77,7 +77,7 @@ struct InterfacesView: View {
                     }
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
         }
         .background(Color(nsColor: .controlBackgroundColor))
         .task {
@@ -124,6 +124,7 @@ struct InterfacesView: View {
             .controlSize(.small)
             .disabled(interfaces.isScanning)
             .help("Refresh")
+            .accessibilityLabel("Refresh interfaces")
             Button {
                 interfaces.copyReport()
             } label: {
@@ -131,6 +132,7 @@ struct InterfacesView: View {
             }
             .controlSize(.small)
             .help("Copy interface report")
+            .accessibilityLabel("Copy interface report")
         }
     }
 
@@ -156,7 +158,7 @@ struct InterfacesView: View {
                 .buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity)
-        .padding(30)
+        .padding(DesignToken.Spacing.emptyState)
     }
 }
 
@@ -231,12 +233,12 @@ private struct PrimaryInterfaceCard: View {
                 }
             }
         }
-        .padding(14)
+        .padding(DesignToken.Spacing.card)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
                 .stroke(
                     Color.blue.opacity(contrast == .increased ? 0.8 : 0.25),
                     lineWidth: contrast == .increased ? 2 : 1)
@@ -253,7 +255,7 @@ private struct PrimaryInterfaceCard: View {
         Text(interface.statusLabel)
             .font(.caption2.weight(.semibold))
             .foregroundColor(interface.isUp ? .green : .secondary)
-            .padding(.horizontal, 7)
+            .padding(.horizontal, DesignToken.Spacing.small)
             .padding(.vertical, 2)
             .background(
                 (interface.isUp ? Color.green : Color.secondary).opacity(0.10),
@@ -283,7 +285,7 @@ private struct CompactInterfaceRow: View {
     var body: some View {
         DisclosureGroup {
             InterfaceFacts(interface: interface)
-                .padding(.top, 7)
+                .padding(.top, DesignToken.Spacing.small)
         } label: {
             HStack(spacing: 7) {
                 Image(systemName: interface.kind.systemImage)
@@ -300,7 +302,7 @@ private struct CompactInterfaceRow: View {
                     Text("PRIMARY")
                         .font(.system(size: 7, weight: .bold))
                         .foregroundColor(.blue)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, DesignToken.Spacing.tight)
                         .padding(.vertical, 1)
                         .background(Color.blue.opacity(0.12), in: Capsule())
                 }
@@ -315,11 +317,13 @@ private struct CompactInterfaceRow: View {
             }
             .contentShape(Rectangle())
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.small)
+        .background(
+            Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+        )
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                 .stroke(Color.secondary.opacity(0.12), lineWidth: 1))
     }
 

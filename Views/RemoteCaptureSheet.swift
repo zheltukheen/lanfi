@@ -48,7 +48,7 @@ struct RemoteCaptureSheet: View {
                     .disabled(isCapturing)
             }
         }
-        .padding(16)
+        .padding(DesignToken.Spacing.large)
         .frame(width: 460)
     }
 

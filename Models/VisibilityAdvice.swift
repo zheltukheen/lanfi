@@ -40,7 +40,7 @@ enum VisibilityAdvisor {
                         title: String(localized: "Not a preferred scanning channel"),
                         detail: String(
                             localized:
-                                "6 GHz channel \(network.channel) is not a PSC channel. macOS active scans probe PSC channels first, so this access point can appear late or not at all; a passive scan is needed to see it reliably."
+                                "6 GHz channel \(network.channel) is not a PSC channel. macOS active scans probe PSC channels first, so this access point can appear late or not at all; choose Passive or Directed scan mode to see it reliably."
                         )))
             }
         }
@@ -75,7 +75,7 @@ enum VisibilityAdvisor {
     static var emptyScanHint: String {
         String(
             localized:
-                "Missing a 6 GHz network? macOS active scans probe only the preferred scanning channels (PSC). An access point on another 6 GHz channel is found by passive scanning, which LanFi does not do yet."
+                "Missing a 6 GHz network? macOS active scans probe only the preferred scanning channels (PSC). Switch the scan mode to Passive or Directed to listen on every 6 GHz channel."
         )
     }
 }

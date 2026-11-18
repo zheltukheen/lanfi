@@ -3,6 +3,39 @@ import SwiftUI
 struct DNSPropagationToolView: View {
     @ObservedObject var model: DNSPropagationToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case resolver, value, queryTime, status
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .resolver: return String(localized: "Resolver")
+            case .value: return String(localized: "Value")
+            case .queryTime: return String(localized: "Query time")
+            case .status: return String(localized: "Status")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .resolver
+    @State private var sortAscending = true
+
+    private func sortedResults(_ rows: [DNSPropagationResult]) -> [DNSPropagationResult] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .resolver:
+                return lhs.resolver.name.localizedStandardCompare(rhs.resolver.name)
+                    == .orderedAscending
+            case .value:
+                return lhs.values.joined(separator: ", ")
+                    .localizedStandardCompare(rhs.values.joined(separator: ", "))
+                    == .orderedAscending
+            case .queryTime: return lhs.milliseconds < rhs.milliseconds
+            case .status: return (lhs.isSuccess ? 1 : 0) < (rhs.isSuccess ? 1 : 0)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -22,7 +55,7 @@ struct DNSPropagationToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -117,16 +150,19 @@ struct DNSPropagationToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Resolvers")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(model.host)
                         .font(.caption.monospaced())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(model.results) {
+                Table(sortedResults(model.results)) {
                     TableColumn("Resolver") { result in
                         HStack(spacing: 6) {
                             Circle()

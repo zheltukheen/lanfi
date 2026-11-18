@@ -20,7 +20,7 @@ struct MultiFloorSurveyView: View {
                 Spacer()
                 Button("Close") { dismiss() }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
             Divider()
             HStack(spacing: 18) {
                 Label("Tilt", systemImage: "rotate.3d")
@@ -32,7 +32,7 @@ struct MultiFloorSurveyView: View {
                     .controlSize(.small)
             }
             .font(.caption)
-            .padding(10)
+            .padding(DesignToken.Spacing.compact)
             Divider()
 
             GeometryReader { geo in
@@ -104,11 +104,11 @@ struct MultiFloorSurveyView: View {
                     .overlay(alignment: .topLeading) {
                         Text(floor.name)
                             .font(.caption.bold())
-                            .padding(.horizontal, 6)
+                            .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 3)
                             .background(.ultraThinMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 5))
-                            .padding(6)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
+                            .padding(DesignToken.Spacing.tight)
                     }
                     .overlay {
                         if showPrediction {
@@ -117,7 +117,7 @@ struct MultiFloorSurveyView: View {
                         }
                     }
             } else {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                     .fill(Color.secondary.opacity(0.12))
                     .frame(width: 300, height: 180)
                     .overlay(Text(floor.name).font(.headline))
@@ -130,9 +130,9 @@ struct MultiFloorSurveyView: View {
             .font(.caption2)
             .foregroundColor(.secondary)
         }
-        .padding(8)
+        .padding(DesignToken.Spacing.small)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
         .shadow(color: .black.opacity(0.25), radius: 10, y: 8)
         .rotation3DEffect(.degrees(tilt), axis: (x: 1, y: 0, z: 0), perspective: 0.45)
         .offset(x: offset * 32, y: offset * -spacing)

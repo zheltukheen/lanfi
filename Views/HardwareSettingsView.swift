@@ -36,7 +36,7 @@ struct HardwareSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
         .onAppear { if devices.isEmpty { refresh() } }
     }
 

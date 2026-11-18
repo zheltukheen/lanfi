@@ -1,111 +1,56 @@
 import AppKit
 import SwiftUI
 
+/// Bottom tab strip of the Wi-Fi workspace, built on the shared `AppTabBar`
+/// so the whole app uses one tab treatment.
 struct BottomPanelTabs: View {
     @Binding var selectedTab: Int
 
+    private var selection: Binding<String> {
+        Binding(
+            get: { String(selectedTab) },
+            set: { selectedTab = Int($0) ?? selectedTab }
+        )
+    }
+
     var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        HStack {
             Spacer()
-
-            TabGroup("OVERVIEW") {
-                TabButton(
-                    title: "Overview",
-                    icon: "sparkles",
-                    isSelected: selectedTab == 0,
-                    action: { selectedTab = 0 }
-                )
-            }
-
-            groupDivider
-
-            TabGroup("NETWORK") {
-                TabButton(
-                    title: "Profile",
-                    icon: "square.stack.3d.up",
-                    isSelected: selectedTab == 1,
-                    action: { selectedTab = 1 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "Raw Data",
-                    icon: "list.bullet.rectangle",
-                    isSelected: selectedTab == 3,
-                    action: { selectedTab = 3 }
-                )
-            }
-
-            groupDivider
-
-            TabGroup("RF") {
-                TabButton(
-                    title: "All Bands",
-                    icon: "rectangle.split.3x1",
-                    isSelected: selectedTab == 9,
-                    action: { selectedTab = 9 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "Spectrum",
-                    icon: "waveform.path.ecg",
-                    isSelected: selectedTab == 4,
-                    action: { selectedTab = 4 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "History",
-                    icon: "clock.arrow.circlepath",
-                    isSelected: selectedTab == 5,
-                    action: { selectedTab = 5 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "Monitor",
-                    icon: "waveform.path.ecg.rectangle",
-                    isSelected: selectedTab == 8,
-                    action: { selectedTab = 8 }
-                )
-                Divider().frame(height: 18)
-                TabButton(
-                    title: "Capture",
-                    icon: "record.circle",
-                    isSelected: selectedTab == 7,
-                    action: { selectedTab = 7 }
-                )
-            }
-
+            AppTabBar(
+                sections: [
+                    AppTabBar.Section(
+                        id: "overview",
+                        title: "OVERVIEW",
+                        items: [
+                            .init(id: "0", title: "Overview", icon: "sparkles")
+                        ]
+                    ),
+                    AppTabBar.Section(
+                        id: "network",
+                        title: "NETWORK",
+                        items: [
+                            .init(id: "1", title: "Profile", icon: "square.stack.3d.up"),
+                            .init(id: "3", title: "Raw Data", icon: "list.bullet.rectangle"),
+                        ]
+                    ),
+                    AppTabBar.Section(
+                        id: "rf",
+                        title: "RF",
+                        items: [
+                            .init(id: "9", title: "All Bands", icon: "rectangle.split.3x1"),
+                            .init(id: "4", title: "Spectrum", icon: "waveform.path.ecg"),
+                            .init(id: "5", title: "History", icon: "clock.arrow.circlepath"),
+                            .init(id: "8", title: "Monitor", icon: "waveform.path.ecg.rectangle"),
+                            .init(id: "7", title: "Capture", icon: "record.circle"),
+                        ]
+                    ),
+                ],
+                selection: selection
+            )
             Spacer()
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.vertical, DesignToken.Spacing.tight)
         .background(Material.bar)
-    }
-
-    private var groupDivider: some View {
-        Divider()
-            .frame(height: 30)
-            .padding(.horizontal, 8)
-            .padding(.bottom, 2)
-    }
-}
-
-struct TabGroup<Content: View>: View {
-    let title: LocalizedStringKey
-    @ViewBuilder var content: Content
-
-    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(spacing: 1) {
-            Text(title)
-                .font(.system(size: 8, weight: .semibold))
-                .tracking(0.8)
-                .foregroundColor(.secondary.opacity(0.75))
-            HStack(spacing: 0) { content }
-        }
-        .padding(.horizontal, 5)
     }
 }

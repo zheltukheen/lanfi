@@ -24,10 +24,10 @@ struct ComingSoonToolView: View {
                     Spacer()
                     ToolkitStatusPill(text: "Planned", tone: .neutral)
                 }
-                .padding(4)
+                .padding(DesignToken.Spacing.tight)
             }
         }
-        .padding(18)
+        .appContentPadding()
     }
 }
 
@@ -67,6 +67,6 @@ struct WiFiRedirectToolView: View {
                 }
             }
         }
-        .padding(18)
+        .appContentPadding()
     }
 }

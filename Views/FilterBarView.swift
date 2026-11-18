@@ -47,8 +47,8 @@ struct FilterBarView: View {
                 .help("Visible networks / networks in the scan")
             clearButton
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DesignToken.Spacing.medium)
+        .padding(.vertical, DesignToken.Spacing.small)
         .background(Material.bar)
         .overlay(
             Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)),
@@ -128,6 +128,7 @@ struct FilterBarView: View {
             }
             .buttonStyle(.borderless)
             .help(viewModel.isSortAscending ? "Ascending" : "Descending")
+            .accessibilityLabel(viewModel.isSortAscending ? "Sort ascending" : "Sort descending")
         }
     }
 
@@ -201,21 +202,21 @@ struct FilterBarView: View {
                 if !viewModel.quickFilters.isEmpty {
                     Text("\(viewModel.quickFilters.count)")
                         .font(.system(size: 9, weight: .bold))
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, DesignToken.Spacing.tight)
                         .padding(.vertical, 1)
                         .background(Color.accentColor.opacity(0.22), in: Capsule())
                 }
             }
             .font(.caption)
             .foregroundColor(.accentColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, DesignToken.Spacing.compact)
+            .padding(.vertical, DesignToken.Spacing.tight)
             .background(
-                RoundedRectangle(cornerRadius: 7)
+                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                     .fill(Color.accentColor.opacity(viewModel.quickFilters.isEmpty ? 0.10 : 0.20))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 7)
+                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                     .stroke(
                         Color.accentColor.opacity(viewModel.quickFilters.isEmpty ? 0.30 : 0.60),
                         lineWidth: 1)
@@ -256,7 +257,7 @@ struct FilterBarView: View {
                     }
                 }
             }
-            .padding(12)
+            .padding(DesignToken.Spacing.medium)
         }
         .frame(width: 320)
         .frame(maxHeight: 430)
@@ -273,6 +274,7 @@ struct FilterBarView: View {
         .buttonStyle(.borderless)
         .disabled(!viewModel.hasActiveFilters)
         .help("Clear all filters")
+        .accessibilityLabel("Clear all filters")
     }
 }
 
@@ -285,10 +287,10 @@ private struct FilterControlStyle: ViewModifier {
         content
             .font(.caption)
             .foregroundColor(active ? .accentColor : .primary)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 4)
+            .padding(.horizontal, DesignToken.Spacing.small)
+            .padding(.vertical, DesignToken.Spacing.tight)
             .background(
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                     .fill(active ? Color.accentColor.opacity(0.14) : Color.clear)
             )
     }
@@ -304,12 +306,13 @@ private struct FilterCategorySection: View {
     let column: FilterColumn
     let options: [(value: String, count: Int)]
     @Binding var selection: Set<String>
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var expanded = false
 
     var body: some View {
         VStack(spacing: 2) {
             Button {
-                withAnimation(.easeInOut(duration: 0.16)) { expanded.toggle() }
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { expanded.toggle() }
             } label: {
                 HStack(spacing: 7) {
                     Image(systemName: expanded ? "chevron.down" : "chevron.right")
@@ -330,7 +333,7 @@ private struct FilterCategorySection: View {
                             .foregroundColor(.accentColor)
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, DesignToken.Spacing.tight)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -350,7 +353,7 @@ private struct FilterCategorySection: View {
                         }
                     }
                 }
-                .padding(.leading, 20)
+                .padding(.leading, DesignToken.Spacing.sheet)
             }
         }
     }
@@ -378,10 +381,10 @@ private struct FilterCategorySection: View {
                 }
             }
             .padding(.vertical, 3)
-            .padding(.horizontal, 4)
+            .padding(.horizontal, DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
                     .fill(isSelected ? Color.accentColor.opacity(0.10) : Color.clear)
             )
             .contentShape(Rectangle())

@@ -27,6 +27,7 @@ struct ToolConsoleView: View {
                     }
                     .buttonStyle(.borderless)
                     .help("Toggle full screen")
+                    .accessibilityLabel("Toggle full screen")
                 }
                 Text(tool.description).font(.caption).foregroundColor(.secondary)
                 if executable == nil {
@@ -69,15 +70,15 @@ struct ToolConsoleView: View {
                         .font(.system(.caption, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
-                        .padding(8)
+                        .padding(DesignToken.Spacing.small)
                 }
                 .background(Color(nsColor: .textBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
             } else {
                 Text("Unknown tool").foregroundColor(.secondary)
             }
         }
-        .padding(16)
+        .padding(DesignToken.Spacing.large)
         .frame(minWidth: 800, minHeight: 520)
         .onAppear {
             tool = ToolCatalog.tool(id: toolID)
@@ -140,8 +141,8 @@ struct ToolConsoleView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(9)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+        .padding(DesignToken.Spacing.small)
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func install(_ package: String) {

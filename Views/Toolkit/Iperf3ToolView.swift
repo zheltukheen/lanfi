@@ -30,7 +30,7 @@ struct Iperf3ToolView: View {
                     historySection
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -160,8 +160,8 @@ struct Iperf3ToolView: View {
                 Spacer()
             }
         }
-        .padding(10)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+        .padding(DesignToken.Spacing.compact)
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private var statusText: String {
@@ -231,21 +231,60 @@ struct Iperf3ToolView: View {
         }
     }
 
+    private enum HistorySortKey: String, CaseIterable, Identifiable {
+        case when, server, direction, mbps
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .when: return String(localized: "When")
+            case .server: return String(localized: "Server")
+            case .direction: return String(localized: "Direction")
+            case .mbps: return String(localized: "Mbps")
+            }
+        }
+    }
+
+    @State private var sortKey: HistorySortKey = .when
+    @State private var sortAscending = false
+
+    private func sortedHistory(_ rows: [Iperf3Measurement]) -> [Iperf3Measurement] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .when: return lhs.testedAt < rhs.testedAt
+            case .server:
+                return "\(lhs.host):\(lhs.port)".localizedStandardCompare(
+                    "\(rhs.host):\(rhs.port)") == .orderedAscending
+            case .direction:
+                return lhs.direction.title.localizedStandardCompare(rhs.direction.title)
+                    == .orderedAscending
+            case .mbps:
+                return (lhs.headlineMegabitsPerSecond ?? .infinity)
+                    < (rhs.headlineMegabitsPerSecond ?? .infinity)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     private var historySection: some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "History")
+                    if !model.history.isEmpty {
+                        TableSortControl(
+                            options: HistorySortKey.allCases.map { ($0, $0.title) },
+                            selection: $sortKey, ascending: $sortAscending)
+                    }
                     Spacer()
                     Button("Clear history") { model.clearHistory() }
                         .buttonStyle(.borderless)
                         .font(.caption2)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(model.newestFirst) {
+                Table(sortedHistory(model.history)) {
                     TableColumn("When") { measurement in
                         Text(
                             measurement.testedAt.formatted(
@@ -261,7 +300,7 @@ struct Iperf3ToolView: View {
                         Text(measurement.direction.title)
                             .font(.caption)
                     }
-                    .width(110)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Mbps") { measurement in
                         Text(
                             measurement.headlineMegabitsPerSecond.map {

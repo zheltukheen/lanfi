@@ -1,5 +1,8 @@
+import AppKit
 import SwiftUI
 
+/// Task-oriented help: each topic answers one "how do I…" question and ships
+/// exactly one screenshot of the screen that task uses.
 struct HelpView: View {
     @State private var selection: String
     @State private var query = ""
@@ -37,10 +40,10 @@ struct HelpView: View {
                     TextField(HelpContent.searchPlaceholder, text: $query)
                         .textFieldStyle(.plain)
                 }
-                .padding(7)
+                .padding(DesignToken.Spacing.small)
                 .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 7))
-                .padding(10)
+                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+                .padding(DesignToken.Spacing.compact)
 
                 List(filtered, selection: $selection) { topic in
                     Label(topic.title, systemImage: topic.icon)
@@ -48,12 +51,12 @@ struct HelpView: View {
                 }
                 .listStyle(.sidebar)
             }
-            .navigationTitle("Help")
+            .navigationTitle(HelpContent.sidebarTitle)
         } detail: {
             if let selectedTopic {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: DesignToken.Spacing.large) {
+                        HStack(spacing: DesignToken.Spacing.compact) {
                             Image(systemName: selectedTopic.icon)
                                 .font(.system(size: 24))
                                 .foregroundColor(.accentColor)
@@ -65,8 +68,10 @@ struct HelpView: View {
                             }
                         }
 
+                        screenshot(selectedTopic)
+
                         ForEach(selectedTopic.sections) { section in
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
                                 Text(section.heading).font(.headline)
                                 ForEach(section.lines, id: \.self) { line in
                                     Text(line)
@@ -76,21 +81,22 @@ struct HelpView: View {
                             }
                         }
 
-                        if selectedTopic.id == "shortcuts" {
+                        if selectedTopic.id == "settings" {
                             shortcuts
                         }
 
                         Divider()
                         HStack {
                             Link(
-                                "Open README", destination: URL(string: "https://github.com/zheltukheen/lanfi#readme")!)
+                                "Open README",
+                                destination: URL(string: "https://github.com/zheltukheen/lanfi#readme")!)
                             Link(
                                 "Report an issue",
                                 destination: URL(string: "https://github.com/zheltukheen/lanfi/issues")!)
                         }
                         .font(.caption)
                     }
-                    .padding(22)
+                    .padding(DesignToken.Spacing.section)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .navigationTitle(selectedTopic.title)
@@ -101,14 +107,48 @@ struct HelpView: View {
             }
         }
         .navigationSplitViewColumnWidth(min: 250, ideal: 290)
-        .frame(minWidth: 760, minHeight: 560)
+        .frame(minWidth: 860, minHeight: 620)
+    }
+
+    /// One screenshot per topic, with a caption that says what to look at.
+    private func screenshot(_ topic: HelpTopic) -> some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
+            if let image = HelpScreenshot.image(named: topic.screenshot) {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignToken.Radius.card)
+                            .strokeBorder(
+                                Color.primary.opacity(0.10),
+                                lineWidth: DesignToken.Stroke.hairline)
+                    )
+                    .accessibilityLabel(topic.screenshotCaption)
+            } else {
+                RoundedRectangle(cornerRadius: DesignToken.Radius.card)
+                    .fill(Color(nsColor: .controlBackgroundColor))
+                    .frame(height: 140)
+                    .overlay(
+                        Label("Screenshot unavailable", systemImage: "photo")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    )
+            }
+            Text(topic.screenshotCaption)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var shortcuts: some View {
         VStack(alignment: .leading, spacing: 5) {
+            Text("Keyboard shortcuts").font(.headline)
             shortcut("⌘R", HelpContent.refresh)
             shortcut("⌘F", HelpContent.search)
-            shortcut("⌘1…⌘7", HelpContent.switchPanel)
+            shortcut("⌘1…⌘9", HelpContent.switchPanel)
             shortcut("⌘⇧P", HelpContent.liveCapture)
             shortcut("⌘⇧D", HelpContent.diagnostics)
             shortcut("⌘⇧M", HelpContent.survey)
@@ -121,10 +161,10 @@ struct HelpView: View {
         HStack {
             Text(key)
                 .font(.caption.monospaced().bold())
-                .padding(.horizontal, 7)
+                .padding(.horizontal, DesignToken.Spacing.small)
                 .padding(.vertical, 3)
                 .background(Color.secondary.opacity(0.10))
-                .clipShape(RoundedRectangle(cornerRadius: 5))
+                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
             Text(label).font(.caption)
         }
     }
@@ -135,6 +175,9 @@ struct HelpTopic: Identifiable {
     let title: String
     let summary: String
     let icon: String
+    /// Resource name (without extension) in the app bundle.
+    let screenshot: String
+    let screenshotCaption: String
     let sections: [HelpSection]
 }
 
@@ -150,9 +193,19 @@ struct HelpSection: Identifiable {
     }
 }
 
+enum HelpScreenshot {
+    static func image(named name: String) -> NSImage? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png") else {
+            return nil
+        }
+        return NSImage(contentsOf: url)
+    }
+}
+
 private enum HelpContent {
     static let isRussian = Locale.current.language.languageCode?.identifier == "ru"
-    static var searchPlaceholder: String { isRussian ? "Поиск по справке" : "Search help" }
+    static var searchPlaceholder: String { isRussian ? "Поиск по задачам" : "Search tasks" }
+    static var sidebarTitle: String { isRussian ? "Что нужно сделать" : "What do you want to do?" }
     static var refresh: String { isRussian ? "Обновить скан" : "Refresh scan" }
     static var search: String { isRussian ? "Поиск сетей" : "Search networks" }
     static var switchPanel: String { isRussian ? "Переключить нижнюю панель" : "Switch bottom panel" }
@@ -168,289 +221,170 @@ private enum HelpContent {
 
     private static let english: [HelpTopic] = [
         HelpTopic(
-            id: "start", title: "Getting started", summary: "First scan, permissions and the main window.",
+            id: "first-scan",
+            title: "Run your first scan",
+            summary: "Grant access, pick a scan mode and read the network list.",
             icon: "sparkles",
+            screenshot: "help-analyzer",
+            screenshotCaption:
+                "The Wi-Fi Analyzer: table and inspector above, All Bands chart below.",
             sections: [
                 HelpSection(
-                    "First launch",
+                    "1. Allow Wi-Fi names",
                     [
-                        "Allow Location Services so macOS can reveal SSIDs and BSSIDs. Without it, scanning still works but names and BSSID values may be hidden.",
-                        "The main table shows nearby networks. Select a row to open Network Details; ⌘-click or ⇧-click selects several rows.",
-                        "The bottom panel has Overview, Profile, Interfaces, Raw Data, Spectrum, History and Diagnostics.",
+                        "Click Allow Access when macOS asks for Location. LanFi uses it only so macOS reveals SSIDs and BSSIDs; without it scans still run but names stay hidden.",
+                        "Settings → Wi-Fi chooses the interface when the Mac has more than one radio. The toolbar shows which one is scanning.",
+                        "Press ⌘R to scan immediately. The gear menu sets the interval, minimum signal and when inactive networks disappear.",
                     ]),
                 HelpSection(
-                    "What the score means",
+                    "2. Pick a scan mode",
                     [
-                        "Quality combines signal, SNR, channel overlap, reported utilization and security posture.",
-                        "Channel recommendations rank the quietest usable channel for each band, including DFS notes.",
+                        "Active is the normal macOS scan: fast, but 6 GHz standard-power and non-PSC access points can be missing.",
+                        "Passive listens in monitor mode on every supported channel. It needs one administrator authorization and finds beacon-only and non-PSC 6 GHz networks.",
+                        "Directed listens only on the channels you choose. Use it to check one 6 GHz channel or to work around Apple N1 hardware that cannot hop channels reliably.",
+                    ]),
+                HelpSection(
+                    "3. Read the results",
+                    [
+                        "The table lists every network; select a row to see radio, security, roaming and vendor details in the inspector. Click the marker on the All Bands chart to select a network there.",
+                        "The ? button above the All Bands chart explains every mark in the chart.",
+                        "Band chips, the signal threshold, grouping and search narrow the list. Display → Columns controls which table columns appear.",
                     ]),
             ]
         ),
         HelpTopic(
-            id: "scan", title: "Scanning & filters", summary: "Refresh, bands, search, sorting and grouping.",
-            icon: "wifi",
+            id: "connections",
+            title: "See what this Mac is connecting to",
+            summary: "List the TCP connections and listening sockets per process.",
+            icon: "arrow.left.arrow.right",
+            screenshot: "help-connections",
+            screenshotCaption:
+                "Connections: per-process TCP endpoints, filterable by process, address or PID.",
             sections: [
                 HelpSection(
-                    "Scanning",
+                    "Open the list",
                     [
-                        "⌘R refreshes immediately. The gear menu changes the scan interval, minimum signal and inactive-network expiry.",
-                        "The 2.4/5/6 chips filter by band; the 7 chip filters Wi-Fi 7 (802.11be) networks.",
+                        "Network Tools → Connections. Refresh re-reads the table; Include listening sockets adds servers waiting for clients.",
+                        "The filter matches process name, address or PID. The counts at the top summarise connections, processes and listeners.",
                     ]),
                 HelpSection(
-                    "Filters & sorting",
+                    "Read a row",
                     [
-                        "Open the Filters sidebar from the toolbar or Display → Show Filters Sidebar.",
-                        "Click a section title to expand it. Click several values to combine them; All clears that category. The sort popover controls sorting; the arrow button changes direction.",
-                        "Grouping, signal units and column profiles live in Display.",
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "profile", title: "Profile & Interfaces",
-            summary: "Per-network protocol blocks and all BSD interfaces.",
-            icon: "square.stack.3d.up",
-            sections: [
-                HelpSection(
-                    "Profile",
-                    [
-                        "Select one network to inspect seven blocks: Radio & PHY, Wi-Fi 7 & MLO, Security & trust, Spectrum & airtime, Roaming & mobility, Network format, Vendor & capabilities.",
-                        "The block header states which network is selected. No row selected means the all-network overview.",
-                    ]),
-                HelpSection(
-                    "Interfaces",
-                    [
-                        "Interfaces lists every BSD interface, including VPN tunnels, bridges, AWDL and loopback.",
-                        "Inactive interfaces are collapsed. Active cards show addresses, MTU, speed, traffic and Wi-Fi association.",
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "toolkit", title: "Network Toolkit",
-            summary: "The main window: grouped tools, search and live status.",
-            icon: "square.grid.2x2",
-            sections: [
-                HelpSection(
-                    "Finding a tool",
-                    [
-                        "The sidebar groups tools by Wi-Fi, Monitoring, Diagnostics, DNS & Domains and Network Tools. Type in Search tools to filter by name or description.",
-                        "Unavailable tools stay visible with a Soon badge so the map of the toolkit stays honest.",
-                    ]),
-                HelpSection(
-                    "Reading results",
-                    [
-                        "Every tool uses the same cards, metrics and status pills. Green means ready or healthy, orange needs attention, and a spinner means a probe is running.",
-                        "Stop cancels a running probe without closing the screen. Copy exports the visible result to the clipboard.",
-                    ]),
-                HelpSection(
-                    "Help",
-                    [
-                        "Press ⌘? or click the question mark in the toolbar to open this window. Settings → General has the same button."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "lan", title: "LAN Scanner & Device Shelf",
-            summary: "What is on the network: names, models, services, ports and history.",
-            icon: "desktopcomputer",
-            sections: [
-                HelpSection(
-                    "What LanFi reads",
-                    [
-                        "ARP plus a fast ICMP sweep find addresses. Bonjour/mDNS TXT records, SSDP/UPnP descriptions and TCP banners supply the device's own name, manufacturer, model, firmware version, role and services. Reverse DNS adds host names.",
-                        "This is why a device can be labelled even when you never typed its name: the device advertises the data itself.",
-                    ]),
-                HelpSection(
-                    "Reading the inspector",
-                    [
-                        "Kind and Role answer what the device is. Manufacturer, Model and Version answer which one it is. IP, MAC, Network and Gateway answer where it is. Advertised services and open ports answer how it can be reached.",
-                        "Detect versions reads banners from every open port and fills in the software running behind them.",
-                    ]),
-                HelpSection(
-                    "Device Shelf",
-                    [
-                        "Every device is kept across scans with your alias, type, notes, availability, latency history and risk findings. New devices are flagged only when Guard this network is on.",
-                        "Export CSV or JSON from the shelf menu. Names and notes survive rescans and DHCP changes.",
-                    ]),
-                HelpSection(
-                    "If fields are empty",
-                    [
-                        "Most devices publish nothing. Allow Local Network access, scan again, and prefer a network where multicast (mDNS/SSDP) is not blocked by client isolation."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "monitor", title: "Network Monitor",
-            summary: "How this Mac is connected: primary interface, addresses, router and routes.",
-            icon: "waveform.path.ecg",
-            sections: [
-                HelpSection(
-                    "Overview",
-                    [
-                        "The primary interface card shows the address, router, DNS, Wi-Fi and traffic that matter. Other active interfaces stay collapsed; open one to see MTU, speed, IPv6 and counters. Inactive interfaces are hidden under a disclosure."
-                    ]),
-                HelpSection(
-                    "Routes",
-                    [
-                        "The Routes tab reads the IPv4 routing table. The default route for the primary interface is highlighted; Refresh re-reads netstat."
-                    ]),
-                HelpSection(
-                    "Auto-refresh",
-                    [
-                        "Overview refreshes every eight seconds while Auto-refresh is on. Copy writes the full interface report to the clipboard."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "mcp", title: "MCP for AI agents",
-            summary: "Connect Claude, Cursor or another MCP client to LanFi.",
-            icon: "sparkles",
-            sections: [
-                HelpSection(
-                    "How it works",
-                    [
-                        "The app publishes the live scan to ~/Library/Application Support/LanFi/mcp/latest-scan.json. The lanfi-cli mcp command serves that snapshot and the toolkit probes over stdio. No cloud, account or telemetry is involved."
-                    ]),
-                HelpSection(
-                    "Setup",
-                    [
-                        "Build or install lanfi-cli, then add the command and args [\"mcp\"] to your client's MCP configuration. Settings → MCP copies a ready config and remembers the binary path."
-                    ]),
-                HelpSection(
-                    "Tools",
-                    [
-                        "Agents can read scan summaries, analysis, protocols, channels, captures and spectrum traces; run ping, traceroute, MTR, port and path checks, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, iperf3 and speed tests; and read the Device Shelf, uptime and diagnostics."
+                        "Process and PID tell you who owns the socket. Local and Remote are the two endpoints, and State is the TCP state — ESTABLISHED is an open session, LISTEN waits for a client.",
+                        "Sort by remote endpoint to spot unexpected destinations, or filter by one app to see everything it talks to.",
                     ]),
                 HelpSection(
                     "Privacy",
                     [
-                        "The server runs locally and reads files you already have. Turn off Publish the latest scan for MCP clients in Settings → MCP to stop writing the snapshot."
+                        "The list comes from a read-only lsof snapshot taken on this Mac. Nothing is uploaded or stored."
                     ]),
             ]
         ),
         HelpTopic(
-            id: "charts", title: "Spectrum & History", summary: "RF charts and dynamic signal scaling.",
-            icon: "waveform.path.ecg",
-            sections: [
-                HelpSection(
-                    "Spectrum",
-                    [
-                        "Bars show occupied channel width; height is signal strength. Click a network to select it."
-                    ]),
-                HelpSection(
-                    "History",
-                    [
-                        "History keeps the last three minutes of signal samples. Its Y axis auto-scales to the observed range; it no longer pins everything to the bottom."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "diagnostics", title: "Diagnostics", summary: "Health score, checks, monitoring and support bundles.",
+            id: "diagnose",
+            title: "Diagnose a slow or broken connection",
+            summary: "Run the health checks, follow the path and drill into one hop.",
             icon: "stethoscope",
+            screenshot: "help-diagnostics",
+            screenshotCaption:
+                "Internet Check: health verdict, the Mac → router → internet → DNS → web path and per-check details.",
             sections: [
                 HelpSection(
-                    "Reading the report",
+                    "Run a check",
                     [
-                        "The health score summarises passed, warning and failed checks. Checks are grouped by link, network, DNS, internet, performance and security.",
-                        "Recommendations appear in orange under a failing or warning check.",
-                        "Monitoring reruns the checks every 60 seconds; the last 12 reports persist.",
+                        "Diagnostics → Internet Check. Quick checks link, gateway, DNS and web; Full adds latency and more probes.",
+                        "Monitor every 60 s repeats the run and keeps the last 12 reports. Copy puts the visible report on the clipboard.",
                     ]),
                 HelpSection(
-                    "Support",
+                    "Read the path",
                     [
-                        "Export Diagnostics Bundle from the report header or Settings → Diagnostics. It includes the report, history, interfaces, system version and local crash logs. No telemetry is sent."
+                        "The strip shows This Mac → Router → Internet → DNS → Web. A green segment works, amber is slow or partial, red failed.",
+                        "Open Details for the numbers behind each step, including latency and packet loss. Orange recommendations say what to try next.",
+                    ]),
+                HelpSection(
+                    "Go deeper",
+                    [
+                        "Ping and Traceroute/MTR test latency and the route hop by hop. DNS Lookup and DNS Propagation check resolution, Speed Test measures throughput, and SSL Certificate inspects the TLS chain.",
+                        "Export Diagnostics Bundle from the report header when you want to share the state of the connection.",
                     ]),
             ]
         ),
         HelpTopic(
-            id: "capture", title: "Live & offline capture",
-            summary: "BPF captures, pcap/pcapng and monitor-mode limitations.",
-            icon: "waveform.badge.magnifyingglass",
-            sections: [
-                HelpSection(
-                    "Live capture",
-                    [
-                        "Tools → Live Capture. macOS asks for administrator authorization because BPF requires root.",
-                        "Each capture has a unique file and a hard stop. Built-in Apple Wi-Fi adapters often expose monitor mode but deliver zero frames; use an external monitor-capable adapter for 802.11.",
-                        "The synthetic PCAP export reconstructs beacons from visible networks and always works.",
-                    ]),
-                HelpSection(
-                    "Offline analysis",
-                    [
-                        "Tools → Analyze Packet Capture reads pcap/pcapng with radiotap or bare 802.11. RAW IP and Ethernet captures are rejected because they contain no Wi-Fi beacons.",
-                        "After a live capture, use Analyze capture to open the same file.",
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "survey", title: "Site Survey", summary: "Floor plans, samples, walls and PDF reports.",
+            id: "coverage",
+            title: "Measure Wi-Fi coverage",
+            summary: "Record RSSI samples on a floor plan and turn them into a heatmap.",
             icon: "map",
+            screenshot: "help-survey",
+            screenshotCaption:
+                "Site Survey: floor-plan canvas, coverage summary, sample tools and the RSSI legend.",
             sections: [
                 HelpSection(
-                    "Recording",
+                    "Record samples",
                     [
-                        "Import a floor plan, choose the network, then click to record RSSI. Each click is a sample.",
-                        "Draw Wall requires two clicks. Walls attenuate samples whose path crosses them, and persist with the project.",
-                        "Use + to create another floor project. Export PDF creates a report with the plan, heatmap, points and legend.",
-                    ])
-            ]
-        ),
-        HelpTopic(
-            id: "remote", title: "Remote sensors", summary: "SSH scans from another Mac.",
-            icon: "server.rack",
-            sections: [
-                HelpSection(
-                    "Setup",
-                    [
-                        "Enable Remote Login on the sensor Mac and authorize your SSH key. Add the host, user, port and optional key in Tools → Remote Sensors.",
-                        "Auto 60 s reruns the sensor scan. SSIDs may be redacted by the remote Mac's privacy settings.",
-                    ])
-            ]
-        ),
-        HelpTopic(
-            id: "automation", title: "CLI & deep links", summary: "Automation and URL commands.",
-            icon: "terminal",
-            sections: [
-                HelpSection(
-                    "CLI",
-                    [
-                        "lanfi-cli summary scan.json [--json]",
-                        "lanfi-cli protocols scan.json",
-                        "lanfi-cli pcap capture.pcapng [--json]",
-                        "lanfi-cli mcp   # MCP server for AI agents (see the MCP topic)",
+                        "Wi-Fi → Site Survey. Import a floor plan or start a blank metre grid, then choose the network you are measuring.",
+                        "Click each spot you want to record. Draw Wall takes two clicks; walls attenuate samples whose path crosses them and stay with the project. + adds another floor.",
+                        "Samples can also carry GPS coordinates, and a GPX track can be imported or exported from the Map tab.",
                     ]),
                 HelpSection(
-                    "Deep links",
+                    "Read the heatmap",
                     [
-                        "lanfi://tab/interfaces · lanfi://tab/protocols · lanfi://search?q=AX55 · lanfi://diagnostics/run"
+                        "Colour runs from red at −90 dBm to green at −40 dBm. Cool areas are strong; red or empty areas are where clients will struggle.",
+                        "Survey planning estimates how many access points the space needs and where to put them, and tracks which planned spots are still unsampled.",
+                        "Export PDF creates a report with the plan, heatmap, points and legend.",
                     ]),
             ]
         ),
         HelpTopic(
-            id: "shortcuts", title: "Keyboard shortcuts", summary: "Frequent commands.",
-            icon: "keyboard",
-            sections: [HelpSection("Keys", ["Use the shortcuts listed below."])]
-        ),
-        HelpTopic(
-            id: "privacy", title: "Privacy & troubleshooting", summary: "Data storage, logs and ad-hoc builds.",
-            icon: "lock.shield",
+            id: "process-traffic",
+            title: "Find the app using your bandwidth",
+            summary: "See per-process download and upload rates without leaving the Mac.",
+            icon: "chart.bar.xaxis",
+            screenshot: "help-traffic",
+            screenshotCaption:
+                "Process Traffic is opt-in: rates appear only after you enable the read-only sampler.",
             sections: [
                 HelpSection(
-                    "Privacy",
+                    "Turn it on",
                     [
-                        "LanFi has no account, telemetry or cloud. Scan data stays in memory unless you save a session or survey.",
-                        "Annotations, sessions, surveys, vendor overrides and crash logs live in ~/Library/Application Support/LanFi and ~/Library/Logs/LanFi.",
+                        "Network Tools → Process Traffic, then enable the toggle. LanFi runs Apple's read-only nettop twice a second apart and keeps only process names, PIDs and byte deltas in memory.",
+                        "Switch it off and the rates disappear immediately.",
                     ]),
                 HelpSection(
-                    "Ad-hoc build",
+                    "Read the list",
                     [
-                        "This build is ad-hoc signed because there is no Apple Developer account. On first launch, right-click LanFi.app → Open, or use Homebrew.",
-                        "Settings → General contains the Homebrew command and release link.",
+                        "Rows show the process, its PID and the download and upload rate over the sample window. Sort by rate to find the top talker.",
+                        "The menu-bar meter shows the same totals for the whole Mac; open it for a live sparkline and the connected link.",
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "settings",
+            title: "Set up, update and automate",
+            summary: "Preferences, updates, automation and what to do when a screen is empty.",
+            icon: "gearshape",
+            screenshot: "help-settings",
+            screenshotCaption:
+                "Settings → General: appearance and density, startup, updates and menu-bar options.",
+            sections: [
+                HelpSection(
+                    "Settings",
+                    [
+                        "Appearance controls theme, table density, high contrast and the colour-blind-safe palette. Startup sets the login item, scan on launch and the refresh interval.",
+                        "Updates use Sparkle; Check Now and Release Notes live in the Updates card. Menu Bar picks the label, metric and throughput unit.",
+                        "Settings → Wi-Fi chooses the radio, Diagnostics keeps the bundle options, and MCP controls the AI-agent snapshot.",
                     ]),
                 HelpSection(
-                    "If something is empty",
+                    "Automation",
                     [
-                        "Check Location Services for SSID/BSSID. Check the selected Wi-Fi interface in Settings → Wi-Fi.",
-                        "If live monitor capture writes 0 frames, the built-in adapter does not support it; use an external adapter or synthetic PCAP.",
+                        "MCP: the app publishes the live scan and lanfi-cli mcp serves it to Claude, Cursor or another MCP client over stdio. Settings → MCP copies a ready configuration.",
+                        "CLI: lanfi-cli summary scan.json, protocols, pcap and mcp. Deep links: lanfi://tab/interfaces · lanfi://search?q=AX55 · lanfi://diagnostics/run.",
+                    ]),
+                HelpSection(
+                    "If a screen is empty",
+                    [
+                        "Check Location Services for SSID/BSSID and the selected interface in Settings → Wi-Fi.",
+                        "If monitor capture writes zero frames, the built-in adapter does not deliver them; use an external monitor-capable adapter.",
+                        "This build is ad-hoc signed: on first launch use right-click → Open, or install with Homebrew. LanFi has no account, telemetry or cloud; scan data stays on this Mac.",
                     ]),
             ]
         ),
@@ -458,287 +392,170 @@ private enum HelpContent {
 
     private static let russian: [HelpTopic] = [
         HelpTopic(
-            id: "start", title: "С чего начать", summary: "Первый скан, разрешения и главное окно.",
+            id: "first-scan",
+            title: "Запустить первый скан",
+            summary: "Выдать доступ, выбрать режим и прочитать список сетей.",
             icon: "sparkles",
+            screenshot: "help-analyzer",
+            screenshotCaption:
+                "Анализатор Wi-Fi: таблица и инспектор сверху, график All Bands снизу.",
             sections: [
                 HelpSection(
-                    "Первый запуск",
+                    "1. Разрешите имена Wi-Fi",
                     [
-                        "Разрешите Location Services, чтобы macOS раскрыла SSID и BSSID. Без этого скан работает, но имена и BSSID могут быть скрыты.",
-                        "Таблица показывает nearby-сети. Выберите строку для Network Details; ⌘-клик или ⇧-клик выделяет несколько.",
-                        "Нижняя панель: Overview, Profile, Interfaces, Raw Data, Spectrum, History и Diagnostics.",
+                        "Нажмите «Разрешить доступ», когда macOS спросит Location. LanFi использует его только для того, чтобы macOS раскрыла SSID и BSSID; без разрешения скан работает, но имена скрыты.",
+                        "Settings → Wi-Fi выбирает интерфейс, если в Mac несколько радио. В toolbar видно, каким идёт скан.",
+                        "⌘R запускает скан сразу. Шестерёнка задаёт интервал, минимальный сигнал и удаление неактивных сетей.",
                     ]),
                 HelpSection(
-                    "Что означает оценка",
+                    "2. Выберите режим скана",
                     [
-                        "Quality учитывает сигнал, SNR, перекрытие каналов, заявленную загрузку и security.",
-                        "Рекомендации каналов ранжируют самый свободный канал для каждого диапазона с учётом DFS.",
+                        "Active — обычный скан macOS: быстрый, но 6 GHz standard-power и non-PSC точки могут отсутствовать.",
+                        "Passive слушает в monitor mode на всех поддерживаемых каналах. Нужна одна авторизация администратора; находит beacon-only и non-PSC 6 GHz сети.",
+                        "Directed слушает только выбранные каналы. Удобно проверить один канал 6 GHz или обойти ограничение Apple N1, который ненадёжно переключает каналы.",
+                    ]),
+                HelpSection(
+                    "3. Прочитайте результат",
+                    [
+                        "Таблица перечисляет сети; выберите строку, чтобы увидеть radio, security, roaming и vendor в инспекторе. Клик по полосе на графике All Bands тоже выбирает сеть.",
+                        "Кнопка ? над графиком All Bands объясняет каждое обозначение.",
+                        "Чипы диапазонов, порог сигнала, группировка и поиск сужают список. Display → Columns управляет колонками.",
                     ]),
             ]
         ),
         HelpTopic(
-            id: "scan", title: "Скан и фильтры", summary: "Обновление, диапазоны, поиск, сортировка и группировка.",
-            icon: "wifi",
+            id: "connections",
+            title: "Узнать, куда подключается Mac",
+            summary: "TCP-соединения и слушающие сокеты по процессам.",
+            icon: "arrow.left.arrow.right",
+            screenshot: "help-connections",
+            screenshotCaption:
+                "Connections: TCP-эндпоинты по процессам с фильтром по имени, адресу или PID.",
             sections: [
                 HelpSection(
-                    "Скан",
+                    "Откройте список",
                     [
-                        "⌘R обновляет сразу. Шестерёнка меняет интервал, минимальный сигнал и удаление неактивных сетей.",
-                        "Чипы 2.4/5/6 фильтруют по диапазону; чип 7 — по Wi-Fi 7 (802.11be).",
+                        "Network Tools → Connections. Refresh перечитывает таблицу; Include listening sockets добавляет серверы, ожидающие клиентов.",
+                        "Фильтр ищет по имени процесса, адресу или PID. Счётчики сверху показывают соединения, процессы и слушателей.",
                     ]),
                 HelpSection(
-                    "Фильтры и сортировка",
+                    "Как читать строку",
                     [
-                        "Сайдбар Filters открывается из toolbar или Display → Show Filters Sidebar.",
-                        "Клик по заголовку секции раскрывает её. Несколько значений в категории объединяются; All сбрасывает категорию. Поповер Sort by задаёт поле; стрелка — направление.",
-                        "Группировка, единицы сигнала и профили колонок — в меню Display.",
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "profile", title: "Profile и интерфейсы", summary: "Блоки протоколов и все BSD-интерфейсы.",
-            icon: "square.stack.3d.up",
-            sections: [
-                HelpSection(
-                    "Profile",
-                    [
-                        "Выберите одну сеть, чтобы увидеть семь блоков: Radio & PHY, Wi-Fi 7 & MLO, Security & trust, Spectrum & airtime, Roaming & mobility, Network format, Vendor & capabilities.",
-                        "В шапке указано, какая сеть выбрана. Без выбора показывается обзор всех сетей.",
-                    ]),
-                HelpSection(
-                    "Interfaces",
-                    [
-                        "Interfaces перечисляет все BSD-интерфейсы, включая VPN, мосты, AWDL и loopback.",
-                        "Неактивные интерфейсы свёрнуты. Активные карточки показывают адреса, MTU, скорость, трафик и Wi-Fi.",
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "toolkit", title: "Network Toolkit",
-            summary: "Главное окно: сгруппированные инструменты, поиск и живой статус.",
-            icon: "square.grid.2x2",
-            sections: [
-                HelpSection(
-                    "Как найти инструмент",
-                    [
-                        "Сайдбар группирует инструменты по Wi-Fi, Monitoring, Diagnostics, DNS & Domains и Network Tools. Введите запрос в Search tools, чтобы фильтровать по названию или описанию.",
-                        "Недоступные инструменты остаются видимыми с бейджем Soon, чтобы карта toolkit была честной.",
-                    ]),
-                HelpSection(
-                    "Как читать результат",
-                    [
-                        "Все инструменты используют одинаковые карточки, метрики и статусы. Зелёный — готово или всё в порядке, оранжевый — требует внимания, спиннер — проба выполняется.",
-                        "Stop отменяет запущенную пробу, не закрывая экран. Copy копирует видимый результат в буфер обмена.",
-                    ]),
-                HelpSection(
-                    "Справка",
-                    [
-                        "Нажмите ⌘? или значок вопроса в toolbar, чтобы открыть это окно. Та же кнопка есть в Settings → General."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "lan", title: "LAN Scanner и Device Shelf",
-            summary: "Что есть в сети: имена, модели, сервисы, порты и история.",
-            icon: "desktopcomputer",
-            sections: [
-                HelpSection(
-                    "Что читает LanFi",
-                    [
-                        "ARP и быстрый ICMP-свип находят адреса. Записи Bonjour/mDNS TXT, описания SSDP/UPnP и TCP-баннеры дают собственное имя устройства, производителя, модель, версию прошивки, роль и сервисы. Reverse DNS добавляет hostname.",
-                        "Поэтому устройство подписывается, даже если вы никогда не вводили его имя: оно само сообщает эти данные в сеть.",
-                    ]),
-                HelpSection(
-                    "Как читать инспектор",
-                    [
-                        "Kind и Role отвечают, что это за устройство. Manufacturer, Model и Version — какое именно. IP, MAC, Network и Gateway — где оно находится. Advertised services и открытые порты — как до него добраться.",
-                        "Detect versions читает баннеры со всех открытых портов и показывает, какое ПО за ними работает.",
-                    ]),
-                HelpSection(
-                    "Device Shelf",
-                    [
-                        "Каждое устройство сохраняется между сканами с вашим именем, типом, заметками, доступностью, историей задержек и рисками. Новые устройства отмечаются, только если включён Guard this network.",
-                        "Export CSV или JSON — в меню полки. Имена и заметки переживают повторные сканы и смену адреса по DHCP.",
-                    ]),
-                HelpSection(
-                    "Если поля пустые",
-                    [
-                        "Большинство устройств ничего о себе не публикуют. Разрешите Local Network access, повторите скан и используйте сеть, где multicast (mDNS/SSDP) не блокируется изоляцией клиентов."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "monitor", title: "Network Monitor",
-            summary: "Как подключён этот Mac: основной интерфейс, адреса, роутер и маршруты.",
-            icon: "waveform.path.ecg",
-            sections: [
-                HelpSection(
-                    "Overview",
-                    [
-                        "Карточка основного интерфейса показывает главное: адрес, роутер, DNS, Wi-Fi и трафик. Остальные активные интерфейсы свёрнуты; раскройте нужный, чтобы увидеть MTU, скорость, IPv6 и счётчики. Неактивные интерфейсы спрятаны под disclosure."
-                    ]),
-                HelpSection(
-                    "Routes",
-                    [
-                        "Вкладка Routes читает таблицу IPv4-маршрутов. Маршрут по умолчанию для основного интерфейса подсвечен; Refresh перечитывает netstat."
-                    ]),
-                HelpSection(
-                    "Auto-refresh",
-                    [
-                        "Overview обновляется каждые восемь секунд, пока включён Auto-refresh. Copy копирует полный отчёт по интерфейсам в буфер обмена."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "mcp", title: "MCP для AI-агентов",
-            summary: "Подключите Claude, Cursor или другой MCP-клиент к LanFi.",
-            icon: "sparkles",
-            sections: [
-                HelpSection(
-                    "Как это работает",
-                    [
-                        "Приложение публикует живой скан в ~/Library/Application Support/LanFi/mcp/latest-scan.json. Команда lanfi-cli mcp отдаёт этот снимок и пробы toolkit по stdio. Облака, аккаунта и телеметрии нет."
-                    ]),
-                HelpSection(
-                    "Настройка",
-                    [
-                        "Соберите или установите lanfi-cli, затем добавьте command и args [\"mcp\"] в MCP-конфигурацию клиента. Settings → MCP копирует готовый конфиг и запоминает путь к бинарнику."
-                    ]),
-                HelpSection(
-                    "Инструменты",
-                    [
-                        "Агенты читают сводку скана, анализ, протоколы, каналы, захваты и spectrum; запускают ping, traceroute, MTR, проверку портов и пути, DNS, WHOIS, GeoIP, TLS, subnet, interfaces, routes, LAN discovery, iperf3 и speed test; читают Device Shelf, uptime и diagnostics."
+                        "Process и PID — кто владеет сокетом. Local и Remote — два эндпоинта, State — состояние TCP: ESTABLISHED означает открытую сессию, LISTEN — ожидание клиента.",
+                        "Сортируйте по удалённому адресу, чтобы заметить неожиданные направления, или отфильтруйте одно приложение.",
                     ]),
                 HelpSection(
                     "Приватность",
                     [
-                        "Сервер работает локально и читает файлы, которые уже есть на Mac. Отключите Publish the latest scan for MCP clients в Settings → MCP, чтобы перестать писать снимок."
+                        "Список строится из read-only снимка lsof на этом Mac. Ничего не отправляется и не сохраняется."
                     ]),
             ]
         ),
         HelpTopic(
-            id: "charts", title: "Spectrum и History", summary: "RF-графики и автомасштаб сигнала.",
-            icon: "waveform.path.ecg",
-            sections: [
-                HelpSection(
-                    "Spectrum",
-                    [
-                        "Ширина полосы показывает занятый канал, высота — уровень сигнала. Клик выбирает сеть."
-                    ]),
-                HelpSection(
-                    "History",
-                    [
-                        "History хранит последние три минуты. Ось Y автоматически масштабируется под наблюдаемый диапазон, а не всегда -100…0."
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "diagnostics", title: "Диагностика", summary: "Health score, проверки, мониторинг и support bundle.",
+            id: "diagnose",
+            title: "Найти причину медленного интернета",
+            summary: "Проверки здоровья, путь до интернета и разбор одного участка.",
             icon: "stethoscope",
+            screenshot: "help-diagnostics",
+            screenshotCaption:
+                "Internet Check: вердикт, путь Mac → роутер → интернет → DNS → web и детали проверок.",
             sections: [
                 HelpSection(
-                    "Как читать отчёт",
+                    "Запустите проверку",
                     [
-                        "Health score суммирует passed/warning/failed. Проверки сгруппированы по link, network, DNS, internet, performance и security.",
-                        "Рекомендации показываются оранжевым под проблемной проверкой.",
-                        "Мониторинг повторяет проверки каждые 60 секунд; последние 12 отчётов сохраняются.",
+                        "Diagnostics → Internet Check. Quick проверяет link, gateway, DNS и web; Full добавляет задержку и больше проб.",
+                        "Monitor every 60 s повторяет прогон и хранит последние 12 отчётов. Copy копирует отчёт в буфер.",
                     ]),
                 HelpSection(
-                    "Поддержка",
+                    "Прочитайте путь",
                     [
-                        "Export Diagnostics Bundle из шапки отчёта или Settings → Diagnostics. Внутри отчёт, история, интерфейсы, версия системы и локальные crash logs. Телеметрия не отправляется."
+                        "Полоса показывает This Mac → Router → Internet → DNS → Web. Зелёный участок работает, оранжевый медленный или частичный, красный — ошибка.",
+                        "В Details — цифры по каждому шагу, включая задержку и потери. Оранжевые рекомендации подсказывают следующий шаг.",
+                    ]),
+                HelpSection(
+                    "Копните глубже",
+                    [
+                        "Ping и Traceroute/MTR проверяют задержку и маршрут по хопам. DNS Lookup и DNS Propagation — резолвинг, Speed Test — скорость, SSL Certificate — цепочку TLS.",
+                        "Export Diagnostics Bundle в шапке отчёта сохраняет состояние соединения для передачи.",
                     ]),
             ]
         ),
         HelpTopic(
-            id: "capture", title: "Live и offline capture", summary: "BPF, pcap/pcapng и ограничения monitor mode.",
-            icon: "waveform.badge.magnifyingglass",
-            sections: [
-                HelpSection(
-                    "Live capture",
-                    [
-                        "Tools → Live Capture. macOS запросит администратора, потому что BPF требует root.",
-                        "У каждого захвата уникальный файл и жёсткая остановка. Встроенные Apple Wi-Fi адаптеры часто заявляют monitor mode, но не отдают кадры; для 802.11 нужен внешний адаптер.",
-                        "Synthetic PCAP export собирает beacon-кадры из видимых сетей и работает всегда.",
-                    ]),
-                HelpSection(
-                    "Offline-анализ",
-                    [
-                        "Tools → Analyze Packet Capture читает pcap/pcapng с radiotap или bare 802.11. RAW IP и Ethernet отклоняются, потому что в них нет Wi-Fi beacon.",
-                        "После live capture нажмите Analyze capture.",
-                    ]),
-            ]
-        ),
-        HelpTopic(
-            id: "survey", title: "Site Survey", summary: "Планы, сэмплы, стены и PDF-отчёты.",
+            id: "coverage",
+            title: "Измерить покрытие Wi-Fi",
+            summary: "Записать RSSI на плане помещения и получить heatmap.",
             icon: "map",
+            screenshot: "help-survey",
+            screenshotCaption:
+                "Site Survey: план помещения, сводка покрытия, инструменты сэмплов и легенда RSSI.",
             sections: [
                 HelpSection(
-                    "Запись",
+                    "Запишите сэмплы",
                     [
-                        "Импортируйте план, выберите сеть и кликайте по плану для RSSI. Каждый клик — сэмпл.",
-                        "Draw Wall требует два клика. Стены attenuate сэмплы на пересечении и сохраняются в проекте.",
-                        "Кнопка + создаёт ещё один этаж. Export PDF формирует отчёт с планом, heatmap, точками и легендой.",
-                    ])
-            ]
-        ),
-        HelpTopic(
-            id: "remote", title: "Remote sensors", summary: "SSH-скан с другого Mac.",
-            icon: "server.rack",
-            sections: [
-                HelpSection(
-                    "Настройка",
-                    [
-                        "Включите Remote Login на Mac-сенсоре и авторизуйте SSH-ключ. Добавьте host, user, port и ключ в Tools → Remote Sensors.",
-                        "Auto 60 s перезапускает скан. Удалённый Mac может скрывать SSID из-за privacy settings.",
-                    ])
-            ]
-        ),
-        HelpTopic(
-            id: "automation", title: "CLI и deep links", summary: "Автоматизация и URL-команды.",
-            icon: "terminal",
-            sections: [
-                HelpSection(
-                    "CLI",
-                    [
-                        "lanfi-cli summary scan.json [--json]",
-                        "lanfi-cli protocols scan.json",
-                        "lanfi-cli pcap capture.pcapng [--json]",
-                        "lanfi-cli mcp   # MCP server for AI agents (see the MCP topic)",
+                        "Wi-Fi → Site Survey. Импортируйте план или начните с пустой метровой сетки, затем выберите измеряемую сеть.",
+                        "Кликайте по точкам, где нужен замер. Draw Wall требует два клика; стены ослабляют сэмплы на пересечении и сохраняются в проекте. + добавляет этаж.",
+                        "Сэмплы могут нести GPS-координаты, а GPX-трек импортируется и экспортируется на вкладке Map.",
                     ]),
                 HelpSection(
-                    "Deep links",
+                    "Прочитайте heatmap",
                     [
-                        "lanfi://tab/interfaces · lanfi://tab/protocols · lanfi://search?q=AX55 · lanfi://diagnostics/run"
+                        "Цвет от красного при −90 dBm до зелёного при −40 dBm. Холодные зоны сильные; красные и пустые — там клиентам будет тяжело.",
+                        "Survey planning оценивает число точек доступа и их расстановку и отмечает, какие запланированные места ещё не замерены.",
+                        "Export PDF создаёт отчёт с планом, heatmap, точками и легендой.",
                     ]),
             ]
         ),
         HelpTopic(
-            id: "shortcuts", title: "Горячие клавиши", summary: "Частые команды.",
-            icon: "keyboard",
-            sections: [HelpSection("Клавиши", ["Список ниже."])]
-        ),
-        HelpTopic(
-            id: "privacy", title: "Приватность и проблемы", summary: "Данные, логи и ad-hoc сборка.",
-            icon: "lock.shield",
+            id: "process-traffic",
+            title: "Найти приложение, съедающее трафик",
+            summary: "Скорость скачивания и отдачи по процессам, без выхода в сеть.",
+            icon: "chart.bar.xaxis",
+            screenshot: "help-traffic",
+            screenshotCaption:
+                "Process Traffic включается вручную: цифры появляются после включения read-only сэмплера.",
             sections: [
                 HelpSection(
-                    "Приватность",
+                    "Включите",
                     [
-                        "Нет аккаунта, телеметрии и облака. Данные скана остаются в памяти, если не сохранить сессию или survey.",
-                        "Аннотации, сессии, survey, vendor overrides и crash logs лежат в ~/Library/Application Support/LanFi и ~/Library/Logs/LanFi.",
+                        "Network Tools → Process Traffic, затем включите тумблер. LanFi запускает read-only nettop дважды с интервалом в секунду и держит в памяти только имена, PID и дельты байт.",
+                        "Выключите — цифры сразу исчезают.",
                     ]),
                 HelpSection(
-                    "Ad-hoc сборка",
+                    "Как читать",
                     [
-                        "Эта сборка ad-hoc signed, потому что нет Apple Developer аккаунта. При первом запуске right-click LanFi.app → Open или установите через Homebrew.",
-                        "Settings → General содержит Homebrew-команду и ссылку на релизы.",
+                        "В строках — процесс, PID и скорость скачивания/отдачи за окно замера. Сортировка по скорости показывает главного потребителя.",
+                        "Menu-bar meter показывает те же итоги по всему Mac; откройте его для sparkline и данных подключения.",
+                    ]),
+            ]
+        ),
+        HelpTopic(
+            id: "settings",
+            title: "Настроить, обновить и автоматизировать",
+            summary: "Настройки, обновления, автоматизация и что делать, если экран пуст.",
+            icon: "gearshape",
+            screenshot: "help-settings",
+            screenshotCaption:
+                "Settings → General: внешний вид и плотность, запуск, обновления и меню-бар.",
+            sections: [
+                HelpSection(
+                    "Настройки",
+                    [
+                        "Appearance управляет темой, плотностью таблиц, высокой контрастностью и colour-blind палитрой. Startup задаёт login item, скан при запуске и интервал.",
+                        "Обновления идут через Sparkle; Check Now и Release Notes — в карточке Updates. Menu Bar задаёт подпись, метрику и единицы скорости.",
+                        "Settings → Wi-Fi выбирает радио, Diagnostics хранит опции bundle, MCP управляет снимком для AI-агентов.",
                     ]),
                 HelpSection(
-                    "Если пусто",
+                    "Автоматизация",
                     [
-                        "Проверьте Location Services для SSID/BSSID и выбранный Wi-Fi интерфейс в Settings → Wi-Fi.",
-                        "Если live monitor capture пишет 0 кадров, встроенный адаптер не поддерживает monitor mode; нужен внешний адаптер или synthetic PCAP.",
+                        "MCP: приложение публикует живой скан, а lanfi-cli mcp отдаёт его Claude, Cursor или другому MCP-клиенту по stdio. Settings → MCP копирует готовый конфиг.",
+                        "CLI: lanfi-cli summary scan.json, protocols, pcap и mcp. Deep links: lanfi://tab/interfaces · lanfi://search?q=AX55 · lanfi://diagnostics/run.",
+                    ]),
+                HelpSection(
+                    "Если экран пуст",
+                    [
+                        "Проверьте Location Services для SSID/BSSID и выбранный интерфейс в Settings → Wi-Fi.",
+                        "Если monitor capture пишет 0 кадров, встроенный адаптер их не отдаёт; нужен внешний адаптер с monitor mode.",
+                        "Сборка ad-hoc signed: при первом запуске right-click → Open или установка через Homebrew. Аккаунта, телеметрии и облака нет; данные скана остаются на Mac.",
                     ]),
             ]
         ),

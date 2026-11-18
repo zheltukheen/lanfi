@@ -27,7 +27,7 @@ struct GeoIPToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
         .task {
             // Show something useful as soon as the tool opens instead of an

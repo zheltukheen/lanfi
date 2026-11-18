@@ -33,17 +33,17 @@ struct MultiSelectionInspector: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(9)
+            .padding(DesignToken.Spacing.small)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Comparison").font(.caption.bold())
                 NetworkComparisonTable(viewModel: viewModel, networks: selected)
                     .frame(maxHeight: 220)
                     .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -85,7 +85,7 @@ struct MultiSelectionInspector: View {
             }
             .controlSize(.small)
         }
-        .padding(14)
+        .padding(DesignToken.Spacing.card)
     }
 }
 
@@ -148,8 +148,8 @@ struct QualityInspectorSection: View {
                     }
                 }
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
+            .padding(.vertical, DesignToken.Spacing.tight)
+            .padding(.horizontal, DesignToken.Spacing.small)
         }
     }
 }
@@ -190,7 +190,7 @@ struct ChannelAdviceSection: View {
                     Text("Router model: \(model)").font(.caption2).monospaced().textSelection(.enabled)
                 }
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
         } label: {
             Label("Channel recommendation", systemImage: "wand.and.stars")
         }
@@ -217,7 +217,7 @@ struct SignalBadge: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(8)
+        .padding(DesignToken.Spacing.small)
         .background(color.opacity(0.1))
         .cornerRadius(8)
     }

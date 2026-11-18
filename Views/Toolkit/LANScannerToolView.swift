@@ -1,3 +1,4 @@
+import LanFiCore
 import AppKit
 import SwiftUI
 
@@ -7,19 +8,66 @@ struct LANScannerToolView: View {
     @State private var showingDiscover = false
     @State private var serviceDetails: [String: [UInt16: String]] = [:]
     @State private var detectingDeviceID: String?
-    @AppStorage("LanFi.lanScannerTab") private var tabRaw = 0
+    @AppStorage(AppSettingsKey.lanScannerTab.rawValue) private var tabRaw = 0
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case device, ip, type, openPorts, latency
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .device: return String(localized: "Device")
+            case .ip: return String(localized: "IP")
+            case .type: return String(localized: "Type")
+            case .openPorts: return String(localized: "Open ports")
+            case .latency: return String(localized: "Latency")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .ip
+    @State private var sortAscending = true
+
+    private func sorted(_ rows: [LANDevice]) -> [LANDevice] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .device:
+                return lhs.displayName.localizedStandardCompare(rhs.displayName)
+                    == .orderedAscending
+            case .ip:
+                return lhs.ip.compare(rhs.ip, options: .numeric) == .orderedAscending
+            case .type:
+                return lhs.kindLabel.localizedStandardCompare(rhs.kindLabel) == .orderedAscending
+            case .openPorts: return lhs.openPorts.count < rhs.openPorts.count
+            case .latency:
+                return (lhs.latencyMilliseconds ?? .infinity)
+                    < (rhs.latencyMilliseconds ?? .infinity)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
     @StateObject private var shelf = DeviceShelfViewModel()
+
+    private var tabSelection: Binding<String> {
+        Binding(
+            get: { String(tabRaw) },
+            set: { tabRaw = Int($0) ?? tabRaw })
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Picker("View", selection: $tabRaw) {
-                    Text("Scan").tag(0)
-                    Text("Devices").tag(1)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(width: 220)
+                AppTabBar(
+                    sections: [
+                        .init(
+                            id: "lan",
+                            title: nil,
+                            items: [
+                                .init(id: "0", title: "Scan", icon: "dot.radiowaves.left.and.right"),
+                                .init(id: "1", title: "Devices", icon: "square.stack.3d.up"),
+                            ])
+                    ],
+                    selection: tabSelection,
+                    showsGroupTitles: false
+                )
                 Text(
                     "The shelf keeps every device, its name, ports, availability and history across scans."
                 )
@@ -28,9 +76,9 @@ struct LANScannerToolView: View {
                 .lineLimit(1)
                 Spacer()
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
+            .padding(.horizontal, DesignToken.Layout.contentPadding)
+            .padding(.top, DesignToken.Spacing.medium)
+            .padding(.bottom, DesignToken.Spacing.small)
 
             Divider()
 
@@ -102,7 +150,7 @@ struct LANScannerToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -161,8 +209,8 @@ struct LANScannerToolView: View {
             .font(.caption)
             Spacer()
         }
-        .padding(10)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+        .padding(DesignToken.Spacing.compact)
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func summary(_ result: LANScanResult) -> some View {
@@ -216,9 +264,9 @@ struct LANScannerToolView: View {
                     .disabled(model.isScanning)
             }
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func devicesTable(_ result: LANScanResult) -> some View {
@@ -226,16 +274,19 @@ struct LANScannerToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(result.subnet)
                         .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.small)
 
-                Table(result.devices, selection: $selectedID) {
+                Table(sorted(result.devices), selection: $selectedID) {
                     TableColumn("Device") { device in
                         HStack(spacing: 6) {
                             if device.isGateway {
@@ -249,7 +300,7 @@ struct LANScannerToolView: View {
                             if device.isNew {
                                 Text("NEW")
                                     .font(.system(size: 8, weight: .bold))
-                                    .padding(.horizontal, 4)
+                                    .padding(.horizontal, DesignToken.Spacing.tight)
                                     .background(Color.orange.opacity(0.2), in: Capsule())
                             }
                         }
@@ -258,14 +309,14 @@ struct LANScannerToolView: View {
                         Text(device.ip)
                             .font(.caption.monospaced())
                     }
-                    .width(105)
+                    .width(AppColumnWidth.compact + 15)
                     TableColumn("Type") { device in
                         Text(device.kindLabel)
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
-                    .width(120)
+                    .width(AppColumnWidth.medium)
                     TableColumn("Make / model") { device in
                         Text(
                             [device.makeLabel, device.model]
@@ -287,7 +338,7 @@ struct LANScannerToolView: View {
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                     }
-                    .width(140)
+                    .width(AppColumnWidth.wide - 10)
                     TableColumn("Open ports") { device in
                         Text(
                             device.openPorts.isEmpty
@@ -296,15 +347,16 @@ struct LANScannerToolView: View {
                         )
                         .font(.caption2.monospacedDigit())
                     }
-                    .width(120)
+                    .width(AppColumnWidth.medium)
                     TableColumn("Latency") { device in
                         Text(ToolkitFormat.milliseconds(device.latencyMilliseconds))
                             .font(.caption.monospacedDigit())
                             .foregroundColor(.secondary)
                     }
-                    .width(70)
+                    .width(AppColumnWidth.short + 5)
                 }
-                .frame(height: min(CGFloat(result.devices.count) * 26 + 60, 520))
+                .frame(height: ToolkitTableHeight.rows(result.devices.count, row: 26))
+                .appTableSurface(cornerRadius: DesignToken.Radius.card)
             }
         }
     }
@@ -323,14 +375,14 @@ struct LANScannerToolView: View {
                     if device.isGateway {
                         Text("Gateway")
                             .font(.caption2)
-                            .padding(.horizontal, 6)
+                            .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 2)
                             .background(Color.accentColor.opacity(0.14), in: Capsule())
                     }
                     if device.isThisMac {
                         Text("This Mac")
                             .font(.caption2)
-                            .padding(.horizontal, 6)
+                            .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 2)
                             .background(Color.green.opacity(0.14), in: Capsule())
                     }

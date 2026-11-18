@@ -20,7 +20,7 @@ struct MultiNetworkComparisonView: View {
                 }
                 .controlSize(.small)
             }
-            .padding(12)
+            .padding(DesignToken.Spacing.medium)
             Divider()
 
             NetworkComparisonTable(viewModel: viewModel, networks: selected)

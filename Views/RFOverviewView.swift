@@ -6,6 +6,7 @@ import SwiftUI
 struct RFOverviewView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var hoveredNetworkId: String?
+    @State private var showingChartHelp = false
 
     private let bands: [WiFiBand] = [.band24, .band5, .band6]
 
@@ -20,6 +21,29 @@ struct RFOverviewView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            HStack(alignment: .firstTextBaseline, spacing: DesignToken.Spacing.small) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("All bands")
+                        .font(.headline)
+                    Text("Every nearby access point drawn on its own band.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer(minLength: DesignToken.Spacing.small)
+                Button {
+                    showingChartHelp.toggle()
+                } label: {
+                    Label("What is this?", systemImage: "questionmark.circle")
+                        .font(.caption)
+                }
+                .buttonStyle(.borderless)
+                .help("Explain this chart")
+                .accessibilityLabel("What this chart shows")
+                .popover(isPresented: $showingChartHelp, arrowEdge: .bottom) {
+                    RFOverviewHelp()
+                }
+            }
+
             HStack(alignment: .top, spacing: DesignToken.Spacing.medium) {
                 ForEach(bands, id: \.self) { band in
                     RFBandPanel(
@@ -33,6 +57,87 @@ struct RFOverviewView: View {
             RFOverviewLegend()
         }
         .padding(DesignToken.Spacing.medium)
+    }
+}
+
+// MARK: - Chart help
+
+/// "What is this?" popover for the analyzer's main chart: one short paragraph,
+/// then the same marks the legend uses, so a new user can read a bar without
+/// knowing what a channel width or an overlap region is.
+private struct RFOverviewHelp: View {
+    private enum Swatch {
+        case bar(Color)
+        case dashed(Color)
+        case region(Color)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            Text("Reading the All Bands chart")
+                .font(.headline)
+            Text(
+                "Each band has its own frequency axis. A bar is one access point: it starts at the access point's channel, is as wide as the channel it occupies, and its height is signal strength."
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+            row(
+                .bar(.accentColor), title: "Connected",
+                detail: "The network this Mac is joined to.")
+            row(
+                .bar(AppPalette.band(.band5)), title: "Network width",
+                detail: "A wider bar means a wider channel, so it overlaps more neighbours.")
+            row(
+                .region(AppPalette.warning), title: "Overlapping airtime",
+                detail: "Darker regions hold more networks at once — that is where contention builds up.")
+            row(
+                .dashed(AppPalette.ok), title: "Recommended channel",
+                detail:
+                    "The quietest usable channel the analyzer found for this band. DFS channels are avoided unless the AP already uses one."
+            )
+
+            Divider()
+            Text(
+                "Click a bar to select that network and show it in the inspector. The legend under the chart repeats these marks."
+            )
+            .font(.caption2)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(DesignToken.Spacing.large)
+        .frame(width: 360)
+    }
+
+    private func row(_ swatch: Swatch, title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: DesignToken.Spacing.small) {
+            Group {
+                switch swatch {
+                case .bar(let color):
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
+                        .fill(color)
+                        .frame(width: 16, height: 8)
+                case .dashed(let color):
+                    Rectangle()
+                        .stroke(style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                        .foregroundColor(color)
+                        .frame(width: 16, height: 8)
+                case .region(let color):
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
+                        .fill(color.opacity(0.18))
+                        .frame(width: 16, height: 8)
+                }
+            }
+            .padding(.top, 3)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.caption.weight(.semibold))
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }
 
@@ -222,7 +327,7 @@ private struct RFBandPanel: View {
         let isSelected = span.id == selectedNetworkId
         let isHovered = span.id == hoveredNetworkId
         let fillOpacity: Double = span.isConnected ? 0.85 : (isHovered ? 0.6 : 0.42)
-        let path = Path(roundedRect: bar, cornerRadius: 2)
+        let path = Path(roundedRect: bar, cornerRadius: DesignToken.Radius.tiny)
         context.fill(path, with: .color(base.opacity(fillOpacity)))
         context.stroke(
             path,
@@ -311,11 +416,11 @@ private struct RFOverviewLegend: View {
                         .foregroundColor(color)
                         .frame(width: 14, height: 7)
                 } else if fading {
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
                         .fill(color.opacity(0.18))
                         .frame(width: 14, height: 7)
                 } else {
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
                         .fill(color)
                         .frame(width: 14, height: 7)
                 }

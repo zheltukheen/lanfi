@@ -2,6 +2,7 @@
 //  SignalHistoryView.swift
 //
 
+import LanFiCore
 import SwiftUI
 import Charts
 import Accessibility
@@ -13,7 +14,7 @@ struct SignalHistoryView: View {
     @State private var hoverLocation: CGPoint? = nil
     @State private var hoverIndex: Int? = nil
     @State private var zoom = 1.0
-    @AppStorage("LanFi.historyChart.mode") private var chartModeRaw = HistoryChartMode.signal.rawValue
+    @AppStorage(AppSettingsKey.historyChartMode.rawValue) private var chartModeRaw = HistoryChartMode.signal.rawValue
     @Environment(\.openWindow) private var openWindow
     var isFullScreen = false
 
@@ -134,8 +135,8 @@ struct SignalHistoryView: View {
         .chartXAxis(.hidden)
         .chartPlotStyle { plot in
             plot
-                .padding(.top, 12)
-                .padding(.bottom, 4)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
         }
         .chartYAxis {
             if isPercent {
@@ -192,10 +193,10 @@ struct SignalHistoryView: View {
                     )
             }
         }
-        .padding(.top, 16)
-        .padding(.bottom, 10)
-        .padding(.leading, 12)
-        .padding(.trailing, 16)
+        .padding(.top, DesignToken.Spacing.large)
+        .padding(.bottom, DesignToken.Spacing.compact)
+        .padding(.leading, DesignToken.Spacing.medium)
+        .padding(.trailing, DesignToken.Spacing.large)
         .overlay(alignment: .topTrailing) {
             HStack(spacing: 6) {
                 Picker("History mode", selection: $chartModeRaw) {
@@ -222,12 +223,16 @@ struct SignalHistoryView: View {
                     Image(systemName: "plus.magnifyingglass")
                 }
                 .buttonStyle(.borderless).disabled(zoom >= 8)
+                .help("Zoom in")
+                .accessibilityLabel("Zoom in")
                 Button {
                     zoom = max(0.5, zoom / 1.5)
                 } label: {
                     Image(systemName: "minus.magnifyingglass")
                 }
                 .buttonStyle(.borderless).disabled(zoom <= 0.5)
+                .help("Zoom out")
+                .accessibilityLabel("Zoom out")
                 if isFullScreen {
                     Button {
                         NSApp.keyWindow?.toggleFullScreen(nil)
@@ -235,6 +240,8 @@ struct SignalHistoryView: View {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                     }
                     .buttonStyle(.borderless)
+                    .help("Leave full screen")
+                    .accessibilityLabel("Leave full screen")
                 } else {
                     Button {
                         openWindow(id: "history")
@@ -242,10 +249,12 @@ struct SignalHistoryView: View {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                     }
                     .buttonStyle(.borderless)
+                    .help("Open history in a window")
+                    .accessibilityLabel("Open history in a window")
                 }
                 HistoryExportMenu(viewModel: viewModel)
             }
-            .padding(8)
+            .padding(DesignToken.Spacing.small)
         }
         .background(Color(nsColor: .controlBackgroundColor))
         .accessibilityElement(children: .ignore)

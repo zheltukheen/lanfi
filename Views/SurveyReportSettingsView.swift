@@ -32,7 +32,7 @@ struct SurveyReportSettingsView: View {
                 .buttonStyle(.borderedProminent)
             }
         }
-        .padding(16)
+        .padding(DesignToken.Spacing.large)
         .frame(width: 440)
         .onAppear {
             title = survey.project.reportTitle ?? ""

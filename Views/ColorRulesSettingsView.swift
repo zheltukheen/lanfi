@@ -34,7 +34,7 @@ struct ColorRulesSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
         .onAppear { rules = viewModel.coloringRules }
     }
 
@@ -82,9 +82,9 @@ struct ColorRulesSettingsView: View {
                     .onSubmit { save() }
             }
         }
-        .padding(6)
+        .padding(DesignToken.Spacing.tight)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func binding<T>(_ index: Int, _ keyPath: WritableKeyPath<ColoringRule, T>) -> Binding<T> {

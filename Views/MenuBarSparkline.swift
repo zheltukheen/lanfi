@@ -8,42 +8,32 @@ struct MenuBarSparkline: View {
 
     var body: some View {
         Canvas { context, size in
-            guard size.width > 1, size.height > 1 else { return }
+            let points = SparklineGeometry.points(values: values, in: size)
 
-            let peak = max(values.max() ?? 0, 1)
-            func point(index: Int, value: Double) -> CGPoint {
-                let x =
-                    values.count > 1
-                    ? CGFloat(index) / CGFloat(values.count - 1) * size.width
-                    : size.width
-                let normalized = min(1, max(0, value / peak))
-                return CGPoint(x: x, y: size.height - 1 - CGFloat(normalized) * (size.height - 2))
-            }
-
-            guard let first = values.first else {
+            guard let first = points.first else {
+                guard let (start, end) = SparklineGeometry.baseline(in: size) else { return }
                 var baseline = Path()
-                baseline.move(to: CGPoint(x: 0, y: size.height - 1))
-                baseline.addLine(to: CGPoint(x: size.width, y: size.height - 1))
+                baseline.move(to: start)
+                baseline.addLine(to: end)
                 context.stroke(
-                    baseline, with: .color(tint.opacity(0.4)),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .round))
+                    baseline,
+                    with: .color(tint.opacity(ChartStyle.sparklineBaselineOpacity)),
+                    style: ChartStyle.sparklineStroke)
                 return
             }
 
             var line = Path()
-            line.move(to: point(index: 0, value: first))
-            for index in values.indices.dropFirst() {
-                line.addLine(to: point(index: index, value: values[index]))
+            line.move(to: first)
+            for point in points.dropFirst() {
+                line.addLine(to: point)
             }
 
             var area = line
             area.addLine(to: CGPoint(x: size.width, y: size.height))
             area.addLine(to: CGPoint(x: 0, y: size.height))
             area.closeSubpath()
-            context.fill(area, with: .color(tint.opacity(0.18)))
-            context.stroke(
-                line, with: .color(tint),
-                style: StrokeStyle(lineWidth: 1.2, lineCap: .round, lineJoin: .round))
+            context.fill(area, with: .color(tint.opacity(ChartStyle.sparklineFillOpacity)))
+            context.stroke(line, with: .color(tint), style: ChartStyle.sparklineStroke)
         }
         .accessibilityHidden(true)
     }
@@ -56,12 +46,15 @@ struct MenuBarLabel: View {
     @ObservedObject var diagnostics: DiagnosticsViewModel
     @ObservedObject var uptime: UptimeMonitor
 
-    @AppStorage("LanFi.menuBar.style") private var styleRaw = AppSettings.MenuBarMeterSettings.LabelStyle.iconAndGraph
+    @AppStorage(AppSettingsKey.menuBarStyle.rawValue) private var styleRaw = AppSettings.MenuBarMeterSettings.LabelStyle
+        .iconAndGraph
         .rawValue
-    @AppStorage("LanFi.menuBar.metric") private var metricRaw = AppSettings.MenuBarMeterSettings.Metric.throughput
+    @AppStorage(AppSettingsKey.menuBarMetric.rawValue) private var metricRaw = AppSettings.MenuBarMeterSettings.Metric
+        .throughput
         .rawValue
-    @AppStorage("LanFi.menuBar.unit") private var unitRaw = AppSettings.MenuBarMeterSettings.Unit.bits.rawValue
-    @AppStorage("LanFi.signalUnit") private var signalUnitRaw = SignalDisplayMode.dbm.rawValue
+    @AppStorage(AppSettingsKey.menuBarUnit.rawValue) private var unitRaw = AppSettings.MenuBarMeterSettings.Unit.bits
+        .rawValue
+    @AppStorage(AppSettingsKey.signalUnit.rawValue) private var signalUnitRaw = SignalDisplayMode.dbm.rawValue
 
     private var style: AppSettings.MenuBarMeterSettings.LabelStyle {
         AppSettings.MenuBarMeterSettings.LabelStyle(rawValue: styleRaw) ?? .iconAndGraph
@@ -120,8 +113,9 @@ struct MenuBarLabel: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DesignToken.Spacing.tight) {
             Image(systemName: uptime.downCount > 0 ? "exclamationmark.triangle" : "wifi")
+                .symbolRenderingMode(.monochrome)
             if showsGraph {
                 MenuBarSparkline(values: meter.samples, tint: .primary)
                     .frame(width: 34, height: 12)
@@ -132,6 +126,9 @@ struct MenuBarLabel: View {
                     .monospacedDigit()
             }
         }
+        .foregroundStyle(.primary)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
+        .accessibilityValue(showsGraph ? "Sparkline shown" : "")
     }
 }

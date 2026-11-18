@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 struct CaptureProfile: Codable, Identifiable, Equatable {
@@ -59,7 +60,7 @@ struct CaptureProfile: Codable, Identifiable, Equatable {
 
 final class CaptureProfileStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.captureProfiles"
+    private let key = AppSettingsKey.captureProfiles.rawValue
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [CaptureProfile] {

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LanFi" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>LanFi demo office walk</name>
+    <trkseg>
+      <trkpt lat="51.507520" lon="-0.127950"/>
+      <trkpt lat="51.507540" lon="-0.127900"/>
+      <trkpt lat="51.507560" lon="-0.127840"/>
+      <trkpt lat="51.507585" lon="-0.127790"/>
+      <trkpt lat="51.507610" lon="-0.127740"/>
+      <trkpt lat="51.507640" lon="-0.127700"/>
+      <trkpt lat="51.507670" lon="-0.127665"/>
+      <trkpt lat="51.507650" lon="-0.127600"/>
+      <trkpt lat="51.507620" lon="-0.127555"/>
+      <trkpt lat="51.507585" lon="-0.127520"/>
+      <trkpt lat="51.507550" lon="-0.127500"/>
+      <trkpt lat="51.507510" lon="-0.127530"/>
+      <trkpt lat="51.507480" lon="-0.127575"/>
+      <trkpt lat="51.507455" lon="-0.127630"/>
+      <trkpt lat="51.507445" lon="-0.127700"/>
+      <trkpt lat="51.507455" lon="-0.127770"/>
+      <trkpt lat="51.507475" lon="-0.127835"/>
+      <trkpt lat="51.507495" lon="-0.127900"/>
+      <trkpt lat="51.507520" lon="-0.127950"/>
+    </trkseg>
+  </trk>
+</gpx>

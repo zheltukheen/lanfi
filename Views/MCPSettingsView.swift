@@ -1,3 +1,4 @@
+import LanFiCore
 import AppKit
 import SwiftUI
 
@@ -5,9 +6,9 @@ import SwiftUI
 /// The app itself never speaks MCP: it publishes the live scan for the
 /// `lanfi-cli mcp` process, and this screen makes that hand-off visible.
 struct MCPSettingsView: View {
-    @AppStorage("LanFi.mcp.publishSnapshot") private var publishSnapshot = true
-    @AppStorage("LanFi.mcp.clientName") private var clientName = "lanfi"
-    @AppStorage("LanFi.mcp.cliPath") private var storedCLIPath = ""
+    @AppStorage(AppSettingsKey.mcpPublishSnapshot.rawValue) private var publishSnapshot = true
+    @AppStorage(AppSettingsKey.mcpClientName.rawValue) private var clientName = "lanfi"
+    @AppStorage(AppSettingsKey.mcpCLIPath.rawValue) private var storedCLIPath = ""
 
     @State private var copiedConfig = false
     @State private var copiedPath = false
@@ -94,13 +95,13 @@ struct MCPSettingsView: View {
                     .font(.caption2.monospaced())
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
+                    .padding(DesignToken.Spacing.small)
                     .background(
                         Color(nsColor: .textBackgroundColor),
-                        in: RoundedRectangle(cornerRadius: 6)
+                        in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6)
+                        RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
 
                 Button(copiedConfig ? "Copied" : "Copy client configuration") {
@@ -130,7 +131,7 @@ struct MCPSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
     }
 
     private func copy(_ text: String) {

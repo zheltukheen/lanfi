@@ -2,6 +2,7 @@
 //  WiFiTableView.swift
 //
 
+import LanFiCore
 import SwiftUI
 import AppKit
 
@@ -13,7 +14,7 @@ struct WiFiTableView: NSViewRepresentable {
     @ObservedObject var viewModel: AnalyzerViewModel
     /// Persisted row height in points; @AppStorage keeps the AppKit table in
     /// sync when the density picker changes.
-    @AppStorage("LanFi.rowDensity") private var rowDensity: Double = 30
+    @AppStorage(AppSettingsKey.rowDensity.rawValue) private var rowDensity: Double = 30
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -343,6 +344,7 @@ struct WiFiTableView: NSViewRepresentable {
                 highlightConnected: parent.viewModel.highlightConnectedNetworks,
                 vendor: colId == ColumnId.vendor.rawValue ? network.vendor : nil,
                 visual: visual,
+                columnWidth: column.width,
                 fontSize: density.fontSize
             )
             return cellView

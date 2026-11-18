@@ -5,6 +5,51 @@ import SwiftUI
 struct MTRToolView: View {
     @ObservedObject var model: MTRToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case hop, address, loss, sent, last, average, best, worst, jitter
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .hop: return String(localized: "Hop")
+            case .address: return String(localized: "Address")
+            case .loss: return String(localized: "Loss")
+            case .sent: return String(localized: "Sent")
+            case .last: return String(localized: "Last")
+            case .average: return String(localized: "Avg")
+            case .best: return String(localized: "Best")
+            case .worst: return String(localized: "Worst")
+            case .jitter: return String(localized: "Jitter")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .hop
+    @State private var sortAscending = true
+
+    private func sortedHops(_ hops: [MTRHop]) -> [MTRHop] {
+        let ordered = hops.sorted { lhs, rhs in
+            switch sortKey {
+            case .hop: return lhs.hop < rhs.hop
+            case .address:
+                return (lhs.address ?? "").localizedStandardCompare(rhs.address ?? "")
+                    == .orderedAscending
+            case .loss: return lhs.lossPercent < rhs.lossPercent
+            case .sent: return lhs.sent < rhs.sent
+            case .last:
+                return (lhs.lastMilliseconds ?? .infinity) < (rhs.lastMilliseconds ?? .infinity)
+            case .average:
+                return (lhs.averageMilliseconds ?? .infinity) < (rhs.averageMilliseconds ?? .infinity)
+            case .best:
+                return (lhs.bestMilliseconds ?? .infinity) < (rhs.bestMilliseconds ?? .infinity)
+            case .worst:
+                return (lhs.worstMilliseconds ?? .infinity) < (rhs.worstMilliseconds ?? .infinity)
+            case .jitter:
+                return (lhs.jitterMilliseconds ?? .infinity) < (rhs.jitterMilliseconds ?? .infinity)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -25,7 +70,7 @@ struct MTRToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -143,21 +188,24 @@ struct MTRToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Hops")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(report.startedAt.formatted(date: .omitted, time: .shortened))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(report.hops) {
+                Table(sortedHops(report.hops)) {
                     TableColumn("Hop") { hop in
                         Text("\(hop.hop)")
                             .font(.caption.monospacedDigit())
                     }
-                    .width(38)
+                    .width(AppColumnWidth.index)
                     TableColumn("Address") { hop in
                         Text(hop.address ?? "*")
                             .font(.caption.monospaced())

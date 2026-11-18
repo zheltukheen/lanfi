@@ -1,16 +1,105 @@
 import Foundation
 
+/// The Wi-Fi network a speed test ran on. Optional so old history files keep
+/// decoding: measurements written before per-network grouping have no owner.
+struct SpeedTestNetwork: Codable, Equatable, Sendable {
+    let ssid: String
+    let bssid: String?
+
+    /// Groups all radios of one SSID together; hidden networks fall back to the
+    /// BSSID, and a fully unknown test gets its own bucket.
+    var key: String {
+        ssid.isEmpty ? (bssid?.uppercased() ?? "unknown") : ssid.lowercased()
+    }
+
+    var displayName: String {
+        if !ssid.isEmpty { return ssid }
+        if let bssid { return bssid }
+        return String(localized: "Unknown network")
+    }
+}
+
 struct ThroughputMeasurement: Codable, Identifiable, Equatable, Sendable {
     let id: UUID
     let report: ThroughputReport
+    let network: SpeedTestNetwork?
 
-    init(id: UUID = UUID(), report: ThroughputReport) {
+    init(id: UUID = UUID(), report: ThroughputReport, network: SpeedTestNetwork? = nil) {
         self.id = id
         self.report = report
+        self.network = network
     }
 
     var testedAt: Date { report.testedAt }
     var bufferbloatGrade: String? { report.bufferbloatGrade }
+}
+
+/// One network's tests, newest first, with the deltas the history screen shows.
+struct SpeedTestNetworkHistory: Identifiable, Equatable {
+    let network: SpeedTestNetwork
+    let measurements: [ThroughputMeasurement]
+
+    var id: String { network.key }
+    var latest: ThroughputMeasurement? { measurements.first }
+    var previous: ThroughputMeasurement? { measurements.dropFirst().first }
+    var testCount: Int { measurements.count }
+
+    var averageDownloadMbps: Double? { average(measurements.map { $0.report.downloadMbps }) }
+    var averageUploadMbps: Double? { average(measurements.map { $0.report.uploadMbps }) }
+
+    var downloadDeltaMbps: Double? {
+        delta(latest?.report.downloadMbps, previous?.report.downloadMbps)
+    }
+
+    var uploadDeltaMbps: Double? {
+        delta(latest?.report.uploadMbps, previous?.report.uploadMbps)
+    }
+
+    var latencyDeltaMilliseconds: Double? {
+        delta(latest?.report.latencyMilliseconds, previous?.report.latencyMilliseconds)
+    }
+
+    private func average(_ values: [Double?]) -> Double? {
+        let present = values.compactMap { $0 }
+        guard !present.isEmpty else { return nil }
+        return present.reduce(0, +) / Double(present.count)
+    }
+
+    private func delta(_ latest: Double?, _ previous: Double?) -> Double? {
+        guard let latest, let previous else { return nil }
+        return latest - previous
+    }
+}
+
+enum SpeedTestHistoryIndex {
+    /// Tests grouped by network, most recently tested first. Tests without a
+    /// recorded network stay out of the per-network list; the All view still
+    /// shows them.
+    static func groups(_ measurements: [ThroughputMeasurement]) -> [SpeedTestNetworkHistory] {
+        let attributed = measurements.filter { $0.network != nil }
+        let grouped = Dictionary(grouping: attributed) { $0.network!.key }
+        return
+            grouped
+            .compactMap { _, items -> SpeedTestNetworkHistory? in
+                guard let network = items.first?.network else { return nil }
+                return SpeedTestNetworkHistory(
+                    network: network,
+                    measurements: items.sorted { $0.testedAt > $1.testedAt })
+            }
+            .sorted {
+                ($0.latest?.testedAt ?? .distantPast) > ($1.latest?.testedAt ?? .distantPast)
+            }
+    }
+
+    static func measurements(
+        _ measurements: [ThroughputMeasurement], for key: String?
+    ) -> [ThroughputMeasurement] {
+        let filtered =
+            key == nil
+            ? measurements
+            : measurements.filter { $0.network?.key == key }
+        return filtered.sorted { $0.testedAt > $1.testedAt }
+    }
 }
 
 enum SpeedTestSchedule: String, Codable, CaseIterable, Identifiable, Sendable {

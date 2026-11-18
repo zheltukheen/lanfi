@@ -3,106 +3,102 @@
     import SwiftUI
 
     /// Debug-only window snapshot for design review: launches with
-    /// `--snapshot-toolkit <path> [--tool <id>] [--bottom-tab <index>] [--run]`, opens the toolkit,
-    /// captures its content view (no Screen Recording permission needed) and
-    /// exits. Never compiled into Release.
+    /// `--snapshot-toolkit <path> [--tool <id>] [--bottom-tab <index>] [--run]
+    /// [--demo] [--window-size 1180x760]`,
+    /// opens the toolkit, captures its content view (no Screen Recording
+    /// permission needed) and exits. Never compiled into Release.
+    ///
+    /// `--snapshot-survey`, `--snapshot-map` and `--snapshot-settings-page`
+    /// render one screen off-screen instead; all three share `capture`.
     @MainActor
     enum ToolkitSnapshot {
         private static var didSchedule = false
 
         static func captureIfRequested(
             toolkit: ToolkitViewModel,
+            analyzer: AnalyzerViewModel,
+            survey: SurveyViewModel,
             uptime: UptimeMonitor
         ) {
             guard !didSchedule else { return }
             let arguments = ProcessInfo.processInfo.arguments
             Self.log("entry args=\(arguments.joined(separator: " "))")
-            guard
-                let flag = arguments.firstIndex(of: "--snapshot-toolkit"),
-                arguments.index(after: flag) < arguments.endIndex
-            else { return }
-            let path = arguments[arguments.index(after: flag)]
 
-            if let toolFlag = arguments.firstIndex(of: "--tool"),
-                arguments.index(after: toolFlag) < arguments.endIndex,
-                let tool = ToolboxTool(rawValue: arguments[arguments.index(after: toolFlag)])
-            {
-                toolkit.select(tool)
+            if let value = argument("--appearance", in: arguments) {
+                NSApp.appearance = NSAppearance(named: value == "dark" ? .darkAqua : .aqua)
             }
 
-            if let tabFlag = arguments.firstIndex(of: "--bottom-tab"),
-                arguments.index(after: tabFlag) < arguments.endIndex,
-                let tab = Int(arguments[arguments.index(after: tabFlag)])
-            {
+            // Seeded fixtures keep documentation images deterministic: no
+            // Location prompt, no dependency on the current radio, and nothing
+            // written to the reviewer's stores (see `DemoData`).
+            let isDemo = arguments.contains("--demo")
+            if isDemo {
+                analyzer.seedDemoData()
+                survey.loadDemoProject()
+                uptime.loadDemoSnapshot()
+            }
+
+            if let path = argument("--snapshot-survey", in: arguments) {
+                let demoAnalyzer = AnalyzerViewModel()
+                let demoSurvey = SurveyViewModel()
+                if isDemo {
+                    demoAnalyzer.seedDemoData()
+                    demoSurvey.loadDemoProject()
+                }
+                capture(
+                    SurveyView(analyzer: demoAnalyzer, survey: demoSurvey),
+                    size: NSSize(width: 1300, height: 820), to: path, label: "survey")
+                return
+            }
+
+            if let path = argument("--snapshot-map", in: arguments) {
+                capture(
+                    SurveyMapPreview(), size: NSSize(width: 900, height: 520), to: path,
+                    label: "map")
+                return
+            }
+
+            // Settings is a separate scene, so render its page directly instead
+            // of relying on the Settings window being open.
+            if let path = argument("--snapshot-settings-page", in: arguments) {
+                capture(
+                    GeneralSettingsPage().environmentObject(UpdaterController()),
+                    size: NSSize(width: 900, height: 820), to: path, delay: 1,
+                    label: "settings page")
+                return
+            }
+
+            guard let path = argument("--snapshot-toolkit", in: arguments) else { return }
+            let requestedTool = argument("--tool", in: arguments).flatMap(ToolboxTool.init(rawValue:))
+
+            // The stored selection is restored when the view appears, so apply
+            // the requested tool now (before `--run` picks the model) and again
+            // after launch.
+            if let requestedTool {
+                toolkit.select(requestedTool)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    toolkit.select(requestedTool)
+                }
+            }
+
+            if let tab = argument("--bottom-tab", in: arguments).flatMap(Int.init) {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     NotificationCenter.default.post(
                         name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": tab])
                 }
             }
 
-            if let hostFlag = arguments.firstIndex(of: "--host"),
-                arguments.index(after: hostFlag) < arguments.endIndex
-            {
-                let host = arguments[arguments.index(after: hostFlag)]
-                toolkit.ping.host = host
-                toolkit.dns.host = host
-                toolkit.portScan.host = host
-                toolkit.traceroute.host = host
-                toolkit.visualTraceroute.host = host
-                toolkit.ssl.host = host
-                toolkit.pathCheck.host = host
-                toolkit.pathCheck.portsText = "443"
-            }
-
-            if arguments.contains("--uptime-demo") {
-                if !uptime.targets.contains(where: {
-                    $0.address.hasPrefix("https://example.com")
-                }),
-                    let target = UptimeTarget.make(
-                        name: "API Server", address: "https://example.com", kind: .http,
-                        intervalMinutes: 5)
-                {
-                    uptime.add(target, checkImmediately: false)
-                    Task { await uptime.checkNow(target.id) }
-                }
-            }
-
-            didSchedule = true
-
-            if arguments.contains("--udp") {
-                toolkit.portScan.includeUDP = true
-            }
-
-            if let tabFlag = arguments.firstIndex(of: "--dns-tab"),
-                arguments.index(after: tabFlag) < arguments.endIndex,
-                let tab = DNSLookupTab(rawValue: arguments[arguments.index(after: tabFlag)])
-            {
-                toolkit.dns.tab = tab
-            }
-
             if arguments.contains("--run") {
-                run(toolkit.selection, toolkit: toolkit)
+                run(toolkit.selection, toolkit: toolkit, demo: isDemo)
             }
 
-            let delay: TimeInterval
-            if let delayFlag = arguments.firstIndex(of: "--delay"),
-                arguments.index(after: delayFlag) < arguments.endIndex,
-                let value = TimeInterval(arguments[arguments.index(after: delayFlag)])
-            {
-                delay = value
-            } else {
-                delay = 7
-            }
+            let delay = argument("--delay", in: arguments).flatMap(TimeInterval.init) ?? 7
+            didSchedule = true
 
             Self.log("scheduling capture in \(delay)s (tool=\(toolkit.selection.rawValue))")
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 let visible = NSApp.windows.filter { $0.isVisible && $0.contentView != nil }
                 Self.log("capturing tool=\(toolkit.selection.rawValue)")
-                Self.log(
-                    "windows "
-                        + visible.map {
-                            "\($0.title)|id=\($0.identifier?.rawValue ?? "-")|frame=\($0.frame)"
-                        }.joined(separator: "; "))
                 guard
                     let window =
                         visible.first(where: { $0.identifier?.rawValue == "main" })
@@ -115,26 +111,77 @@
                     exit(2)
                 }
                 window.makeKeyAndOrderFront(nil)
+                if let raw = argument("--window-size", in: arguments), let size = Self.size(raw) {
+                    window.setContentSize(size)
+                }
                 window.contentView?.layoutSubtreeIfNeeded()
-                guard let view = window.contentView, view.bounds.width > 100,
-                    let representation = view.bitmapImageRepForCachingDisplay(in: view.bounds)
-                else {
+                guard let view = window.contentView, view.bounds.width > 100 else {
                     FileHandle.standardError.write(Data("snapshot: no bitmap\n".utf8))
                     exit(3)
                 }
-                view.cacheDisplay(in: view.bounds, to: representation)
-                guard let data = representation.representation(using: .png, properties: [:]) else {
-                    FileHandle.standardError.write(Data("snapshot: no PNG\n".utf8))
-                    exit(4)
-                }
-                do {
-                    try data.write(to: URL(fileURLWithPath: path))
-                    Self.log("wrote \(path) \(Int(view.bounds.width))x\(Int(view.bounds.height))")
-                } catch {
-                    FileHandle.standardError.write(Data("snapshot: \(error)\n".utf8))
-                    exit(5)
-                }
+                writePNG(of: view, to: path)
+                Self.log("wrote \(path) \(Int(view.bounds.width))x\(Int(view.bounds.height))")
                 exit(0)
+            }
+        }
+
+        /// Value of `flag` when the next argument exists.
+        private static func argument(_ flag: String, in arguments: [String]) -> String? {
+            guard let index = arguments.firstIndex(of: flag),
+                arguments.index(after: index) < arguments.endIndex
+            else { return nil }
+            return arguments[arguments.index(after: index)]
+        }
+
+        /// "1180x760" in points. The screenshot is captured at the backing
+        /// scale, so a Retina Mac writes 2360×1520 pixels for `1180x760`.
+        private static func size(_ raw: String) -> NSSize? {
+            let parts = raw.lowercased().split(separator: "x")
+            guard parts.count == 2,
+                let width = Double(parts[0]), let height = Double(parts[1]),
+                width >= 640, height >= 480
+            else { return nil }
+            return NSSize(width: width, height: height)
+        }
+
+        /// One off-screen window, one capture, one exit.
+        private static func capture<Content: View>(
+            _ rootView: Content,
+            size: NSSize,
+            to path: String,
+            delay: TimeInterval = 4,
+            label: String
+        ) {
+            didSchedule = true
+            let host = NSHostingView(rootView: rootView)
+            host.appearance = NSApp.appearance
+            host.frame = NSRect(origin: .zero, size: size)
+            let window = NSWindow(
+                contentRect: NSRect(origin: .zero, size: size),
+                styleMask: [.titled], backing: .buffered, defer: false)
+            window.contentView = host
+            window.orderFront(nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                host.layoutSubtreeIfNeeded()
+                writePNG(of: host, to: path)
+                Self.log("wrote \(label) \(path)")
+                exit(0)
+            }
+        }
+
+        private static func writePNG(of view: NSView, to path: String) {
+            guard let representation = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
+                exit(3)
+            }
+            view.cacheDisplay(in: view.bounds, to: representation)
+            guard let data = representation.representation(using: .png, properties: [:]) else {
+                exit(4)
+            }
+            do {
+                try data.write(to: URL(fileURLWithPath: path))
+            } catch {
+                FileHandle.standardError.write(Data("snapshot: \(error)\n".utf8))
+                exit(5)
             }
         }
 
@@ -153,7 +200,9 @@
             }
         }
 
-        private static func run(_ tool: ToolboxTool, toolkit: ToolkitViewModel) {
+        private static func run(
+            _ tool: ToolboxTool, toolkit: ToolkitViewModel, demo: Bool
+        ) {
             switch tool {
             case .ping: toolkit.ping.run()
             case .dnsLookup: toolkit.dns.run()
@@ -165,7 +214,12 @@
             case .visualTraceroute:
                 toolkit.visualTraceroute.maxHops = 8
                 toolkit.visualTraceroute.run()
-            case .portScan: toolkit.portScan.run()
+            case .portScan:
+                // example.com is behind a transparent proxy on many corporate
+                // networks, which makes every port look open. 1.1.1.1 shows a
+                // realistic mix of open, closed and filtered ports.
+                if demo { toolkit.portScan.host = "1.1.1.1" }
+                toolkit.portScan.run()
             case .traceroute: toolkit.traceroute.run()
             case .sslCertificate: toolkit.ssl.run()
             case .pathCheck: toolkit.pathCheck.run()

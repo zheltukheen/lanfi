@@ -3,6 +3,7 @@ import SwiftUI
 
 struct VisualTracerouteToolView: View {
     @ObservedObject var model: VisualTracerouteToolModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -16,8 +17,8 @@ struct VisualTracerouteToolView: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .padding(18)
-        .animation(.easeOut(duration: 0.2), value: model.hops.count)
+        .appContentPadding()
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: model.hops.count)
     }
 
     // MARK: - Controls
@@ -77,15 +78,15 @@ struct VisualTracerouteToolView: View {
                 Spacer(minLength: 0)
                 legend
             }
-            .padding(12)
+            .padding(DesignToken.Spacing.medium)
             if model.hops.isEmpty && !model.isRunning {
                 emptyHint
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
                 .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
         )
     }
@@ -113,9 +114,9 @@ struct VisualTracerouteToolView: View {
             ProgressView(value: model.progress)
                 .progressViewStyle(.linear)
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: 320, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
     }
 
     private var headline: String {
@@ -153,8 +154,8 @@ struct VisualTracerouteToolView: View {
             legendItem(color: .systemYellow, text: "< 120 ms")
             legendItem(color: .systemOrange, text: "≥ 120 ms")
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.tight)
         .background(.regularMaterial, in: Capsule())
     }
 
@@ -180,8 +181,8 @@ struct VisualTracerouteToolView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
-        .padding(18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .appContentPadding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignToken.Radius.sheet))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -258,7 +259,7 @@ struct VisualTracerouteToolView: View {
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
-                .padding(.bottom, 6)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
                 ForEach(model.hops) { hop in
                     hopRow(hop)
@@ -272,12 +273,13 @@ struct VisualTracerouteToolView: View {
                 Text("GeoIP lookups use ipwho.is; only public hop addresses are sent.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
-                    .padding(.top, 8)
+                    .padding(.top, DesignToken.Spacing.small)
             }
-            .padding(10)
+            .padding(DesignToken.Spacing.compact)
         }
         .frame(width: 350)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .background(
+            Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
     }
 
     private var waitingRow: some View {
@@ -293,7 +295,7 @@ struct VisualTracerouteToolView: View {
             .font(.caption)
             .foregroundColor(.secondary)
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, DesignToken.Spacing.tight)
     }
 
     private func hopRow(_ hop: VisualTracerouteHop) -> some View {
@@ -326,10 +328,10 @@ struct VisualTracerouteToolView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(.vertical, 5)
-        .padding(.horizontal, 4)
+        .padding(.vertical, DesignToken.Spacing.tight)
+        .padding(.horizontal, DesignToken.Spacing.tight)
         .background(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                 .fill(isCurrent ? Color.accentColor.opacity(0.12) : Color.clear)
         )
         .accessibilityElement(children: .combine)

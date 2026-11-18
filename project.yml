@@ -34,6 +34,12 @@ targets:
       - ViewModels
       - Views
       - Utils
+      # The MCP server ships inside the app binary as well, so agents can point
+      # `claude mcp add` at LanFi.app/Contents/MacOS/LanFi --mcp directly.
+      - CLI/MCPProtocol.swift
+      - CLI/MCPServer.swift
+      - CLI/MCPToolkit.swift
+      - CLI/ScanExport.swift
       - path: Resources
         buildPhase: resources
       - path: Assets.xcassets
@@ -103,6 +109,7 @@ targets:
       - path: Tests
       - path: Models/NetworkModel.swift
       - path: Models/RFOverviewLayout.swift
+      - path: Models/SparklineGeometry.swift
       - path: Models/NetworkHistory.swift
       - path: Models/HistoryStatistics.swift
       - path: Models/MonitorModels.swift
@@ -122,13 +129,23 @@ targets:
       - path: Models/ScanSession.swift
       - path: Models/NetworkGrouping.swift
       - path: Models/ScanHealth.swift
+      - path: Models/AccessibilityPalette.swift
       - path: Models/CoLocatedAPDetector.swift
       - path: Models/RoamingTest.swift
       - path: Models/KnownNetwork.swift
       - path: Models/LinkTelemetry.swift
       - path: Models/CombinedReport.swift
+      - path: Models/SixGHzOperationInfo.swift
+      - path: Models/ReducedNeighborReport.swift
+      - path: Models/SecurityWatch.swift
       - path: Services/CombinedReportExporter.swift
       - path: Models/Survey.swift
+      - path: Models/SurveyGeo.swift
+      - path: Models/SurveyPlanning.swift
+      - path: Models/ClientAnalytics.swift
+      - path: Models/OpenConnections.swift
+      - path: Models/ConnectionRules.swift
+      - path: Models/ProcessTraffic.swift
       - path: Models/SystemInterface.swift
       - path: Models/ColumnProfile.swift
       - path: Models/RemoteSensor.swift
@@ -188,6 +205,7 @@ targets:
       - path: Services/QRCodeImage.swift
       - path: Services/DeviceLabelPDF.swift
       - path: Models/SupportedChannel.swift
+      - path: Models/ScanModePlan.swift
       - path: Models/ChannelAdvice.swift
       - path: Services/ChannelAdvisor.swift
       - path: Services/RegulatoryDatabase.swift
@@ -225,10 +243,12 @@ targets:
       - path: Services/InformationElementParser.swift
       - path: Services/SecurityParser.swift
       - path: Services/SpectrumCapabilities.swift
+      - path: Services/ScanHardwareProbe.swift
       - path: Services/RFExplorerProtocol.swift
       - path: Services/SpectrumCSVImporter.swift
       - path: Services/HeatPalette.swift
       - path: Utils/OUIParser.swift
+      - path: Utils/DemoData.swift
       - path: Utils/MCPPaths.swift
       - path: CLI/ScanExport.swift
       - path: CLI/MCPToolkit.swift
@@ -291,6 +311,17 @@ targets:
       - Services/Toolkit/LANScannerService.swift
       - Services/Toolkit/BonjourDiscovery.swift
       - Models/ProtocolProfile.swift
+      - Models/SixGHzOperationInfo.swift
+      - Models/ReducedNeighborReport.swift
+      - Services/PcapPacketIndex.swift
+      - Models/ClientAnalytics.swift
+      - Models/OpenConnections.swift
+      - Models/ConnectionRules.swift
+      - Models/Survey.swift
+      - Models/SurveyGeo.swift
+      - Models/SurveyAccessPoint.swift
+      - Models/SurveyPlanning.swift
+      - Services/SurveyInterpolator.swift
       - Models/MLOInfo.swift
       - Models/MLOGroup.swift
       - Models/EHTPuncturing.swift
@@ -304,6 +335,8 @@ targets:
       - Services/HARTrafficAnalyzer.swift
       - Services/InformationElementParser.swift
       - Utils/OUIParser.swift
+    dependencies:
+      - package: LanFiCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.CLI

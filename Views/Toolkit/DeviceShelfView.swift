@@ -1,6 +1,13 @@
 import AppKit
 import SwiftUI
 
+/// One label for the star button's tooltip and VoiceOver name.
+private func favouriteActionLabel(isFavourite: Bool) -> String {
+    isFavourite
+        ? String(localized: "Remove from favourites")
+        : String(localized: "Add to favourites")
+}
+
 /// The device shelf: every device the LAN scanner has ever seen, with the
 /// user's names, types, favourites, availability, risk findings and history.
 struct DeviceShelfView: View {
@@ -15,28 +22,32 @@ struct DeviceShelfView: View {
     @State private var wakeStatus: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header
-            if model.devices.isEmpty {
-                ToolkitCard {
-                    ToolkitEmptyState(
-                        icon: "square.stack.3d.up",
-                        title: "The shelf fills itself",
-                        message:
-                            "Run a scan on the Scan tab. Every device that answers is kept here with its name, type, ports, availability and history — even when it is offline."
-                    )
+        // The shelf can be taller than the window (header, table and inspector),
+        // and an unbounded child used to push the whole tool header off-screen.
+        // Scrolling here keeps every sibling at its intrinsic height.
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                header
+                if model.devices.isEmpty {
+                    ToolkitCard {
+                        ToolkitEmptyState(
+                            icon: "square.stack.3d.up",
+                            title: "The shelf fills itself",
+                            message:
+                                "Run a scan on the Scan tab. Every device that answers is kept here with its name, type, ports, availability and history — even when it is offline."
+                        )
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: 12) {
+                        table
+                        inspector
+                            .frame(width: 290)
+                    }
                 }
-            } else {
-                HStack(alignment: .top, spacing: 12) {
-                    table
-                    inspector
-                        .frame(width: 290)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
+            .appContentPadding()
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear { syncDrafts() }
         .onChange(of: model.selectedID) { _ in syncDrafts() }
         .onChange(of: model.selectedDevice?.alias) { _ in syncDrafts() }
@@ -72,11 +83,14 @@ struct DeviceShelfView: View {
                             .textFieldStyle(.plain)
                             .frame(minWidth: 180, maxWidth: 260)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                    .padding(.horizontal, DesignToken.Spacing.small)
+                    .padding(.vertical, DesignToken.Spacing.tight)
+                    .background(
+                        Color(nsColor: .controlBackgroundColor),
+                        in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                    )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6)
+                        RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
 
                     Picker("Filter", selection: $model.filter) {
@@ -137,21 +151,66 @@ struct DeviceShelfView: View {
 
     // MARK: - Table
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case device, type, ip, vendor, rtt, availability, lastSeen
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .device: return String(localized: "Device")
+            case .type: return String(localized: "Type")
+            case .ip: return String(localized: "IP")
+            case .vendor: return String(localized: "Vendor")
+            case .rtt: return String(localized: "RTT")
+            case .availability: return String(localized: "Availability")
+            case .lastSeen: return String(localized: "Last seen")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .ip
+    @State private var sortAscending = true
+
+    private func sorted(_ devices: [ShelfDevice]) -> [ShelfDevice] {
+        let ordered = devices.sorted { lhs, rhs in
+            switch sortKey {
+            case .device:
+                return lhs.displayName.localizedStandardCompare(rhs.displayName)
+                    == .orderedAscending
+            case .type:
+                return lhs.category.title.localizedStandardCompare(rhs.category.title)
+                    == .orderedAscending
+            case .ip:
+                return lhs.ip.compare(rhs.ip, options: .numeric) == .orderedAscending
+            case .vendor:
+                return (lhs.vendor ?? "").localizedStandardCompare(rhs.vendor ?? "")
+                    == .orderedAscending
+            case .rtt: return (lhs.latencyMs ?? .infinity) < (rhs.latencyMs ?? .infinity)
+            case .availability:
+                return (lhs.availabilityPercent ?? -1) < (rhs.availabilityPercent ?? -1)
+            case .lastSeen: return lhs.lastSeen < rhs.lastSeen
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     private var table: some View {
         ToolkitCard(padding: 0) {
             VStack(spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(String(format: String(localized: "%lld shown"), model.filteredDevices.count))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(model.filteredDevices, selection: $model.selectedID) {
+                Table(sorted(model.filteredDevices), selection: $model.selectedID) {
                     TableColumn("") { device in
                         Button {
                             model.toggleFavourite(device.id)
@@ -161,11 +220,10 @@ struct DeviceShelfView: View {
                                 .foregroundColor(device.isFavourite ? .yellow : .secondary.opacity(0.5))
                         }
                         .buttonStyle(.plain)
-                        .help(
-                            device.isFavourite
-                                ? String(localized: "Remove from favourites") : String(localized: "Add to favourites"))
+                        .help(favouriteActionLabel(isFavourite: device.isFavourite))
+                        .accessibilityLabel(favouriteActionLabel(isFavourite: device.isFavourite))
                     }
-                    .width(22)
+                    .width(AppColumnWidth.index)
 
                     TableColumn("Device") { device in
                         HStack(spacing: 6) {
@@ -182,7 +240,7 @@ struct DeviceShelfView: View {
                             if device.isNew {
                                 Text("NEW")
                                     .font(.system(size: 8, weight: .bold))
-                                    .padding(.horizontal, 4)
+                                    .padding(.horizontal, DesignToken.Spacing.tight)
                                     .padding(.vertical, 1)
                                     .background(Color.orange.opacity(0.2), in: Capsule())
                             }
@@ -194,13 +252,13 @@ struct DeviceShelfView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
-                    .width(90)
+                    .width(AppColumnWidth.compact)
 
                     TableColumn("IP") { device in
                         Text(device.ip)
                             .font(.caption.monospaced())
                     }
-                    .width(105)
+                    .width(AppColumnWidth.compact)
 
                     TableColumn("Vendor") { device in
                         Text(device.vendor ?? "—")
@@ -208,7 +266,7 @@ struct DeviceShelfView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
-                    .width(130)
+                    .width(AppColumnWidth.medium)
 
                     TableColumn("Ports") { device in
                         Text(
@@ -219,7 +277,7 @@ struct DeviceShelfView: View {
                         .font(.caption2.monospacedDigit())
                         .foregroundColor(.secondary)
                     }
-                    .width(90)
+                    .width(AppColumnWidth.compact)
 
                     TableColumn("RTT") { device in
                         Text(ToolkitFormat.milliseconds(device.latencyMs))
@@ -268,7 +326,7 @@ struct DeviceShelfView: View {
                     }
                     .width(95)
                 }
-                .frame(minHeight: 240, maxHeight: .infinity)
+                .frame(height: ToolkitTableHeight.rows(model.filteredDevices.count, row: 26, maximum: 640))
             }
         }
     }
@@ -299,6 +357,8 @@ struct DeviceShelfView: View {
                                 .foregroundColor(device.isFavourite ? .yellow : .secondary)
                         }
                         .buttonStyle(.plain)
+                        .help(favouriteActionLabel(isFavourite: device.isFavourite))
+                        .accessibilityLabel(favouriteActionLabel(isFavourite: device.isFavourite))
                     }
 
                     HStack(spacing: 6) {
@@ -509,7 +569,9 @@ struct DeviceShelfView: View {
                         .font(.caption)
                         .frame(minHeight: 44, maxHeight: 64)
                         .scrollContentBackground(.hidden)
-                        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 5))
+                        .background(
+                            Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
+                        )
                         .onChange(of: notesDraft) { value in
                             model.setNotes(value, for: device.id)
                         }
@@ -561,7 +623,7 @@ struct DeviceShelfView: View {
                     ForEach(row, id: \.self) { port in
                         Text("\(port)")
                             .font(.caption2.monospacedDigit())
-                            .padding(.horizontal, 5)
+                            .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 1)
                             .background(Color.secondary.opacity(0.10), in: Capsule())
                     }
@@ -672,7 +734,7 @@ struct DeviceShelfView: View {
                 Button("Close") { showingQR = false }
             }
         }
-        .padding(18)
+        .appContentPadding()
         .frame(width: 320)
     }
 
@@ -764,6 +826,6 @@ struct LatencySparkline: View {
             }
             .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
         }
-        .background(Color.secondary.opacity(0.05), in: RoundedRectangle(cornerRadius: 5))
+        .background(Color.secondary.opacity(0.05), in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
     }
 }

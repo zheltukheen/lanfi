@@ -19,6 +19,13 @@ enum ChartStyle {
 
     static let tooltipPadding = DesignToken.Spacing.tight
     static let tooltipRadius = DesignToken.Radius.control
+
+    /// Compact, axis-free sparkline used by the menu bar and throughput card.
+    /// The stroke is one step heavier than the grid so it survives template
+    /// rendering in a light or dark menu bar.
+    static let sparklineStroke = StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round)
+    static let sparklineFillOpacity: Double = 0.22
+    static let sparklineBaselineOpacity: Double = 0.45
 }
 
 extension View {

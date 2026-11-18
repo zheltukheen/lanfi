@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 import SwiftUI
 
@@ -20,7 +21,7 @@ final class Iperf3ToolModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let historyStore = Iperf3HistoryStore()
-    private let serversKey = "LanFi.iperf3.servers"
+    private let serversKey = AppSettingsKey.iperf3Servers.rawValue
     private var task: Task<Void, Never>?
 
     var isInstalled: Bool { executable != nil }
