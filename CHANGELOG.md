@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Changed
+- **The analyzer and the MCP toolkit are split into focused files.**
+  `AnalyzerViewModel` keeps dependencies, published state and initialisation in
+  a 279-line core file; scanning, filtering, workspace queries, sessions,
+  export and persistence live in six extensions under `ViewModels/Analyzer/`
+  (125–383 lines each). `MCPToolkit` keeps the catalogue and handler switch in
+  73 lines, with definitions, argument helpers, scan analysis, probes, service
+  tools and shared encoding in five extensions.
+- **One registry for view routing and MCP specs.** `ToolDescriptor` now carries
+  `screen: ToolScreen` and `mcpTools`, so the detail screen switches on a route
+  instead of raw tool ids (Sockets and Traffic share `.connections`) and the
+  MCP catalogue lives in `MCPToolRegistry` (`Models/MCPToolSpec.swift`) instead
+  of the CLI handler. New tests check every tool has a route, every screen is
+  reachable, sidebar entries do not collide, every listed MCP name exists, and
+  every advertised spec is well formed.
+
 ### Added
 - **Every preference is a typed setting.** `AppSettingsKey` in `LanFiCore` is
   now the single catalogue of the 73 persisted keys, so no call site spells a

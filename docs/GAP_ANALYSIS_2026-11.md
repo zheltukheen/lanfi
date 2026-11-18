@@ -505,12 +505,22 @@ locales.
       depend on packages instead.
 - [x] Split `ToolkitViewModel` (1311 → 44 lines + 15 focused files).
 - [x] Split `MainTableView` (1314 → 252 lines + 6 focused files).
-- [ ] Split `AnalyzerViewModel` (1490) and `MCPToolkit` (1280); export
-      responsibilities are now extracted, but the view model is still large.
+- [x] Split `AnalyzerViewModel` (1490) and `MCPToolkit` (1280).
+      `AnalyzerViewModel` is now a 279-line core plus `AnalyzerViewModel+`
+      extensions for scanning, filtering, workspace queries, sessions, export
+      and persistence; `MCPToolkit` is a 73-line catalogue plus extensions for
+      definitions, arguments, scan analysis, probes, service tools and encoding.
+      Splitting moved members to internal access, so the shared state is set
+      from one module-internal surface rather than file-private helpers.
 - [x] Centralize `ToolboxTool` metadata in one `ToolRegistry` table, with a
       test that every tool has exactly one descriptor.
-- [ ] Move view routing and the MCP tool spec into the registry so a new tool
-      is one descriptor plus one view.
+- [x] Move view routing and the MCP tool spec into the registry so a new tool
+      is one descriptor plus one view. `ToolDescriptor.screen` (a `ToolScreen`
+      case) drives the detail switch, tabbed tools share a route (`.connections`)
+      and `ToolDescriptor.mcpTools` names the specs in `MCPToolRegistry`
+      (`Models/MCPToolSpec.swift`), which now renders `MCPToolkit.definitions`.
+      `ToolRoutingTests` enforces route coverage, distinct sidebar screens,
+      known MCP names, unique/well-formed specs and the advertised count.
 - [x] Introduce typed `AppSettings` with defaults, legacy migration and
       export/import; General Settings already uses it.
 - [x] Migrate the remaining string keys (monitor, capture, survey, reports,

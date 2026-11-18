@@ -64,7 +64,7 @@ struct NetworkToolkitView: View {
     /// The Wi-Fi workspace brings its own toolbar, so it does not need the
     /// generic tool header above it.
     private var isWorkspaceTool: Bool {
-        toolkit.selection == .wifiAnalyzer
+        toolkit.selection.screen == .wifiAnalyzer
     }
 
     private var sidebar: some View {
@@ -231,9 +231,11 @@ struct NetworkToolkitView: View {
         .background(Color(nsColor: .windowBackgroundColor))
     }
 
+    /// The route comes from the registry (`ToolDescriptor.screen`), so a tool
+    /// that shares a screen with another (`Sockets`/`Traffic`) is routed once.
     @ViewBuilder
     private var detail: some View {
-        switch toolkit.selection {
+        switch toolkit.selection.screen {
         case .internetCheck:
             InternetCheckToolView(diagnostics: diagnostics, speedTest: toolkit.speedTest)
         case .ping:
@@ -272,7 +274,7 @@ struct NetworkToolkitView: View {
             Iperf3ToolView(model: toolkit.iperf3)
         case .httpTraffic:
             HTTPTrafficToolView(model: toolkit.httpTraffic)
-        case .openConnections, .processTraffic:
+        case .connections:
             ConnectionsToolView(toolkit: toolkit)
         case .advancedTools:
             AdvancedToolsToolView()
