@@ -20,6 +20,9 @@ struct DeviceShelfView: View {
     @State private var showingClearConfirm = false
     @State private var showingQR = false
     @State private var wakeStatus: String?
+    @State private var renameTarget: ShelfDevice?
+    @State private var renameText = ""
+    @State private var forgetTarget: ShelfDevice?
 
     var body: some View {
         // The shelf can be taller than the window (header, table and inspector),
@@ -58,6 +61,38 @@ struct DeviceShelfView: View {
         .sheet(isPresented: $showingQR) {
             qrSheet
         }
+        .alert(
+            String(localized: "Name this device"),
+            isPresented: Binding(
+                get: { renameTarget != nil },
+                set: { if !$0 { renameTarget = nil } })
+        ) {
+            TextField(String(localized: "Name"), text: $renameText)
+            Button("Save") {
+                if let target = renameTarget {
+                    model.setAlias(renameText, for: target.id)
+                }
+                renameTarget = nil
+            }
+            Button("Cancel", role: .cancel) { renameTarget = nil }
+        } message: {
+            Text("The name survives rescans and DHCP address changes.")
+        }
+        .confirmationDialog(
+            String(localized: "Forget this device?"),
+            isPresented: Binding(
+                get: { forgetTarget != nil },
+                set: { if !$0 { forgetTarget = nil } }),
+            presenting: forgetTarget
+        ) { device in
+            Button("Forget", role: .destructive) {
+                model.forget(device.id)
+                forgetTarget = nil
+            }
+            Button("Cancel", role: .cancel) { forgetTarget = nil }
+        } message: { device in
+            Text("\(device.displayName) and its history will be removed.")
+        }
         .confirmationDialog(
             String(localized: "Forget every device on the shelf?"),
             isPresented: $showingClearConfirm
@@ -81,7 +116,7 @@ struct DeviceShelfView: View {
                             .foregroundColor(.secondary)
                         TextField(String(localized: "Search name, IP, vendor, MAC…"), text: $model.searchText)
                             .textFieldStyle(.plain)
-                            .frame(minWidth: 180, maxWidth: 260)
+                            .frame(minWidth: 180, maxWidth: 320)
                     }
                     .padding(.horizontal, DesignToken.Spacing.small)
                     .padding(.vertical, DesignToken.Spacing.tight)
@@ -92,15 +127,6 @@ struct DeviceShelfView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
-
-                    Picker("Filter", selection: $model.filter) {
-                        ForEach(DeviceShelfViewModel.Filter.allCases) { filter in
-                            Text(filter.title).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(width: 350)
 
                     Spacer()
 
@@ -117,6 +143,20 @@ struct DeviceShelfView: View {
                     }
                     .menuStyle(.borderlessButton)
                     .fixedSize()
+                }
+
+                HStack(spacing: 12) {
+                    // The filter used to share the search row and overlapped it
+                    // at narrow widths; it gets its own line and a flexible width.
+                    Picker("Filter", selection: $model.filter) {
+                        ForEach(DeviceShelfViewModel.Filter.allCases) { filter in
+                            Text(filter.title).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(minWidth: 320, maxWidth: 460)
+                    Divider().frame(height: 18)
                 }
 
                 HStack(spacing: 22) {
@@ -151,47 +191,8 @@ struct DeviceShelfView: View {
 
     // MARK: - Table
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case device, type, ip, vendor, rtt, availability, lastSeen
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .device: return String(localized: "Device")
-            case .type: return String(localized: "Type")
-            case .ip: return String(localized: "IP")
-            case .vendor: return String(localized: "Vendor")
-            case .rtt: return String(localized: "RTT")
-            case .availability: return String(localized: "Availability")
-            case .lastSeen: return String(localized: "Last seen")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .ip
-    @State private var sortAscending = true
-
-    private func sorted(_ devices: [ShelfDevice]) -> [ShelfDevice] {
-        let ordered = devices.sorted { lhs, rhs in
-            switch sortKey {
-            case .device:
-                return lhs.displayName.localizedStandardCompare(rhs.displayName)
-                    == .orderedAscending
-            case .type:
-                return lhs.category.title.localizedStandardCompare(rhs.category.title)
-                    == .orderedAscending
-            case .ip:
-                return lhs.ip.compare(rhs.ip, options: .numeric) == .orderedAscending
-            case .vendor:
-                return (lhs.vendor ?? "").localizedStandardCompare(rhs.vendor ?? "")
-                    == .orderedAscending
-            case .rtt: return (lhs.latencyMs ?? .infinity) < (rhs.latencyMs ?? .infinity)
-            case .availability:
-                return (lhs.availabilityPercent ?? -1) < (rhs.availabilityPercent ?? -1)
-            case .lastSeen: return lhs.lastSeen < rhs.lastSeen
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
+    @StateObject private var sorter = TableSorter<ShelfDevice>(
+        columns: ShelfSort.columns, initialKey: "ip")
 
     private var table: some View {
         ToolkitCard(padding: 0) {
@@ -199,8 +200,8 @@ struct DeviceShelfView: View {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
                     TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
+                        options: sorter.options,
+                        selection: $sorter.key, ascending: $sorter.ascending)
                     Spacer()
                     Text(String(format: String(localized: "%lld shown"), model.filteredDevices.count))
                         .font(.caption2)
@@ -210,7 +211,7 @@ struct DeviceShelfView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sorted(model.filteredDevices), selection: $model.selectedID) {
+                Table(sorter.sorted(model.filteredDevices), selection: $model.selectedID) {
                     TableColumn("") { device in
                         Button {
                             model.toggleFavourite(device.id)
@@ -247,12 +248,13 @@ struct DeviceShelfView: View {
                         }
                     }
 
-                    TableColumn("Type") { device in
-                        Text(device.category.title)
+                    TableColumn(String(localized: "Hostname")) { device in
+                        Text(device.hostname ?? "—")
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                            .lineLimit(1)
                     }
-                    .width(AppColumnWidth.compact)
+                    .width(AppColumnWidth.medium)
 
                     TableColumn("IP") { device in
                         Text(device.ip)
@@ -327,8 +329,51 @@ struct DeviceShelfView: View {
                     .width(95)
                 }
                 .frame(height: ToolkitTableHeight.rows(model.filteredDevices.count, row: 26, maximum: 640))
+                .contextMenu {
+                    if let device = model.selectedDevice {
+                        shelfMenu(device)
+                    }
+                }
             }
         }
+    }
+
+    @ViewBuilder
+    private func shelfMenu(_ device: ShelfDevice) -> some View {
+        Button(device.isFavourite ? "Remove from favourites" : "Add to favourites") {
+            model.toggleFavourite(device.id)
+        }
+        Button("Rename…") {
+            renameTarget = device
+            renameText = device.alias ?? device.displayName
+        }
+        Divider()
+        Button("Copy name") { copyText(device.displayName) }
+        Button("Copy IP address") { copyText(device.ip) }
+        Button("Copy details") { copyText(deviceDetails(device)) }
+        if let mac = device.mac {
+            Button("Wake on LAN") { wake(device, mac: mac) }
+        }
+        Divider()
+        Button("Forget device", role: .destructive) { forgetTarget = device }
+    }
+
+    private func copyText(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    private func deviceDetails(_ device: ShelfDevice) -> String {
+        [
+            device.displayName,
+            "IP: \(device.ip)",
+            "MAC: \(device.mac ?? "—")",
+            "Hostname: \(device.hostname ?? "—")",
+            "Vendor: \(device.vendor ?? "—")",
+            "Model: \(device.makeLabel)",
+            "Type: \(device.category.title)",
+            "Ports: \(device.openPorts.map(String.init).joined(separator: ", "))",
+        ].joined(separator: "\n")
     }
 
     // MARK: - Inspector
@@ -828,4 +873,29 @@ struct LatencySparkline: View {
         }
         .background(Color.secondary.opacity(0.05), in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
     }
+}
+
+private enum ShelfSort {
+    static let columns: [SortColumn<ShelfDevice>] = [
+        SortColumn(id: "device", title: String(localized: "Device")) { .text($0.displayName) },
+        SortColumn(id: "type", title: String(localized: "Type")) { .text($0.category.title) },
+        SortColumn(id: "hostname", title: String(localized: "Hostname")) { .text($0.hostname) },
+        SortColumn(id: "ip", title: String(localized: "IP")) { .text($0.ip) },
+        SortColumn(id: "vendor", title: String(localized: "Vendor")) { .text($0.vendor) },
+        SortColumn(id: "ports", title: String(localized: "Ports")) { .number($0.openPorts.count) },
+        SortColumn(id: "rtt", title: String(localized: "RTT")) { .number($0.latencyMs) },
+        SortColumn(id: "availability", title: String(localized: "Availability")) {
+            .number($0.availabilityPercent)
+        },
+        SortColumn(id: "warranty", title: String(localized: "Warranty")) { device in
+            switch device.warranty {
+            case .unknown: return .none
+            case .active(let days), .expiring(let days): return .number(days)
+            case .expired: return .number(-1)
+            }
+        },
+        SortColumn(id: "lastSeen", title: String(localized: "Last seen")) {
+            .number($0.lastSeen.timeIntervalSince1970)
+        },
+    ]
 }

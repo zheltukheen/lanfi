@@ -101,6 +101,8 @@ public enum AppSettingsKey: String, CaseIterable, Sendable {
     case inspectorWidth = "LanFi.inspectorWidth"
     case bottomPanelHeight = "LanFi.bottomPanelHeight"
     case toolkitSelection = "LanFi.toolkit.selection"
+    case toolkitTarget = "LanFi.toolkit.target"
+    case toolkitTargetHistory = "LanFi.toolkit.targetHistory"
     case toolkitSidebarWidth = "LanFi.toolkit.sidebarWidth"
     case lanScannerTab = "LanFi.lanScannerTab"
     case settingsSection = "LanFi.settings.section"

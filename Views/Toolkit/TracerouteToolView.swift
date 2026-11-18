@@ -66,9 +66,7 @@ struct TracerouteToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("Host", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 280)
+                    ToolTargetField(text: $model.host, onSubmit: { model.run() })
                     Stepper(value: $model.maxHops, in: 1...64) {
                         Text("Max hops: \(model.maxHops)")
                             .font(.caption)

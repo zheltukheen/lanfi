@@ -61,9 +61,12 @@ struct PathCheckToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("example.com", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 230)
+                    ToolTargetField(
+                        text: $model.host, placeholder: "Host or IP",
+                        onSubmit: { model.run() }
+                    )
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 230)
                     TextField("80,443", text: $model.portsText)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 150)

@@ -38,6 +38,7 @@ struct ProcessTrafficToolView: View {
 
     @State private var sortKey: SortKey = .download
     @State private var sortAscending = false
+    @State private var selectedRowID: String?
 
     private struct KillTarget: Identifiable {
         let id = UUID()
@@ -324,7 +325,7 @@ struct ProcessTrafficToolView: View {
     }
 
     private var table: some View {
-        Table(tableRows) {
+        Table(tableRows, selection: $selectedRowID) {
             TableColumn("Process") { row in
                 switch row {
                 case .group(let group):
@@ -405,6 +406,50 @@ struct ProcessTrafficToolView: View {
         }
         .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
         .appTableSurface()
+        .contextMenu {
+            if let id = selectedRowID,
+                let row = tableRows.first(where: { $0.id == id })
+            {
+                trafficRowMenu(row)
+            }
+        }
+        .onChange(of: selectedRowID) { id in
+            guard let id,
+                let row = tableRows.first(where: { $0.id == id }),
+                case .group(let group) = row
+            else { return }
+            toggle(group.id)
+        }
+    }
+
+    @ViewBuilder
+    private func trafficRowMenu(_ row: TableRow) -> some View {
+        switch row {
+        case .group(let group):
+            Button(expanded.contains(group.id) ? "Collapse group" : "Expand group") {
+                toggle(group.id)
+            }
+            Button("Copy group") {
+                copyToPasteboard(
+                    "\(group.name)\t\(group.rows.count)\t\(group.totalBytes)")
+            }
+            Divider()
+            blockMenu(row)
+            Button("Terminate \(group.name)", role: .destructive) { prepareKill(row) }
+        case .process(let process):
+            Button("Copy row") {
+                copyToPasteboard(
+                    "\(process.process)\t\(process.pid)\t\(process.totalBytes)")
+            }
+            Divider()
+            blockMenu(row)
+            Button("Terminate \(process.process)", role: .destructive) { prepareKill(row) }
+        }
+    }
+
+    private func copyToPasteboard(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 
     // MARK: Row helpers

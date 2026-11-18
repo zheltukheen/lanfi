@@ -69,10 +69,12 @@ enum ToolRegistry {
             tool: .dnsLookup, screen: .dnsLookup, mcpTools: ["lanfi_dns"], title: String(localized: "DNS Lookup"),
             icon: "magnifyingglass", section: .dnsDomains),
         ToolDescriptor(
-            tool: .dnsPropagation, screen: .dnsPropagation, mcpTools: ["lanfi_dns_propagation"],
+            tool: .dnsPropagation, screen: .dnsLookup, mcpTools: ["lanfi_dns_propagation"],
             title: String(localized: "DNS Propagation"),
             icon: "globe", section: .dnsDomains,
-            plannedDetail: String(localized: "Check a record across public resolvers.")),
+            plannedDetail: String(localized: "Check a record across public resolvers."),
+            // Rendered as the Propagation tab of the DNS tool.
+            showsInSidebar: false),
         ToolDescriptor(
             tool: .whois, screen: .whois, mcpTools: ["lanfi_whois"], title: String(localized: "Whois"),
             icon: "doc.text.magnifyingglass", section: .dnsDomains,

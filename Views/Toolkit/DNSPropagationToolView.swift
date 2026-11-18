@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DNSPropagationToolView: View {
     @ObservedObject var model: DNSPropagationToolModel
+    /// Embedded in the DNS tab: no second scroll view or page padding.
+    var embedded = false
 
     private enum SortKey: String, CaseIterable, Identifiable {
         case resolver, value, queryTime, status
@@ -37,25 +39,30 @@ struct DNSPropagationToolView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                controls
-                if let error = model.errorMessage {
-                    ToolkitErrorBanner(message: error)
-                }
-                if !model.results.isEmpty {
-                    summary
-                    resultsTable
-                } else if !model.isRunning {
-                    ToolkitEmptyState(
-                        icon: "globe",
-                        title: "Check DNS propagation",
-                        message:
-                            "Asks six public resolvers for the same record and shows whether they agree. Useful after changing DNS."
-                    )
-                }
+        if embedded {
+            content
+        } else {
+            ScrollView { content.appContentPadding() }
+        }
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            controls
+            if let error = model.errorMessage {
+                ToolkitErrorBanner(message: error)
             }
-            .appContentPadding()
+            if !model.results.isEmpty {
+                summary
+                resultsTable
+            } else if !model.isRunning {
+                ToolkitEmptyState(
+                    icon: "globe",
+                    title: "Check DNS propagation",
+                    message:
+                        "Asks six public resolvers for the same record and shows whether they agree. Useful after changing DNS."
+                )
+            }
         }
     }
 
@@ -63,9 +70,9 @@ struct DNSPropagationToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("Domain", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 220)
+                    ToolTargetField(
+                        text: $model.host, placeholder: "Domain", maxWidth: 220,
+                        onSubmit: { model.run() })
                     Picker("Type", selection: $model.type) {
                         ForEach(DNSRecordType.allCases) { type in
                             Text(type.label).tag(type)

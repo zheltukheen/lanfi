@@ -1,8 +1,38 @@
 # Changelog
 
-## Unreleased
+## 5.4.0 — 2026-11-18
 
 ### Changed
+- **One analysis target across the whole toolkit.** The address you type in
+  Ping, MTR, Traceroute, Visual Traceroute, Port Scan, TLS, DNS, GeoIP, Whois,
+  Path Check or iperf3 is now shared by every tool, and each field remembers the
+  last five submitted values in its drop-down. Type `example.com` once and open
+  another tool to use it without retyping.
+- **DNS Lookup and DNS Propagation are one tab.** The DNS screen gained a
+  Lookup/Propagation switch; both sections share the analysis target and the
+  resolver table, instead of living as two sidebar entries.
+- **One traceroute engine.** Visual Traceroute no longer runs its own ICMP
+  stream with a UDP retry; it uses the same `SystemTracerouteRunner().trace`
+  call as the plain screen, which is the path that resolved a single host
+  reliably. Both screens can copy the hop list, and the visual list includes
+  the city/country for public hops.
+- **Connections group by application.** Renderers and helpers of one app now
+  share a row instead of appearing as separate applications, a click anywhere
+  on a group row expands or collapses it, and every table row has a context
+  menu (copy, block rule, terminate). The Rules tab is aligned to the top like
+  the other two tabs.
+- **LAN Scanner layout and device details.** The All/Online/Favourites filter
+  moved to its own line so it no longer overlaps the search field; the device
+  table gained a Hostname column, and right-clicking a device offers rename,
+  copy name/IP/MAC/details, Wake on LAN and Forget.
+- **Shared table sorting.** `Views/TableSorting.swift` adds `SortValue`,
+  `SortColumn` and `TableSorter`, a single comparator and stable ordering used
+  by the LAN Scanner and device shelf; the rest of the toolkit keeps using the
+  same `TableSortControl` component.
+- **`project.yml` stops repeating the shared sources.** The 67 model/service
+  files that both the test bundle and the CLI compiled are declared once in a
+  `SharedToolchainSources` target template.
+
 - **The analyzer and the MCP toolkit are split into focused files.**
   `AnalyzerViewModel` keeps dependencies, published state and initialisation in
   a 279-line core file; scanning, filtering, workspace queries, sessions,

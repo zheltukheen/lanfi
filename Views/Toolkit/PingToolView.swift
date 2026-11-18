@@ -62,9 +62,7 @@ struct PingToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
-                    TextField("Host", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 260)
+                    ToolTargetField(text: $model.host, onSubmit: { model.run() })
                     Picker("Transport", selection: $model.transport) {
                         ForEach(PingTransport.allCases) { transport in
                             Text(transport.title).tag(transport)

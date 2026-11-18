@@ -9,41 +9,9 @@ struct LANScannerToolView: View {
     @State private var serviceDetails: [String: [UInt16: String]] = [:]
     @State private var detectingDeviceID: String?
     @AppStorage(AppSettingsKey.lanScannerTab.rawValue) private var tabRaw = 0
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case device, ip, type, openPorts, latency
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .device: return String(localized: "Device")
-            case .ip: return String(localized: "IP")
-            case .type: return String(localized: "Type")
-            case .openPorts: return String(localized: "Open ports")
-            case .latency: return String(localized: "Latency")
-            }
-        }
-    }
+    @StateObject private var sorter = TableSorter<LANDevice>(
+        columns: LANSort.columns, initialKey: "ip")
 
-    @State private var sortKey: SortKey = .ip
-    @State private var sortAscending = true
-
-    private func sorted(_ rows: [LANDevice]) -> [LANDevice] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .device:
-                return lhs.displayName.localizedStandardCompare(rhs.displayName)
-                    == .orderedAscending
-            case .ip:
-                return lhs.ip.compare(rhs.ip, options: .numeric) == .orderedAscending
-            case .type:
-                return lhs.kindLabel.localizedStandardCompare(rhs.kindLabel) == .orderedAscending
-            case .openPorts: return lhs.openPorts.count < rhs.openPorts.count
-            case .latency:
-                return (lhs.latencyMilliseconds ?? .infinity)
-                    < (rhs.latencyMilliseconds ?? .infinity)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
     @StateObject private var shelf = DeviceShelfViewModel()
 
     private var tabSelection: Binding<String> {
@@ -275,8 +243,8 @@ struct LANScannerToolView: View {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
                     TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
+                        options: sorter.options,
+                        selection: $sorter.key, ascending: $sorter.ascending)
                     Spacer()
                     Text(result.subnet)
                         .font(.caption2.monospaced())
@@ -286,7 +254,7 @@ struct LANScannerToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.small)
 
-                Table(sorted(result.devices), selection: $selectedID) {
+                Table(sorter.sorted(result.devices), selection: $selectedID) {
                     TableColumn("Device") { device in
                         HStack(spacing: 6) {
                             if device.isGateway {
@@ -305,6 +273,13 @@ struct LANScannerToolView: View {
                             }
                         }
                     }
+                    TableColumn(String(localized: "Hostname")) { device in
+                        Text(device.hostname ?? "—")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    .width(AppColumnWidth.medium)
                     TableColumn("IP") { device in
                         Text(device.ip)
                             .font(.caption.monospaced())
@@ -357,8 +332,38 @@ struct LANScannerToolView: View {
                 }
                 .frame(height: ToolkitTableHeight.rows(result.devices.count, row: 26))
                 .appTableSurface(cornerRadius: DesignToken.Radius.card)
+                .contextMenu {
+                    if let device = result.devices.first(where: { $0.id == selectedID }) {
+                        Button("Copy name") { copyText(device.displayName) }
+                        Button("Copy IP address") { copyText(device.ip) }
+                        Button("Copy details") { copyText(scanDetails(device, subnet: result.subnet)) }
+                        if let mac = device.mac {
+                            Button("Copy MAC address") { copyText(mac) }
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private func copyText(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    private func scanDetails(_ device: LANDevice, subnet: String) -> String {
+        [
+            device.displayName,
+            "IP: \(device.ip)",
+            "Hostname: \(device.hostname ?? "—")",
+            "MAC: \(device.mac ?? "—")",
+            "Type: \(device.kindLabel)",
+            "Make/model: \(device.makeLabel) \(device.model ?? "")",
+            "Version: \(device.version ?? "—")",
+            "Services: \(device.serviceSummary.joined(separator: ", "))",
+            "Open ports: \(device.openPorts.map(String.init).joined(separator: ", "))",
+            "Network: \(subnet)",
+        ].joined(separator: "\n")
     }
 
     private func inspector(_ result: LANScanResult) -> some View {
@@ -518,4 +523,25 @@ struct LANScannerToolView: View {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(lines.joined(separator: "\n"), forType: .string)
     }
+}
+
+private enum LANSort {
+    static let columns: [SortColumn<LANDevice>] = [
+        SortColumn(id: "device", title: String(localized: "Device")) { .text($0.displayName) },
+        SortColumn(id: "hostname", title: String(localized: "Hostname")) { .text($0.hostname) },
+        SortColumn(id: "ip", title: String(localized: "IP")) { .text($0.ip) },
+        SortColumn(id: "type", title: String(localized: "Type")) { .text($0.kindLabel) },
+        SortColumn(id: "make", title: String(localized: "Make / model")) {
+            .text([$0.makeLabel, $0.model].compactMap { $0 }.joined(separator: " "))
+        },
+        SortColumn(id: "services", title: String(localized: "Services")) {
+            .number($0.serviceSummary.count)
+        },
+        SortColumn(id: "openPorts", title: String(localized: "Open ports")) {
+            .number($0.openPorts.count)
+        },
+        SortColumn(id: "latency", title: String(localized: "Latency")) {
+            .number($0.latencyMilliseconds)
+        },
+    ]
 }

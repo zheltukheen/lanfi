@@ -78,9 +78,7 @@ struct MTRToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    TextField("Host", text: $model.host)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 230)
+                    ToolTargetField(text: $model.host, maxWidth: 230, onSubmit: { model.run() })
                     Stepper(value: $model.rounds, in: 1...100) {
                         Text("Rounds: \(model.rounds)")
                             .font(.caption)

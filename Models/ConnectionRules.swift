@@ -150,6 +150,8 @@ final class ConnectionBlockRuleStore {
 struct ConnectionSocketGroup: Identifiable, Equatable {
     let id: String
     let local: String
+    /// Application name when the group spans several helper processes.
+    var title: String? = nil
     let connections: [OpenConnection]
 
     var processes: [String] {
@@ -158,7 +160,7 @@ struct ConnectionSocketGroup: Identifiable, Equatable {
         }
     }
 
-    var displayProcess: String { processes.joined(separator: ", ") }
+    var displayProcess: String { title ?? processes.joined(separator: ", ") }
 
     var listeningCount: Int { connections.filter(\.isListening).count }
 
@@ -189,6 +191,32 @@ enum ConnectionGrouping {
                 $0.connections.count == $1.connections.count
                     ? $0.local.localizedStandardCompare($1.local) == .orderedAscending
                     : $0.connections.count > $1.connections.count
+            }
+    }
+
+    /// Groups by the owning application rather than the executable, so helpers,
+    /// renderers and helper XPC processes of one app share a row instead of
+    /// appearing as several "applications" in the list.
+    static func byApplication(
+        _ connections: [OpenConnection], appName: (Int) -> String?
+    ) -> [ConnectionSocketGroup] {
+        Dictionary(grouping: connections) { appName($0.pid) ?? $0.process }
+            .map { name, rows in
+                ConnectionSocketGroup(
+                    id: "app|\(name)",
+                    local: rows.first?.local ?? "—",
+                    title: name,
+                    connections: rows.sorted {
+                        $0.local.localizedStandardCompare($1.local) == .orderedAscending
+                    })
+            }
+            .sorted {
+                let left = $0.connections.count
+                let right = $1.connections.count
+                return left == right
+                    ? $0.displayProcess.localizedStandardCompare($1.displayProcess)
+                        == .orderedAscending
+                    : left > right
             }
     }
 
