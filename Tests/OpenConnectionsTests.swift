@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 final class OpenConnectionsTests: XCTestCase {
     private let output = """
         COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
