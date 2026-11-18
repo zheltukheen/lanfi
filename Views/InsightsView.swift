@@ -1,3 +1,4 @@
+import LanFiCore
 import SwiftUI
 import Charts
 import Accessibility
@@ -110,10 +111,12 @@ struct StatCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.15), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
+                Color.secondary.opacity(0.15), lineWidth: 1))
     }
 }
 
@@ -165,11 +168,11 @@ struct RecommendationCard: View {
             .font(.caption2)
             .foregroundColor(.secondary)
         }
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(tint.opacity(0.25), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+        .overlay(RoundedRectangle(cornerRadius: DesignToken.Radius.card).stroke(tint.opacity(0.25), lineWidth: 1))
     }
 }
 
@@ -178,10 +181,10 @@ struct RecommendationCard: View {
 struct InsightsView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @State private var occupancyBand: WiFiBand = .band24
-    @AppStorage("LanFi.hideEmptyGraphs") private var hideEmptyGraphs = false
-    @AppStorage("LanFi.graph.channel") private var showChannelGraphs = true
-    @AppStorage("LanFi.graph.security") private var showSecurityGraphs = true
-    @AppStorage("LanFi.graph.occupancy") private var showOccupancyGraphs = true
+    @AppStorage(AppSettingsKey.hideEmptyGraphs.rawValue) private var hideEmptyGraphs = false
+    @AppStorage(AppSettingsKey.graphChannel.rawValue) private var showChannelGraphs = true
+    @AppStorage(AppSettingsKey.graphSecurity.rawValue) private var showSecurityGraphs = true
+    @AppStorage(AppSettingsKey.graphOccupancy.rawValue) private var showOccupancyGraphs = true
 
     private var report: AnalysisReport { viewModel.analysis }
 
@@ -239,7 +242,7 @@ struct InsightsView: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
         }
     }
 
@@ -259,7 +262,7 @@ struct InsightsView: View {
                 Label(connected.displaySSID, systemImage: "wifi")
                     .font(.caption2.bold())
                     .foregroundColor(.green)
-                    .padding(.horizontal, 7)
+                    .padding(.horizontal, DesignToken.Spacing.small)
                     .padding(.vertical, 3)
                     .background(Color.green.opacity(0.1))
                     .clipShape(Capsule())
@@ -269,9 +272,9 @@ struct InsightsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(9)
+        .padding(DesignToken.Spacing.small)
         .background(Color.accentColor.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private var summary: some View {
@@ -335,10 +338,10 @@ struct InsightsView: View {
                     Text("No security issues detected in this scan.")
                         .font(.caption)
                 }
-                .padding(10)
+                .padding(DesignToken.Spacing.compact)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.green.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(findingGroups.prefix(5).enumerated()), id: \.element.id) { index, group in
@@ -359,18 +362,20 @@ struct InsightsView: View {
                             Text("\(group.count)")
                                 .font(.caption2.bold())
                                 .foregroundColor(color(for: group.severity))
-                                .padding(.horizontal, 6)
+                                .padding(.horizontal, DesignToken.Spacing.tight)
                                 .padding(.vertical, 2)
                                 .background(color(for: group.severity).opacity(0.12))
                                 .clipShape(Capsule())
                         }
-                        .padding(.vertical, 6)
+                        .padding(.vertical, DesignToken.Spacing.tight)
                     }
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, DesignToken.Spacing.compact)
                 .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.15), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
+                        Color.secondary.opacity(0.15), lineWidth: 1))
             }
         }
     }
@@ -479,10 +484,12 @@ struct InsightsView: View {
                 .frame(height: 150)
             }
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.15), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
+                Color.secondary.opacity(0.15), lineWidth: 1))
     }
 
     private func bestLabel(for band: WiFiBand) -> String {

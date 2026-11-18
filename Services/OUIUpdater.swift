@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 enum OUIUpdater {
@@ -14,7 +15,7 @@ enum OUIUpdater {
 
     // MARK: - Scheduled auto-update (opt-in)
 
-    static let autoUpdateDefaultsKey = "LanFi.autoUpdateOUI"
+    static let autoUpdateDefaultsKey = AppSettingsKey.autoUpdateOUI.rawValue
     static let autoUpdateInterval: TimeInterval = 7 * 24 * 60 * 60
 
     static var isAutoUpdateEnabled: Bool {

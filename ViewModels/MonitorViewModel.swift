@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 import SwiftUI
 
@@ -14,7 +15,7 @@ final class MonitorViewModel: ObservableObject {
         didSet {
             UserDefaults.standard.set(retention.rawValue, forKey: Self.retentionKey)
             var trimmed = snapshot
-            trimmed.trim(retention: retention.interval, now: Date())
+            trimmed.trim(retention: retention.interval, now: clock.now)
             snapshot = trimmed
             scheduleSave(immediately: true)
         }
@@ -23,14 +24,23 @@ final class MonitorViewModel: ObservableObject {
         didSet { saveAlerts() }
     }
 
-    private static let recordingKey = "LanFi.monitor.recording"
-    private static let retentionKey = "LanFi.monitor.retention"
-    private static let alertsKey = "LanFi.monitor.alerts"
-    private let store = MonitorStore()
-    private let notifier = MonitorNotifier()
+    private static let recordingKey = AppSettingsKey.monitorRecording.rawValue
+    private static let retentionKey = AppSettingsKey.monitorRetention.rawValue
+    private static let alertsKey = AppSettingsKey.monitorAlerts.rawValue
+    private let store: MonitorStore
+    private let notifier: any MonitorNotifying
+    /// Injected so the retention trim and event timestamps are reproducible.
+    private let clock: any Clock
     private var saveTask: Task<Void, Never>?
 
-    init() {
+    init(
+        clock: any Clock = SystemClock(),
+        store: MonitorStore = MonitorStore(),
+        notifier: (any MonitorNotifying)? = nil
+    ) {
+        self.clock = clock
+        self.store = store
+        self.notifier = notifier ?? MonitorNotifier()
         let defaults = UserDefaults.standard
         let savedRecording = defaults.object(forKey: Self.recordingKey) as? Bool ?? true
         let savedRetention =
@@ -45,7 +55,7 @@ final class MonitorViewModel: ObservableObject {
         }
 
         var loaded = store.load()
-        loaded.trim(retention: savedRetention.interval, now: Date())
+        loaded.trim(retention: savedRetention.interval, now: clock.now)
         snapshot = loaded
     }
 
@@ -65,7 +75,7 @@ final class MonitorViewModel: ObservableObject {
         let previousEventIDs = Set(snapshot.events.map(\.id))
         var updated = snapshot
         let changed = updated.ingest(
-            connected: connected, visible: visible, now: Date(),
+            connected: connected, visible: visible, now: clock.now,
             sampleInterval: retention.sampleInterval)
         snapshot = updated
         for event in updated.events where !previousEventIDs.contains(event.id) {

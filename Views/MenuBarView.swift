@@ -1,4 +1,5 @@
 import AppKit
+import LanFiCore
 import SwiftUI
 
 struct MenuBarView: View {
@@ -6,8 +7,10 @@ struct MenuBarView: View {
     @ObservedObject var diagnostics: DiagnosticsViewModel
     @ObservedObject var uptime: UptimeMonitor
     @ObservedObject var meter: MenuBarMeterModel
+    @EnvironmentObject private var uiState: AppUIState
+    @EnvironmentObject private var toolkit: ToolkitViewModel
     @Environment(\.openWindow) private var openWindow
-    @AppStorage("LanFi.menuBar.unit") private var unitRaw = "bits"
+    @AppStorage(AppSettingsKey.menuBarUnit.rawValue) private var unitRaw = "bits"
 
     private var unit: ThroughputFormatter.Unit {
         unitRaw == "bytes" ? .bytes : .bits
@@ -80,6 +83,11 @@ struct MenuBarView: View {
             .keyboardShortcut("r")
 
             Button {
+                // D2: the menu-bar "Open" target is the all-band RF overview.
+                // Setting the shared state (instead of posting notifications)
+                // works even when the window is not open yet.
+                toolkit.select(.wifiAnalyzer)
+                uiState.selectedBottomTab = 9
                 openWindow(id: "main")
                 NSApp.activate(ignoringOtherApps: true)
             } label: {

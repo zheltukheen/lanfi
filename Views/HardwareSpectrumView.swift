@@ -23,7 +23,7 @@ struct HardwareSpectrumView: View {
             if let sweep = controller.latestSweep {
                 chart(sweep: sweep)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(8)
+                    .padding(DesignToken.Spacing.small)
             } else {
                 emptyState
             }
@@ -92,7 +92,7 @@ struct HardwareSpectrumView: View {
                 .controlSize(.small)
                 .disabled(controller.latestSweep == nil)
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .background(Material.bar)
     }
 

@@ -59,7 +59,7 @@ struct MonitorView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     }
-                    .padding(12)
+                    .padding(DesignToken.Spacing.medium)
                 }
             }
         }
@@ -116,6 +116,7 @@ struct MonitorView: View {
                 Image(systemName: monitor.alerts.anyEnabled ? "bell.badge" : "bell")
             }
             .help("Monitor alerts")
+            .accessibilityLabel("Monitor alerts")
             Menu {
                 Button("Connected samples…") { exportCSV(peers: false) }
                 Button("Visible networks…") { exportCSV(peers: true) }
@@ -128,8 +129,8 @@ struct MonitorView: View {
             Button("Clear") { showingClear = true }
                 .disabled(monitor.samples.isEmpty)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DesignToken.Spacing.medium)
+        .padding(.vertical, DesignToken.Spacing.small)
     }
 
     private var emptyState: some View {
@@ -148,7 +149,7 @@ struct MonitorView: View {
             .frame(maxWidth: 460)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
+        .padding(DesignToken.Spacing.section)
     }
 
     @ViewBuilder
@@ -184,9 +185,9 @@ struct MonitorView: View {
                 statistic("Samples", value: "\(stats.count)")
                 Spacer()
             }
-            .padding(10)
+            .padding(DesignToken.Spacing.compact)
             .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
         }
     }
 

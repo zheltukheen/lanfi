@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 enum ControllerKind: String, Codable, CaseIterable, Identifiable {
@@ -49,7 +50,7 @@ struct ControllerAccessPoint: Identifiable, Equatable {
 
 final class ControllerAccountStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.controllerAccounts"
+    private let key = AppSettingsKey.controllerAccounts.rawValue
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [ControllerAccount] {

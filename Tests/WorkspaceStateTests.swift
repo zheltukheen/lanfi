@@ -25,7 +25,7 @@ final class WorkspaceStateTests: XCTestCase {
         let nonPSC = makeNetwork(band: .band6, channel: 33)
         let hint = VisibilityAdvisor.advice(for: nonPSC)
         XCTAssertEqual(hint.map(\.kind), [.notPreferredScanning])
-        XCTAssertTrue(hint.first?.detail.contains("passive") ?? false)
+        XCTAssertTrue(hint.first?.detail.lowercased().contains("passive") ?? false)
     }
 
     func testDFSAndHiddenSSIDAdvice() {

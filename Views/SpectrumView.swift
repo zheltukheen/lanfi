@@ -123,6 +123,15 @@ struct SpectrumView: View {
                         hoverPoint = nil
                     }
                 }
+                .overlay {
+                    if let hoverPoint, plotRect.contains(hoverPoint) {
+                        Rectangle()
+                            .fill(ChartStyle.cursorColor)
+                            .frame(width: 1, height: plotRect.height)
+                            .position(x: hoverPoint.x, y: plotRect.midY)
+                            .allowsHitTesting(false)
+                    }
+                }
                 .overlay(alignment: .bottomLeading) {
                     if let hoverPoint, plotRect.contains(hoverPoint) {
                         hoverReadout(at: hoverPoint, plotRect: plotRect)
@@ -148,18 +157,23 @@ struct SpectrumView: View {
                         }
                         .buttonStyle(.borderless)
                         .help("Packet capture")
+                        .accessibilityLabel("Open packet capture")
                         Button {
                             zoom = min(4, zoom * 1.25)
                         } label: {
                             Image(systemName: "plus.magnifyingglass")
                         }
                         .buttonStyle(.borderless).disabled(zoom >= 4)
+                        .help("Zoom in")
+                        .accessibilityLabel("Zoom in")
                         Button {
                             zoom = max(0.5, zoom / 1.25)
                         } label: {
                             Image(systemName: "minus.magnifyingglass")
                         }
                         .buttonStyle(.borderless).disabled(zoom <= 0.5)
+                        .help("Zoom out")
+                        .accessibilityLabel("Zoom out")
                         if isFullScreen {
                             Button {
                                 NSApp.keyWindow?.toggleFullScreen(nil)
@@ -167,6 +181,8 @@ struct SpectrumView: View {
                                 Image(systemName: "arrow.up.left.and.arrow.down.right")
                             }
                             .buttonStyle(.borderless)
+                            .help("Leave full screen")
+                            .accessibilityLabel("Leave full screen")
                         } else {
                             Button {
                                 openWindow(id: "spectrum")
@@ -174,10 +190,12 @@ struct SpectrumView: View {
                                 Image(systemName: "arrow.up.left.and.arrow.down.right")
                             }
                             .buttonStyle(.borderless)
+                            .help("Open spectrum in a window")
+                            .accessibilityLabel("Open spectrum in a window")
                         }
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.top, 6)
+                    .padding(.horizontal, DesignToken.Spacing.compact)
+                    .padding(.top, DesignToken.Spacing.tight)
                 }
                 .overlay(alignment: .bottomTrailing) {
                     if let selected = networks.first(where: { $0.id == viewModel.selectedNetworkId }) {
@@ -220,11 +238,8 @@ struct SpectrumView: View {
         return AnyView(
             Text("\(lane.label) · ch \(channel) · \(Int(dbm.rounded())) dBm")
                 .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .padding(.horizontal, 7)
-                .padding(.vertical, 4)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 5))
-                .padding(8)
+                .chartTooltipSurface()
+                .padding(DesignToken.Spacing.small)
         )
     }
 
@@ -240,11 +255,10 @@ struct SpectrumView: View {
                 Text("util \(util)%").font(.caption2).foregroundColor(.secondary)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 7))
-        .padding(8)
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.vertical, DesignToken.Spacing.tight)
+        .chartTooltipSurface()
+        .padding(DesignToken.Spacing.small)
     }
 
     private func lane(for network: NetworkModel) -> BandLane? {
@@ -295,7 +309,7 @@ struct SpectrumView: View {
         var axis = Path()
         axis.move(to: CGPoint(x: plotRect.minX, y: plotRect.minY))
         axis.addLine(to: CGPoint(x: plotRect.minX, y: plotRect.maxY))
-        context.stroke(axis, with: .color(.secondary.opacity(0.45)), lineWidth: 1)
+        context.stroke(axis, with: .color(ChartStyle.axisLabelColor.opacity(0.45)), lineWidth: 1)
 
         for level in levels {
             let y =
@@ -304,16 +318,17 @@ struct SpectrumView: View {
             path.move(to: CGPoint(x: plotRect.minX, y: y))
             path.addLine(to: CGPoint(x: plotRect.maxX, y: y))
             context.stroke(
-                path, with: .color(.primary.opacity(level == -100 || level == 0 ? 0.20 : 0.10)),
-                style: StrokeStyle(lineWidth: 1, dash: [3, 5]))
+                path, with: .color(ChartStyle.gridColor),
+                style: ChartStyle.gridStroke)
             let label = isPercent ? "\(Int(level))%" : "\(Int(level))"
             context.draw(
-                Text(label).font(.caption2.monospacedDigit()).foregroundColor(.secondary),
+                Text(label).font(ChartStyle.axisLabelFont).foregroundColor(ChartStyle.axisLabelColor),
                 at: CGPoint(x: plotRect.minX - 8, y: y), anchor: .trailing
             )
         }
         context.draw(
-            Text(isPercent ? "Signal %" : "dBm").font(.caption2.bold()).foregroundColor(.secondary),
+            Text(isPercent ? "Signal %" : "dBm").font(ChartStyle.axisLabelFont).bold()
+                .foregroundColor(ChartStyle.axisLabelColor),
             at: CGPoint(x: plotRect.minX - 8, y: plotRect.minY - 16), anchor: .trailing
         )
 
@@ -324,9 +339,10 @@ struct SpectrumView: View {
             var divider = Path()
             divider.move(to: CGPoint(x: startX, y: plotRect.minY))
             divider.addLine(to: CGPoint(x: startX, y: plotRect.maxY + 14))
-            context.stroke(divider, with: .color(.secondary.opacity(0.25)), lineWidth: 1)
+            context.stroke(divider, with: .color(ChartStyle.gridColor), lineWidth: 1)
             context.draw(
-                Text(lane.label).font(.caption2.bold()).foregroundColor(.secondary),
+                Text(lane.label).font(ChartStyle.axisLabelFont).bold()
+                    .foregroundColor(ChartStyle.axisLabelColor),
                 at: CGPoint(x: (startX + endX) / 2, y: plotRect.maxY + 26)
             )
             for channel in lane.ticks {
@@ -336,10 +352,10 @@ struct SpectrumView: View {
                 var tick = Path()
                 tick.move(to: CGPoint(x: x, y: plotRect.maxY))
                 tick.addLine(to: CGPoint(x: x, y: plotRect.maxY + 4))
-                context.stroke(tick, with: .color(.secondary.opacity(0.4)), lineWidth: 1)
+                context.stroke(tick, with: .color(ChartStyle.gridColor), lineWidth: 1)
                 context.draw(
-                    Text("\(channel)").font(.caption2).foregroundColor(
-                        active.contains(channel) ? .primary : .secondary),
+                    Text("\(channel)").font(ChartStyle.axisLabelFont).foregroundColor(
+                        active.contains(channel) ? .primary : ChartStyle.axisLabelColor),
                     at: CGPoint(x: x, y: plotRect.maxY + 15)
                 )
             }

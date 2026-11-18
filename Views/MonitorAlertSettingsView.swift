@@ -88,7 +88,7 @@ struct MonitorAlertSettingsView: View {
             }
             .formStyle(.grouped)
         }
-        .padding(16)
+        .padding(DesignToken.Spacing.large)
         .frame(width: 480, height: 560)
     }
 

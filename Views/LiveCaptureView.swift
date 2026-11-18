@@ -1,3 +1,4 @@
+import LanFiCore
 import SwiftUI
 
 struct LiveCaptureView: View {
@@ -22,7 +23,8 @@ struct LiveCaptureView: View {
     @State private var triggerMode = 0
     @State private var triggerBSSID = ""
     @State private var waitingForTrigger = false
-    @State private var autoOpenWireshark = UserDefaults.standard.bool(forKey: "LanFi.capture.autoWireshark")
+    @State private var autoOpenWireshark = UserDefaults.standard.bool(
+        forKey: AppSettingsKey.captureAutoWireshark.rawValue)
 
     var body: some View {
         Group {
@@ -184,7 +186,7 @@ struct LiveCaptureView: View {
 
             Toggle("Open capture in Wireshark when finished", isOn: $autoOpenWireshark)
                 .onChange(of: autoOpenWireshark) { value in
-                    UserDefaults.standard.set(value, forKey: "LanFi.capture.autoWireshark")
+                    UserDefaults.standard.set(value, forKey: AppSettingsKey.captureAutoWireshark.rawValue)
                 }
 
             Toggle("Monitor mode / radiotap (Wi-Fi interfaces)", isOn: $monitorMode)
@@ -255,7 +257,7 @@ struct LiveCaptureView: View {
                 }
             }
             .padding(.horizontal, embedded ? 10 : 18)
-            .padding(.vertical, 8)
+            .padding(.vertical, DesignToken.Spacing.small)
         }
     }
 

@@ -17,6 +17,19 @@ final class UpdaterController: ObservableObject {
         controller.updater.canCheckForUpdates
     }
 
+    var automaticallyChecksForUpdates: Bool {
+        get { controller.updater.automaticallyChecksForUpdates }
+        set { controller.updater.automaticallyChecksForUpdates = newValue }
+    }
+
+    var lastUpdateCheckDate: Date? {
+        controller.updater.lastUpdateCheckDate
+    }
+
+    var feedURL: String? {
+        Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
+    }
+
     func checkForUpdates() {
         controller.checkForUpdates(nil)
     }

@@ -32,7 +32,7 @@ struct EmptyScanView: View {
             }
 
             actions
-                .padding(.top, 4)
+                .padding(.top, DesignToken.Spacing.tight)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
@@ -149,8 +149,8 @@ struct StaleDataBanner: View {
             Button("Refresh Now", action: onRefresh)
                 .controlSize(.small)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.tight)
         .background(AppPalette.warning.opacity(0.1))
         .overlay(
             Rectangle().frame(height: 1).foregroundColor(AppPalette.warning.opacity(0.2)),
@@ -177,8 +177,8 @@ struct CompactPermissionBanner: View {
             }
             .controlSize(.small)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.tight)
         .background(Color.orange.opacity(0.1))
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color.orange.opacity(0.2)), alignment: .bottom)
     }
@@ -213,8 +213,8 @@ struct ScanHealthBanner: View {
             .buttonStyle(.plain)
             .accessibilityLabel(Text("Dismiss"))
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.tight)
         .background(Color.red.opacity(0.08))
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color.red.opacity(0.2)), alignment: .bottom)
     }
@@ -255,7 +255,7 @@ struct LocationPermissionView: View {
                 .buttonStyle(.borderless)
             }
         }
-        .padding(30)
+        .padding(DesignToken.Spacing.emptyState)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
     }

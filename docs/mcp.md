@@ -25,8 +25,19 @@ xcodebuild build -project LanFi.xcodeproj -scheme lanfi-cli \
 
 ## Register the server
 
+The installed app serves MCP itself, so no extra binary is needed:
+
+```bash
+claude mcp add lanfi -- /Applications/LanFi.app/Contents/MacOS/LanFi --mcp
+```
+
+`--mcp` runs headless on stdio: no window, no menu-bar item, no scan of its
+own. The same works for a build from this repository, e.g.
+`./build/LanFi-Universal/LanFi.app/Contents/MacOS/LanFi --mcp`, and the CLI
+below stays available for scripted use.
+
 Claude Code / Claude Desktop, Cursor and other MCP clients take the same
-`command` + `args` pair. Use the absolute path to the built binary.
+`command` + `args` pair. Use the absolute path to the app or CLI binary.
 
 ```json
 {
@@ -50,7 +61,10 @@ Claude Code / Claude Desktop, Cursor and other MCP clients take the same
 | `lanfi_protocols` | Radio, EHT/MLO, security, spectrum, mobility, format and vendor blocks with warnings. Optional `ssid`/`bssid`. |
 | `lanfi_channels` | Occupancy per channel and ranked recommendations for 2.4/5/6 GHz. |
 | `lanfi_capture` | Parse a pcap/pcapng capture: beacons and assembled MLO groups. |
+| `lanfi_har` | Analyse a HAR archive: slowest requests, failures, p95 latency, bytes per host and the dominant timing phase (credential values redacted by default). |
 | `lanfi_spectrum` | Analyse a hardware spectrum CSV (RF Explorer, Wi-Spy/Chanalyzer): span, noise floor, peak, per-band strongest signal and time above -70/-60/-50 dBm. |
+| `lanfi_client_analytics` | Per-access-point advertised client load from the latest scan: clients, utilization, busiest APs and plain-language insights. |
+| `lanfi_survey_plan` | Plan access-point placement for a rectangular floor: free-space radius, grid layout, spacing and estimated coverage. |
 
 ### Network probes
 
@@ -72,6 +86,7 @@ Claude Code / Claude Desktop, Cursor and other MCP clients take the same
 | `lanfi_lan_scan` | ARP, Bonjour and TCP sweep of the local subnet. |
 | `lanfi_iperf3` | Run the iperf3 client against your own server. |
 | `lanfi_speed_test` | Apple networkQuality throughput and bufferbloat. |
+| `lanfi_open_connections` | TCP connections on this Mac from read-only `lsof`: process, PID, user, protocol, endpoints and state. |
 
 ### Device Shelf
 
@@ -97,6 +112,50 @@ array (`port`, `title`, `severity`, `advice`). The response also reports
 ```bash
 printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"lanfi_devices","arguments":{"risky":true}}}' \
+  | lanfi-cli mcp
+```
+
+### Client analytics, survey planning and open connections
+
+These three tools need no live app session per call:
+
+- `lanfi_client_analytics` reads the live snapshot (or an exported scan JSON),
+  the same way `lanfi_scan_summary` does;
+- `lanfi_survey_plan` is a pure calculator over the dimensions you pass;
+- `lanfi_open_connections` runs `/usr/sbin/lsof -nP -iTCP` read-only. It is
+  never elevated, so sockets owned by other users can be hidden.
+
+| Argument | Tool | Meaning |
+| --- | --- | --- |
+| `path` | `lanfi_client_analytics` | Scan JSON export path; omit for the live snapshot. |
+| `widthMeters` | `lanfi_survey_plan` | Floor width in metres, default 20. |
+| `heightMeters` | `lanfi_survey_plan` | Floor height in metres, default 12. |
+| `targetRSSI` | `lanfi_survey_plan` | Design target in dBm, default -65. |
+| `txPowerDbm` | `lanfi_survey_plan` | Access-point transmit power, default 20 dBm. |
+| `band` | `lanfi_survey_plan` | `2.4GHz`, `5GHz` or `6GHz`, default `5GHz`. |
+| `channel` | `lanfi_survey_plan` | Channel used for the path-loss assumption, default 36. |
+| `listeners` | `lanfi_open_connections` | Include listening sockets, default false. |
+| `limit` | `lanfi_open_connections` | Maximum connection rows, default 500, capped at 2000. |
+
+`lanfi_client_analytics` returns `advertisedClients`, `accessPoints`,
+`reportingAccessPoints`, `idleAccessPoints`, an `accessPointLoad` array
+(`bssid`, `ssid`, `band`, `channel`, `clients`, `utilizationPercent`, `rssi`)
+and `insights`. The client count is what the beacon advertises, not a
+per-client measurement: macOS exposes no client list to Wi-Fi scan APIs.
+
+`lanfi_survey_plan` returns `accessPointCount`, `radiusMeters`,
+`spacingMeters`, `estimatedCoveragePercent`, the `accessPoints` grid (`x`, `y`
+in metres) and `notes` about the assumptions it made.
+
+`lanfi_open_connections` returns `count`, `returned`, a `processes` summary
+(`process`, `connections`) and the `connections` rows (`process`, `pid`,
+`user`, `protocol`, `local`, `remote`, `state`).
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"lanfi_client_analytics","arguments":{}}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"lanfi_survey_plan","arguments":{"widthMeters":24,"heightMeters":14,"targetRSSI":-67,"band":"6GHz"}}}' \
+  '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"lanfi_open_connections","arguments":{"listeners":true,"limit":50}}}' \
   | lanfi-cli mcp
 ```
 

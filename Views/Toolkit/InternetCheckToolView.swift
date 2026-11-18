@@ -32,7 +32,7 @@ struct InternetCheckToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
         .task {
             if diagnostics.report == nil {
@@ -155,11 +155,11 @@ struct InternetCheckToolView: View {
                             ForEach(report.verdictEvidence.prefix(3)) { check in
                                 Text("\(Text(LocalizedStringKey(check.title))): \(check.value)")
                                     .font(.caption2)
-                                    .padding(.horizontal, 7)
+                                    .padding(.horizontal, DesignToken.Spacing.small)
                                     .padding(.vertical, 3)
                                     .background(
                                         Color.primary.opacity(0.05),
-                                        in: RoundedRectangle(cornerRadius: 4))
+                                        in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
                             }
                         }
                         .padding(.top, 2)
@@ -176,8 +176,8 @@ struct InternetCheckToolView: View {
                 }
                 Spacer()
             }
-            .padding(4)
-            .background(color.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+            .padding(DesignToken.Spacing.tight)
+            .background(color.opacity(0.06), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
         }
     }
 
@@ -224,7 +224,7 @@ struct InternetCheckToolView: View {
                                 checkRow(check)
                             }
                         }
-                        .padding(.top, 6)
+                        .padding(.top, DesignToken.Spacing.tight)
                     }
                     .font(.caption)
                 }

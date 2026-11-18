@@ -34,7 +34,7 @@ struct IssuesInspectorSection: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
         } label: {
             HStack {
                 Label("Issues", systemImage: "exclamationmark.triangle")
@@ -126,7 +126,7 @@ struct HistoryInspectorSection: View {
                     .foregroundColor(.secondary)
                 }
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
         } label: {
             Label("Signal / noise / SNR", systemImage: "chart.xyaxis.line")
         }
@@ -181,7 +181,7 @@ struct UtilizationInspectorSection: View {
                     .foregroundColor(.secondary)
                 }
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
         } label: {
             HStack {
                 Label("Channel utilization", systemImage: "gauge.with.dots.needle.67percent")

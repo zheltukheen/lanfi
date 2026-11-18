@@ -8,7 +8,8 @@ final class MCPProtocolTests: XCTestCase {
         "lanfi_path_check", "lanfi_dns", "lanfi_dns_propagation", "lanfi_whois", "lanfi_geoip",
         "lanfi_tls", "lanfi_subnet", "lanfi_interfaces", "lanfi_routes", "lanfi_lan_scan",
         "lanfi_iperf3", "lanfi_speed_test", "lanfi_uptime", "lanfi_diagnostics", "lanfi_info",
-        "lanfi_spectrum", "lanfi_devices", "lanfi_har",
+        "lanfi_spectrum", "lanfi_devices", "lanfi_har", "lanfi_client_analytics",
+        "lanfi_survey_plan", "lanfi_open_connections",
     ]
 
     // MARK: - Handshake
@@ -106,6 +107,34 @@ final class MCPProtocolTests: XCTestCase {
         let object = try XCTUnwrap(jsonObject(payload.text))
         let occupancy = try XCTUnwrap(object["occupancy"] as? [[String: Any]])
         XCTAssertTrue(occupancy.contains { $0["channel"] as? Int == 36 })
+    }
+
+    func testClientAnalyticsReadsAnExportedScan() async throws {
+        let url = try writeFixture()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let payload = try await callTool("lanfi_client_analytics", ["path": url.path])
+        XCTAssertFalse(payload.isError, payload.text)
+        let object = try XCTUnwrap(jsonObject(payload.text))
+        XCTAssertEqual(object["accessPoints"] as? Int, 3)
+        XCTAssertNotNil(object["advertisedClients"] as? Int)
+        XCTAssertFalse((object["insights"] as? [String] ?? []).isEmpty)
+    }
+
+    func testSurveyPlanReturnsNormalizedAccessPoints() async throws {
+        let payload = try await callTool(
+            "lanfi_survey_plan",
+            ["widthMeters": 30, "heightMeters": 18, "targetRSSI": -65])
+        XCTAssertFalse(payload.isError, payload.text)
+        let object = try XCTUnwrap(jsonObject(payload.text))
+        let count = try XCTUnwrap(object["accessPointCount"] as? Int)
+        XCTAssertGreaterThan(count, 0)
+        let points = try XCTUnwrap(object["accessPoints"] as? [[String: Any]])
+        XCTAssertEqual(points.count, count)
+        let first = try XCTUnwrap(points.first)
+        XCTAssertTrue((0.0...1.0).contains(first["x"] as? Double ?? -1))
+        XCTAssertTrue((0.0...1.0).contains(first["y"] as? Double ?? -1))
+        XCTAssertGreaterThan(object["estimatedCoveragePercent"] as? Double ?? 0, 0)
     }
 
     func testMissingScanFileIsAnError() async throws {

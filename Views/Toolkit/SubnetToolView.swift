@@ -23,7 +23,7 @@ struct SubnetToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
         .onAppear {
             if model.result == nil { model.calculate() }

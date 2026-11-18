@@ -16,9 +16,9 @@ struct ToolkitCard<Content: View>: View {
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: DesignToken.Radius.card)
                     .stroke(Color.primary.opacity(0.06), lineWidth: 1)
             )
     }
@@ -47,10 +47,10 @@ enum ToolkitTone {
 
     var color: Color {
         switch self {
-        case .neutral: return .secondary
-        case .good: return .green
-        case .warning: return .orange
-        case .bad: return .red
+        case .neutral: return AppPalette.muted
+        case .good: return AppPalette.ok
+        case .warning: return AppPalette.warning
+        case .bad: return AppPalette.danger
         case .running: return .accentColor
         }
     }
@@ -69,9 +69,11 @@ struct ToolkitStatusPill: View {
                 .font(.caption.weight(.medium))
                 .lineLimit(1)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.tight)
         .background(tone.color.opacity(0.10), in: Capsule())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(text)
     }
 }
 
@@ -86,9 +88,9 @@ struct ToolkitStateDot: View {
 
     private var color: Color {
         switch state {
-        case .open: return .green
-        case .closed: return .red
-        case .filtered: return .orange
+        case .open: return AppPalette.ok
+        case .closed: return AppPalette.danger
+        case .filtered: return AppPalette.warning
         }
     }
 }
@@ -112,6 +114,9 @@ struct ToolkitMetric: View {
                 .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(title))
+        .accessibilityValue(value)
     }
 }
 
@@ -152,8 +157,8 @@ struct ToolkitErrorBanner: View {
                 .textSelection(.enabled)
             Spacer()
         }
-        .padding(10)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+        .padding(DesignToken.Spacing.compact)
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 }
 
@@ -168,7 +173,7 @@ struct ToolkitChips: View {
             ForEach(items, id: \.self) { item in
                 Text(item)
                     .font(.caption2)
-                    .padding(.horizontal, 7)
+                    .padding(.horizontal, DesignToken.Spacing.small)
                     .padding(.vertical, 2)
                     .background(Color.accentColor.opacity(0.12), in: Capsule())
                     .foregroundColor(.primary)
@@ -187,9 +192,9 @@ struct ToolkitTypeBadge: View {
     var body: some View {
         Text(text)
             .font(.system(size: 10, weight: .semibold, design: .rounded))
-            .padding(.horizontal, 7)
+            .padding(.horizontal, DesignToken.Spacing.small)
             .padding(.vertical, 2)
-            .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: 4))
+            .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
             .foregroundColor(color)
     }
 }
@@ -245,5 +250,41 @@ enum ToolkitFormat {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .decimal
         return formatter.string(fromByteCount: value)
+    }
+}
+
+/// macOS 13 has no sortable `TableColumn` (`value:`/`comparator` are macOS 14),
+/// so toolkit tables sort through this compact control in the card header.
+struct TableSortControl<Key: Hashable>: View {
+    let options: [(key: Key, title: String)]
+    @Binding var selection: Key
+    @Binding var ascending: Bool
+
+    var body: some View {
+        Menu {
+            ForEach(options, id: \.key) { option in
+                Button {
+                    if selection == option.key {
+                        ascending.toggle()
+                    } else {
+                        selection = option.key
+                        ascending = true
+                    }
+                } label: {
+                    Text(option.title)
+                    if selection == option.key {
+                        Image(systemName: ascending ? "chevron.up" : "chevron.down")
+                    }
+                }
+            }
+        } label: {
+            Label("Sort", systemImage: "arrow.up.arrow.down")
+                .font(.caption2)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Sort the table")
+        .accessibilityLabel("Sort the table")
+        .accessibilityValue(ascending ? "Ascending" : "Descending")
     }
 }

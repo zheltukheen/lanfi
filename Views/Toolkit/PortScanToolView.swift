@@ -4,6 +4,48 @@ import SwiftUI
 struct PortScanToolView: View {
     @ObservedObject var model: PortScanToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case port, service, state, response, detail
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .port: return String(localized: "Port")
+            case .service: return String(localized: "Service")
+            case .state: return String(localized: "State")
+            case .response: return String(localized: "Response")
+            case .detail: return String(localized: "Detail")
+            }
+        }
+    }
+
+    @State private var tcpSortKey: SortKey = .port
+    @State private var tcpAscending = true
+    @State private var udpSortKey: SortKey = .port
+    @State private var udpAscending = true
+
+    private func sorted(
+        _ rows: [PortScanResult], key: SortKey, ascending: Bool
+    ) -> [PortScanResult] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch key {
+            case .port: return lhs.port < rhs.port
+            case .service:
+                return (lhs.service ?? "").localizedStandardCompare(rhs.service ?? "")
+                    == .orderedAscending
+            case .state:
+                return lhs.state.label.localizedStandardCompare(rhs.state.label)
+                    == .orderedAscending
+            case .response:
+                return (lhs.responseMilliseconds ?? .infinity)
+                    < (rhs.responseMilliseconds ?? .infinity)
+            case .detail:
+                return (lhs.detail ?? "").localizedStandardCompare(rhs.detail ?? "")
+                    == .orderedAscending
+            }
+        }
+        return ascending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -30,7 +72,7 @@ struct PortScanToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -159,17 +201,20 @@ struct PortScanToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Ports")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $tcpSortKey, ascending: $tcpAscending)
                     Spacer()
                     Text(model.portSpec)
                         .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(model.results) {
+                Table(sorted(model.results, key: tcpSortKey, ascending: tcpAscending)) {
                     TableColumn("Port") { result in
                         Text("\(result.port)/tcp")
                             .font(.caption.monospacedDigit())
@@ -192,7 +237,7 @@ struct PortScanToolView: View {
                             .font(.caption.monospacedDigit())
                             .foregroundColor(.secondary)
                     }
-                    .width(90)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Detail") { result in
                         Text(result.detail ?? "")
                             .font(.caption2)
@@ -257,15 +302,18 @@ struct PortScanToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "UDP")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $udpSortKey, ascending: $udpAscending)
                     Spacer()
                     Text("Best-effort: no response = open|filtered")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
-                Table(model.udpResults) {
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
+                Table(sorted(model.udpResults, key: udpSortKey, ascending: udpAscending)) {
                     TableColumn("Port") { result in
                         Text("\(result.port)/udp")
                             .font(.caption.monospacedDigit())

@@ -4,6 +4,37 @@ import SwiftUI
 struct DNSToolView: View {
     @ObservedObject var model: DNSToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case type, name, ttl, priority, value
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .type: return String(localized: "Type")
+            case .name: return String(localized: "Name")
+            case .ttl: return String(localized: "TTL")
+            case .priority: return String(localized: "Priority")
+            case .value: return String(localized: "Value")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .type
+    @State private var sortAscending = true
+
+    private func sortedRecords(_ records: [DNSRecord]) -> [DNSRecord] {
+        let ordered = records.sorted { lhs, rhs in
+            switch sortKey {
+            case .type: return lhs.type.label.localizedStandardCompare(rhs.type.label) == .orderedAscending
+            case .name: return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+            case .ttl: return lhs.ttl < rhs.ttl
+            case .priority:
+                return (lhs.priority ?? UInt16.max) < (rhs.priority ?? UInt16.max)
+            case .value: return lhs.value.localizedStandardCompare(rhs.value) == .orderedAscending
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -20,7 +51,7 @@ struct DNSToolView: View {
                     reportsContent
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -178,16 +209,19 @@ struct DNSToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Answers")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(result.host)
                         .font(.caption.monospaced())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(result.records) {
+                Table(sortedRecords(result.records)) {
                     TableColumn("Type") { record in
                         ToolkitTypeBadge(
                             text: record.type.label,

@@ -24,8 +24,10 @@ struct ErrorBanner: View {
                 Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
+            .help("Dismiss")
+            .accessibilityLabel("Dismiss message")
         }
-        .padding(8)
+        .padding(DesignToken.Spacing.small)
         .background(Color.yellow.opacity(0.15))
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color.yellow.opacity(0.3)), alignment: .bottom)
     }

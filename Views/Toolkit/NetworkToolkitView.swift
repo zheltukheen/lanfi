@@ -1,3 +1,4 @@
+import LanFiCore
 import AppKit
 import SwiftUI
 
@@ -11,7 +12,7 @@ struct NetworkToolkitView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
     @FocusState private var searchFocused: Bool
-    @AppStorage("LanFi.toolkit.sidebarWidth") private var storedSidebarWidth: Double = 228
+    @AppStorage(AppSettingsKey.toolkitSidebarWidth.rawValue) private var storedSidebarWidth: Double = 228
     @State private var sidebarDragOffset: CGFloat = 0
 
     private var currentSidebarWidth: CGFloat {
@@ -22,9 +23,10 @@ struct NetworkToolkitView: View {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return [] }
         return ToolboxTool.allCases.filter { tool in
-            tool.title.localizedCaseInsensitiveContains(query)
-                || tool.section.title.localizedCaseInsensitiveContains(query)
-                || tool.plannedDetail.localizedCaseInsensitiveContains(query)
+            tool.showsInSidebar
+                && (tool.title.localizedCaseInsensitiveContains(query)
+                    || tool.section.title.localizedCaseInsensitiveContains(query)
+                    || tool.plannedDetail.localizedCaseInsensitiveContains(query))
         }
     }
 
@@ -43,6 +45,7 @@ struct NetworkToolkitView: View {
         }
         .frame(minWidth: 980, minHeight: 640)
         .background(Color(nsColor: .windowBackgroundColor))
+        .appTableDensity()
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowToolkit)) { note in
             if let raw = note.userInfo?["tool"] as? String,
                 let tool = ToolboxTool(rawValue: raw)
@@ -52,7 +55,8 @@ struct NetworkToolkitView: View {
         }
         .onAppear {
             #if DEBUG
-                ToolkitSnapshot.captureIfRequested(toolkit: toolkit, uptime: uptime)
+                ToolkitSnapshot.captureIfRequested(
+                    toolkit: toolkit, analyzer: analyzer, survey: survey, uptime: uptime)
             #endif
         }
     }
@@ -71,8 +75,11 @@ struct NetworkToolkitView: View {
                     if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         ForEach(ToolboxSection.allCases) { section in
                             sectionHeader(section.title)
-                            ForEach(ToolboxTool.allCases.filter { $0.section == section }) {
-                                tool in
+                            ForEach(
+                                ToolboxTool.allCases.filter {
+                                    $0.section == section && $0.showsInSidebar
+                                }
+                            ) { tool in
                                 toolRow(tool)
                             }
                         }
@@ -82,8 +89,8 @@ struct NetworkToolkitView: View {
                             Text("No tools found")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 8)
+                                .padding(.horizontal, DesignToken.Spacing.compact)
+                                .padding(.vertical, DesignToken.Spacing.small)
                         } else {
                             ForEach(searchResults) { tool in
                                 toolRow(tool)
@@ -91,7 +98,7 @@ struct NetworkToolkitView: View {
                         }
                     }
                 }
-                .padding(8)
+                .padding(DesignToken.Spacing.small)
             }
         }
         .frame(width: currentSidebarWidth)
@@ -140,11 +147,11 @@ struct NetworkToolkitView: View {
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: 6))
-        .padding(.horizontal, 8)
-        .padding(.top, 8)
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.vertical, DesignToken.Spacing.tight)
+        .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.top, DesignToken.Spacing.small)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -153,9 +160,9 @@ struct NetworkToolkitView: View {
             .foregroundColor(.secondary)
             .textCase(.uppercase)
             .tracking(0.5)
-            .padding(.horizontal, 10)
-            .padding(.top, 14)
-            .padding(.bottom, 4)
+            .padding(.horizontal, DesignToken.Spacing.compact)
+            .padding(.top, DesignToken.Spacing.card)
+            .padding(.bottom, DesignToken.Spacing.tight)
     }
 
     private func toolRow(_ tool: ToolboxTool) -> some View {
@@ -174,20 +181,20 @@ struct NetworkToolkitView: View {
                 if !tool.isAvailable {
                     Text("Soon")
                         .font(.system(size: 9, weight: .semibold))
-                        .padding(.horizontal, 5)
+                        .padding(.horizontal, DesignToken.Spacing.tight)
                         .padding(.vertical, 1)
                         .background(Color.secondary.opacity(0.12), in: Capsule())
                 }
             }
-            .padding(.horizontal, 9)
-            .padding(.vertical, 5)
+            .padding(.horizontal, DesignToken.Spacing.small)
+            .padding(.vertical, DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundColor(
                 selected ? .white : (tool.isAvailable ? .primary : .secondary)
             )
             .background(
                 selected ? Color.accentColor : Color.clear,
-                in: RoundedRectangle(cornerRadius: 6)
+                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
             )
             .contentShape(Rectangle())
         }
@@ -210,18 +217,17 @@ struct NetworkToolkitView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            Button {
+            ToolbarIconButton(
+                systemImage: "questionmark.circle",
+                label: "Open LanFi Help",
+                help: "LanFi Help",
+                tint: .secondary
+            ) {
                 openWindow(id: "help")
-            } label: {
-                Image(systemName: "questionmark.circle")
-                    .foregroundColor(.secondary)
             }
-            .buttonStyle(.borderless)
-            .help("LanFi Help")
-            .accessibilityLabel("Open LanFi Help")
         }
         .padding(.horizontal, 18)
-        .padding(.vertical, 10)
+        .padding(.vertical, DesignToken.Spacing.compact)
         .background(Color(nsColor: .windowBackgroundColor))
     }
 
@@ -266,6 +272,8 @@ struct NetworkToolkitView: View {
             Iperf3ToolView(model: toolkit.iperf3)
         case .httpTraffic:
             HTTPTrafficToolView(model: toolkit.httpTraffic)
+        case .openConnections, .processTraffic:
+            ConnectionsToolView(toolkit: toolkit)
         case .advancedTools:
             AdvancedToolsToolView()
         case .wifiAnalyzer:
@@ -274,6 +282,10 @@ struct NetworkToolkitView: View {
             RoamingTestToolView(analyzer: analyzer)
         case .knownNetworks:
             KnownNetworksToolView(analyzer: analyzer)
+        case .securityWatch:
+            SecurityWatchToolView(analyzer: analyzer, monitor: analyzer.monitor)
+        case .clientAnalytics:
+            ClientAnalyticsToolView(analyzer: analyzer)
         case .siteSurvey:
             SurveyView(analyzer: analyzer, survey: survey)
         }

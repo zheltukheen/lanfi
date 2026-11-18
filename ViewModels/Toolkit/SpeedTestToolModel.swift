@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 import SwiftUI
 
@@ -16,7 +17,7 @@ final class SpeedTestToolModel: ObservableObject {
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
 
-    private static let scheduleKey = "LanFi.speedTestSchedule"
+    private static let scheduleKey = AppSettingsKey.speedTestSchedule.rawValue
     private let historyStore = ThroughputHistoryStore()
     private let defaults = UserDefaults.standard
     private var task: Task<Void, Never>?
@@ -35,8 +36,13 @@ final class SpeedTestToolModel: ObservableObject {
         schedule.nextRun(after: history.last?.testedAt)
     }
 
-    var newestFirst: [ThroughputMeasurement] {
-        Array(history.reversed())
+    /// Per-network roll-ups, most recently tested network first.
+    var networkGroups: [SpeedTestNetworkHistory] {
+        SpeedTestHistoryIndex.groups(history)
+    }
+
+    func measurements(forNetwork key: String?) -> [ThroughputMeasurement] {
+        SpeedTestHistoryIndex.measurements(history, for: key)
     }
 
     func run() {
@@ -54,12 +60,13 @@ final class SpeedTestToolModel: ObservableObject {
             isRunning = false
             task = nil
         }
+        let network = ThroughputNetworkSampler.current()
         do {
             let measured = try await Task.detached(priority: .userInitiated) {
                 try await ThroughputTester.run()
             }.value
             report = measured
-            record(measured)
+            record(measured, network: network)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -79,8 +86,8 @@ final class SpeedTestToolModel: ObservableObject {
         report = nil
     }
 
-    private func record(_ report: ThroughputReport) {
-        history.append(ThroughputMeasurement(report: report))
+    private func record(_ report: ThroughputReport, network: SpeedTestNetwork?) {
+        history.append(ThroughputMeasurement(report: report, network: network))
         if history.count > 50 {
             history.removeFirst(history.count - 50)
         }

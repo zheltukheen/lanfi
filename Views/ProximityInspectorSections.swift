@@ -19,13 +19,13 @@ struct ProximityBeaconInspectorSection: View {
                         .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(4)
+                .padding(DesignToken.Spacing.tight)
             } else {
                 Text("No iBeacon / proximity beacon advertised by this BSSID.")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(4)
+                    .padding(DesignToken.Spacing.tight)
             }
         } label: {
             Label("Proximity beacon", systemImage: "dot.radiowaves.left.and.right")
@@ -53,7 +53,7 @@ struct ClientsInspectorSection: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
             HStack {

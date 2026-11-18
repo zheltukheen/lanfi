@@ -1,6 +1,49 @@
 import SwiftUI
 
 struct LiveClientDiscoveryView: View {
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case mac, vendor, bssid, frames, management, rssi, eapol, probes
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .mac: return String(localized: "MAC")
+            case .vendor: return String(localized: "Vendor")
+            case .bssid: return String(localized: "BSSID")
+            case .frames: return String(localized: "Frames")
+            case .management: return String(localized: "Mgmt/Data")
+            case .rssi: return String(localized: "RSSI")
+            case .eapol: return String(localized: "EAPOL")
+            case .probes: return String(localized: "Probes")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .frames
+    @State private var sortAscending = false
+
+    private func sortedClients(_ rows: [CapturedClient]) -> [CapturedClient] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
+            case .vendor:
+                return OUIParser.vendor(for: lhs.mac).localizedStandardCompare(
+                    OUIParser.vendor(for: rhs.mac)) == .orderedAscending
+            case .bssid:
+                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
+            case .frames: return lhs.frameCount < rhs.frameCount
+            case .management:
+                return lhs.managementFrames < rhs.managementFrames
+            case .rssi: return (lhs.rssi ?? .min) < (rhs.rssi ?? .min)
+            case .eapol: return lhs.eapolFrames < rhs.eapolFrames
+            case .probes:
+                return lhs.probeSSIDs.joined(separator: ", ")
+                    .localizedStandardCompare(rhs.probeSSIDs.joined(separator: ", "))
+                    == .orderedAscending
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     @Environment(\.dismiss) private var dismiss
     @State private var interfaces: [String] = []
     @State private var selectedInterface = "en0"
@@ -50,28 +93,35 @@ struct LiveClientDiscoveryView: View {
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                Table(filteredClients) {
+                TableSortControl(
+                    options: SortKey.allCases.map { ($0, $0.title) },
+                    selection: $sortKey, ascending: $sortAscending)
+                Table(sortedClients(filteredClients)) {
                     TableColumn("MAC", value: \.mac)
                     TableColumn("Vendor") { client in
                         Text(OUIParser.vendor(for: client.mac)).lineLimit(1)
                     }
-                    .width(150)
+                    .width(AppColumnWidth.wide)
                     TableColumn("BSSID", value: \.bssid)
-                    TableColumn("Frames") { Text("\($0.frameCount)") }.width(55)
-                    TableColumn("Mgmt/Data") { Text("\($0.managementFrames)/\($0.dataFrames)") }.width(80)
-                    TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(65)
-                    TableColumn("EAPOL") { Text($0.eapolFrames == 0 ? "—" : "\($0.eapolFrames)") }.width(50)
+                    TableColumn("Frames") { Text("\($0.frameCount)") }
+                        .width(AppColumnWidth.short)
+                    TableColumn("Mgmt/Data") { Text("\($0.managementFrames)/\($0.dataFrames)") }
+                        .width(AppColumnWidth.compact)
+                    TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }
+                        .width(AppColumnWidth.short)
+                    TableColumn("EAPOL") { Text($0.eapolFrames == 0 ? "—" : "\($0.eapolFrames)") }
+                        .width(AppColumnWidth.short)
                     TableColumn("Probes") { client in
                         Text(client.probeSSIDs.isEmpty ? "—" : client.probeSSIDs.joined(separator: ", "))
                             .lineLimit(1)
                             .help(client.probeSSIDs.joined(separator: "\n"))
                     }
-                    .width(160)
+                    .width(AppColumnWidth.flexibleMin)
                 }
+                .appTableSurface()
             }
         }
-        .padding(16)
-        .frame(width: 800, height: 460)
+        .appSheet(width: DesignToken.Layout.sheetWidthWide, minHeight: 460)
         .onAppear {
             interfaces = LiveCaptureService.interfaceNames()
             if let first = interfaces.first { selectedInterface = first }

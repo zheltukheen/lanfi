@@ -24,7 +24,7 @@ struct RawDataView: View {
                         Label("Copy All IEs", systemImage: "doc.on.doc")
                     }
                     .controlSize(.small)
-                    .padding(8)
+                    .padding(DesignToken.Spacing.small)
                 }
             } else {
                 VStack(spacing: 16) {

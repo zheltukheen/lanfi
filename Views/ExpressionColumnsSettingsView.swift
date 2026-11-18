@@ -31,9 +31,9 @@ struct ExpressionColumnsSettingsView: View {
                             .textFieldStyle(.roundedBorder)
                             .onSubmit { viewModel.updateExpressionColumn(columns[index]) }
                     }
-                    .padding(6)
+                    .padding(DesignToken.Spacing.tight)
                     .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
                 }
                 Button {
                     let column = ExpressionColumn(id: UUID(), name: "Custom", template: "{ssid} · {signal} dBm")
@@ -45,7 +45,7 @@ struct ExpressionColumnsSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
         .onAppear { columns = viewModel.expressionColumns }
     }
 

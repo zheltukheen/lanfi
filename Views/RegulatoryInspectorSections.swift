@@ -8,16 +8,29 @@ struct RegulatoryInspectorSection: View {
         return (52...144).contains(network.channel)
     }
 
+    /// CoreWLAN does not expose the 6 GHz power mode; the HE Operation element
+    /// in the beacon does, and the parser keeps its raw payload.
+    private var sixGHzInfo: SixGHzOperationInfo? {
+        network.informationElements
+            .first { $0.elementId == 255 && $0.name.contains("HE Operation") }
+            .flatMap { SixGHzOperationInfo.parse(elementRawHex: $0.rawHex) }
+    }
+
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 4) {
                 fact("Country", network.countryCode ?? "Not advertised")
                 fact("Channel", "\(network.channel) · \(network.channelWidthLabel) MHz")
                 fact("DFS", isDFS ? "Yes" : "No")
+                if network.band == .band6 {
+                    fact(
+                        "6 GHz power mode",
+                        sixGHzInfo.map(\.powerMode.title) ?? "Not advertised")
+                }
                 fact("6 GHz AFC", network.band == .band6 ? "Not exposed by CoreWLAN" : "Not applicable")
                 fact("EHT / 320 MHz", network.generation == .mode11be ? "Wi-Fi 7 · EHT" : "Not advertised")
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
         } label: {
             Label("Regulatory & 6 GHz", systemImage: "globe")
         }
@@ -29,6 +42,7 @@ struct RegulatoryInspectorSection: View {
             Spacer()
             Text(value).font(.caption2).lineLimit(1)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -74,10 +88,13 @@ struct CoLocatedRadiosInspectorSection: View {
                         }
                         .buttonStyle(.plain)
                         .help("Select this radio")
+                        .accessibilityLabel(
+                            "Select \(sibling.bandLabel) radio, channel \(sibling.channel), \(sibling.signal) dBm"
+                        )
                     }
                 }
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
             Label("Same access point (inferred)", systemImage: "point.3.connected.trianglepath.dotted")
@@ -121,7 +138,7 @@ struct VisibilityInspectorSection: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
             Label("Why it may be hard to see", systemImage: "eye.trianglebadge.exclamationmark")
@@ -160,7 +177,7 @@ struct OtherRadiosInspectorSection: View {
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(4)
+            .padding(DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
             Label("Other radios", systemImage: "dot.radiowaves.left.and.right")

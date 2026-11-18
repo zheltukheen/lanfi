@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 enum NetworkFilterField: String, Codable, CaseIterable, Identifiable {
@@ -170,7 +171,7 @@ extension CustomFilter {
 
 final class CustomFilterStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.customFilters"
+    private let key = AppSettingsKey.customFilters.rawValue
 
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 

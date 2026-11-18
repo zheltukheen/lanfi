@@ -1,0 +1,629 @@
+import AppKit
+import SwiftUI
+
+/// P1.8 Connections: read-only `lsof -nP -iTCP` grouped by socket or process.
+/// Every row can terminate its owning process and create a local block rule;
+/// nothing is installed in the kernel, so the screen says what it can and
+/// cannot enforce.
+struct OpenConnectionsToolView: View {
+    @ObservedObject var rules: ConnectionRulesModel
+
+    @State private var connections: [OpenConnection] = []
+    @State private var includeListeners = false
+    @State private var search = ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var notice: String?
+    @State private var groupMode: SocketGroupMode = .socket
+    @State private var expanded: Set<String> = []
+    @State private var killTarget: KillTarget?
+    @State private var showKillConfirmation = false
+    @State private var ruleDraft: BlockRuleDraft?
+
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case process, pid, user, proto, local, remote, state
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .process: return String(localized: "Process")
+            case .pid: return String(localized: "PID")
+            case .user: return String(localized: "User")
+            case .proto: return String(localized: "Proto")
+            case .local: return String(localized: "Local")
+            case .remote: return String(localized: "Remote")
+            case .state: return String(localized: "State")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .process
+    @State private var sortAscending = true
+
+    // MARK: Rows
+
+    private enum TableRow: Identifiable {
+        case group(ConnectionSocketGroup)
+        case connection(OpenConnection)
+
+        var id: String {
+            switch self {
+            case .group(let group): return "g|\(group.id)"
+            case .connection(let connection): return "c|\(connection.id)"
+            }
+        }
+    }
+
+    private struct KillTarget: Identifiable {
+        let id = UUID()
+        let pids: [Int]
+        let label: String
+    }
+
+    private var filtered: [OpenConnection] {
+        let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return connections }
+        return connections.filter {
+            $0.process.localizedCaseInsensitiveContains(query)
+                || $0.remote.localizedCaseInsensitiveContains(query)
+                || $0.local.localizedCaseInsensitiveContains(query)
+                || String($0.pid).contains(query)
+        }
+    }
+
+    private var groups: [ConnectionSocketGroup] {
+        let rows = filtered
+        let grouped: [ConnectionSocketGroup]
+        switch groupMode {
+        case .socket: grouped = ConnectionGrouping.bySocket(rows)
+        case .process: grouped = ConnectionGrouping.byProcess(rows)
+        }
+        let ordered = grouped.sorted { lhs, rhs in
+            let left = lhs.connections.first
+            let right = rhs.connections.first
+            switch sortKey {
+            case .process:
+                return lhs.displayProcess.localizedStandardCompare(rhs.displayProcess)
+                    == .orderedAscending
+            case .pid: return (left?.pid ?? 0) < (right?.pid ?? 0)
+            case .user:
+                return (left?.user ?? "").localizedStandardCompare(right?.user ?? "")
+                    == .orderedAscending
+            case .proto:
+                return (left?.protocolName ?? "").localizedStandardCompare(right?.protocolName ?? "")
+                    == .orderedAscending
+            case .local:
+                return lhs.local.localizedStandardCompare(rhs.local) == .orderedAscending
+            case .remote:
+                return (left?.remote ?? "").localizedStandardCompare(right?.remote ?? "")
+                    == .orderedAscending
+            case .state:
+                return lhs.stateSummary.localizedStandardCompare(rhs.stateSummary) == .orderedAscending
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
+    private func sortedChildren(_ rows: [OpenConnection]) -> [OpenConnection] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .process:
+                return lhs.process.localizedStandardCompare(rhs.process) == .orderedAscending
+            case .pid: return lhs.pid < rhs.pid
+            case .user: return lhs.user.localizedStandardCompare(rhs.user) == .orderedAscending
+            case .proto:
+                return lhs.protocolName.localizedStandardCompare(rhs.protocolName)
+                    == .orderedAscending
+            case .local: return lhs.local.localizedStandardCompare(rhs.local) == .orderedAscending
+            case .remote: return lhs.remote.localizedStandardCompare(rhs.remote) == .orderedAscending
+            case .state: return lhs.state.localizedStandardCompare(rhs.state) == .orderedAscending
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
+    private var tableRows: [TableRow] {
+        var rows: [TableRow] = []
+        for group in groups {
+            rows.append(.group(group))
+            if expanded.contains(group.id) {
+                rows.append(contentsOf: sortedChildren(group.connections).map(TableRow.connection))
+            }
+        }
+        return rows
+    }
+
+    private var matchingConnections: [OpenConnection] {
+        ConnectionBlockRuleMatcher.matching(connections, rules: rules.rules)
+    }
+
+    // MARK: Body
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            controls
+            if let errorMessage {
+                ToolkitErrorBanner(message: errorMessage)
+            }
+            if let notice {
+                ruleNotice(notice)
+            }
+            if !matchingConnections.isEmpty {
+                ruleBanner
+            }
+            summary
+            table
+        }
+        .appContentPadding()
+        .task { await refresh() }
+        .confirmationDialog(
+            "Terminate process?",
+            isPresented: $showKillConfirmation,
+            presenting: killTarget
+        ) { target in
+            Button("Terminate", role: .destructive) {
+                terminate(target)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { target in
+            Text(
+                "LanFi sends SIGTERM to \(target.label). Unsaved work in that process is lost, and macOS may refuse for processes you do not own."
+            )
+        }
+        .sheet(item: $ruleDraft) { draft in
+            BlockRuleEditorSheet(draft: draft) { rule in
+                rules.add(rule)
+                notice = String(localized: "Added rule: \(rule.scope.title) \(rule.value)")
+            }
+        }
+    }
+
+    private var controls: some View {
+        HStack(spacing: DesignToken.Spacing.small) {
+            Button {
+                Task { await refresh() }
+            } label: {
+                Label("Refresh", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(isLoading)
+            Toggle("Include listening sockets", isOn: $includeListeners)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .onChange(of: includeListeners) { _ in
+                    Task { await refresh() }
+                }
+            TextField("Filter by process, address or PID", text: $search)
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: DesignToken.Layout.controlWidthLarge)
+            if isLoading { ProgressView().controlSize(.small) }
+            Picker("Group", selection: $groupMode) {
+                ForEach(SocketGroupMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.menu)
+            .fixedSize()
+            TableSortControl(
+                options: SortKey.allCases.map { ($0, $0.title) },
+                selection: $sortKey, ascending: $sortAscending)
+            Button {
+                if expanded.count == groups.count {
+                    expanded.removeAll()
+                } else {
+                    expanded = Set(groups.map(\.id))
+                }
+            } label: {
+                Image(
+                    systemName: expanded.count == groups.count
+                        ? "rectangle.compress.vertical" : "rectangle.expand.vertical")
+            }
+            .buttonStyle(.borderless)
+            .help("Expand or collapse every group")
+            .disabled(groups.isEmpty)
+            Spacer()
+            Button("Copy") { copy() }
+                .buttonStyle(.borderless)
+                .disabled(filtered.isEmpty)
+        }
+    }
+
+    private var summary: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                SectionLabel(text: "Processes")
+                if connections.isEmpty {
+                    Text(
+                        "No TCP connections were returned. lsof can hide other users' sockets without root; this screen never asks for a password."
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    HStack(spacing: DesignToken.Spacing.large) {
+                        StatTile(value: "\(connections.count)", label: "Connections")
+                        StatTile(
+                            value: "\(OpenConnectionsParser.byProcess(connections).count)",
+                            label: "Processes", tint: AppPalette.info)
+                        StatTile(
+                            value: "\(connections.filter(\.isListening).count)", label: "Listening",
+                            tint: AppPalette.warning)
+                        StatTile(
+                            value: "\(groups.count)",
+                            label: groupMode == .socket ? "Sockets" : "Process groups")
+                        Spacer()
+                    }
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: DesignToken.Spacing.tight) {
+                            ForEach(OpenConnectionsParser.byProcess(connections), id: \.process) {
+                                group in
+                                Text("\(group.process) · \(group.count)")
+                                    .font(.caption2)
+                                    .padding(.horizontal, DesignToken.Spacing.small)
+                                    .padding(.vertical, DesignToken.Spacing.hairline)
+                                    .background(
+                                        Color.secondary.opacity(0.10), in: Capsule())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func ruleNotice(_ text: String) -> some View {
+        HStack(spacing: DesignToken.Spacing.small) {
+            Image(systemName: "checkmark.shield.fill")
+                .foregroundColor(AppPalette.info)
+            Text(text).font(.caption)
+            Spacer()
+            Button("Dismiss") { notice = nil }
+                .buttonStyle(.borderless)
+                .font(.caption2)
+        }
+        .padding(DesignToken.Spacing.compact)
+        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+    }
+
+    private var ruleBanner: some View {
+        HStack(alignment: .top, spacing: DesignToken.Spacing.small) {
+            Image(systemName: "shield.lefthalf.filled")
+                .foregroundColor(AppPalette.warning)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(matchingConnections.count) sockets match a block rule")
+                    .font(.caption.weight(.semibold))
+                Text("A rule marks sockets; terminating them ends the owning processes.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Button("Terminate matches") {
+                let pids = Array(Set(matchingConnections.map(\.pid))).sorted()
+                killTarget = KillTarget(
+                    pids: pids,
+                    label: pids.count == 1
+                        ? String(localized: "1 process")
+                        : String(localized: "\(pids.count) processes"))
+                showKillConfirmation = true
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+        .padding(DesignToken.Spacing.compact)
+        .background(
+            Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+    }
+
+    private var table: some View {
+        Table(tableRows) {
+            TableColumn("Process") { row in
+                switch row {
+                case .group(let group):
+                    HStack(spacing: 6) {
+                        Button {
+                            toggle(group.id)
+                        } label: {
+                            Image(
+                                systemName: expanded.contains(group.id)
+                                    ? "chevron.down" : "chevron.right"
+                            )
+                            .font(.caption2)
+                            .frame(width: 12)
+                        }
+                        .buttonStyle(.plain)
+                        Text(group.displayProcess)
+                            .font(.caption.weight(.medium))
+                        Text("\(group.connections.count)")
+                            .font(.caption2.monospacedDigit())
+                            .padding(.horizontal, 5)
+                            .background(Color.secondary.opacity(0.12), in: Capsule())
+                    }
+                case .connection(let connection):
+                    HStack(spacing: 5) {
+                        if !rules.rules.isEmpty,
+                            ConnectionBlockRuleMatcher.matches(connection, rules: rules.rules)
+                        {
+                            Image(systemName: "shield.fill")
+                                .font(.caption2)
+                                .foregroundColor(AppPalette.warning)
+                                .help("Matches a block rule")
+                        }
+                        Text(connection.process)
+                    }
+                    .padding(.leading, 18)
+                }
+            }
+            .width(min: 170, ideal: 230)
+            TableColumn("PID") { row in
+                Text(pidLabel(row)).monospacedDigit()
+                    .foregroundColor(isGroup(row) ? .secondary : .primary)
+            }
+            .width(AppColumnWidth.short)
+            TableColumn("User") { row in
+                Text(primary(row)?.user ?? "—")
+            }
+            .width(AppColumnWidth.compact)
+            TableColumn("Proto") { row in
+                Text(primary(row)?.protocolName ?? "—")
+            }
+            .width(AppColumnWidth.short)
+            TableColumn("Local") { row in
+                Text(isGroup(row) ? localLabel(row) : (primary(row)?.local ?? "—"))
+                    .monospaced()
+            }
+            .width(AppColumnWidth.long)
+            TableColumn("Remote") { row in
+                Text(remoteLabel(row))
+                    .monospaced()
+                    .foregroundColor(isGroup(row) ? .secondary : .primary)
+            }
+            .width(AppColumnWidth.long)
+            TableColumn("State") { row in
+                stateLabel(row)
+            }
+            .width(AppColumnWidth.compact)
+            TableColumn("") { row in
+                HStack(spacing: 4) {
+                    Button {
+                        prepareKill(row)
+                    } label: {
+                        Image(systemName: "xmark.octagon")
+                            .foregroundColor(AppPalette.danger)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Terminate the process owning this row")
+                    blockMenu(row)
+                }
+            }
+            .width(58)
+        }
+        .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
+        .appTableSurface()
+    }
+
+    // MARK: Row helpers
+
+    private func primary(_ row: TableRow) -> OpenConnection? {
+        switch row {
+        case .group(let group): return group.connections.first
+        case .connection(let connection): return connection
+        }
+    }
+
+    private func isGroup(_ row: TableRow) -> Bool {
+        if case .group = row { return true }
+        return false
+    }
+
+    private func pidLabel(_ row: TableRow) -> String {
+        switch row {
+        case .group(let group):
+            let pids = Array(Set(group.connections.map(\.pid))).sorted()
+            if pids.count == 1 { return "\(pids[0])" }
+            return "\(pids.prefix(2).map(String.init).joined(separator: ", "))…"
+        case .connection(let connection): return "\(connection.pid)"
+        }
+    }
+
+    private func localLabel(_ row: TableRow) -> String {
+        if case .group(let group) = row { return group.local }
+        return "—"
+    }
+
+    private func remoteLabel(_ row: TableRow) -> String {
+        switch row {
+        case .group(let group):
+            let remote = group.remoteCount
+            return remote == 0 ? "—" : String(localized: "\(remote) remote")
+        case .connection(let connection): return connection.remote
+        }
+    }
+
+    @ViewBuilder
+    private func stateLabel(_ row: TableRow) -> some View {
+        switch row {
+        case .group(let group):
+            Text(group.stateSummary)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                .help(group.stateSummary)
+        case .connection(let connection):
+            Text(connection.state)
+                .foregroundColor(connection.isListening ? AppPalette.warning : .secondary)
+        }
+    }
+
+    private func toggle(_ id: String) {
+        if expanded.contains(id) {
+            expanded.remove(id)
+        } else {
+            expanded.insert(id)
+        }
+    }
+
+    private func prepareKill(_ row: TableRow) {
+        let rows: [OpenConnection]
+        let label: String
+        switch row {
+        case .group(let group):
+            rows = group.connections
+            label = group.displayProcess
+        case .connection(let connection):
+            rows = [connection]
+            label = "\(connection.process) (\(connection.pid))"
+        }
+        let pids = Array(Set(rows.map(\.pid))).sorted()
+        killTarget = KillTarget(
+            pids: pids,
+            label: pids.count == 1 ? label : "\(label) — \(pids.count) processes")
+        showKillConfirmation = true
+    }
+
+    private func terminate(_ target: KillTarget) {
+        var failures: [String] = []
+        for pid in target.pids {
+            let result = ConnectionControlService.terminate(pid: pid)
+            if !result.succeeded { failures.append(result.message) }
+        }
+        if failures.isEmpty {
+            notice = String(
+                localized: "Sent SIGTERM to \(target.pids.count) process(es).")
+        } else {
+            errorMessage = failures.joined(separator: "\n")
+        }
+        Task { await refresh() }
+    }
+
+    @ViewBuilder
+    private func blockMenu(_ row: TableRow) -> some View {
+        if let connection = primary(row) {
+            Menu {
+                Button("Block application “\(connection.applicationName)”") {
+                    add(.application, connection.applicationName)
+                }
+                Button("Block process “\(connection.process)”") {
+                    add(.process, connection.process)
+                }
+                if let port = connection.remotePort ?? connection.localPort {
+                    Button("Block port \(port)") { add(.port, port) }
+                }
+                if connection.remote != "—" {
+                    Button("Block host \(connection.remoteHost)") {
+                        add(.remoteHost, connection.remoteHost)
+                    }
+                }
+                Button("Block user “\(connection.user)”") { add(.user, connection.user) }
+                Divider()
+                Button("Custom rule…") {
+                    ruleDraft = BlockRuleDraft(
+                        scope: .application, value: connection.applicationName,
+                        note: "From \(connection.process) (\(connection.pid))")
+                }
+            } label: {
+                Image(systemName: "shield")
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help("Create a block rule from this row")
+        }
+    }
+
+    private func add(_ scope: BlockRuleScope, _ value: String) {
+        let rule = ConnectionBlockRule(scope: scope, value: value)
+        rules.add(rule)
+        notice = String(localized: "Added rule: \(scope.title) \(value)")
+    }
+
+    // MARK: Data
+
+    @MainActor
+    private func refresh() async {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+        do {
+            connections = try await OpenConnectionsService.fetch(includeListeners: includeListeners)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    private func copy() {
+        let text = filtered.map {
+            "\($0.process)\t\($0.pid)\t\($0.user)\t\($0.local)\t\($0.remote)\t\($0.state)"
+        }.joined(separator: "\n")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+}
+
+enum SocketGroupMode: String, CaseIterable, Identifiable {
+    case socket
+    case process
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .socket: return String(localized: "By socket")
+        case .process: return String(localized: "By process")
+        }
+    }
+}
+
+/// The rule editor sheet is shared by the Sockets screen and the Rules tab.
+struct BlockRuleEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var scope: BlockRuleScope
+    @State private var value: String
+    @State private var note: String
+    let onSave: (ConnectionBlockRule) -> Void
+
+    init(draft: BlockRuleDraft, onSave: @escaping (ConnectionBlockRule) -> Void) {
+        _scope = State(initialValue: draft.scope)
+        _value = State(initialValue: draft.value)
+        _note = State(initialValue: draft.note ?? "")
+        self.onSave = onSave
+    }
+
+    private var trimmed: String { value.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            Text("New block rule")
+                .font(.title3.weight(.semibold))
+            Picker("Match", selection: $scope) {
+                ForEach(BlockRuleScope.allCases) { scope in
+                    Text(scope.title).tag(scope)
+                }
+            }
+            .pickerStyle(.menu)
+            TextField("Value", text: $value)
+                .textFieldStyle(.roundedBorder)
+            Text(scope.hint)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            TextField("Note (optional)", text: $note)
+                .textFieldStyle(.roundedBorder)
+            HStack {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Add rule") {
+                    onSave(
+                        ConnectionBlockRule(
+                            scope: scope, value: trimmed,
+                            note: note.isEmpty ? nil : note))
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+                .disabled(trimmed.isEmpty)
+            }
+        }
+        .padding(DesignToken.Spacing.card)
+        .frame(width: 420)
+    }
+}

@@ -20,7 +20,7 @@ struct DiagnosticsView: View {
                     emptyState
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
         }
         .background(Color(nsColor: .controlBackgroundColor))
         .task {
@@ -123,14 +123,16 @@ struct DiagnosticsView: View {
             divider
             snapshotItem("IPv4", value: snapshot.primaryIPv4 ?? "—", icon: "network")
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.12), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
+                Color.secondary.opacity(0.12), lineWidth: 1))
     }
 
     private var divider: some View {
-        Divider().frame(height: 26).padding(.horizontal, 8)
+        Divider().frame(height: 26).padding(.horizontal, DesignToken.Spacing.small)
     }
 
     private func snapshotItem(_ title: LocalizedStringKey, value: String, icon: String) -> some View {
@@ -182,9 +184,9 @@ struct DiagnosticsView: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
-        .padding(10)
+        .padding(DesignToken.Spacing.compact)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func checkCard(_ check: DiagnosticCheck) -> some View {
@@ -216,12 +218,12 @@ struct DiagnosticsView: View {
                 }
             }
         }
-        .padding(9)
+        .padding(DesignToken.Spacing.small)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                 .stroke(statusColor(check.status).opacity(0.2), lineWidth: 1)
         )
     }
@@ -242,9 +244,9 @@ struct DiagnosticsView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
         }
-        .padding(9)
+        .padding(DesignToken.Spacing.small)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func openToolkit(_ tool: ToolboxTool) {
@@ -296,7 +298,7 @@ struct DiagnosticsView: View {
             .controlSize(.small)
         }
         .frame(maxWidth: .infinity)
-        .padding(30)
+        .padding(DesignToken.Spacing.emptyState)
     }
 
     private func statusColor(_ status: DiagnosticStatus) -> Color {

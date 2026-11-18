@@ -32,10 +32,14 @@ final class SurveyViewModel: ObservableObject {
         floorPlanData.flatMap(NSImage.init(data:))
     }
 
+    /// A survey is placeable when it has an imported image or a hand-drawn plan.
+    var hasPlan: Bool { floorPlanImage != nil || project.planWidthMeters != nil }
+
     var samples: [SurveySample] { project.samples }
     var walls: [SurveyWall] { project.walls }
     var obstacles: [SurveyObstacle] { project.obstacles }
     var accessPoints: [SurveyAccessPoint] { project.accessPoints }
+    var gpsTrack: [GeoPoint] { project.gpsTrack ?? [] }
 
     func samples(for network: NetworkModel?) -> [SurveySample] {
         guard let network else { return project.samples }
@@ -60,7 +64,7 @@ final class SurveyViewModel: ObservableObject {
         statusMessage = String(localized: "Floor plan loaded. Click on the plan to record signal.")
     }
 
-    func addSample(x: Double, y: Double, network: NetworkModel) {
+    func addSample(x: Double, y: Double, network: NetworkModel, coordinate: GeoPoint? = nil) {
         let clampedX = min(max(x, 0), 1)
         let clampedY = min(max(y, 0), 1)
         let sample = SurveySample(
@@ -70,7 +74,9 @@ final class SurveyViewModel: ObservableObject {
             rssi: network.signal,
             ssid: network.displaySSID,
             bssid: network.bssid,
-            recordedAt: Date()
+            recordedAt: Date(),
+            latitude: coordinate?.latitude,
+            longitude: coordinate?.longitude
         )
         project.samples.append(sample)
         project.updatedAt = Date()
@@ -134,6 +140,45 @@ final class SurveyViewModel: ObservableObject {
         project.updatedAt = Date()
         scheduleSave()
         statusMessage = String(format: String(localized: "Predictive AP added · %lld APs."), project.accessPoints.count)
+    }
+
+    /// Survey Planning 2.0 writes the suggested layout into the project.
+    func applyPlannedAccessPoints(_ points: [SurveyPoint], band: String, channel: Int) {
+        project.accessPoints = points.map {
+            .new(
+                x: min(max($0.x, 0), 1), y: min(max($0.y, 0), 1), band: band, channel: channel)
+        }
+        project.updatedAt = Date()
+        save()
+        statusMessage = String(
+            format: String(localized: "Planned %lld access points."), project.accessPoints.count)
+    }
+
+    /// Imports a GPX walk; the map view draws it and can tag samples.
+    func setGPSTrack(_ points: [GeoPoint]) {
+        project.gpsTrack = points.isEmpty ? nil : points
+        project.updatedAt = Date()
+        save()
+        statusMessage = String(
+            format: String(localized: "GPS track · %lld points · %.0f m."), points.count,
+            GeoMath.spanMeters(points))
+    }
+
+    /// Attaches a current position to the newest sample, which is how a
+    /// walk-through gets map coordinates without re-recording.
+    func tagLastSample(latitude: Double, longitude: Double) {
+        guard var sample = project.samples.last else { return }
+        sample.latitude = latitude
+        sample.longitude = longitude
+        project.samples[project.samples.count - 1] = sample
+        if project.gpsTrack?.isEmpty ?? true {
+            project.gpsTrack = [GeoPoint(latitude: latitude, longitude: longitude)]
+        } else {
+            project.gpsTrack?.append(GeoPoint(latitude: latitude, longitude: longitude))
+        }
+        project.updatedAt = Date()
+        scheduleSave()
+        statusMessage = String(localized: "Last sample tagged with the current location.")
     }
 
     func clearAccessPoints() {
@@ -205,6 +250,23 @@ final class SurveyViewModel: ObservableObject {
             format: String(localized: "Loaded %@ · %lld points"), selected.name, selected.samples.count)
     }
 
+    /// Creates an image-less plan: a metre grid the user can draw walls, rooms
+    /// and sample points on without importing anything.
+    func createBlankPlan(name: String, widthMeters: Double, heightMeters: Double) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { project.name = trimmed }
+        project.planWidthMeters = min(max(widthMeters, 3), 200)
+        project.planHeightMeters = min(max(heightMeters, 3), 200)
+        project.imageFileName = nil
+        project.updatedAt = Date()
+        floorPlanData = nil
+        save()
+        projects = store.projects()
+        statusMessage = String(
+            format: String(localized: "Blank plan created · %.0f × %.0f m. Draw walls and click to sample."),
+            project.planWidthMeters ?? 0, project.planHeightMeters ?? 0)
+    }
+
     func newFloor() {
         let alert = NSAlert()
         alert.messageText = String(localized: "New floor")
@@ -239,6 +301,22 @@ final class SurveyViewModel: ObservableObject {
         )
         try? data.write(to: url, options: .atomic)
     }
+
+    #if DEBUG
+        /// Snapshot harness only: an in-memory floor with samples, walls and
+        /// predicted APs. Never saved, so the reviewer's survey files stay put.
+        func loadDemoProject() {
+            pendingSave?.cancel()
+            let demo = DemoData.surveyProject()
+            project = demo
+            projects = [demo]
+            floorPlanData = nil
+            selectedNetworkId = nil
+            statusMessage = String(
+                format: String(localized: "Loaded %@ · %lld points"), demo.name,
+                demo.samples.count)
+        }
+    #endif
 
     func clearSamples() {
         project.samples.removeAll()

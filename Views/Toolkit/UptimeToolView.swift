@@ -7,6 +7,37 @@ struct UptimeToolView: View {
     @State private var showingAdd = false
     @State private var period: UptimePeriod = .day
 
+    private enum CheckSortKey: String, CaseIterable, Identifiable {
+        case when, status, latency, detail
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .when: return String(localized: "When")
+            case .status: return String(localized: "Status")
+            case .latency: return String(localized: "Latency")
+            case .detail: return String(localized: "Detail")
+            }
+        }
+    }
+
+    @State private var checkSortKey: CheckSortKey = .when
+    @State private var checkAscending = false
+
+    private func sortedChecks(_ checks: [UptimeCheck]) -> [UptimeCheck] {
+        let ordered = checks.sorted { lhs, rhs in
+            switch checkSortKey {
+            case .when: return lhs.at < rhs.at
+            case .status: return (lhs.isUp ? 1 : 0) < (rhs.isUp ? 1 : 0)
+            case .latency:
+                return (lhs.latencyMilliseconds ?? .infinity) < (rhs.latencyMilliseconds ?? .infinity)
+            case .detail:
+                return (lhs.detail ?? "").localizedStandardCompare(rhs.detail ?? "")
+                    == .orderedAscending
+            }
+        }
+        return checkAscending ? ordered : ordered.reversed()
+    }
+
     private var selectedTarget: UptimeTarget? {
         if let selectedID, let target = monitor.targets.first(where: { $0.id == selectedID }) {
             return target
@@ -45,15 +76,16 @@ struct UptimeToolView: View {
                 }
                 .buttonStyle(.borderless)
                 .help("Add a target")
+                .accessibilityLabel("Add an uptime target")
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 14)
+            .padding(.horizontal, DesignToken.Spacing.medium)
+            .padding(.top, DesignToken.Spacing.card)
 
             if monitor.targets.isEmpty {
                 Text("Add a website or server to watch.")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, DesignToken.Spacing.medium)
             } else {
                 ScrollView {
                     VStack(spacing: 2) {
@@ -61,7 +93,7 @@ struct UptimeToolView: View {
                             targetRow(target)
                         }
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, DesignToken.Spacing.small)
                 }
             }
 
@@ -73,8 +105,8 @@ struct UptimeToolView: View {
                     .font(.caption)
             }
             .buttonStyle(.borderless)
-            .padding(.horizontal, 12)
-            .padding(.bottom, 12)
+            .padding(.horizontal, DesignToken.Spacing.medium)
+            .padding(.bottom, DesignToken.Spacing.medium)
             .disabled(monitor.isChecking || monitor.targets.isEmpty)
         }
         .background(Color(nsColor: .windowBackgroundColor))
@@ -104,12 +136,12 @@ struct UptimeToolView: View {
                     .font(.caption2.monospacedDigit())
                     .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .padding(.horizontal, DesignToken.Spacing.small)
+            .padding(.vertical, DesignToken.Spacing.tight)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 selected ? Color.accentColor.opacity(0.14) : Color.clear,
-                in: RoundedRectangle(cornerRadius: 6)
+                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
             )
             .contentShape(Rectangle())
         }
@@ -127,7 +159,7 @@ struct UptimeToolView: View {
                     chartCard(target, state: state)
                     checksTable(state)
                 }
-                .padding(18)
+                .appContentPadding()
             }
         } else {
             ToolkitEmptyState(
@@ -232,7 +264,7 @@ struct UptimeToolView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 30)
+                        .padding(.vertical, DesignToken.Spacing.emptyState)
                 } else {
                     Chart {
                         ForEach(checks) { check in
@@ -258,10 +290,22 @@ struct UptimeToolView: View {
                             }
                         }
                     }
-                    .chartYAxisLabel("ms")
+                    .chartXAxis { chartAxis }
+                    .chartYAxis { chartAxis }
+                    .chartYAxisLabel("ms", position: .leading)
                     .frame(height: 190)
                 }
             }
+        }
+    }
+
+    private var chartAxis: some AxisContent {
+        AxisMarks { _ in
+            AxisGridLine(stroke: ChartStyle.gridStroke)
+                .foregroundStyle(ChartStyle.gridColor)
+            AxisValueLabel()
+                .font(ChartStyle.axisLabelFont)
+                .foregroundStyle(ChartStyle.axisLabelColor)
         }
     }
 
@@ -270,6 +314,11 @@ struct UptimeToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Recent checks")
+                    if !state.checks.isEmpty {
+                        TableSortControl(
+                            options: CheckSortKey.allCases.map { ($0, $0.title) },
+                            selection: $checkSortKey, ascending: $checkAscending)
+                    }
                     Spacer()
                     Button(role: .destructive) {
                         monitor.remove(state.target)
@@ -280,18 +329,18 @@ struct UptimeToolView: View {
                     }
                     .buttonStyle(.borderless)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
                 if state.checks.isEmpty {
                     Text("Waiting for the first check.")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.bottom, 14)
+                        .padding(.horizontal, DesignToken.Spacing.card)
+                        .padding(.bottom, DesignToken.Spacing.card)
                 } else {
-                    Table(Array(state.checks.suffix(20).reversed())) {
+                    Table(sortedChecks(Array(state.checks.suffix(20)))) {
                         TableColumn("When") { check in
                             Text(check.at.formatted(date: .abbreviated, time: .shortened))
                                 .font(.caption2)
@@ -445,7 +494,7 @@ private struct UptimeAddTargetView: View {
                 .disabled(address.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
-        .padding(18)
+        .appContentPadding()
         .frame(width: 460, height: 300)
     }
 }

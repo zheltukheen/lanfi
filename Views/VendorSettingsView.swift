@@ -7,11 +7,10 @@ import UniformTypeIdentifiers
 /// navigation moved from a eleven-tab TabView to a grouped sidebar, and the
 /// last section is remembered across launches.
 struct SettingsView: View {
-    @EnvironmentObject private var updater: UpdaterController
     @EnvironmentObject private var diagnostics: DiagnosticsViewModel
     @EnvironmentObject private var analyzer: AnalyzerViewModel
 
-    @AppStorage("LanFi.settings.section") private var storedSection = SettingsSection.general.rawValue
+    @AppStorage(AppSettingsKey.settingsSection.rawValue) private var storedSection = SettingsSection.general.rawValue
 
     private var selection: Binding<String> { $storedSection }
 
@@ -33,12 +32,19 @@ struct SettingsView: View {
                 }
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
+            .navigationSplitViewColumnWidth(
+                min: DesignToken.Layout.settingsSidebarMin,
+                ideal: DesignToken.Layout.settingsSidebarIdeal,
+                max: DesignToken.Layout.settingsSidebarMax)
         } detail: {
             detail
                 .frame(minWidth: 460, maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 820, height: 580)
+        .frame(
+            width: DesignToken.Layout.settingsWidth,
+            height: DesignToken.Layout.settingsHeight
+        )
+        .appTableDensity()
     }
 
     private func rows(_ sections: [SettingsSection]) -> some View {
@@ -51,7 +57,7 @@ struct SettingsView: View {
     @ViewBuilder
     private var detail: some View {
         switch section {
-        case .general: GeneralSettingsView()
+        case .general: GeneralSettingsPage()
         case .alerts: AlertSettingsView()
         case .wifi: WiFiSettingsView()
         case .vendors: VendorSettingsView()
@@ -114,192 +120,13 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
     }
 }
 
-private struct GeneralSettingsView: View {
-    @EnvironmentObject private var updater: UpdaterController
-    @Environment(\.openWindow) private var openWindow
-    @State private var settings = AppSettingsStore.shared.settings
-    @State private var settingsMessage: String?
-
-    private var version: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
-    }
-    private var build: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
-    }
-
-    private func binding<T>(_ keyPath: WritableKeyPath<AppSettings, T>) -> Binding<T> {
-        Binding(
-            get: { settings[keyPath: keyPath] },
-            set: { newValue in
-                settings[keyPath: keyPath] = newValue
-                AppSettingsStore.shared.save(settings)
-            }
-        )
-    }
-
-    private func menuBarBinding<T>(
-        _ keyPath: WritableKeyPath<AppSettings.MenuBarMeterSettings, T>
-    ) -> Binding<T> {
-        Binding(
-            get: { settings.menuBar[keyPath: keyPath] },
-            set: { newValue in
-                var updated = settings
-                updated.menuBar[keyPath: keyPath] = newValue
-                settings = updated
-                AppSettingsStore.shared.save(updated)
-            }
-        )
-    }
-
-    var body: some View {
-        Form {
-            Section("LanFi") {
-                LabeledContent("Version") { Text("\(version) (\(build))") }
-                LabeledContent("Bundle") { Text(Bundle.main.bundleIdentifier ?? "-").font(.caption.monospaced()) }
-                Button("Check for Updates…") { updater.checkForUpdates() }
-                    .disabled(!updater.canCheckForUpdates)
-            }
-
-            Section("Distribution") {
-                Text(
-                    "This build is ad-hoc signed and not notarized. On first launch, right-click LanFi.app → Open. Sparkle updates are signed independently."
-                )
-                .font(.caption)
-                .foregroundColor(.secondary)
-                Button("Open release page") {
-                    NSWorkspace.shared.open(URL(string: "https://github.com/zheltukheen/lanfi/releases/latest")!)
-                }
-                Button("Copy Homebrew command") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(
-                        "brew tap zheltukheen/lanfi https://github.com/zheltukheen/lanfi && brew trust zheltukheen/lanfi && brew install --cask lanfi",
-                        forType: .string
-                    )
-                }
-            }
-
-            Section("Appearance") {
-                Picker("Theme", selection: binding(\.appearance)) {
-                    Text("System").tag(AppSettings.Appearance.system)
-                    Text("Light").tag(AppSettings.Appearance.light)
-                    Text("Dark").tag(AppSettings.Appearance.dark)
-                }
-                Picker("Table row density", selection: binding(\.rowDensity)) {
-                    ForEach(TableDensity.allCases) { density in
-                        Text(density.title).tag(density.rawValue)
-                    }
-                }
-            }
-
-            Section("Menu bar meter") {
-                Picker("Label", selection: menuBarBinding(\.labelStyle)) {
-                    Text("Icon only").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconOnly)
-                    Text("Icon + number").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconAndNumber)
-                    Text("Icon + graph").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconAndGraph)
-                    Text("Icon + graph + number").tag(AppSettings.MenuBarMeterSettings.LabelStyle.iconGraphAndNumber)
-                }
-                Picker("Metric", selection: menuBarBinding(\.metric)) {
-                    Text("Throughput").tag(AppSettings.MenuBarMeterSettings.Metric.throughput)
-                    Text("Signal").tag(AppSettings.MenuBarMeterSettings.Metric.signal)
-                    Text("Quality").tag(AppSettings.MenuBarMeterSettings.Metric.quality)
-                    Text("Latency").tag(AppSettings.MenuBarMeterSettings.Metric.latency)
-                }
-                Picker("Throughput unit", selection: menuBarBinding(\.unit)) {
-                    Text("bit/s").tag(AppSettings.MenuBarMeterSettings.Unit.bits)
-                    Text("byte/s").tag(AppSettings.MenuBarMeterSettings.Unit.bytes)
-                }
-                Text("Counters are sampled every 2 s, and every 30 s while LanFi is in the background.")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-
-            Section("Toolbar") {
-                Toggle("Search field", isOn: binding(\.toolbarSearch))
-                Toggle("Export menu", isOn: binding(\.toolbarExport))
-            }
-
-            Section("Display") {
-                Toggle("High contrast mode", isOn: binding(\.highContrast))
-                    .help("Increases contrast and border weight for low-vision use.")
-                Toggle("Hide empty graphs", isOn: binding(\.hideEmptyGraphs))
-                Toggle(
-                    "Show channel recommendations",
-                    isOn: binding(\.showChannelRecommendations))
-                Toggle("Show security audit", isOn: binding(\.showSecurityAudit))
-                Toggle("Show channel occupancy", isOn: binding(\.showChannelOccupancy))
-            }
-
-            Section("Help") {
-                Button("Open LanFi Help") { openWindow(id: "help") }
-                    .keyboardShortcut("?", modifiers: [.command])
-                Text(
-                    "The help window covers the network toolkit, LAN Scanner, Device Shelf, Network Monitor, MCP, settings and keyboard shortcuts. It also opens with ⌘?."
-                )
-                .font(.caption2)
-                .foregroundColor(.secondary)
-            }
-
-            Section("Data") {
-                HStack {
-                    Button("Export Settings…") { exportSettings() }
-                    Button("Import Settings…") { importSettings() }
-                }
-                if let settingsMessage {
-                    Text(settingsMessage)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                Button("Open Application Support") {
-                    let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-                        .appendingPathComponent("LanFi", isDirectory: true)
-                    NSWorkspace.shared.open(url)
-                }
-                Text("Annotations, sessions, surveys, vendor overrides and crash logs stay on this Mac.")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .formStyle(.grouped)
-        .padding(12)
-    }
-
-    private func exportSettings() {
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "LanFi-settings.json"
-        panel.canCreateDirectories = true
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            try AppSettingsStore.shared.exportData().write(to: url, options: .atomic)
-            settingsMessage = "Settings exported."
-        } catch {
-            settingsMessage = "Export failed: \(error.localizedDescription)"
-        }
-    }
-
-    private func importSettings() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.json]
-        panel.allowsMultipleSelection = false
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            let data = try Data(contentsOf: url)
-            try AppSettingsStore.shared.importData(data)
-            settings = AppSettingsStore.shared.settings
-            settingsMessage = "Settings imported."
-        } catch {
-            settingsMessage = "Import failed: \(error.localizedDescription)"
-        }
-    }
-}
-
 private struct AlertSettingsView: View {
     var body: some View {
         Form {
             Section("Menu bar alerts") {
-                Toggle("Weak Wi-Fi signal", isOn: binding("LanFi.alerts.weakSignal"))
-                Toggle("Open networks visible", isOn: binding("LanFi.alerts.openNetwork"))
-                Toggle("Connected channel changes", isOn: binding("LanFi.alerts.channelChange"))
+                Toggle("Weak Wi-Fi signal", isOn: binding(AppSettingsKey.alertsWeakSignal.rawValue))
+                Toggle("Open networks visible", isOn: binding(AppSettingsKey.alertsOpenNetwork.rawValue))
+                Toggle("Connected channel changes", isOn: binding(AppSettingsKey.alertsChannelChange.rawValue))
             }
             Section {
                 Text("Weak signal alert triggers at −75 dBm for the connected network. Alerts update on each scan.")
@@ -308,7 +135,7 @@ private struct AlertSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
     }
 
     private func binding(_ key: String) -> Binding<Bool> {
@@ -321,7 +148,7 @@ private struct AlertSettingsView: View {
 
 private struct WiFiSettingsView: View {
     @EnvironmentObject private var analyzer: AnalyzerViewModel
-    @AppStorage("LanFi.scan.reduceInBackground") private var reduceInBackground = true
+    @AppStorage(AppSettingsKey.scanReduceInBackground.rawValue) private var reduceInBackground = true
 
     var body: some View {
         Form {
@@ -329,8 +156,11 @@ private struct WiFiSettingsView: View {
                 Picker(
                     "Scan interface",
                     selection: Binding(
-                        get: { UserDefaults.standard.string(forKey: "LanFi.wifiInterface") ?? "" },
-                        set: { UserDefaults.standard.set($0.isEmpty ? nil : $0, forKey: "LanFi.wifiInterface") }
+                        get: { UserDefaults.standard.string(forKey: AppSettingsKey.wifiInterface.rawValue) ?? "" },
+                        set: {
+                            UserDefaults.standard.set(
+                                $0.isEmpty ? nil : $0, forKey: AppSettingsKey.wifiInterface.rawValue)
+                        }
                     )
                 ) {
                     Text("System default").tag("")
@@ -346,8 +176,10 @@ private struct WiFiSettingsView: View {
                 Toggle(
                     "Scan automatically on launch",
                     isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "LanFi.scanOnLaunch") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "LanFi.scanOnLaunch") }
+                        get: {
+                            UserDefaults.standard.object(forKey: AppSettingsKey.scanOnLaunch.rawValue) as? Bool ?? true
+                        },
+                        set: { UserDefaults.standard.set($0, forKey: AppSettingsKey.scanOnLaunch.rawValue) }
                     )
                 )
                 Toggle("Slow scans in background and Low Power Mode", isOn: $reduceInBackground)
@@ -368,7 +200,7 @@ private struct WiFiSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
     }
 }
 
@@ -464,7 +296,7 @@ private struct VendorSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
         .onAppear { overrides = OUIParser.customOverrides() }
     }
 
@@ -527,6 +359,6 @@ private struct DiagnosticsSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding(12)
+        .padding(DesignToken.Spacing.medium)
     }
 }

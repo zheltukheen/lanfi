@@ -4,6 +4,31 @@ import SwiftUI
 struct WhoisToolView: View {
     @ObservedObject var model: WhoisToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case event, date
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .event: return String(localized: "Event")
+            case .date: return String(localized: "Date")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .event
+    @State private var sortAscending = true
+
+    private func sortedEvents(_ rows: [WhoisEvent]) -> [WhoisEvent] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .event:
+                return lhs.action.localizedStandardCompare(rhs.action) == .orderedAscending
+            case .date: return (lhs.date ?? .distantPast) < (rhs.date ?? .distantPast)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -24,7 +49,7 @@ struct WhoisToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -87,11 +112,11 @@ struct WhoisToolView: View {
                         ForEach(report.statuses, id: \.self) { status in
                             Text(status)
                                 .font(.caption2)
-                                .padding(.horizontal, 6)
+                                .padding(.horizontal, DesignToken.Spacing.tight)
                                 .padding(.vertical, 2)
                                 .background(
                                     Color.orange.opacity(0.12),
-                                    in: RoundedRectangle(cornerRadius: 4))
+                                    in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
                         }
                     }
                 }
@@ -125,11 +150,17 @@ struct WhoisToolView: View {
     private func events(_ report: WhoisReport) -> some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
-                ToolkitSectionLabel(text: "Events")
-                    .padding(.horizontal, 14)
-                    .padding(.top, 12)
-                    .padding(.bottom, 6)
-                Table(report.events) {
+                HStack {
+                    ToolkitSectionLabel(text: "Events")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
+                    Spacer()
+                }
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
+                Table(sortedEvents(report.events)) {
                     TableColumn("Event") { event in
                         Text(event.action)
                             .font(.caption)
@@ -143,7 +174,7 @@ struct WhoisToolView: View {
                         .font(.caption.monospacedDigit())
                         .foregroundColor(.secondary)
                     }
-                    .width(140)
+                    .width(AppColumnWidth.wide)
                 }
                 .frame(height: min(CGFloat(report.events.count) * 26 + 40, 260))
             }

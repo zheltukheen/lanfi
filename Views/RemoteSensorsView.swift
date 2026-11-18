@@ -1,6 +1,43 @@
 import SwiftUI
 
 struct RemoteSensorsView: View {
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case ssid, band, channel, width, rssi, snr, phy, security
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .ssid: return String(localized: "SSID")
+            case .band: return String(localized: "Band")
+            case .channel: return String(localized: "Ch")
+            case .width: return String(localized: "Width")
+            case .rssi: return String(localized: "RSSI")
+            case .snr: return String(localized: "SNR")
+            case .phy: return String(localized: "PHY")
+            case .security: return String(localized: "Security")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .rssi
+    @State private var sortAscending = false
+
+    private func sortedResults(_ rows: [RemoteNetwork]) -> [RemoteNetwork] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .ssid: return lhs.ssid.localizedStandardCompare(rhs.ssid) == .orderedAscending
+            case .band: return lhs.band.localizedStandardCompare(rhs.band) == .orderedAscending
+            case .channel: return lhs.channel < rhs.channel
+            case .width: return lhs.widthMHz < rhs.widthMHz
+            case .rssi: return lhs.rssi < rhs.rssi
+            case .snr: return (lhs.snr ?? .min) < (rhs.snr ?? .min)
+            case .phy: return lhs.phy.localizedStandardCompare(rhs.phy) == .orderedAscending
+            case .security:
+                return lhs.security.localizedStandardCompare(rhs.security) == .orderedAscending
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     @Environment(\.dismiss) private var dismiss
     @State private var sensors: [RemoteSensor]
     @State private var selectedID: UUID?
@@ -41,7 +78,7 @@ struct RemoteSensorsView: View {
                     Button("Close") { dismiss() }
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
             Divider()
 
             HSplitView {
@@ -113,6 +150,7 @@ struct RemoteSensorsView: View {
                     Image(systemName: "plus")
                 }
                 .help("Add sensor")
+                .accessibilityLabel("Add sensor")
                 Button {
                     if let selected {
                         editingSensor = selected
@@ -123,6 +161,7 @@ struct RemoteSensorsView: View {
                 }
                 .disabled(selected == nil)
                 .help("Edit sensor")
+                .accessibilityLabel("Edit sensor")
                 Spacer()
                 Button(role: .destructive) {
                     guard let selected else { return }
@@ -138,7 +177,7 @@ struct RemoteSensorsView: View {
                 .accessibilityLabel("Delete sensor")
             }
             .buttonStyle(.borderless)
-            .padding(7)
+            .padding(DesignToken.Spacing.small)
         }
     }
 
@@ -173,7 +212,7 @@ struct RemoteSensorsView: View {
                         .font(.caption)
                         .foregroundColor(.red)
                         .textSelection(.enabled)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, DesignToken.Spacing.medium)
                 }
 
                 if results.isEmpty && !isScanning {
@@ -189,13 +228,16 @@ struct RemoteSensorsView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    Table(results) {
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
+                    Table(sortedResults(results)) {
                         TableColumn("SSID", value: \.ssid)
-                        TableColumn("Band", value: \.band).width(65)
-                        TableColumn("Ch") { Text("\($0.channel)") }.width(35)
+                        TableColumn("Band", value: \.band).width(AppColumnWidth.short)
+                        TableColumn("Ch") { Text("\($0.channel)") }.width(AppColumnWidth.index)
                         TableColumn("Width") { Text("\($0.widthMHz) MHz") }.width(60)
                         TableColumn("RSSI") { Text("\($0.rssi)").foregroundColor(rssiColor($0.rssi)) }.width(48)
-                        TableColumn("SNR") { Text($0.snr.map(String.init) ?? "—") }.width(42)
+                        TableColumn("SNR") { Text($0.snr.map(String.init) ?? "—") }.width(AppColumnWidth.index)
                         TableColumn("PHY", value: \.phy)
                         TableColumn("Security", value: \.security)
                     }
@@ -315,7 +357,7 @@ private struct RemoteSensorEditor: View {
                 .disabled(host.isEmpty || username.isEmpty)
             }
         }
-        .padding(18)
+        .appContentPadding()
         .frame(width: 460)
     }
 }

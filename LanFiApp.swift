@@ -4,6 +4,12 @@ import SwiftUI
 @main
 enum LanFiMain {
     static func main() {
+        // Headless MCP mode: `LanFi.app/Contents/MacOS/LanFi --mcp` speaks the
+        // protocol on stdio and never starts AppKit, so an MCP client can point
+        // at the installed app instead of a separate CLI binary.
+        if CommandLine.arguments.contains("--mcp") {
+            MCPServer.run()
+        }
         if CommandLine.arguments.contains("--smoke-test") {
             AppSmokeTest.run()
         }
@@ -30,6 +36,7 @@ struct LanFiApp: App {
     @StateObject private var uptime = UptimeMonitor()
     @StateObject private var meter = MenuBarMeterModel()
     @AppStorage("LanFi.highContrast") private var highContrast = false
+    @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false
     @AppStorage("LanFi.appearance") private var appearance = "system"
     @AppStorage("LanFi.hasCompletedFirstRun") private var hasCompletedFirstRun = false
 
@@ -47,6 +54,12 @@ struct LanFiApp: App {
     var body: some Scene {
         WindowGroup(id: "main") {
             NetworkToolkitView(toolkit: toolkit)
+                // `AppPalette` resolves colours from a cached flag, so flipping
+                // the palette changes nothing a view can observe. Rebuilding
+                // this subtree is the one guaranteed way to repaint every
+                // leaf without restarting; view models and stored settings
+                // live outside the identity and survive.
+                .id(colorBlindSafe)
                 .frame(minWidth: 1000, minHeight: 640)
                 .environmentObject(viewModel)
                 .environmentObject(uiState)
@@ -162,7 +175,10 @@ struct LanFiApp: App {
 
         MenuBarExtra {
             MenuBarView(
-                viewModel: viewModel, diagnostics: diagnostics, uptime: uptime, meter: meter)
+                viewModel: viewModel, diagnostics: diagnostics, uptime: uptime, meter: meter
+            )
+            .environmentObject(uiState)
+            .environmentObject(toolkit)
         } label: {
             MenuBarLabel(
                 meter: meter, viewModel: viewModel, diagnostics: diagnostics, uptime: uptime)

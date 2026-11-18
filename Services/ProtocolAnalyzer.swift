@@ -298,6 +298,23 @@ enum ProtocolAnalyzer {
             facts.append(ProtocolFact(id: "wps-detail", label: "WPS details", value: wps, status: .warning))
         }
 
+        // Wi-Fi 7 compatibility mode: the RSNE carries the subset every client
+        // understands, and the override elements carry the real suites.
+        let rsnOverrides = network.informationElements.filter {
+            $0.name == "RSNE Override" || $0.name == "RSNE Override 2"
+        }
+        if let override = rsnOverrides.first {
+            facts.append(
+                ProtocolFact(
+                    id: "rsn-override",
+                    label: "RSN override",
+                    value: override.summary,
+                    detail: rsnOverrides.count > 1
+                        ? "\(rsnOverrides.count) override elements: capable clients use these suites"
+                        : "Capable clients use these suites; older clients see the base RSNE",
+                    status: .info))
+        }
+
         return ProtocolBlock(
             id: "security",
             title: "Security & trust",

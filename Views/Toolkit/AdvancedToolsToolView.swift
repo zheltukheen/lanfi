@@ -17,7 +17,7 @@ struct AdvancedToolsToolView: View {
                 .id(selectedID)
             externalLinks
         }
-        .padding(18)
+        .appContentPadding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 

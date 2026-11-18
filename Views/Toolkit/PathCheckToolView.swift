@@ -3,6 +3,37 @@ import SwiftUI
 struct PathCheckToolView: View {
     @ObservedObject var model: PathCheckToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case port, state, response, detail
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .port: return String(localized: "Port")
+            case .state: return String(localized: "State")
+            case .response: return String(localized: "Response")
+            case .detail: return String(localized: "Detail")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .port
+    @State private var sortAscending = true
+
+    private func sortedResults(_ rows: [PathCheckResult]) -> [PathCheckResult] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .port: return lhs.port < rhs.port
+            case .state:
+                return stateTitle(lhs).localizedStandardCompare(stateTitle(rhs)) == .orderedAscending
+            case .response:
+                return (milliseconds(lhs) ?? .infinity) < (milliseconds(rhs) ?? .infinity)
+            case .detail:
+                return detail(lhs).localizedStandardCompare(detail(rhs)) == .orderedAscending
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -22,7 +53,7 @@ struct PathCheckToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -94,16 +125,19 @@ struct PathCheckToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Ports")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(model.portsText)
                         .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(model.results) {
+                Table(sortedResults(model.results)) {
                     TableColumn("Port") { result in
                         Text("\(result.port)/tcp")
                             .font(.caption.monospacedDigit())
@@ -118,7 +152,7 @@ struct PathCheckToolView: View {
                                 .font(.caption)
                         }
                     }
-                    .width(100)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Response") { result in
                         Text(ToolkitFormat.milliseconds(milliseconds(result)))
                             .font(.caption.monospacedDigit())

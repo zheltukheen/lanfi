@@ -39,6 +39,8 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case subnetCalculator
     case iperf3
     case httpTraffic
+    case openConnections
+    case processTraffic
     case advancedTools
 
     case networkMonitor
@@ -47,6 +49,8 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case wifiAnalyzer
     case roamingTest
     case knownNetworks
+    case securityWatch
+    case clientAnalytics
     case siteSurvey
 
     var id: String { rawValue }
@@ -61,4 +65,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     var isAvailable: Bool { ToolRegistry.descriptor(for: self).isAvailable }
 
     var plannedDetail: String { ToolRegistry.descriptor(for: self).plannedDetail }
+
+    /// False for screens that are a tab of a host tool (see `ToolDescriptor`).
+    var showsInSidebar: Bool { ToolRegistry.descriptor(for: self).showsInSidebar }
 }

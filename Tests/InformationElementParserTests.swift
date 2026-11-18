@@ -53,6 +53,30 @@ final class InformationElementParserTests: XCTestCase {
         XCTAssertTrue(country.elements.first?.summary.contains("US") == true)
     }
 
+    func testExtendedBssLoadReportsMuMimoAndSecondaryUtilization() throws {
+        let payload: [UInt8] = [0x03, 0x00, 0x80, 0xFF, 0x80, 0x00]
+        let parsed = InformationElementParser.parse(Data(ie(193, payload)))
+        let element = try XCTUnwrap(parsed.elements.first { $0.elementId == 193 })
+        XCTAssertEqual(element.name, "Extended BSS Load")
+        XCTAssertTrue(element.summary.contains("3 MU-MIMO"), element.summary)
+        XCTAssertTrue(element.summary.contains("50%"), element.summary)
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Secondary 20 MHz utilization: 100%") })
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Secondary 80 MHz utilization: 0%") })
+    }
+
+    func testMultipleBssidListsNonTransmittedProfiles() throws {
+        // Max BSSID indicator 2 (up to 4 BSSIDs), one profile whose element 85
+        // reports BSSID index 1.
+        let profile: [UInt8] = [85, 1, 1]
+        let payload: [UInt8] = [2, 0, UInt8(profile.count)] + profile
+        let parsed = InformationElementParser.parse(Data(ie(71, payload)))
+        let element = try XCTUnwrap(parsed.elements.first { $0.elementId == 71 })
+        XCTAssertEqual(element.name, "Multiple BSSID")
+        XCTAssertTrue(element.summary.contains("Up to 4 BSSIDs"), element.summary)
+        XCTAssertTrue(element.summary.contains("1 profile"), element.summary)
+        XCTAssertTrue(element.detailLines.contains { $0.contains("BSSID index 1") })
+    }
+
     func testRSNWithoutPMFIsReportedAsNotRequired() {
         let parsed = InformationElementParser.parse(Data(ie(48, rsnPayload(pmfRequired: false))))
         XCTAssertEqual(parsed.pmfRequired, false)
@@ -147,6 +171,61 @@ final class EHTInformationElementTests: XCTestCase {
         data.append(contentsOf: payload)
         let parsed = InformationElementParser.parse(data)
         XCTAssertTrue(parsed.elements.contains { $0.name.contains("EHT Capabilities") })
+    }
+}
+
+final class RsnOverrideElementTests: XCTestCase {
+    /// WPA3 v3.5 §14.4: vendor IE, OUI 50-6F-9A, OUI type 0x29/0x2A, then the
+    /// RSNE Information field.
+    private func overridePayload(type: UInt8, akm: UInt8) -> [UInt8] {
+        [0x50, 0x6F, 0x9A, type] + [
+            0x01, 0x00,  // version
+            0x00, 0x0F, 0xAC, 0x04,  // group cipher: CCMP-128
+            0x01, 0x00,  // pairwise count
+            0x00, 0x0F, 0xAC, 0x04,  // pairwise cipher: CCMP-128
+            0x01, 0x00,  // AKM count
+            0x00, 0x0F, 0xAC, akm,  // AKM suite
+            0xC0, 0x00,  // PMF required + capable
+        ]
+    }
+
+    func testRsnOverrideDecodesAkmsAndCapabilities() throws {
+        var data = Data([221, 24])
+        data.append(contentsOf: overridePayload(type: 0x29, akm: 0x08))
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "RSNE Override" })
+        XCTAssertTrue(element.summary.contains("CCMP-128"))
+        XCTAssertTrue(element.summary.contains("SAE"), "\(element.summary)")
+        XCTAssertTrue(element.detailLines.contains { $0.contains("PMF Required") })
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Overrides the RSNE") })
+    }
+
+    func testRsnOverride2IsNamedSeparately() throws {
+        var data = Data([221, 24])
+        data.append(contentsOf: overridePayload(type: 0x2A, akm: 0x18))
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "RSNE Override 2" })
+        XCTAssertTrue(element.detailLines.contains { $0.contains("AKM Suite(s):") })
+    }
+
+    func testTruncatedRsnOverrideFallsBackToRaw() throws {
+        var data = Data([221, 6])
+        data.append(contentsOf: [0x50, 0x6F, 0x9A, 0x29, 0x01, 0x00])
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "RSNE Override" })
+        XCTAssertTrue(element.summary.hasPrefix("Raw:"))
+    }
+
+    func testHotspotAndSaePkAreNamed() throws {
+        var hotspot = Data([221, 8])
+        hotspot.append(contentsOf: [0x50, 0x6F, 0x9A, 0x10, 0x01, 0x02, 0x03, 0x04])
+        var saePk = Data([221, 8])
+        saePk.append(contentsOf: [0x50, 0x6F, 0x9A, 0x1F, 0x01, 0x02, 0x03, 0x04])
+
+        let parsed = InformationElementParser.parse(hotspot + saePk)
+        let names = parsed.elements.map(\.name)
+        XCTAssertTrue(names.contains("Hotspot 2.0"))
+        XCTAssertTrue(names.contains("SAE-PK"))
     }
 }
 

@@ -1,6 +1,45 @@
 import SwiftUI
 
 struct ControllersSettingsView: View {
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case name, mac, model, ip, channel, clients, txPower, utilization, channels
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .name: return String(localized: "Name")
+            case .mac: return String(localized: "MAC")
+            case .model: return String(localized: "Model")
+            case .ip: return String(localized: "IP")
+            case .channel: return String(localized: "Ch")
+            case .clients: return String(localized: "Clients")
+            case .txPower: return String(localized: "TX")
+            case .utilization: return String(localized: "Util.")
+            case .channels: return String(localized: "Channels")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .name
+    @State private var sortAscending = true
+
+    private func sortedAccessPoints(_ rows: [ControllerAccessPoint]) -> [ControllerAccessPoint] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch sortKey {
+            case .name: return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
+            case .model: return lhs.model.localizedStandardCompare(rhs.model) == .orderedAscending
+            case .ip: return lhs.ip.compare(rhs.ip, options: .numeric) == .orderedAscending
+            case .channel: return (lhs.channel ?? .min) < (rhs.channel ?? .min)
+            case .clients: return (lhs.clients ?? .min) < (rhs.clients ?? .min)
+            case .txPower: return (lhs.txPower ?? .min) < (rhs.txPower ?? .min)
+            case .utilization: return (lhs.utilization ?? .min) < (rhs.utilization ?? .min)
+            case .channels:
+                return lhs.supportedChannels.count < rhs.supportedChannels.count
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     @State private var accounts: [ControllerAccount] = ControllerAccountStore().load()
     @State private var selectedID: UUID?
     @State private var aps: [ControllerAccessPoint] = []
@@ -28,6 +67,8 @@ struct ControllersSettingsView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .help("Add controller")
+                    .accessibilityLabel("Add controller")
                     Button(role: .destructive) {
                         if let selected {
                             accounts.removeAll { $0.id == selected.id }
@@ -42,7 +83,7 @@ struct ControllersSettingsView: View {
                     .disabled(selected == nil)
                 }
                 .buttonStyle(.borderless)
-                .padding(6)
+                .padding(DesignToken.Spacing.tight)
             }
             .frame(minWidth: 200)
 
@@ -60,18 +101,25 @@ struct ControllersSettingsView: View {
                     if let errorMessage {
                         Text(errorMessage).font(.caption).foregroundColor(.red).textSelection(.enabled)
                     }
-                    Table(aps) {
+                    HStack {
+                        TableSortControl(
+                            options: SortKey.allCases.map { ($0, $0.title) },
+                            selection: $sortKey, ascending: $sortAscending)
+                        Spacer()
+                    }
+                    Table(sortedAccessPoints(aps)) {
                         TableColumn("Name", value: \.name)
                         TableColumn("MAC", value: \.mac)
                         TableColumn("Model", value: \.model)
                         TableColumn("IP", value: \.ip)
-                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(40)
-                        TableColumn("Clients") { Text($0.clients.map(String.init) ?? "—") }.width(55)
-                        TableColumn("TX") { Text($0.txPower.map { "\($0) dBm" } ?? "—") }.width(65)
-                        TableColumn("Util.") { Text($0.utilization.map { "\($0)%" } ?? "—") }.width(55)
+                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(AppColumnWidth.index)
+                        TableColumn("Clients") { Text($0.clients.map(String.init) ?? "—") }.width(AppColumnWidth.small)
+                        TableColumn("TX") { Text($0.txPower.map { "\($0) dBm" } ?? "—") }.width(AppColumnWidth.short)
+                        TableColumn("Util.") { Text($0.utilization.map { "\($0)%" } ?? "—") }.width(
+                            AppColumnWidth.small)
                         TableColumn("Channels") {
                             Text($0.supportedChannels.isEmpty ? "—" : "\($0.supportedChannels.count)")
-                        }.width(65)
+                        }.width(AppColumnWidth.short)
                     }
                 } else {
                     Text("Add a UniFi or Meraki controller account.")
@@ -79,7 +127,7 @@ struct ControllersSettingsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .padding(10)
+            .padding(DesignToken.Spacing.compact)
         }
         .sheet(isPresented: $showingEditor) {
             ControllerEditor { account, token in
@@ -155,7 +203,7 @@ private struct ControllerEditor: View {
             }
         }
         .textFieldStyle(.roundedBorder)
-        .padding(16)
+        .padding(DesignToken.Spacing.large)
         .frame(width: 440)
     }
 }

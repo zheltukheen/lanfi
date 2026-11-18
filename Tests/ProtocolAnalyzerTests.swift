@@ -104,6 +104,20 @@ final class ProtocolAnalyzerTests: XCTestCase {
         XCTAssertEqual(mobility?.status, .good)
     }
 
+    func testRsnOverrideAddsASecurityFact() {
+        let override = InformationElement(
+            id: "221-1", elementId: 221, length: 24, name: "RSNE Override",
+            summary: "Group Cipher: CCMP-128; Pairwise Cipher(s): CCMP-128; AKM Suite(s): SAE",
+            detailLines: [], rawHex: "50 6F 9A 29"
+        )
+        let network = makeNetwork(security: "WPA2 Personal", informationElements: [override])
+        let profile = ProtocolAnalyzer.profile(for: network, metrics: nil)
+        let security = profile.blocks.first { $0.id == "security" }
+        let fact = security?.facts.first { $0.id == "rsn-override" }
+        XCTAssertEqual(fact?.status, .info)
+        XCTAssertTrue(fact?.value.contains("SAE") == true, "\(String(describing: fact))")
+    }
+
     func testCoverageCountsBandsAndSecurity() {
         let networks = [
             makeNetwork(id: "a", band: .band24, generation: .mode11ax, security: "WPA2 Personal"),

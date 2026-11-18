@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 
 struct ExpressionColumn: Codable, Identifiable, Equatable {
@@ -38,7 +39,7 @@ enum ExpressionEvaluator {
 
 final class ExpressionColumnStore {
     private let defaults: UserDefaults
-    private let key = "LanFi.expressionColumns"
+    private let key = AppSettingsKey.expressionColumns.rawValue
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func load() -> [ExpressionColumn] {

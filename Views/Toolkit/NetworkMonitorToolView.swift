@@ -36,8 +36,8 @@ struct NetworkMonitorToolView: View {
                     .disabled(isLoadingRoutes)
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.top, 12)
+            .padding(.horizontal, DesignToken.Spacing.card)
+            .padding(.top, DesignToken.Spacing.medium)
 
             switch tab {
             case .overview:
@@ -71,7 +71,7 @@ struct NetworkMonitorToolView: View {
                     )
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
         }
     }
 
@@ -100,21 +100,62 @@ struct NetworkMonitorToolView: View {
         return defaults.first
     }
 
+    private enum RouteSortKey: String, CaseIterable, Identifiable {
+        case destination, gateway, flags, interface, expire
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .destination: return String(localized: "Destination")
+            case .gateway: return String(localized: "Gateway")
+            case .flags: return String(localized: "Flags")
+            case .interface: return String(localized: "Interface")
+            case .expire: return String(localized: "Expire")
+            }
+        }
+    }
+
+    @State private var routeSortKey: RouteSortKey = .destination
+    @State private var routeAscending = true
+
+    private func sortedRoutes(_ rows: [NetworkRoute]) -> [NetworkRoute] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch routeSortKey {
+            case .destination:
+                return lhs.destination.compare(rhs.destination, options: .numeric)
+                    == .orderedAscending
+            case .gateway:
+                return lhs.gateway.localizedStandardCompare(rhs.gateway) == .orderedAscending
+            case .flags: return lhs.flags.localizedStandardCompare(rhs.flags) == .orderedAscending
+            case .interface:
+                return lhs.interface.localizedStandardCompare(rhs.interface) == .orderedAscending
+            case .expire:
+                return (lhs.expire ?? "").localizedStandardCompare(rhs.expire ?? "")
+                    == .orderedAscending
+            }
+        }
+        return routeAscending ? ordered : ordered.reversed()
+    }
+
     private var routesTable: some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Routing table")
+                    if !routes.isEmpty {
+                        TableSortControl(
+                            options: RouteSortKey.allCases.map { ($0, $0.title) },
+                            selection: $routeSortKey, ascending: $routeAscending)
+                    }
                     Spacer()
                     Text("IPv4 · netstat -rn -f inet")
                         .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(routes) {
+                Table(sortedRoutes(routes)) {
                     TableColumn("Destination") { route in
                         HStack(spacing: 5) {
                             if route.isDefault {
@@ -136,12 +177,12 @@ struct NetworkMonitorToolView: View {
                             .font(.caption.monospaced())
                             .foregroundColor(.secondary)
                     }
-                    .width(90)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Interface") { route in
                         Text(route.interface)
                             .font(.caption.monospaced())
                     }
-                    .width(90)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Expire") { route in
                         Text(route.expire ?? "—")
                             .font(.caption.monospacedDigit())

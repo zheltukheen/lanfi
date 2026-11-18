@@ -8,6 +8,9 @@ struct SurveySample: Codable, Identifiable, Equatable {
     let ssid: String
     let bssid: String
     let recordedAt: Date
+    /// Optional GPS position for map-tagged walks (P1.9).
+    var latitude: Double? = nil
+    var longitude: Double? = nil
 }
 
 struct SurveyPoint: Codable, Equatable {
@@ -49,6 +52,11 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var floorLevel: Int
     var floorHeightMeters: Double
     var planWidthMeters: Double?
+    /// Height of a hand-drawn (image-less) plan in metres. Optional so survey
+    /// files written before blank plans still decode.
+    var planHeightMeters: Double? = nil
+    /// Imported or recorded GPS walk for the whole floor (P1.9).
+    var gpsTrack: [GeoPoint]? = nil
     var reportTitle: String?
     var clientName: String?
     var reportNotes: String?
@@ -63,7 +71,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, imageFileName, samples, walls, obstacles, accessPoints, floorLevel, floorHeightMeters,
-            planWidthMeters
+            planWidthMeters, planHeightMeters, gpsTrack
         case reportTitle, clientName, reportNotes, updatedAt
     }
 
@@ -78,6 +86,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         floorLevel: Int = 0,
         floorHeightMeters: Double = 3.0,
         planWidthMeters: Double? = nil,
+        planHeightMeters: Double? = nil,
+        gpsTrack: [GeoPoint]? = nil,
         reportTitle: String? = nil,
         clientName: String? = nil,
         reportNotes: String? = nil,
@@ -93,6 +103,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         self.floorLevel = floorLevel
         self.floorHeightMeters = floorHeightMeters
         self.planWidthMeters = planWidthMeters
+        self.planHeightMeters = planHeightMeters
+        self.gpsTrack = gpsTrack
         self.reportTitle = reportTitle
         self.clientName = clientName
         self.reportNotes = reportNotes
@@ -111,6 +123,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         floorLevel = try container.decodeIfPresent(Int.self, forKey: .floorLevel) ?? 0
         floorHeightMeters = try container.decodeIfPresent(Double.self, forKey: .floorHeightMeters) ?? 3.0
         planWidthMeters = try container.decodeIfPresent(Double.self, forKey: .planWidthMeters)
+        planHeightMeters = try container.decodeIfPresent(Double.self, forKey: .planHeightMeters)
+        gpsTrack = try container.decodeIfPresent([GeoPoint].self, forKey: .gpsTrack)
         reportTitle = try container.decodeIfPresent(String.self, forKey: .reportTitle)
         clientName = try container.decodeIfPresent(String.self, forKey: .clientName)
         reportNotes = try container.decodeIfPresent(String.self, forKey: .reportNotes)

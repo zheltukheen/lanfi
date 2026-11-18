@@ -1,3 +1,4 @@
+import LanFiCore
 import SwiftUI
 import AppKit
 
@@ -12,11 +13,14 @@ struct SurveyView: View {
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
     @State private var predictiveMode = false
-    @AppStorage("LanFi.survey.heatmapDetail") private var heatmapDetail = "balanced"
+    @AppStorage(AppSettingsKey.surveyHeatmapDetail.rawValue) private var heatmapDetail = "balanced"
     @State private var show3DFloors = false
     @State private var calibrating = false
     @State private var calibrationPoints: [SurveyPoint] = []
     @State private var showingClearConfirm = false
+    @State private var showingBlankPlan = false
+    @State private var showingPlanning = false
+    @State private var showingMap = false
     @State private var heatGrid: HeatGridCache.Grid?
     @State private var heatGridRequestKey = ""
 
@@ -35,6 +39,8 @@ struct SurveyView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            secondaryToolbar
+            Divider()
             toolbar
             Divider()
             HStack(spacing: 0) {
@@ -54,6 +60,15 @@ struct SurveyView: View {
         .sheet(isPresented: $show3DFloors) {
             MultiFloorSurveyView(survey: survey)
         }
+        .sheet(isPresented: $showingBlankPlan) {
+            BlankPlanSheet(survey: survey)
+        }
+        .sheet(isPresented: $showingPlanning) {
+            SurveyPlanningView(survey: survey)
+        }
+        .sheet(isPresented: $showingMap) {
+            SurveyMapSheet(survey: survey)
+        }
         .alert("Clear all survey points?", isPresented: $showingClearConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Clear Points", role: .destructive) { survey.clearSamples() }
@@ -64,164 +79,6 @@ struct SurveyView: View {
 
     private var toolbar: some View {
         VStack(spacing: 6) {
-            HStack(spacing: 10) {
-                Button {
-                    survey.importFloorPlan()
-                } label: {
-                    Label("Import Floor Plan", systemImage: "photo")
-                }
-                .controlSize(.small)
-
-                Button {
-                    survey.save()
-                } label: {
-                    Label("Save", systemImage: "square.and.arrow.down")
-                }
-                .controlSize(.small)
-
-                Menu {
-                    Button("This floor") {
-                        survey.exportPDF(
-                            networkName: selectedNetwork?.displaySSID ?? "All networks",
-                            samples: displayedSamples)
-                    }
-                    Button("All floors") {
-                        survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
-                    }
-                } label: {
-                    Label("PDF", systemImage: "doc.richtext")
-                }
-                .menuStyle(.borderlessButton)
-                .frame(width: 58)
-                .controlSize(.small)
-
-                Button {
-                    showReportSettings = true
-                } label: {
-                    Label("Report", systemImage: "doc.badge.gearshape")
-                }
-                .controlSize(.small)
-
-                Button(role: .destructive) {
-                    survey.clearSamples()
-                } label: {
-                    Label("Clear Points", systemImage: "trash")
-                }
-                .controlSize(.small)
-                .labelStyle(.iconOnly)
-                .help("Clear points")
-                .disabled(survey.samples.isEmpty)
-
-                Divider().frame(height: 20)
-
-                Picker("Heatmap detail", selection: $heatmapDetail) {
-                    Text("Fast").tag("fast")
-                    Text("Balanced").tag("balanced")
-                    Text("High").tag("high")
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 150)
-                .controlSize(.small)
-                .help("Heatmap detail: higher detail is slower on large plans")
-
-                Divider().frame(height: 20)
-
-                Button {
-                    wallMode.toggle()
-                    pendingWallStart = nil
-                    survey.statusMessage =
-                        wallMode
-                        ? String(localized: "Wall mode: click two points to draw a wall.")
-                        : String(localized: "Wall mode off.")
-                } label: {
-                    Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
-                }
-                .controlSize(.small)
-                .buttonStyle(.bordered)
-                .labelStyle(.iconOnly)
-                .help("Draw wall")
-                .tint(wallMode ? .orange : nil)
-
-                Button {
-                    predictiveMode.toggle()
-                    survey.statusMessage =
-                        predictiveMode
-                        ? String(localized: "Predictive mode: click the plan to place an AP.")
-                        : String(localized: "Predictive mode off.")
-                } label: {
-                    Label(
-                        "Predictive",
-                        systemImage: predictiveMode
-                            ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
-                }
-                .controlSize(.small)
-                .buttonStyle(.bordered)
-                .labelStyle(.iconOnly)
-                .help("Predictive mode")
-                .tint(predictiveMode ? .purple : nil)
-
-                Button {
-                    walkMode.toggle()
-                    survey.statusMessage =
-                        walkMode
-                        ? String(localized: "Walk mode: move the pointer over the plan to sample automatically.")
-                        : String(localized: "Walk mode off.")
-                } label: {
-                    Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
-                }
-                .controlSize(.small)
-                .buttonStyle(.bordered)
-                .labelStyle(.iconOnly)
-                .help("Walk mode")
-                .tint(walkMode ? .green : nil)
-
-                Menu {
-                    Button {
-                        roomMode.toggle()
-                        roomPoints = []
-                        survey.statusMessage =
-                            roomMode
-                            ? String(localized: "Room mode: click vertices, then Finish Room.")
-                            : String(localized: "Room mode off.")
-                    } label: {
-                        Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
-                    }
-                    Button("Finish Room") { finishRoom() }
-                        .disabled(roomPoints.count < 3)
-                    Button("Clear Rooms", role: .destructive) {
-                        survey.clearObstacles()
-                        roomPoints = []
-                    }
-                    .disabled(survey.obstacles.isEmpty)
-                    Button("Clear Predictive APs", role: .destructive) {
-                        survey.clearAccessPoints()
-                    }
-                    .disabled(survey.accessPoints.isEmpty)
-                    Divider()
-                    Button(calibrating ? "Cancel Calibration" : "Calibrate Scale") {
-                        calibrating.toggle()
-                        calibrationPoints = []
-                        survey.statusMessage =
-                            calibrating
-                            ? String(localized: "Calibration: click two points and enter the real distance.")
-                            : String(localized: "Calibration cancelled.")
-                    }
-                    Divider()
-                    Button("Clear Walls", role: .destructive) {
-                        survey.clearWalls()
-                        pendingWallStart = nil
-                    }
-                    .disabled(survey.walls.isEmpty)
-                } label: {
-                    Label("Structure", systemImage: "square.on.square")
-                }
-                .menuStyle(.borderlessButton)
-                .labelStyle(.iconOnly)
-                .help("Structure tools")
-                .controlSize(.small)
-
-                Spacer()
-            }
 
             HStack(spacing: 10) {
                 Divider().frame(height: 20)
@@ -246,6 +103,7 @@ struct SurveyView: View {
                 }
                 .controlSize(.small)
                 .help("New floor")
+                .accessibilityLabel("New floor")
                 Button {
                     show3DFloors = true
                 } label: {
@@ -253,6 +111,24 @@ struct SurveyView: View {
                 }
                 .controlSize(.small)
                 .help("Multi-floor 3D view")
+
+                Divider().frame(height: 20)
+
+                Button {
+                    showingPlanning = true
+                } label: {
+                    Label("Plan", systemImage: "square.grid.3x3.topleft.filled")
+                }
+                .controlSize(.small)
+                .help("Plan AP placement and track the active survey")
+
+                Button {
+                    showingMap = true
+                } label: {
+                    Label("Map", systemImage: "map")
+                }
+                .controlSize(.small)
+                .help("GPS-tagged samples and GPX tracks")
 
                 Picker("Network", selection: $survey.selectedNetworkId) {
                     Text("All networks").tag(String?.none)
@@ -272,9 +148,190 @@ struct SurveyView: View {
                 Spacer()
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .frame(minHeight: 34)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.small)
         .background(Material.bar)
+        // Two dense rows must keep their intrinsic height; without this the
+        // canvas below compresses the second row under the divider.
+        .fixedSize(horizontal: false, vertical: true)
+        .layoutPriority(1)
+    }
+
+    private var secondaryToolbar: some View {
+        HStack(spacing: 10) {
+            Button {
+                survey.importFloorPlan()
+            } label: {
+                Label("Import Floor Plan", systemImage: "photo")
+            }
+            .controlSize(.small)
+
+            Button {
+                showingBlankPlan = true
+            } label: {
+                Label("New Plan", systemImage: "square.dashed")
+            }
+            .controlSize(.small)
+            .help("Create a blank plan with a metre grid and draw it by hand")
+
+            Button {
+                survey.save()
+            } label: {
+                Label("Save", systemImage: "square.and.arrow.down")
+            }
+            .controlSize(.small)
+
+            Menu {
+                Button("This floor") {
+                    survey.exportPDF(
+                        networkName: selectedNetwork?.displaySSID ?? "All networks",
+                        samples: displayedSamples)
+                }
+                Button("All floors") {
+                    survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                }
+            } label: {
+                Label("PDF", systemImage: "doc.richtext")
+            }
+            .menuStyle(.borderlessButton)
+            .frame(width: 58)
+            .controlSize(.small)
+
+            Button {
+                showReportSettings = true
+            } label: {
+                Label("Report", systemImage: "doc.badge.gearshape")
+            }
+            .controlSize(.small)
+
+            Button(role: .destructive) {
+                survey.clearSamples()
+            } label: {
+                Label("Clear Points", systemImage: "trash")
+            }
+            .controlSize(.small)
+            .labelStyle(.iconOnly)
+            .help("Clear points")
+            .accessibilityLabel("Clear points")
+            .disabled(survey.samples.isEmpty)
+
+            Divider().frame(height: 20)
+
+            Picker("Heatmap detail", selection: $heatmapDetail) {
+                Text("Fast").tag("fast")
+                Text("Balanced").tag("balanced")
+                Text("High").tag("high")
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 150)
+            .controlSize(.small)
+            .help("Heatmap detail: higher detail is slower on large plans")
+
+            Divider().frame(height: 20)
+
+            Button {
+                wallMode.toggle()
+                pendingWallStart = nil
+                survey.statusMessage =
+                    wallMode
+                    ? String(localized: "Wall mode: click two points to draw a wall.")
+                    : String(localized: "Wall mode off.")
+            } label: {
+                Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
+            }
+            .controlSize(.small)
+            .buttonStyle(.bordered)
+            .labelStyle(.iconOnly)
+            .help("Draw wall")
+            .tint(wallMode ? .orange : nil)
+
+            Button {
+                predictiveMode.toggle()
+                survey.statusMessage =
+                    predictiveMode
+                    ? String(localized: "Predictive mode: click the plan to place an AP.")
+                    : String(localized: "Predictive mode off.")
+            } label: {
+                Label(
+                    "Predictive",
+                    systemImage: predictiveMode
+                        ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
+            }
+            .controlSize(.small)
+            .buttonStyle(.bordered)
+            .labelStyle(.iconOnly)
+            .help("Predictive mode")
+            .tint(predictiveMode ? .purple : nil)
+
+            Button {
+                walkMode.toggle()
+                survey.statusMessage =
+                    walkMode
+                    ? String(localized: "Walk mode: move the pointer over the plan to sample automatically.")
+                    : String(localized: "Walk mode off.")
+            } label: {
+                Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
+            }
+            .controlSize(.small)
+            .buttonStyle(.bordered)
+            .labelStyle(.iconOnly)
+            .help("Walk mode")
+            .tint(walkMode ? .green : nil)
+
+            Menu {
+                Button {
+                    roomMode.toggle()
+                    roomPoints = []
+                    survey.statusMessage =
+                        roomMode
+                        ? String(localized: "Room mode: click vertices, then Finish Room.")
+                        : String(localized: "Room mode off.")
+                } label: {
+                    Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
+                }
+                Button("Finish Room") { finishRoom() }
+                    .disabled(roomPoints.count < 3)
+                Button("Clear Rooms", role: .destructive) {
+                    survey.clearObstacles()
+                    roomPoints = []
+                }
+                .disabled(survey.obstacles.isEmpty)
+                Button("Clear Predictive APs", role: .destructive) {
+                    survey.clearAccessPoints()
+                }
+                .disabled(survey.accessPoints.isEmpty)
+                Divider()
+                Button(calibrating ? "Cancel Calibration" : "Calibrate Scale") {
+                    calibrating.toggle()
+                    calibrationPoints = []
+                    survey.statusMessage =
+                        calibrating
+                        ? String(localized: "Calibration: click two points and enter the real distance.")
+                        : String(localized: "Calibration cancelled.")
+                }
+                Divider()
+                Button("Clear Walls", role: .destructive) {
+                    survey.clearWalls()
+                    pendingWallStart = nil
+                }
+                .disabled(survey.walls.isEmpty)
+            } label: {
+                Label("Structure", systemImage: "square.on.square")
+            }
+            .menuStyle(.borderlessButton)
+            .labelStyle(.iconOnly)
+            .help("Structure tools")
+            .accessibilityLabel("Structure tools")
+            .controlSize(.small)
+
+            Spacer()
+        }
+        .frame(minHeight: 34)
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.vertical, DesignToken.Spacing.small)
+        .background(Material.bar)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     // MARK: - Inspector
@@ -286,12 +343,12 @@ struct SurveyView: View {
                 metricsCard
                 toolCard
                 networkCard
-                if survey.floorPlanImage != nil {
+                if survey.hasPlan {
                     samplesCard
                 }
                 tipsCard
             }
-            .padding(12)
+            .padding(DesignToken.Spacing.medium)
         }
         .background(Color(nsColor: .underPageBackgroundColor).opacity(0.45))
     }
@@ -429,6 +486,7 @@ struct SurveyView: View {
                             }
                             .buttonStyle(.borderless)
                             .help("Remove point")
+                            .accessibilityLabel("Remove survey point")
                         }
                     }
                 }
@@ -449,7 +507,7 @@ struct SurveyView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 6) {
                 ToolkitSectionLabel(text: "How to survey")
-                tipRow("1", "Import a floor plan.")
+                tipRow("1", "Import a floor plan or create a blank metre grid.")
                 tipRow("2", "Walk the area and click to record RSSI.")
                 tipRow("3", "Add walls and rooms for realistic attenuation.")
                 tipRow("4", "Export a PDF report or inspect the 3D view.")
@@ -519,7 +577,7 @@ struct SurveyView: View {
 
     @ViewBuilder
     private var content: some View {
-        if survey.floorPlanImage == nil {
+        if !survey.hasPlan {
             ScrollView {
                 VStack(spacing: 18) {
                     Image(systemName: "map.fill")
@@ -538,7 +596,7 @@ struct SurveyView: View {
                     HStack(alignment: .top, spacing: 12) {
                         onboardingStep(
                             icon: "photo", title: "1 · Floor plan",
-                            detail: "Import a PNG or JPEG. It is copied into the survey project.")
+                            detail: "Import a PNG/JPEG, or create a blank metre grid and draw walls by hand.")
                         onboardingStep(
                             icon: "hand.tap", title: "2 · Record",
                             detail: "Click on the plan or use Walk mode to sample the selected network.")
@@ -557,6 +615,13 @@ struct SurveyView: View {
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         Button {
+                            showingBlankPlan = true
+                        } label: {
+                            Label("New Blank Plan", systemImage: "square.dashed")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        Button {
                             survey.newFloor()
                         } label: {
                             Label("New Floor", systemImage: "plus.rectangle.on.rectangle")
@@ -565,7 +630,7 @@ struct SurveyView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(36)
+                .padding(DesignToken.Layout.emptyStatePadding)
             }
         } else {
             GeometryReader { geo in
@@ -574,13 +639,16 @@ struct SurveyView: View {
                     heatmapDetail == "fast" ? 8 : (heatmapDetail == "high" ? 4 : 6)
                 let columns = max(1, Int(rect.width / cell))
                 let rows = max(1, Int(rect.height / cell))
+                let planWidthMeters = survey.project.planWidthMeters ?? 12
                 let request = SurveyHeatmapRequest(
                     columns: columns, rows: rows, cellSize: Double(cell),
                     pixelWidth: Double(rect.width), pixelHeight: Double(rect.height),
                     samples: displayedSamples, walls: survey.walls,
                     obstacles: survey.obstacles, accessPoints: survey.accessPoints,
                     predictiveMode: predictiveMode,
-                    planWidthMeters: survey.project.planWidthMeters ?? 30
+                    // Must match `fittedRect` and `drawPlanGrid`, or the
+                    // predicted coverage is drawn at the wrong scale.
+                    planWidthMeters: planWidthMeters
                 )
                 ZStack(alignment: .topLeading) {
                     Color(nsColor: .underPageBackgroundColor)
@@ -592,6 +660,9 @@ struct SurveyView: View {
                             .position(x: rect.midX, y: rect.midY)
                     }
                     Canvas { context, _ in
+                        if survey.floorPlanImage == nil {
+                            drawPlanGrid(context: context, rect: rect)
+                        }
                         if let heatGrid {
                             drawHeatGrid(context: context, rect: rect, grid: heatGrid, cell: cell)
                         }
@@ -640,10 +711,10 @@ struct SurveyView: View {
                             .lineLimit(2)
                             .frame(maxWidth: 260, alignment: .leading)
                     }
-                    .padding(8)
+                    .padding(DesignToken.Spacing.small)
                     .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 7))
-                    .padding(10)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+                    .padding(DesignToken.Spacing.compact)
 
                     VStack {
                         Spacer()
@@ -652,7 +723,7 @@ struct SurveyView: View {
                             legend
                         }
                     }
-                    .padding(10)
+                    .padding(DesignToken.Spacing.compact)
 
                     if displayedSamples.isEmpty, !predictiveMode {
                         VStack(spacing: 5) {
@@ -668,9 +739,9 @@ struct SurveyView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
+                        .padding(.horizontal, DesignToken.Spacing.large)
+                        .padding(.vertical, DesignToken.Spacing.medium)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .allowsHitTesting(false)
                     }
@@ -898,19 +969,66 @@ struct SurveyView: View {
             Text("· walls/rooms -8 dB").font(.caption2).foregroundColor(.secondary)
             if predictiveMode { Text("· predictive").font(.caption2).foregroundColor(.purple) }
         }
-        .padding(7)
+        .padding(DesignToken.Spacing.small)
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func fittedRect(in size: CGSize) -> CGRect {
-        guard let image = survey.floorPlanImage, image.size.width > 0, image.size.height > 0 else {
-            return CGRect(origin: .zero, size: size)
+        if let image = survey.floorPlanImage, image.size.width > 0, image.size.height > 0 {
+            let scale = min(size.width / image.size.width, size.height / image.size.height)
+            let width = image.size.width * scale
+            let height = image.size.height * scale
+            return CGRect(
+                x: (size.width - width) / 2, y: (size.height - height) / 2,
+                width: width, height: height)
         }
-        let scale = min(size.width / image.size.width, size.height / image.size.height)
-        let width = image.size.width * scale
-        let height = image.size.height * scale
-        return CGRect(x: (size.width - width) / 2, y: (size.height - height) / 2, width: width, height: height)
+        // Image-less plans use their real metre dimensions for the aspect ratio.
+        let widthMeters = survey.project.planWidthMeters ?? 12
+        let heightMeters = survey.project.planHeightMeters ?? max(4, widthMeters * 0.7)
+        let scale = min(size.width / widthMeters, size.height / heightMeters)
+        let width = widthMeters * scale
+        let height = heightMeters * scale
+        return CGRect(
+            x: (size.width - width) / 2, y: (size.height - height) / 2,
+            width: width, height: height)
+    }
+
+    /// One-metre grid for hand-drawn plans, with a label every two metres.
+    private func drawPlanGrid(context: GraphicsContext, rect: CGRect) {
+        let widthMeters = survey.project.planWidthMeters ?? 12
+        let heightMeters = survey.project.planHeightMeters ?? max(4, widthMeters * 0.7)
+        var grid = Path()
+        let columns = Int(widthMeters.rounded())
+        let rows = Int(heightMeters.rounded())
+        for column in 0...max(1, columns) {
+            let x = rect.minX + CGFloat(Double(column) / widthMeters) * rect.width
+            grid.move(to: CGPoint(x: x, y: rect.minY))
+            grid.addLine(to: CGPoint(x: x, y: rect.maxY))
+        }
+        for row in 0...max(1, rows) {
+            let y = rect.minY + CGFloat(Double(row) / heightMeters) * rect.height
+            grid.move(to: CGPoint(x: rect.minX, y: y))
+            grid.addLine(to: CGPoint(x: rect.maxX, y: y))
+        }
+        context.stroke(grid, with: .color(.secondary.opacity(0.16)), lineWidth: 0.5)
+
+        var border = Path(rect)
+        border.closeSubpath()
+        context.stroke(border, with: .color(.secondary.opacity(0.35)), lineWidth: 1)
+
+        for column in stride(from: 0, through: columns, by: 2) {
+            let x = rect.minX + CGFloat(Double(column) / widthMeters) * rect.width
+            context.draw(
+                Text("\(column) m").font(.system(size: 8)).foregroundColor(.secondary),
+                at: CGPoint(x: x, y: rect.maxY + 7))
+        }
+        for row in stride(from: 0, through: rows, by: 2) {
+            let y = rect.minY + CGFloat(Double(row) / heightMeters) * rect.height
+            context.draw(
+                Text("\(row) m").font(.system(size: 8)).foregroundColor(.secondary),
+                at: CGPoint(x: rect.minX - 12, y: y), anchor: .trailing)
+        }
     }
 
     private func drawSample(context: GraphicsContext, at point: CGPoint, rssi: Int) {
@@ -952,5 +1070,82 @@ struct SurveyView: View {
     private func heatColor(_ rssi: Int) -> Color {
         let (r, g, b) = HeatPalette.rgb(Double(rssi))
         return Color(red: r, green: g, blue: b)
+    }
+}
+
+/// Creates a hand-drawn plan: real metre dimensions, no image import.
+private struct BlankPlanSheet: View {
+    @ObservedObject var survey: SurveyViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var name = ""
+    @State private var width = "12"
+    @State private var height = "8"
+
+    private var widthValue: Double? {
+        Double(width.replacingOccurrences(of: ",", with: "."))
+    }
+
+    private var heightValue: Double? {
+        Double(height.replacingOccurrences(of: ",", with: "."))
+    }
+
+    private var isValid: Bool {
+        guard let widthValue, let heightValue else { return false }
+        return (3...200).contains(widthValue) && (3...200).contains(heightValue)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("New blank plan").font(.title3.bold())
+            Text(
+                "A metre grid you can draw on: add walls and rooms, place predictive APs and click to record signal. No floor-plan image needed."
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+            Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 10) {
+                GridRow {
+                    Text("Name").font(.caption).foregroundColor(.secondary)
+                    TextField(survey.project.name, text: $name)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 260)
+                }
+                GridRow {
+                    Text("Width (m)").font(.caption).foregroundColor(.secondary)
+                    TextField("12", text: $width)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 100)
+                }
+                GridRow {
+                    Text("Height (m)").font(.caption).foregroundColor(.secondary)
+                    TextField("8", text: $height)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 100)
+                }
+            }
+
+            Text("3–200 m per side. You can recalibrate later from Structure → Calibrate Scale.")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+
+            HStack {
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Spacer()
+                Button("Create Plan") {
+                    guard let widthValue, let heightValue else { return }
+                    survey.createBlankPlan(
+                        name: name, widthMeters: widthValue, heightMeters: heightValue)
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+                .disabled(!isValid)
+            }
+        }
+        .padding(DesignToken.Layout.sheetPadding)
+        .frame(width: DesignToken.Layout.sheetWidthCompact)
     }
 }

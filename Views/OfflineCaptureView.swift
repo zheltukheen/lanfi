@@ -21,6 +21,136 @@ struct OfflineCaptureView: View {
     @State private var searchText = ""
     @State private var currentURL: URL?
 
+    private enum BeaconSortKey: String, CaseIterable, Identifiable {
+        case ssid, bssid, channel, rssi, security, handshake, deauth, ies, clients, eht
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .ssid: return String(localized: "SSID")
+            case .bssid: return String(localized: "BSSID")
+            case .channel: return String(localized: "Ch")
+            case .rssi: return String(localized: "RSSI")
+            case .security: return String(localized: "Security")
+            case .handshake: return String(localized: "Handshake")
+            case .deauth: return String(localized: "Deauth")
+            case .ies: return String(localized: "IEs")
+            case .clients: return String(localized: "Clients")
+            case .eht: return String(localized: "EHT")
+            }
+        }
+    }
+
+    private enum ClientSortKey: String, CaseIterable, Identifiable {
+        case mac, vendor, bssid, frames, management, rssi, lastSeen, probes, shelf
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .mac: return String(localized: "MAC")
+            case .vendor: return String(localized: "Vendor")
+            case .bssid: return String(localized: "BSSID")
+            case .frames: return String(localized: "Frames")
+            case .management: return String(localized: "Mgmt/Data")
+            case .rssi: return String(localized: "RSSI")
+            case .lastSeen: return String(localized: "Last seen")
+            case .probes: return String(localized: "Probes")
+            case .shelf: return String(localized: "Device Shelf")
+            }
+        }
+    }
+
+    @State private var beaconSortKey: BeaconSortKey = .rssi
+    @State private var beaconAscending = false
+    @State private var clientSortKey: ClientSortKey = .frames
+    @State private var clientAscending = false
+
+    private enum ManagementSortKey: String, CaseIterable, Identifiable {
+        case bssid, beacons, probeResponses, deauth, disassoc, burst, reasons
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .bssid: return String(localized: "BSSID")
+            case .beacons: return String(localized: "Beacons")
+            case .probeResponses: return String(localized: "Probe resp.")
+            case .deauth: return String(localized: "Deauth")
+            case .disassoc: return String(localized: "Disassoc")
+            case .burst: return String(localized: "Burst")
+            case .reasons: return String(localized: "Reasons")
+            }
+        }
+    }
+
+    @State private var managementSortKey: ManagementSortKey = .bssid
+    @State private var managementAscending = true
+
+    private func sortedManagement(_ rows: [ManagementCounters]) -> [ManagementCounters] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch managementSortKey {
+            case .bssid:
+                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
+            case .beacons: return lhs.beacons < rhs.beacons
+            case .probeResponses: return lhs.probeResponses < rhs.probeResponses
+            case .deauth: return lhs.deauth < rhs.deauth
+            case .disassoc: return lhs.disassoc < rhs.disassoc
+            case .burst: return (lhs.burst ? 1 : 0) < (rhs.burst ? 1 : 0)
+            case .reasons:
+                return lhs.reasons.map(\.count).reduce(0, +) < rhs.reasons.map(\.count).reduce(0, +)
+            }
+        }
+        return managementAscending ? ordered : ordered.reversed()
+    }
+
+    private func sortedBeacons(_ rows: [CapturedBeacon]) -> [CapturedBeacon] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch beaconSortKey {
+            case .ssid: return lhs.ssid.localizedStandardCompare(rhs.ssid) == .orderedAscending
+            case .bssid: return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
+            case .channel: return (lhs.channel ?? Int.max) < (rhs.channel ?? Int.max)
+            case .rssi: return (lhs.rssi ?? Int.min) < (rhs.rssi ?? Int.min)
+            case .security:
+                return lhs.security.localizedStandardCompare(rhs.security) == .orderedAscending
+            case .handshake:
+                return handshakeStatus(for: lhs).text.localizedStandardCompare(
+                    handshakeStatus(for: rhs).text) == .orderedAscending
+            case .deauth:
+                return (security.counters(for: lhs.bssid)?.disruptionCount ?? 0)
+                    < (security.counters(for: rhs.bssid)?.disruptionCount ?? 0)
+            case .ies:
+                return lhs.informationElements.count < rhs.informationElements.count
+            case .clients:
+                return (lhs.clientCount ?? Int.max) < (rhs.clientCount ?? Int.max)
+            case .eht: return (lhs.isEHT ? 1 : 0) < (rhs.isEHT ? 1 : 0)
+            }
+        }
+        return beaconAscending ? ordered : ordered.reversed()
+    }
+
+    private func sortedClients(_ rows: [CapturedClient]) -> [CapturedClient] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch clientSortKey {
+            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
+            case .vendor:
+                return OUIParser.vendor(for: lhs.mac).localizedStandardCompare(
+                    OUIParser.vendor(for: rhs.mac)) == .orderedAscending
+            case .bssid:
+                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
+            case .frames: return lhs.frameCount < rhs.frameCount
+            case .management:
+                return lhs.managementFrames < rhs.managementFrames
+            case .rssi: return (lhs.rssi ?? .min) < (rhs.rssi ?? .min)
+            case .lastSeen: return lhs.lastSeen < rhs.lastSeen
+            case .probes:
+                return lhs.probeSSIDs.joined(separator: ", ")
+                    .localizedStandardCompare(rhs.probeSSIDs.joined(separator: ", "))
+                    == .orderedAscending
+            case .shelf:
+                return (shelfDevices[lhs.mac.uppercased()]?.displayName ?? "")
+                    .localizedStandardCompare(shelfDevices[rhs.mac.uppercased()]?.displayName ?? "")
+                    == .orderedAscending
+            }
+        }
+        return clientAscending ? ordered : ordered.reversed()
+    }
+
     init(
         initialURL: URL? = nil, embedded: Bool = false,
         monitor: MonitorViewModel? = nil
@@ -46,7 +176,7 @@ struct OfflineCaptureView: View {
                     Button("Close") { dismiss() }
                 }
             }
-            .padding(14)
+            .padding(DesignToken.Spacing.card)
             Divider()
 
             if isParsing {
@@ -63,7 +193,7 @@ struct OfflineCaptureView: View {
                         .textSelection(.enabled)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(30)
+                .padding(DesignToken.Spacing.emptyState)
             } else if beacons.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: "waveform.badge.magnifyingglass")
@@ -116,11 +246,18 @@ struct OfflineCaptureView: View {
                         .menuStyle(.borderlessButton)
                         .fixedSize()
                     }
-                    .padding(10)
-                    Table(filteredBeacons, selection: $selectedBeaconId) {
+                    .padding(DesignToken.Spacing.compact)
+                    HStack {
+                        TableSortControl(
+                            options: BeaconSortKey.allCases.map { ($0, $0.title) },
+                            selection: $beaconSortKey, ascending: $beaconAscending)
+                        Spacer()
+                    }
+                    .padding(.horizontal, DesignToken.Spacing.compact)
+                    Table(sortedBeacons(filteredBeacons), selection: $selectedBeaconId) {
                         TableColumn("SSID", value: \.ssid)
                         TableColumn("BSSID", value: \.bssid)
-                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(40)
+                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(AppColumnWidth.index)
                         TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(70)
                         TableColumn("Security", value: \.security)
                         TableColumn("Handshake") { beacon in
@@ -129,16 +266,17 @@ struct OfflineCaptureView: View {
                                 .foregroundColor(status.color)
                                 .help(status.help)
                         }
-                        .width(90)
+                        .width(AppColumnWidth.compact)
                         TableColumn("Deauth") { beacon in
                             let count = security.counters(for: beacon.bssid)?.disruptionCount ?? 0
                             Text(count == 0 ? "—" : "\(count)")
                                 .foregroundColor(count >= CaptureSecurityAnalyzer.burstThreshold ? .red : .secondary)
                         }
-                        .width(55)
-                        TableColumn("IEs") { Text("\($0.informationElements.count)") }.width(40)
-                        TableColumn("Clients") { Text($0.clientCount.map(String.init) ?? "—") }.width(55)
-                        TableColumn("EHT") { Text($0.isEHT ? "Yes" : "—") }.width(40)
+                        .width(AppColumnWidth.small)
+                        TableColumn("IEs") { Text("\($0.informationElements.count)") }.width(AppColumnWidth.index)
+                        TableColumn("Clients") { Text($0.clientCount.map(String.init) ?? "—") }.width(
+                            AppColumnWidth.small)
+                        TableColumn("EHT") { Text($0.isEHT ? "Yes" : "—") }.width(AppColumnWidth.index)
                     }
                     .tableStyle(.inset)
                     .frame(minHeight: 150, maxHeight: .infinity)
@@ -171,12 +309,12 @@ struct OfflineCaptureView: View {
                                         }
                                     }
                                 }
-                                .padding(4)
+                                .padding(DesignToken.Spacing.tight)
                             }
                             .frame(height: 105)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 8)
+                        .padding(.horizontal, DesignToken.Spacing.compact)
+                        .padding(.bottom, DesignToken.Spacing.small)
                     }
                 }
             }
@@ -211,18 +349,21 @@ struct OfflineCaptureView: View {
                 Toggle("Only \(selectedBeacon?.ssid ?? "selected network")", isOn: $clientsOnlySelectedNetwork)
                     .toggleStyle(.checkbox)
                     .disabled(selectedBeacon == nil)
+                TableSortControl(
+                    options: ClientSortKey.allCases.map { ($0, $0.title) },
+                    selection: $clientSortKey, ascending: $clientAscending)
                 Button("Close") { showingClients = false }
             }
-            Table(filteredClients) {
+            Table(sortedClients(filteredClients)) {
                 TableColumn("MAC", value: \.mac)
                 TableColumn("Vendor") { client in
                     Text(OUIParser.vendor(for: client.mac)).lineLimit(1)
                 }
-                .width(150)
+                .width(AppColumnWidth.wide)
                 TableColumn("BSSID", value: \.bssid)
-                TableColumn("Frames") { Text("\($0.frameCount)") }.width(55)
+                TableColumn("Frames") { Text("\($0.frameCount)") }.width(AppColumnWidth.small)
                 TableColumn("Mgmt/Data") { Text("\($0.managementFrames)/\($0.dataFrames)") }.width(80)
-                TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(65)
+                TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(AppColumnWidth.short)
                 TableColumn("Last seen") { client in
                     Text(Self.timeLabel(client.lastSeen))
                 }
@@ -232,17 +373,17 @@ struct OfflineCaptureView: View {
                         .lineLimit(1)
                         .help(client.probeSSIDs.joined(separator: "\n"))
                 }
-                .width(140)
+                .width(AppColumnWidth.wide)
                 TableColumn("Device Shelf") { client in
                     let device = shelfDevices[client.mac.uppercased()]
                     Text(device.map { "\($0.displayName) · \($0.ip)" } ?? "—")
                         .lineLimit(1)
                         .foregroundColor(device == nil ? .secondary : .primary)
                 }
-                .width(160)
+                .width(AppColumnWidth.long)
             }
         }
-        .padding(14)
+        .padding(DesignToken.Spacing.card)
         .frame(width: 940, height: 440)
     }
 
@@ -303,7 +444,7 @@ struct OfflineCaptureView: View {
                                         .textSelection(.enabled)
                                 }
                             }
-                            .padding(8)
+                            .padding(DesignToken.Spacing.small)
                             .background(Color(nsColor: .controlBackgroundColor))
                             .cornerRadius(6)
                         }
@@ -314,20 +455,26 @@ struct OfflineCaptureView: View {
 
             Divider()
 
-            Text("Management frames").font(.caption.bold())
+            HStack {
+                Text("Management frames").font(.caption.bold())
+                TableSortControl(
+                    options: ManagementSortKey.allCases.map { ($0, $0.title) },
+                    selection: $managementSortKey, ascending: $managementAscending)
+                Spacer()
+            }
             if security.management.isEmpty {
                 Text("No beacons, deauth or disassociation frames counted.")
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else {
-                Table(security.management) {
+                Table(sortedManagement(security.management)) {
                     TableColumn("BSSID", value: \.bssid)
-                    TableColumn("Beacons") { Text("\($0.beacons)") }.width(65)
+                    TableColumn("Beacons") { Text("\($0.beacons)") }.width(AppColumnWidth.short)
                     TableColumn("Probe resp.") { Text("\($0.probeResponses)") }.width(80)
                     TableColumn("Deauth") { Text("\($0.deauth)") }.width(60)
                     TableColumn("Disassoc") { Text("\($0.disassoc)") }.width(70)
                     TableColumn("Burst") { Text($0.burst ? "Yes" : "—").foregroundColor($0.burst ? .red : .secondary) }
-                        .width(50)
+                        .width(AppColumnWidth.tiny)
                     TableColumn("Reasons") { counters in
                         let text = counters.reasons.map { "\($0.label) ×\($0.count)" }.joined(separator: ", ")
                         Text(text.isEmpty ? "—" : text).lineLimit(1).help(text)
@@ -335,7 +482,7 @@ struct OfflineCaptureView: View {
                 }
             }
         }
-        .padding(14)
+        .padding(DesignToken.Spacing.card)
         .frame(width: 760, height: 520)
     }
 
@@ -430,7 +577,7 @@ struct OfflineCaptureView: View {
                                         if link.id != group.links.last?.id { Divider() }
                                     }
                                 }
-                                .padding(4)
+                                .padding(DesignToken.Spacing.tight)
                             } label: {
                                 HStack(spacing: 8) {
                                     Text("AP MLD \(group.apMLD)")
@@ -446,11 +593,11 @@ struct OfflineCaptureView: View {
                             }
                         }
                     }
-                    .padding(4)
+                    .padding(DesignToken.Spacing.tight)
                 }
             }
         }
-        .padding(14)
+        .padding(DesignToken.Spacing.card)
         .frame(width: 640, height: 420)
     }
 

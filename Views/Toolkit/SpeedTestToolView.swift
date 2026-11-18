@@ -16,6 +16,7 @@ private enum SpeedTestTab: String, CaseIterable, Identifiable {
 struct SpeedTestToolView: View {
     @ObservedObject var model: SpeedTestToolModel
     @State private var tab: SpeedTestTab = .result
+    @State private var historyNetworkKey: String?
 
     var body: some View {
         ScrollView {
@@ -49,7 +50,7 @@ struct SpeedTestToolView: View {
                     historySection
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -157,29 +158,226 @@ struct SpeedTestToolView: View {
         return nextRun.formatted(date: .abbreviated, time: .shortened)
     }
 
+    private var historyGroups: [SpeedTestNetworkHistory] {
+        model.networkGroups
+    }
+
+    private var visibleHistory: [ThroughputMeasurement] {
+        model.measurements(forNetwork: historyNetworkKey)
+    }
+
+    private var selectedGroup: SpeedTestNetworkHistory? {
+        guard let historyNetworkKey else { return nil }
+        return historyGroups.first { $0.id == historyNetworkKey }
+    }
+
     private var historySection: some View {
+        VStack(spacing: DesignToken.Spacing.medium) {
+            if !historyGroups.isEmpty {
+                networkPicker
+            }
+            if let selectedGroup {
+                networkSummary(selectedGroup)
+            }
+            historyCard
+        }
+    }
+
+    private var networkPicker: some View {
+        AppCard(padding: DesignToken.Spacing.medium) {
+            HStack(spacing: DesignToken.Spacing.small) {
+                SectionLabel(text: "Network")
+                Picker("Network", selection: $historyNetworkKey) {
+                    Text("All networks").tag(String?.none)
+                    ForEach(historyGroups) { group in
+                        Text("\(group.network.displayName) (\(group.testCount))")
+                            .tag(Optional(group.id))
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: 280)
+                Spacer()
+                Text("Speed tests are grouped by the SSID that was connected when they ran.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private func networkSummary(_ group: SpeedTestNetworkHistory) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    Image(systemName: "wifi")
+                        .foregroundColor(AppPalette.band(.band5))
+                    Text(group.network.displayName)
+                        .font(.headline)
+                    if let bssid = group.network.bssid {
+                        Text(bssid)
+                            .font(.caption2.monospaced())
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text(String(format: String(localized: "%lld tests"), group.testCount))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    if let grade = group.latest?.bufferbloatGrade {
+                        StatusPill(text: "Bufferbloat \(grade)", tone: gradeTone(grade))
+                    }
+                }
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 140), spacing: 16)],
+                    alignment: .leading,
+                    spacing: DesignToken.Spacing.medium
+                ) {
+                    summaryMetric(
+                        title: "Latest down",
+                        value: group.latest?.report.downloadMbps,
+                        unit: "Mbps",
+                        delta: group.downloadDeltaMbps,
+                        higherIsBetter: true)
+                    summaryMetric(
+                        title: "Latest up",
+                        value: group.latest?.report.uploadMbps,
+                        unit: "Mbps",
+                        delta: group.uploadDeltaMbps,
+                        higherIsBetter: true)
+                    summaryMetric(
+                        title: "Latency",
+                        value: group.latest?.report.latencyMilliseconds,
+                        unit: "ms",
+                        delta: group.latencyDeltaMilliseconds,
+                        higherIsBetter: false)
+                    ToolkitMetric(
+                        title: "Average down",
+                        value: group.averageDownloadMbps.map {
+                            String(format: "%.0f Mbps", $0)
+                        } ?? "—")
+                }
+                if let delta = group.downloadDeltaMbps {
+                    Text(
+                        String(
+                            format: String(
+                                localized:
+                                    "Compared with the previous test on this network: %+.0f Mbps down."
+                            ),
+                            delta)
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+
+    private func summaryMetric(
+        title: LocalizedStringKey, value: Double?, unit: String, delta: Double?,
+        higherIsBetter: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.hairline) {
+            Text(value.map { String(format: "%.0f %@", $0, unit) } ?? "—")
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+            HStack(spacing: DesignToken.Spacing.tight) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                if let delta, abs(delta) >= 0.5 {
+                    Text(String(format: "%+.0f", delta))
+                        .font(.caption2.monospacedDigit().weight(.semibold))
+                        .foregroundColor(
+                            deltaIsGood(delta, higherIsBetter: higherIsBetter)
+                                ? AppPalette.ok : AppPalette.danger)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func deltaIsGood(_ delta: Double, higherIsBetter: Bool) -> Bool {
+        higherIsBetter ? delta > 0 : delta < 0
+    }
+
+    private func gradeTone(_ grade: String) -> StatusTone {
+        switch grade {
+        case "A", "B": return .good
+        case "C": return .warning
+        default: return .bad
+        }
+    }
+
+    private enum HistorySortKey: String, CaseIterable, Identifiable {
+        case when, network, download, upload, latency, grade
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .when: return String(localized: "When")
+            case .network: return String(localized: "Network")
+            case .download: return String(localized: "Down")
+            case .upload: return String(localized: "Up")
+            case .latency: return String(localized: "Latency")
+            case .grade: return String(localized: "Grade")
+            }
+        }
+    }
+
+    @State private var historySortKey: HistorySortKey = .when
+    @State private var historyAscending = false
+
+    private func sortedHistory(_ rows: [ThroughputMeasurement]) -> [ThroughputMeasurement] {
+        let ordered = rows.sorted { lhs, rhs in
+            switch historySortKey {
+            case .when: return lhs.testedAt < rhs.testedAt
+            case .network:
+                return (lhs.network?.displayName ?? "").localizedStandardCompare(
+                    rhs.network?.displayName ?? "") == .orderedAscending
+            case .download:
+                return (lhs.report.downloadMbps ?? .infinity) < (rhs.report.downloadMbps ?? .infinity)
+            case .upload:
+                return (lhs.report.uploadMbps ?? .infinity) < (rhs.report.uploadMbps ?? .infinity)
+            case .latency:
+                return (lhs.report.latencyMilliseconds ?? .infinity)
+                    < (rhs.report.latencyMilliseconds ?? .infinity)
+            case .grade:
+                return (lhs.bufferbloatGrade ?? "").localizedStandardCompare(
+                    rhs.bufferbloatGrade ?? "") == .orderedAscending
+            }
+        }
+        return historyAscending ? ordered : ordered.reversed()
+    }
+
+    private var historyCard: some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "History")
+                    if !visibleHistory.isEmpty {
+                        TableSortControl(
+                            options: HistorySortKey.allCases.map { ($0, $0.title) },
+                            selection: $historySortKey, ascending: $historyAscending)
+                    }
                     Spacer()
                     Button("Clear") { model.clearHistory() }
                         .buttonStyle(.borderless)
                         .font(.caption2)
                         .disabled(model.history.isEmpty)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                if model.history.isEmpty {
-                    Text("Scheduled and manual tests land here.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.bottom, 14)
+                if visibleHistory.isEmpty {
+                    Text(
+                        historyNetworkKey == nil
+                            ? "Scheduled and manual tests land here."
+                            : "No tests recorded on this network yet."
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, DesignToken.Spacing.card)
+                    .padding(.bottom, DesignToken.Spacing.card)
                 } else {
-                    Table(model.newestFirst) {
+                    Table(sortedHistory(visibleHistory)) {
                         TableColumn("When") { measurement in
                             Text(
                                 measurement.testedAt.formatted(
@@ -187,6 +385,15 @@ struct SpeedTestToolView: View {
                             )
                             .font(.caption2)
                         }
+                        TableColumn("Network") { measurement in
+                            Text(
+                                measurement.network?.displayName
+                                    ?? String(localized: "Not recorded")
+                            )
+                            .font(.caption2)
+                            .lineLimit(1)
+                        }
+                        .width(min: 120, ideal: 160)
                         TableColumn("Down") { measurement in
                             Text(
                                 measurement.report.downloadMbps.map {
@@ -195,7 +402,7 @@ struct SpeedTestToolView: View {
                             )
                             .font(.caption.monospacedDigit())
                         }
-                        .width(90)
+                        .width(AppColumnWidth.compact)
                         TableColumn("Up") { measurement in
                             Text(
                                 measurement.report.uploadMbps.map {
@@ -204,7 +411,7 @@ struct SpeedTestToolView: View {
                             )
                             .font(.caption.monospacedDigit())
                         }
-                        .width(90)
+                        .width(AppColumnWidth.compact)
                         TableColumn("Latency") { measurement in
                             Text(
                                 measurement.report.latencyMilliseconds.map {
@@ -220,7 +427,7 @@ struct SpeedTestToolView: View {
                         }
                         .width(60)
                     }
-                    .frame(height: min(CGFloat(model.history.count) * 24 + 46, 240))
+                    .frame(height: min(CGFloat(visibleHistory.count) * 24 + 46, 240))
                 }
             }
         }

@@ -20,6 +20,7 @@ struct MLOInspectorSection: View {
                             Spacer()
                             Text(link.bssid ?? "BSSID not advertised").font(.caption2.monospaced())
                         }
+                        .accessibilityElement(children: .combine)
                     }
                     if info.links.isEmpty {
                         Text("Link IDs present, no per-link BSSID in the captured IE.")
@@ -28,12 +29,12 @@ struct MLOInspectorSection: View {
                     }
                     fact("320 MHz", info.is320MHz ? "Yes" : "No")
                 }
-                .padding(4)
+                .padding(DesignToken.Spacing.tight)
             } else {
                 Text("No Multi-Link element for this BSSID. Capture a Wi-Fi 7 beacon to see link sets.")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .padding(4)
+                    .padding(DesignToken.Spacing.tight)
             }
         } label: {
             Label("Wi-Fi 7 / MLO", systemImage: "point.3.connected.trianglepath.dotted")

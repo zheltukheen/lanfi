@@ -22,8 +22,8 @@ because the delivered analysis depth is currently invisible in a screenshot.
 | Test methods | 385 app + 6 core |
 | Settings tabs | 11 |
 | SwiftPM modules | 1 (`LanFiCore`, settings seed) |
-| Distinct `LanFi.*` preference keys | 67 |
-| `UserDefaults` call sites | 59 |
+| Distinct preference keys (one `AppSettingsKey` catalogue) | 73 |
+| Key literals outside the catalogue / error domains | 0 / 13 |
 | App targets | 1 app + CLI + tests |
 | Third-party runtime dependencies | Sparkle only |
 
@@ -79,9 +79,11 @@ Tasks:
 - [ ] Apple Developer Program, Developer ID Application certificate.
 - [ ] Sign nested Sparkle/XPC code individually; hardened runtime; timestamp.
 - [ ] `notarytool submit --wait`, staple DMG and ZIP.
-- [ ] Add a launch-time self-check: if scan results have empty SSID/BSSID while
-      Wi-Fi is on, show a diagnostic instead of an empty table.
-- [ ] Document the permission reset risk after updates in `DISTRIBUTION.md`.
+- [x] Add a launch-time self-check: if scan results have empty SSID/BSSID while
+      Wi-Fi is on, show a diagnostic instead of an empty table. Implemented in
+      `ScanHealth.identifiersHidden` + `ScanHealthBanner`.
+- [x] Document the permission reset risk after updates in `DISTRIBUTION.md`,
+      including the recovery steps and the signed-build expectation.
 
 Acceptance: a clean Mac downloads the DMG, launches without a Gatekeeper
 workaround, grants Location Services once, and keeps SSID/BSSID after an
@@ -100,11 +102,15 @@ document this. The feature needs a capability matrix and a clear fallback.
 
 Tasks:
 
-- [ ] Scan mode model (`active`, `passive`, `directed`) with a capability probe.
-- [ ] Passive engine over the monitor interface, channel list and dwell time.
-- [ ] 6 GHz PSC/RNR-aware channel list; SP/LPI labelling where available.
-- [ ] UI: mode picker, unsupported-hardware explanation, progress.
-- [ ] Tests for channel planning and merge behaviour; hardware smoke test.
+- [x] Scan mode model (`active`, `passive`, `directed`) with a capability probe
+      (`Models/ScanModePlan.swift`, `Services/ScanHardwareProbe.swift`).
+- [x] Passive engine over the monitor interface, channel list and dwell time
+      (`Services/PassiveScanEngine.swift`).
+- [x] 6 GHz PSC/RNR-aware channel list; SP/LPI labelling where available.
+- [x] UI: mode picker, unsupported-hardware explanation, progress
+      (`Views/WiFiWorkspace/PassiveScanSheet.swift`).
+- [x] Tests for channel planning (`Tests/ScanModePlanTests.swift`); opt-in
+      hardware smoke test (`LANFI_HARDWARE_SMOKE=1`).
 
 Acceptance: on supported Macs, passive mode discovers a 6 GHz SP AP that the
 active scan omits; on N1 Macs the UI explains why it is unavailable instead of
@@ -189,16 +195,26 @@ opens without a multi-gigabyte memory spike.
 - [x] History statistics (min/avg/max/p95) in the inspector.
 - [x] SSID overhead as a percentage of airtime (beacon airtime already exists),
       shown in the inspector's technical specs as well as the column.
-- [ ] Decoder to 802.11-2024/WPA3 v3.5: RSN Override, Wi-Fi Alliance
-      Capabilities, Extended BSS Load, MBSSID/non-transmitted BSSID, 320 MHz
-      and MLO fields. WPA3 Transition is already decoded — do not redo it.
+- [~] Decoder to 802.11-2024/WPA3 v3.5: Extended BSS Load (193), Multiple
+      BSSID/non-transmitted profiles (71), 320 MHz, MLO and RSNE are decoded.
+      RSNE Override / RSNE Override 2 (OUI 50-6F-9A, types 0x29/0x2A) are decoded
+      with the same RSNE parser, so a Wi-Fi 7 compatibility-mode AP shows its
+      SAE/AKM-24 overrides (raw-IE view plus an "RSN override" fact in the
+      security block); the same vendor OUI names Hotspot 2.0 (0x10) and SAE-PK
+      (0x1F). The WFA Capabilities element body (capability bitmap) and RSNXE
+      Override (0x2B) remain open.
 - [x] 6 GHz PSC hints and a “why is this AP not visible” explanation
       (`VisibilityAdvisor`): PSC vs non-PSC channels, DFS sharing and hidden
       SSIDs, plus the same hint in the empty workspace.
-- [ ] SP/LPI power-mode labels: CoreWLAN does not expose the 6 GHz power mode,
-      so this needs a capture-based source rather than a beacon guess.
-- [ ] RNR (Reduced Neighbor Report) decoding into neighbouring-channel hints;
-      a decoder change in `InformationElementParser`, not a UI change.
+- [x] SP/LPI power-mode labels: CoreWLAN does not expose the 6 GHz power mode,
+      so the HE Operation element's 6 GHz Operation Information is decoded
+      instead (`SixGHzOperationInfo`); the inspector's Regulatory section shows
+      LPI / SP / VLP, and the raw IE view gains the same lines. Regulatory info
+      is domain-dependent, so the labels follow the US/FCC meaning.
+- [x] RNR (Reduced Neighbor Report) decoding into neighbouring-channel hints;
+      `ReducedNeighborReport` decodes operating class, channel, BSSID, short
+      SSID, BSS parameters, 20 MHz PSD and MLD parameters, and the IE view lists
+      each neighbour with its band. Decoder-only, as planned.
 - [ ] Wi-Fi 8/802.11bn decoder versioning. Draft 2.0 entered working-group
       ballot in August 2026; certification is expected in 2028, so this is
       future-proofing, not a current blocker.
@@ -234,37 +250,39 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
 
 ## P1 — New tools
 
-- [ ] **Security Watch** — rogue AP/evil twin, security downgrade, live
-      deauth/disassoc; build on the existing EAPOL/PMKID audit.
-- [ ] **Roaming Test** — BSSID transitions, 802.11k/v/r, sticky client, band
-      steering, reconnect time, packet loss.
-- [ ] **Client Analytics** — per-client airtime, retries, association timeline,
-      probes; correlate with Device Shelf.
-- [ ] **Survey Planning 2.0** — antenna patterns/import, wall and floor
-      materials, cutouts, floor alignment, real-time preview, calibration
-      against measured samples. `SurveyPredictor` currently uses free-space
-      path loss plus a fixed 12 dB per-floor loss; replace it with a
-      material-aware model.
-- [ ] **Active Survey** — throughput and latency per sample point, auto-walk
-      sampling every N seconds/metres, before/after comparison and a
-      multi-floor diff report.
-- [ ] **Combined report** — one PDF/HTML with scan, survey, security,
-      diagnostics and speed test; branding and redaction.
-- [ ] **Shortcuts/App Intents/widgets** — scan, export, capture, speed test.
+- [x] **Security Watch** — rogue AP/evil twin, security downgrade and
+      randomized BSSIDs from the live scan, plus captured deauth bursts; no
+      framing, injection or deauth, as designed.
+- [~] **Roaming Test** — BSSID transitions, 802.11k/v/r capability detection,
+      sticky client and band-steering verdicts ship; reconnect time and packet
+      loss per roam remain open.
+- [~] **Client Analytics** — advertised per-AP client load, utilization and
+      insights from beacons plus captured client observations ship; per-client
+      airtime and retries need a capture-based accounting pass.
+- [~] **Survey Planning 2.0** — free-space planner, grid layout, coverage
+      estimate, blank metre-grid plans and the active-survey advisor ship.
+      Antenna patterns, material-aware loss (the fixed 12 dB per-floor term is
+      still in place), cutouts and calibration against samples remain open.
+- [~] **Active Survey** — required samples, covered cells, gaps and the next
+      target ship; throughput/latency per point, auto-walk and the multi-floor
+      diff remain open.
+- [~] **Combined report** — the self-contained HTML report with scan, survey,
+      diagnostics and speed-test sections ships from the Data menu; PDF,
+      branding and scheduled delivery remain open.
+- [~] **Shortcuts/App Intents/widgets** — scan, connected network and speed
+      test intents with Shortcut phrases ship; export, capture and widgets
+      remain open.
 - [ ] **MCP 2.0** — live actions (`scan now`, `start capture`, `survey sample`),
       not only the read-only snapshot.
-- [ ] **Known Networks / Wi-Fi QR** — inventory of saved networks, security and
-      last-joined metadata, plus a guest-network QR. Read-only first; editing
-      known networks is a separate, riskier step.
-- [ ] **Connections** — open TCP/UDP sockets with process name, PID, local and
-      remote endpoint, state and bytes; grouped by process. Data source is
-      `nettop -P -x -l 1` (parsed, no private APIs) with `lsof`-style fallback.
-      Read-only: LanFi never kills a connection. Redact remote hosts in exports.
-- [ ] **Per-process traffic** — the NetWorker "Processes" screen: per-PID
-      received/sent deltas over a rolling window, sorted, with the app's own
-      traffic excluded. Ship it behind an explicit toggle because parsing
-      process tables is the most privacy-sensitive surface in the app; document
-      that nothing leaves the machine.
+- [x] **Known Networks / Wi-Fi QR** — saved-network inventory with security,
+      live presence and a guest QR. Read-only: LanFi never edits or reads saved
+      Wi-Fi passwords.
+- [x] **Connections** — open TCP connections with process, PID, user, endpoints
+      and state, grouped by process, from read-only `lsof` (never elevated,
+      never kills a connection).
+- [x] **Per-process traffic** — per-PID received/sent deltas over a rolling
+      window with the app's own traffic excluded and a privacy note in the
+      screen; parsed locally, nothing leaves the machine.
 - [ ] **Traffic accounting** — day / week / month / total volumes per interface
       from the same sampler, stored locally next to `speed-tests.json`, with a
       reset control and CSV export.
@@ -297,8 +315,9 @@ product does not need.
       than trying to make one binary do both.
 - [ ] Native probe layer for diagnostics (today `DiagnosticsEngine` shells out
       to `/sbin/ping`; macOS 26 child processes can lose Local Network access).
-- [ ] Speed test: keep `networkQuality` as the transport but add a bufferbloat
-      grade and history per network over time.
+- [x] Speed test: keep `networkQuality` as the transport; the bufferbloat grade
+      and the per-network history over time (grouped by SSID, with deltas and
+      averages) are delivered.
 - [ ] Connected-link telemetry: poll `CWWiFiClient().interface()` for
       `transmitRate()`, `noise()`, `ssid()`, `bssid()` and the negotiated PHY on
       a slow timer (5 s) and keep it in the Monitor store next to RSSI, so the
@@ -309,9 +328,9 @@ product does not need.
 - [ ] Noise in the history chart: `SignalHistoryView` plots RSSI only. Add the
       AirRadar-style mode switch (signal / noise / both) using the noise value
       already carried by `NetworkModel`.
-- [ ] Wi-Fi card selection: `WiFiScanner` accepts a preferred interface name but
-      nothing in the UI sets it. Add an interface picker for multi-radio Macs and
-      a "scanning with" label next to the scan control.
+- [x] Wi-Fi card selection: `WiFiScanner` accepts a preferred interface name and
+      Settings → Wi-Fi picks it; the workspace toolbar now shows a "Scanning
+      with <interface>" label next to the scan controls (system default included).
 - [ ] SNMP/UPnP polling for router/NAS targets (PeakHour pattern): read-only
       v2c GET of standard interface counters plus SSDP discovery, with a strict
       timeout and no credential storage. Later bucket; only if the menu-bar
@@ -356,8 +375,9 @@ stat/hero component, and no density option for the AppKit table.
             shading, connected AP highlighted, recommended channel as a marker,
             legend in plain words ("channels other networks also use are
             shaded").
-      - [ ] Make it the `MenuBarExtra` "Open" target; fresh installs already
-            default to it and Insights stays one click away.
+      - [x] The `MenuBarExtra` "Open LanFi" button now selects the Wi-Fi
+            workspace and bottom tab 9 (All Bands), so the overview is the first
+            thing on screen.
       - [x] First-run screen: what LanFi shows, why Location is needed and the
             privacy stance, with "Allow Location Access" as the primary action.
             Shown once (`LanFi.hasCompletedFirstRun`).
@@ -381,27 +401,33 @@ stat/hero component, and no density option for the AppKit table.
       - [x] Wording audit with plain alternatives for domain terms next to the
             column header tooltips ("BSS Load", "PMF", "DFS", "puncturing").
 - [ ] **D4 — Chart and inspector visual language.**
-      - [ ] One chart style (axes, grid, tooltip, selection band, empty state) used
-            by `SignalHistoryView`, `SpectrumView`, `HardwareSpectrumView`,
-            occupancy and toolkit latency graphs. `ChartStyle` now defines the
-            axis, grid, cursor and tooltip tokens and the history and occupancy
-            charts use it; the Canvas spectrum and toolkit latency graphs still
-            hand-roll their styling.
+      - [x] One chart style used by the history, occupancy, Canvas spectrum and
+            toolkit latency graphs: `ChartStyle` now drives grid colour/dash,
+            axis labels, hover cursor and tooltip surfaces; Swift Charts screens
+            share the same `AxisMarks`, and the Canvas spectrum draws its grid,
+            lane dividers, hover line and readouts from the tokens.
+      - [x] Inspector restructure: the Link block is pinned above the scrolling
+            detail sections and covers rate, PHY, width, band/channel, streams
+            (NSS capability), noise, cipher and BSSID.
       - [x] History chart mode switch: signal / noise / both (P2.6). Noise is
             dBm-only, so percent mode stays signal-only.
-      - [ ] Inspector restructure: a fixed "Link" block (rate, MCS/NSS, width,
-            streams, cipher, band) above the existing six sections, sticky while
-            scrolling, with the same block reusable as a printable per-network
-            page for reports.
-- [ ] **D5 — Menu-bar and window chrome.**
-      - [ ] Menu-bar sparkline (P0.6) drawn with the tokens, legible as a template
-            image in light and dark menu bars.
-      - [ ] One toolbar treatment across the Wi-Fi workspace and toolkit: same
-            control heights, same pill spacing, same separators, same
-            icon+label rule.
-      - [ ] Icon audit: every icon-only control gets an accessibility label, a
-            tooltip and a consistent SF Symbol family; the `Planned` badge stays
-            but adopts the token palette.
+- [x] **D5 — Menu-bar and window chrome.**
+      - [x] Menu-bar sparkline (P0.6) drawing moved into the pure
+            `SparklineGeometry` and the shared `ChartStyle` sparkline tokens;
+            the `MenuBarExtra` label renders monochrome (`symbolRenderingMode`,
+            `.foregroundStyle(.primary)`) so it stays legible as a template
+            image in light and dark menu bars, and VoiceOver gets one combined
+            label.
+      - [x] One toolbar treatment across the Wi-Fi workspace and toolkit:
+            `ToolbarIconButton` and the `appToolbarChrome` modifier share the
+            control height, radius and stroke, and the workspace refresh/pause,
+            settings, export, inspector, diagnostics and location controls plus
+            the toolkit Help button all use them.
+      - [x] Icon audit: every icon-only control in the workspace toolbar, chart
+            toolbars, filter bar, spectrum/history zoom controls, device shelf,
+            remote sensors and uptime carries both a tooltip and an
+            accessibility label; the `Planned` badge and the toolkit tone/dot
+            palette now use the semantic `AppPalette` roles.
 - [ ] **D6 — Settings, Help and onboarding.**
       - [x] Settings is no longer 11 tabs: a grouped sidebar (Application /
             Analysis / Integrations) with the last section remembered in
@@ -411,19 +437,38 @@ stat/hero component, and no density option for the AppKit table.
             the display and toolbar options.
       - [ ] Help window: task-oriented sections with one screenshot each, plus an
             in-app "what is this?" popover on the main chart.
-- [ ] **D7 — Accessibility visual pass.**
-      - [ ] Colour-blind-safe palette option (semantic shapes/labels alongside
-            colour), contrast check on every token pair at 4.5:1, reduce-motion
-            respect for heatmap streaming and scan animation.
-      - [ ] Dynamic Type on macOS via `dynamicTypeSize` where layouts allow, and a
-            fixed-size table path that degrades gracefully.
-      - [ ] Hands-on VoiceOver pass with the remaining screens (already an open
-            item in the README).
+- [ ] **D7 — Accessibility visual pass.** (partial: palette, reduce motion
+      and the inspector/protocol VoiceOver stops are done; text scaling and a
+      measured contrast audit remain open)
+      - [x] Colour-blind-safe palette option: Settings → Appearance toggles the
+            Okabe–Ito blue/amber/magenta roles for status, quality and band.
+            Semantic labels remain alongside colour. The flag is cached in
+            `AccessibilityPalette` (no `UserDefaults` read while drawing a
+            cell) and the toggle rebuilds the main window subtree, so the
+            palette applies without a relaunch. `AccessibilityPaletteTests`
+            covers the five hues, the defaults mirror and the live resolution.
+            Full 4.5:1 contrast audit remains open.
+      - [x] Reduce motion: every explicit animation in `Views/` is behind
+            `accessibilityReduceMotion` — the spectrum cross-fade, traceroute
+            hop transitions, filter-bar expansion and the inspector slide
+            (verified by grepping `.animation(`/`withAnimation`).
+      - [ ] In-app text scaling. `dynamicTypeSize` is documented as having no
+            effect on macOS text size (verified on a snapshot), so this needs a
+            custom font-metrics/whole-app pass rather than a dead switch.
+      - [~] VoiceOver pass: protocol block cards, MLO link rows, regulatory
+            facts and co-located radio buttons now expose one combined stop or
+            an explicit label; the tool tables and the help window still need a
+            hands-on run.
 - [ ] **D8 — Release visual assets.**
-      - [ ] A repeatable screenshot script (seeded data, fixed window size, light
+      - [x] A repeatable screenshot script (seeded data, fixed window size, light
             and dark) so README, site and release notes never go stale.
-      - [ ] Refresh `docs/images/` and `site/` gallery from that script; keep the
-            icon generator (`scripts/make_icon.swift`) as the only icon source.
+            `scripts/visual-check.sh` passes `--demo`, which seeds Wi-Fi, survey
+            and uptime fixtures from `Utils/DemoData.swift` (Debug-only, never
+            persisted) and blocks live scans.
+      - [x] Refresh `docs/images/` and `site/` gallery from that script; the
+            gallery phase captures the four toolkit screens at a fixed
+            1180×760 pt window and exports WebP to both trees. The icon
+            generator (`scripts/make_icon.swift`) stays the only icon source.
 
 **Presentation rules (decided 2026-11-16).**
 
@@ -468,10 +513,23 @@ locales.
       is one descriptor plus one view.
 - [x] Introduce typed `AppSettings` with defaults, legacy migration and
       export/import; General Settings already uses it.
-- [ ] Migrate the remaining 60-ish string keys (monitor, capture, survey,
-      diagnostics, MCP) into `AppSettings`.
-- [ ] Add dependency seams (clock, scanner, notifications, file store) and
-      enable Swift 6 strict concurrency for the core module.
+- [x] Migrate the remaining string keys (monitor, capture, survey, reports,
+      alerts, MCP, automation, display, interface, layout) into `AppSettings`.
+      `AppSettingsKey` is the only spelling of a persisted key: 73 cases, used
+      by every `UserDefaults`/`@AppStorage` call site. Typed sections decode
+      tolerantly, migrate from the legacy keys, mirror back on save, and are
+      refreshed from their key before a save so direct writers are never rolled
+      back; `importData` remains authoritative. Covered by
+      `AppSettingsMigrationTests` (9 tests) plus the original 8.
+- [x] Dependency seams (clock, settings storage, scanner, notifications, file
+      store) and Swift 6 strict concurrency for the core module. `LanFiCore`
+      builds with `swiftLanguageMode(.v6)` and injects `Clock`,
+      `SettingsStorage`, `NotificationPosting` and `FileStoring`;
+      `AppSettingsStore` also takes them and posts
+      `Notification.Name.lanFiSettingsDidChange`. The app exposes the same
+      seams: `WiFiScanning` for `AnalyzerViewModel`, `Clock` and
+      `MonitorNotifying` for `MonitorViewModel`, `UserNotifying` already
+      existed.
 - [x] Make `swift-format` blocking in CI and run `swift test` for the core
       package.
 - [ ] Add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
@@ -494,6 +552,248 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-second slice (2026-11-17)
+
+- **LAN Scanner header no longer disappears.** The Devices tab's shelf asked
+  for unbounded height (header card + table + inspector), so the VStack
+  overflowed and the tool header was clipped off-screen. The shelf now scrolls
+  and its table has a computed height.
+- **One Connections tool.** Open Connections and Process Traffic answer the same
+  question from two sides, so they share one sidebar entry with Sockets / Traffic
+  tabs (`ConnectionsToolView`). `processTraffic` stays routable for deep links but
+  is `showsInSidebar: false` in the registry.
+- **Working sorting in toolkit tables.** macOS 13 has no sortable
+  `TableColumn` (`value:`/comparator initialisers are macOS 14), so tables sort
+  through `TableSortControl` in the card header: LAN Scanner devices, Device
+  Shelf, Connections sockets and Connections traffic expose every meaningful
+  column. The remaining toolkit tables need the same three-line pattern.
+- **MCP straight from the app.** `LanFi.app/Contents/MacOS/LanFi --mcp` serves
+  the protocol on stdio and never starts AppKit, so
+  `claude mcp add lanfi -- /Applications/LanFi.app/Contents/MacOS/LanFi --mcp`
+  works without a separate CLI binary.
+- **Survey scale fix.** The predictive heatmap used a 30 m fallback while the
+  grid and `fittedRect` used 12 m, so predicted coverage was computed at the
+  wrong scale; the view now resolves `planWidthMeters` once for all three.
+
+## Delivered in the twenty-first slice (2026-11-17)
+
+- **P0.5 decoder depth: RSN Override.** Vendor IEs with the Wi-Fi Alliance OUI
+  `50-6F-9A` are now named and decoded: RSNE Override and RSNE Override 2
+  (`0x29`/`0x2A`) reuse the RSNE parser because their payload is the RSNE
+  Information field, so a Wi-Fi 7 compatibility-mode AP is no longer reported as
+  "WPA2-PSK only" with no trace of its SAE/AKM-24 advertisement; Hotspot 2.0
+  (`0x10`) and SAE-PK (`0x1F`) are named instead of "Vendor Specific". The
+  security protocol block gains an "RSN override" fact, so the mode is visible
+  without opening the raw IE list. Tests cover the override payload, the
+  truncated fallback and the named elements.
+- **Gap doc truth pass.** The P1 tool list still showed Security Watch, Roaming
+  Test, Client Analytics, Survey Planning, Active Survey, Combined Report,
+  Shortcuts, Known Networks, Connections and Per-process traffic as unstarted
+  long after they shipped; each is now marked done or partial with the concrete
+  remainder named.
+
+## Delivered in the twentieth slice (2026-11-17)
+
+- **Palette, reviewed and wired.** `AccessibilityPalette` resolves ten roles to
+  five Okabe–Ito hues through one switch and caches the on/off flag, so the
+  table no longer hits `UserDefaults` per cell. The unused
+  `lanfiColorBlindSafe` environment key is gone: the Settings toggle writes the
+  cache and the main window rebuilds on the flag, which is what actually
+  repaints every `AppPalette` leaf without a relaunch.
+- **Snapshot harness and script (D8).** `ToolkitSnapshot` shares one
+  `capture`/`writePNG` path for the survey, map and settings screens instead of
+  three near-identical blocks, and drops the debug flags nothing referenced
+  (`--host`, `--settings`, `--udp`, `--dns-tab`, `--uptime-demo`).
+  `scripts/visual-check.sh` drives the toolkit captures from one
+  `file:tool` table for both themes.
+- **D7 slice.** Reduce motion now guards every animation in the app, and the
+  inspector/protocol surfaces got combined VoiceOver stops and explicit labels.
+- **MCP catalogue docs.** `docs/mcp.md` lists `lanfi_har`,
+  `lanfi_client_analytics`, `lanfi_survey_plan` and `lanfi_open_connections`
+  with their arguments and call examples; the table now matches
+  `MCPToolkit.definitions` exactly.
+
+## Delivered in the nineteenth slice (2026-11-17)
+
+- **Per-network speed-test history (P2).** Every `networkQuality` run records
+  the connected SSID/BSSID through `ThroughputNetworkSampler`, and
+  `SpeedTestHistoryIndex` groups tests by SSID, newest first, with latest,
+  previous, average download/upload and signed deltas. The History tab gains a
+  network picker, a summary card (latest down/up, latency delta, average,
+  bufferbloat grade) and a Network column; tests recorded before this change
+  still decode and stay in the All view as "Not recorded".
+- **Store compatibility.** `ThroughputMeasurement.network` is optional and
+  optional in synthesized `Codable`, so existing `speed-tests.json` files need
+  no migration.
+- 501 app tests green (4 new); lint clean; Debug build passes.
+
+## Delivered in the eighteenth slice (2026-11-17)
+
+- **D5 — toolbar and menu-bar chrome.** `ToolbarIconButton` and the
+  `appToolbarChrome` modifier give the Wi-Fi workspace and the toolkit header
+  one control height, radius, stroke and icon+label rule. The refresh/pause,
+  settings, export, inspector, diagnostics, location and Help controls are
+  migrated; the menu-bar label renders monochrome as a template image.
+- **Sparkline geometry.** The menu-bar sparkline is now drawn from the pure
+  `SparklineGeometry` and the `ChartStyle` sparkline tokens (1.5 pt stroke,
+  shared fill/baseline opacity), covered by 8 geometry tests for empty, flat,
+  single-value, clamped and evenly spaced input.
+- **Icon audit (D5).** Icon-only controls in the chart toolbars, filter bar,
+  spectrum/history zoom, device shelf, remote sensors, uptime, controllers and
+  notification banner gained tooltips and accessibility labels. `ToolkitTone`
+  and `ToolkitStateDot` now use `AppPalette`, so the `Planned` badge follows the
+  colour-blind-safe palette too.
+- **Wi-Fi card selection (P2).** The workspace toolbar shows
+  "Scanning with <interface>" next to the scan controls; `WiFiInterfaceCatalog`
+  resolves the Settings choice or the system default, matching `WiFiScanner`.
+- 497 app tests green; lint clean; Debug build and the visual-check screenshot
+  set pass.
+
+## Delivered in the seventeenth slice (2026-11-17)
+
+- **P0.5 decoder depth.** Extended BSS Load (IE 193) now exposes MU-MIMO STA
+  count, spatial-stream underutilization and secondary 20/40/80 MHz utilization;
+  Multiple BSSID (IE 71) lists non-transmitted profiles and their BSSID index.
+  Covered by synthetic-byte tests.
+- **P0.1 permission reset documentation.** `DISTRIBUTION.md` explains the
+  TCC/code-signing identity link, the `identifiersHidden` diagnostic and the
+  recovery steps, plus the signed-release checklist.
+- 486 app tests green; lint and universal Release build pass.
+
+## Delivered in the sixteenth slice (2026-11-17)
+
+- **P1.6 MCP actions for the new tools.** The CLI catalogue now exposes
+  `lanfi_client_analytics` (per-AP advertised load + insights from the live
+  snapshot/export), `lanfi_survey_plan` (AP layout, radius, spacing, coverage
+  and notes) and `lanfi_open_connections` (read-only lsof rows, listeners,
+  limit, per-process summary). Definitions, handlers and catalogue tests are
+  updated; the CLI target compiles the shared models.
+- **D7 accessibility slice (partial).** Shared `ToolkitStatusPill`,
+  `ToolkitMetric` and `AppTabBar` now expose combined labels/values; Survey's
+  icon-only floor/structure/clear controls and the GPX map have explicit
+  VoiceOver labels and a map value (track points, tagged samples). Full
+  colour-blind palette, Dynamic Type and a hands-on VoiceOver pass remain open.
+- 481 app tests green; CLI target builds; lint clean; universal Release build
+  passes.
+
+## Delivered in the fifteenth slice (2026-11-17)
+
+- **P1.8 Open connections.** `OpenConnectionsParser` reads the fixed `lsof`
+  column layout into process/PID/user/protocol/endpoints/state rows;
+  `OpenConnectionsService` runs `/usr/sbin/lsof -nP -iTCP` read-only (never a
+  shell, never elevated). The Network Tools screen adds filtering, listening
+  sockets, per-process summary and copy. Tested against established, listening,
+  IPv6 and malformed rows.
+- **GPX route drawing.** Survey map now draws a real polyline via an `MKMapView`
+  bridge, with sample markers, current location, bundled demo walk and GPX
+  import/export. Verified visually (`screenshots/survey-map.png`).
+- **Design unification.** Expanded `DesignToken.Spacing` (compact/card/sheet/
+  empty-state) and `Radius` (tiny/badge/control/card/sheet); migrated 61 view
+  files off literal paddings and radii, and table column literals to
+  `AppColumnWidth`. Sheets/tables use `appSheet`, `appSheetHeader`,
+  `appTableSurface` and `ToolkitTableHeight`.
+- **Review fixes.** Planner clamps zero/negative dimensions; GPX map signature
+  covers mid-track changes; location delegate hops to main explicitly; login
+  item status refreshes on appear; test fixture simplified.
+- 479 app tests green; lint clean; universal Release build passes.
+
+## Delivered in the fourteenth slice (2026-11-16)
+
+- **Settings, finished.** General settings moved to card-based sections on the
+  shared spacing tokens: about/version, appearance (theme, live row density,
+  high contrast), startup (login item via `SMAppService`, scan on launch,
+  refresh interval), updates (Sparkle auto-check, last check, release page,
+  Homebrew), menu-bar meter, display/toolbar, data/privacy and help. The old
+  single `Form` implementation was deleted.
+- **P1.3 Client analytics.** `ClientAnalyticsSnapshot` merges beacon client
+  counts with captured client observations (unique MACs, frames, vendor mix,
+  probe SSIDs, average RSSI) and emits insights; the new Wi-Fi tool shows the
+  AP load table and an optional 10 s monitor capture. Tested.
+- **P1.9 GPS map.** `GPXCodec` parses/writes GPX 1.1; samples gained optional
+  latitude/longitude and projects an optional track. The MapKit sheet plots the
+  walk and samples, imports/exports GPX and tags the newest sample with the
+  current location. Tested parsing, round-trip and distance.
+- **P1.4 Survey Planning 2.0 + Active Survey.** `SurveyPlanner` derives a
+  free-space radius from tx power/target and returns a grid AP layout with a
+  coverage estimate; `ActiveSurveyAdvisor` reports required samples, covered
+  cells, gaps, next target and weakest/average RSSI. The Plan sheet applies the
+  layout to the project and tracks the walk-through. Tested.
+- **Reuse.** `appSheet`, `AppSheetHeader`, `AppColumnWidth`, `appTableSurface`
+  and the expanded `DesignToken.Layout` are used by all new screens; LAN Scanner
+  and planning use `AppTabBar`; sheets and table columns no longer invent their
+  own widths.
+- 476 app tests green; lint clean; universal Release build passes.
+
+## Delivered in the thirteenth slice (2026-11-16)
+
+- **One density, live.** `Views/TableStyle.swift` adds an app-wide
+  `appTableDensity()` modifier that reads `LanFi.rowDensity` through
+  `@AppStorage` and injects `appTableDensity`, `defaultMinListRowHeight` and a
+  matching `controlSize`. It is applied at the toolkit root and in Settings, so
+  Compact/Standard/Roomy changes lists, tables and row controls without a
+  relaunch; the AppKit Wi-Fi table already reloads on the same key.
+- **One tab strip.** `Views/AppTabBar.swift` is the shared tab component; the
+  Wi-Fi workspace's bottom strip now builds on its sections/items, replacing the
+  private `TabButton`/`TabGroup` duplicates.
+- **Known Networks master/detail.** Rows are selectable and open a detail pane
+  with saved-name state, live band/channel/width/security/BSSID/signal/quality,
+  or a clear "not in range" explanation, plus the guest QR action. The QR sheet
+  was rebuilt with a fixed 220 pt code, explicit field widths and a 620 pt
+  minimum window so the code and payload no longer clip.
+- **Survey blank plans.** `New Plan…` (toolbar and onboarding) creates an
+  image-less plan from real metre dimensions (`planHeightMeters` added as an
+  optional, backward-compatible field). The canvas draws a labelled metre grid,
+  keeps the correct aspect ratio, and supports the existing wall/room/sample/AP
+  tools; onboarding and the step-by-step hints mention the blank-plan path.
+- **Bars follow their column.** The signal/quality bar width is now derived from
+  the live `NSTableColumn.width` (28–72 pt) and bar cells left-align the number
+  immediately after the bar, removing the gap in wide columns.
+- 467 app tests green; lint clean; universal Release build passes.
+
+## Delivered in the twelfth slice (2026-11-16)
+
+- **P1.1 Security Watch (MVP).** A new Wi-Fi tool evaluates the live scan for
+  twin and downgrade signatures and shows captured deauth bursts:
+  - evil twin: one BSSID of an SSID is open or WEP while another BSSID of the
+    same SSID is WPA2/WPA3 or better, excluding radios the co-location detector
+    proved belong to one chassis;
+  - security downgrade: the same mix with legacy WPA, while routine WPA2/WPA3
+    band mismatches stay quiet;
+  - randomized BSSID: a locally administered address broadcasting an SSID that
+    also appears from registered hardware addresses;
+  - live deauth: `.deauthBurst` monitor events from packet captures within the
+    last 15 minutes, with an "Open Capture" action and an explicit note that
+    macOS gives apps no passive deauth feed.
+- `SecurityWatchEvaluator` is pure and tested; the screen is read-only (no
+  framing, injection or deauthentication) and links a suspect BSSID back to the
+  analyzer selection.
+- 466 app tests green (8 new); lint clean; universal Release build passes.
+
+## Delivered in the eleventh slice (2026-11-16)
+
+- **D4 — one chart language.** `ChartStyle` now reaches every chart surface:
+  the Canvas spectrum takes its grid colour/dash, axis labels, lane dividers,
+  hover cursor line and tooltip surface from the tokens, and the Uptime and Ping
+  latency charts share one Swift Charts `AxisMarks` definition instead of
+  stock axes.
+- **D4 — inspector restructure.** The Link block is pinned above the scrolling
+  inspector sections (it no longer scrolls away) and now includes cipher and
+  BSSID alongside rate, PHY, width, band/channel, streams, noise and the
+  rate min/avg/max summary.
+- **D2 — menu-bar open target.** "Open LanFi" from the menu-bar popover now
+  selects the Wi-Fi workspace on bottom tab 9, so the all-band RF overview is
+  the first surface, without changing stored user layouts.
+- **P0.5 — 6 GHz power mode.** `SixGHzOperationInfo` decodes the HE Operation
+  element's 6 GHz Operation Information (primary channel, width, duplicate
+  beacon, regulatory info, CCFS0/1, minimum rate) and maps regulatory info to
+  LPI / SP / VLP. The inspector's Regulatory section and the raw IE view show it;
+  this is a beacon decode, not a CoreWLAN capability.
+- **P0.5 — RNR.** `ReducedNeighborReport` decodes element 201: TBTT header,
+  operating class, channel, TBTT offset, BSSID, short SSID, BSS parameters,
+  20 MHz PSD and MLD parameters, and `InformationElementParser` lists each
+  neighbour with its band and marks 6 GHz entries.
+- 458 app tests green (8 new); lint clean; universal Release build passes.
 
 ## Delivered in the tenth slice (2026-11-16)
 

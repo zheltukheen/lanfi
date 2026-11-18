@@ -1,3 +1,4 @@
+import LanFiCore
 import Foundation
 import SwiftUI
 
@@ -21,7 +22,7 @@ final class LANScannerToolModel: ObservableObject {
         }
     }
 
-    private static let guardKey = "LanFi.lanGuardEnabled"
+    private static let guardKey = AppSettingsKey.lanGuardEnabled.rawValue
     private let defaults = UserDefaults.standard
     private let guardStore = LANGuardStore()
     private let notifier: any UserNotifying

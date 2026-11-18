@@ -15,6 +15,15 @@ struct NetworkInspectorView: View {
 
             Divider()
 
+            // The Link block stays pinned above the scrolling detail sections so
+            // live rate/signal is always visible while editing notes or specs.
+            if viewModel.selectedNetworkIds.count == 1, let pinned = viewModel.selectedNetwork {
+                LinkInspectorSection(network: pinned)
+                    .padding(.horizontal, DesignToken.Spacing.medium)
+                    .padding(.vertical, DesignToken.Spacing.small)
+                Divider()
+            }
+
             ScrollView {
                 if viewModel.selectedNetworkIds.count > 1 {
                     MultiSelectionInspector(viewModel: viewModel)
@@ -34,7 +43,7 @@ struct NetworkInspectorView: View {
                                 HStack {
                                     Text(network.bssid.isEmpty ? "-" : network.bssid)
                                         .font(.caption).monospaced()
-                                        .padding(4)
+                                        .padding(DesignToken.Spacing.tight)
                                         .background(Color.gray.opacity(0.1))
                                         .cornerRadius(4)
                                         .textSelection(.enabled)
@@ -55,8 +64,6 @@ struct NetworkInspectorView: View {
                         }
 
                         Divider()
-
-                        LinkInspectorSection(network: network)
 
                         // Quality, issues, history and utilization
                         if let metrics = viewModel.metrics(for: network) {
@@ -131,7 +138,7 @@ struct NetworkInspectorView: View {
                                 .frame(minHeight: 44, maxHeight: 70)
                                 .scrollContentBackground(.hidden)
                                 .background(Color.secondary.opacity(0.06))
-                                .clipShape(RoundedRectangle(cornerRadius: 5))
+                                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
 
                                 HStack(spacing: 8) {
                                     Text("Row color").font(.caption)
@@ -165,8 +172,8 @@ struct NetworkInspectorView: View {
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 8)
+                            .padding(.vertical, DesignToken.Spacing.tight)
+                            .padding(.horizontal, DesignToken.Spacing.small)
                         }
 
                         // Specs
@@ -201,8 +208,8 @@ struct NetworkInspectorView: View {
                                 // Безопасное разворачивание
                                 DetailRow(label: "Streams", value: network.streams.map { "\($0)" } ?? "-")
                             }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 10)
+                            .padding(.vertical, DesignToken.Spacing.small)
+                            .padding(.horizontal, DesignToken.Spacing.compact)
                         }
 
                         // Security
@@ -225,8 +232,8 @@ struct NetworkInspectorView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 10)
+                            .padding(.vertical, DesignToken.Spacing.small)
+                            .padding(.horizontal, DesignToken.Spacing.compact)
                         }
 
                         // Timestamps
@@ -239,8 +246,8 @@ struct NetworkInspectorView: View {
                                 DetailRow(label: "Last Seen", value: formatDate(network.lastSeen))
                                 DetailRow(label: "Seen Ago", value: "\(network.seen) sec")
                             }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 10)
+                            .padding(.vertical, DesignToken.Spacing.small)
+                            .padding(.horizontal, DesignToken.Spacing.compact)
                         }
 
                     }

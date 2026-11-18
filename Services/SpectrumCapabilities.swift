@@ -1,10 +1,11 @@
+import LanFiCore
 import CoreWLAN
 import Foundation
 
 enum SpectrumCapabilities {
     static func current() -> [SupportedChannel] {
         let client = CWWiFiClient.shared()
-        let preferred = UserDefaults.standard.string(forKey: "LanFi.wifiInterface")
+        let preferred = UserDefaults.standard.string(forKey: AppSettingsKey.wifiInterface.rawValue)
         let interface = preferred.flatMap { client.interface(withName: $0) } ?? client.interface()
         let channels = interface?.supportedWLANChannels() ?? []
         let supported = channels.compactMap { channel -> SupportedChannel? in

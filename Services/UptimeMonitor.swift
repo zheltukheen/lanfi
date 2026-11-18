@@ -346,6 +346,20 @@ final class UptimeMonitor: ObservableObject {
         }
     }
 
+    #if DEBUG
+        /// Snapshot harness only: replaces the live state in memory without
+        /// touching the uptime store, so screenshots are deterministic.
+        func loadDemoSnapshot() {
+            loopTask?.cancel()
+            loopTask = nil
+            let demo = DemoData.uptimeSnapshot()
+            targets = demo.targets
+            checks = demo.checks
+            isChecking = false
+            errorMessage = nil
+        }
+    #endif
+
     private func save() {
         store.save(UptimeStoreSnapshot(targets: targets, checks: checks))
     }

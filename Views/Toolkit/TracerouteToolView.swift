@@ -4,6 +4,41 @@ import SwiftUI
 struct TracerouteToolView: View {
     @ObservedObject var model: TracerouteToolModel
 
+    private enum SortKey: String, CaseIterable, Identifiable {
+        case hop, address, name, latency, status
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .hop: return String(localized: "Hop")
+            case .address: return String(localized: "Address")
+            case .name: return String(localized: "Name")
+            case .latency: return String(localized: "Latency")
+            case .status: return String(localized: "Status")
+            }
+        }
+    }
+
+    @State private var sortKey: SortKey = .hop
+    @State private var sortAscending = true
+
+    private func sortedHops(_ hops: [TracerouteHop]) -> [TracerouteHop] {
+        let ordered = hops.sorted { lhs, rhs in
+            switch sortKey {
+            case .hop: return lhs.ttl < rhs.ttl
+            case .address:
+                return (lhs.address ?? "").localizedStandardCompare(rhs.address ?? "")
+                    == .orderedAscending
+            case .name:
+                return (lhs.hostname ?? "").localizedStandardCompare(rhs.hostname ?? "")
+                    == .orderedAscending
+            case .latency:
+                return (lhs.averageMilliseconds ?? .infinity) < (rhs.averageMilliseconds ?? .infinity)
+            case .status: return (lhs.timedOut ? 1 : 0) < (rhs.timedOut ? 1 : 0)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -23,7 +58,7 @@ struct TracerouteToolView: View {
                     )
                 }
             }
-            .padding(18)
+            .appContentPadding()
         }
     }
 
@@ -114,16 +149,19 @@ struct TracerouteToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Route")
+                    TableSortControl(
+                        options: SortKey.allCases.map { ($0, $0.title) },
+                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(report.startedAt.formatted(date: .omitted, time: .standard))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-                .padding(.bottom, 6)
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(report.hops) {
+                Table(sortedHops(report.hops)) {
                     TableColumn("Hop") { hop in
                         Text("\(hop.ttl)")
                             .font(.caption.monospacedDigit())
@@ -143,13 +181,13 @@ struct TracerouteToolView: View {
                         Text(ToolkitFormat.milliseconds(hop.averageMilliseconds))
                             .font(.caption.monospacedDigit())
                     }
-                    .width(100)
+                    .width(AppColumnWidth.compact)
                     TableColumn("Status") { hop in
                         Text(hop.timedOut ? String(localized: "No reply") : String(localized: "Reply"))
                             .font(.caption)
                             .foregroundColor(hop.timedOut ? .orange : .secondary)
                     }
-                    .width(90)
+                    .width(AppColumnWidth.compact)
                 }
                 .frame(
                     height: ToolkitTableHeight.rows(

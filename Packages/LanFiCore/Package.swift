@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -10,7 +10,11 @@ let package = Package(
         .library(name: "LanFiCore", targets: ["LanFiCore"])
     ],
     targets: [
-        .target(name: "LanFiCore"),
-        .testTarget(name: "LanFiCoreTests", dependencies: ["LanFiCore"]),
+        .target(name: "LanFiCore", swiftSettings: [.swiftLanguageMode(.v6)]),
+        .testTarget(
+            name: "LanFiCoreTests",
+            dependencies: ["LanFiCore"],
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
     ]
 )

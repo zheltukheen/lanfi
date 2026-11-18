@@ -24,6 +24,7 @@ xcodebuild test \
 
 ./scripts/lint.sh
 ./scripts/format.sh
+./scripts/visual-check.sh      # seeded snapshots: screenshots/, docs/images/, site/assets/
 ```
 
 Outputs:
@@ -39,6 +40,13 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   `AppUIState`, main `WindowGroup(id: "main")`, `MenuBarExtra`, app commands.
 - `Models/NetworkModel.swift` — immutable `NetworkModel` and `InformationElement`
   value types plus `WiFiBand`/`WiFiStandard` enums and display helpers.
+- `Models/ScanModePlan.swift` — P0.2 scan modes (`active`, `passive`,
+  `directed`), the hardware capability rules (including the Apple N1 channel-
+  hopping limit), the PSC/RNR-aware 6 GHz channel planner and progress values.
+  `Services/ScanHardwareProbe.swift` fills the profile from `sysctl` and
+  CoreWLAN; `Services/PassiveScanEngine.swift` runs the monitor capture, hops
+  channels and maps beacons; `Views/WiFiWorkspace/PassiveScanSheet.swift` is the
+  mode picker and plan/progress sheet.
 - `Services/WiFiScanner.swift` — `actor WiFiScanner`; performs CoreWLAN scans
   off the main thread and builds `NetworkModel` values (security, band, width,
   rates, channel utilization, parsed IE fields).
@@ -80,6 +88,17 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Models/CombinedReport.swift` / `Services/CombinedReportExporter.swift` — the
   pure combined-report value and its self-contained HTML renderer; exported
   from the Data menu.
+- `Models/SixGHzOperationInfo.swift` — decodes the HE Operation element's 6 GHz
+  Operation Information (primary channel, width, duplicate beacon, regulatory
+  info → LPI/SP/VLP, CCFS0/1, minimum rate). CoreWLAN does not expose the power
+  mode, so this is the beacon source used by the inspector.
+- `Models/ReducedNeighborReport.swift` — decoder for element 201 (TBTT header,
+  operating class, channel, offset, BSSID, short SSID, BSS parameters, 20 MHz
+  PSD, MLD parameters).
+- `Models/SecurityWatch.swift` — read-only Security Watch heuristics: evil twin
+  and downgrade checks inside one SSID, randomized-BSSID detection and recent
+  captured deauth bursts. Pure `SecurityWatchEvaluator`; the screen is
+  `Views/Toolkit/SecurityWatchToolView.swift`. It never frames or injects.
 - `Services/LanFiIntents.swift` — App Intents (scan, connected network, speed
   test) and Shortcut phrases.
 - `Services/NetworkAnalyzer.swift` — pure scoring/analysis:
@@ -115,6 +134,35 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   overview: pure MHz geometry (spans, overlap regions, recommended-channel
   marker) tested in `Tests/RFOverviewLayoutTests.swift`, drawn as three band
   panels with click-to-select.
+- `Views/AppTabBar.swift` — the shared tab strip (sections + items + selection)
+  used by the Wi-Fi workspace's bottom tabs, LAN Scanner and survey planning.
+- `Views/AppLayout.swift` — `appSheet`, `AppSheetHeader`, `AppColumnWidth` and
+  `appTableSurface`: the shared sheet chrome, table column widths and table
+  surface. New screens use these instead of local widths and paddings.
+  `DesignToken.Spacing`/`Radius` cover all common insets and corners; see
+  `docs/VISUAL_CHECK_2026-11.md` for the captured screens.
+- `Views/HelpView.swift` — task-oriented Help window: six topics, each with one
+  bundled screenshot (`Resources/help-*.png`) and steps, plus search. The RF
+  overview (`Views/RFOverviewView.swift`) carries the chart's "What is this?"
+  popover explaining bars, overlap shading and the recommended channel.
+- `Views/GeneralSettingsPage.swift` — card-based General settings (appearance,
+  startup/login item, Sparkle updates, menu bar, display, data, help).
+- `Services/LaunchAtLoginController.swift` — `SMAppService` login item state.
+- `Models/ClientAnalytics.swift` / `Views/Toolkit/ClientAnalyticsToolView.swift`
+  — P1.3: advertised per-AP client counts plus optional captured client frames,
+  vendor/probe mix and plain-language insights.
+- `Models/SurveyGeo.swift` / `Services/CurrentLocationProvider.swift` /
+  `Views/SurveyMapView.swift` — P1.9: GPX import/export, optional per-sample
+  latitude/longitude, MapKit plotting and current-location tagging.
+- `Models/OpenConnections.swift` / `Views/Toolkit/OpenConnectionsToolView.swift`
+  — P1.8: parsed read-only `lsof` TCP inventory (process, PID, endpoints,
+  state), filtering and per-process summary.
+- `Models/SurveyPlanning.swift` / `Views/SurveyPlanningView.swift` — P1.4:
+  free-space AP layout planning, coverage estimate and active-survey gap/next-
+  target tracking.
+- `Views/TableStyle.swift` — `appTableDensity()`: reads `LanFi.rowDensity` live
+  and injects `appTableDensity`, `defaultMinListRowHeight` and `controlSize` so
+  lists/tables follow Settings without a relaunch.
 - `Views/DesignSystem.swift` — `DesignToken` (spacing/radius/stroke),
   `AppPalette` (semantic and band colours) and the shared `AppCard`,
   `SectionLabel`, `StatusPill`, `StatTile` and `BandChip`. New screens use
@@ -137,7 +185,8 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   grouped custom sidebar, per-tool screens and the full Wi-Fi analyzer
   workspace.
 - `CLI/MCPProtocol.swift`, `CLI/MCPToolkit.swift` — transport-free MCP
-  JSON-RPC handler and the full tool catalogue (scan analysis plus ping,
+  JSON-RPC handler and the full tool catalogue (scan analysis, client
+  analytics, survey planning and open connections plus ping,
   traceroute, MTR, port scan, path check, DNS, propagation, WHOIS, GeoIP, TLS,
   subnet, interfaces, routes, LAN scan, iperf3, speed test, uptime,
   diagnostics, and spectrum CSV analysis). Unit tested in
@@ -170,12 +219,20 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 
 ## Persistence keys
 
+Every key below is a case of `AppSettingsKey` (`Packages/LanFiCore`); never
+spell a `LanFi.*` string at a call site. `AppSettings` is the canonical typed
+model and `AppSettingsStore` writes the legacy keys as mirrors, so an
+`@AppStorage` reader stays live. A save first re-reads the keys an older screen
+still writes directly (monitor, capture, survey, reports, alerts, MCP, layout),
+so those values cannot be rolled back; `importData` overwrites them on purpose.
+
 - `WifiColumns_v4` — JSON `[ColumnDefinition]` (order/width/visibility/title).
 - `LanFi.tabLayoutVersion` — one-time migration to the Insights-first tab layout.
 - `RefreshIntervalSeconds` — scan interval.
 - `LanFi.filterBand24|filterBand5|filterBand6` — band filters.
 - `LanFi.minSignal`, `LanFi.removeAfter` — signal threshold and expiry.
 - `LanFi.signalUnit`, `LanFi.highlightConnected` — display options.
+- `LanFi.scan.dwellMilliseconds` — last passive/directed dwell per channel.
 - `LanFi.menuBar.metric|style|unit` — menu-bar meter metric, label style and
   throughput unit (mirrored from `AppSettings.menuBar`).
 - `LanFi.historyChart.mode` — signal / noise / both for the history chart.
@@ -220,7 +277,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - Annotations are stored per network id (BSSID when available) and saved with a
   0.5 s debounce.
 - Surveys copy the floor plan into a per-project directory and store normalized
-  sample coordinates, so window resizing does not move points.
+  sample coordinates, so window resizing does not move points. Samples may also
+  carry optional GPS coordinates, and the project stores an optional GPX track.
+- Survey Planning is pure (`SurveyPlanner`, `ActiveSurveyAdvisor`): free-space
+  radius from tx power/target RSSI, grid AP placement, coverage estimate and a
+  sample-gap grid with the next target location.
 
 ## Vendor database
 
@@ -270,6 +331,24 @@ CoreWLAN), so tests run headless. Add pure-logic tests for scoring, overlap,
 recommendations, parsing and export DTOs. Avoid UI tests that require Location
 permission. Toolkit tests cover DNS wire parsing, MTR aggregation, uptime
 transitions/stores, LAN ARP/subnet/guard logic, speed history and iperf3 JSON.
+
+## Settings and dependencies
+
+`Packages/LanFiCore` holds the typed settings layer and builds in the Swift 6
+language mode:
+
+- `AppSettings` — Codable sections (appearance, scan, alerts, monitor, capture,
+  survey, reports, MCP, automation, display, interface, layout). New sections
+decode with defaults, so an older settings file still loads.
+- `AppSettingsKey` — the one catalogue of persisted keys.
+- `AppSettingsStore` — load/migrate/save/export/import, legacy mirrors, and
+  injected `Clock`, `SettingsStorage`, `NotificationPosting` and `FileStoring`.
+- `Dependencies.swift` — `Clock`/`SystemClock`/`FixedClock`, the storage and
+  notification protocols, and `FileStore`.
+
+The app uses the same seam style: `WiFiScanning` is injected into
+`AnalyzerViewModel`, and `MonitorViewModel` takes a `Clock` and any
+`MonitorNotifying`; `UserNotifying` already covered LAN guard notifications.
 
 ## Automation and release
 

@@ -2,6 +2,7 @@
 //  MainTableView.swift
 //
 
+import LanFiCore
 import SwiftUI
 import AppKit
 
@@ -19,10 +20,11 @@ struct MainTableView: View {
     @State private var showingHardwareSpectrum = false
     @State private var showingOfflineCapture = false
     @State private var showingRemoteSensors = false
+    @State private var showingScanModes = false
 
     // Resizable panels — widths and heights survive relaunch.
-    @AppStorage("LanFi.inspectorWidth") private var storedInspectorWidth: Double = 300
-    @AppStorage("LanFi.bottomPanelHeight") private var storedBottomPanelHeight: Double = 460
+    @AppStorage(AppSettingsKey.inspectorWidth.rawValue) private var storedInspectorWidth: Double = 300
+    @AppStorage(AppSettingsKey.bottomPanelHeight.rawValue) private var storedBottomPanelHeight: Double = 460
     @State private var inspectorDragOffset: CGFloat = 0
     @State private var bottomPanelDragOffset: CGFloat = 0
 
@@ -54,10 +56,12 @@ struct MainTableView: View {
             // 1. TOP ROW: toolbar, then the filter bar that replaced the sidebar
             ToolbarView(
                 viewModel: viewModel,
+                passiveScan: viewModel.passiveScan,
                 showInspector: $uiState.showInspector,
                 customIntervalText: $uiState.customIntervalText,
                 showingCustomIntervalAlert: $uiState.showingCustomIntervalAlert,
-                selectedBottomTab: $uiState.selectedBottomTab
+                selectedBottomTab: $uiState.selectedBottomTab,
+                showingScanModes: $showingScanModes
             )
             FilterBarView(viewModel: viewModel)
 
@@ -87,8 +91,8 @@ struct MainTableView: View {
                                     Spacer()
                                 }
                                 .font(.caption)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
+                                .padding(.horizontal, DesignToken.Spacing.compact)
+                                .padding(.vertical, DesignToken.Spacing.tight)
                                 .background(Color.orange.opacity(0.10))
                             }
 
@@ -239,6 +243,9 @@ struct MainTableView: View {
         .sheet(isPresented: $showingRemoteSensors) {
             RemoteSensorsView()
         }
+        .sheet(isPresented: $showingScanModes) {
+            PassiveScanSheet(scan: viewModel.passiveScan)
+        }
         .transaction { transaction in
             if isResizingPanels {
                 transaction.disablesAnimations = true
@@ -256,6 +263,7 @@ struct MainTableView: View {
             case "spectrum": showingHardwareSpectrum = true
             case "analyze": showingOfflineCapture = true
             case "sensors": showingRemoteSensors = true
+            case "scanModes": showingScanModes = true
             default: break
             }
         }

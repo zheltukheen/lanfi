@@ -257,6 +257,14 @@ struct InformationElementParser {
             }
             return ElementDetails(
                 name: "RSNE", summary: "Raw: \(rawHex)", detailLines: ["Raw: \(rawHex)"], rawHex: rawHex)
+        case 71:
+            let mbssid = decodeMultipleBssid(payload)
+            return ElementDetails(
+                name: "Multiple BSSID",
+                summary: mbssid.summary,
+                detailLines: mbssid.detailLines,
+                rawHex: rawHex
+            )
         case 70:
             let summary = decodeRmCapabilities(payload)
             return ElementDetails(
@@ -287,6 +295,26 @@ struct InformationElementParser {
                 name: "Extended Capabilities",
                 summary: summary,
                 detailLines: ["Extended Capabilities: \(summary)"],
+                rawHex: rawHex
+            )
+        case 201:
+            let neighbors = ReducedNeighborReport.parse(payload)
+            let sixGHz = neighbors.filter(\.isSixGHz)
+            let summary =
+                neighbors.isEmpty
+                ? "Reduced Neighbor Report"
+                : "\(neighbors.count) neighbour\(neighbors.count == 1 ? "" : "s")"
+                    + (sixGHz.isEmpty ? "" : " · \(sixGHz.count) on 6 GHz")
+            var lines = neighbors.map { "\($0.bandLabel) · \($0.summary)" }
+            if lines.isEmpty { lines = ["Raw: \(rawHex)"] }
+            return ElementDetails(
+                name: "Reduced Neighbor Report", summary: summary, detailLines: lines, rawHex: rawHex)
+        case 193:
+            let extendedLoad = decodeExtendedBssLoad(payload)
+            return ElementDetails(
+                name: "Extended BSS Load",
+                summary: extendedLoad.summary,
+                detailLines: extendedLoad.detailLines,
                 rawHex: rawHex
             )
         case 191:
@@ -737,11 +765,18 @@ struct InformationElementParser {
 
     private static func decodeHeOperation(_ data: Data) -> (summary: String, detailLines: [String]) {
         guard data.count >= 1 else { return (summary: "HE Operation", detailLines: ["HE Operation"]) }
-        let color = data[0] & 0x3F
-        let disabled = (data[0] & 0x40) != 0
+        // HE Operation Parameters is three octets; BSS Color Info follows it.
+        let colorByte = data.count >= 4 ? data[3] : data[0]
+        let color = colorByte & 0x3F
+        let disabled = (colorByte & 0x40) != 0
         var summary = "BSS Color: \(color)"
         if disabled { summary += " (Disabled)" }
-        let details = [summary, "Raw: \(hexString(data))"]
+        var details = [summary]
+        if let sixGHz = SixGHzOperationInfo.parse(heOperationPayload: data) {
+            summary += " · 6 GHz \(sixGHz.powerMode.shortLabel)"
+            details.append(contentsOf: sixGHz.detailLines)
+        }
+        details.append("Raw: \(hexString(data))")
         return (summary: summary, detailLines: details)
     }
 
@@ -797,6 +832,52 @@ struct InformationElementParser {
             if type == 4 {
                 let wps = decodeWpsAttributes(Data(data.dropFirst(4)))
                 return (name: vendorName, summary: wps.summary, detailLines: wps.detailLines)
+            }
+        }
+
+        // Wi-Fi Alliance OUI. WPA3 v3.5 §14.4 encodes the RSNE Override
+        // elements as vendor IEs whose payload after the OUI type is the RSNE
+        // Information field, so the RSNE decoder applies unchanged.
+        if oui == [0x50, 0x6F, 0x9A], data.count >= 4 {
+            let type = data[3]
+            let body = Data(data.dropFirst(4))
+            switch type {
+            case 0x10:
+                return (
+                    name: "Hotspot 2.0",
+                    summary: "Passpoint / Hotspot 2.0 element",
+                    detailLines: [
+                        "Passpoint (Hotspot 2.0) vendor element",
+                        "Payload: \(body.count) bytes",
+                    ]
+                )
+            case 0x1F:
+                return (
+                    name: "SAE-PK",
+                    summary: "SAE Public Key",
+                    detailLines: [
+                        "SAE-PK element",
+                        "Encrypted modifier: \(body.count) bytes",
+                    ]
+                )
+            case 0x29, 0x2A:
+                let label = type == 0x29 ? "RSNE Override" : "RSNE Override 2"
+                guard let rsn = parseRsn(body) else {
+                    let raw = hexString(body)
+                    return (name: label, summary: "Raw: \(raw)", detailLines: ["Raw: \(raw)"])
+                }
+                var lines: [String] = [
+                    "Group Cipher: \(rsn.groupCipher)",
+                    "Pairwise Cipher(s): \(rsn.pairwise.isEmpty ? "-" : rsn.pairwise.joined(separator: ", "))",
+                    "AKM Suite(s): \(rsn.akms.isEmpty ? "-" : rsn.akms.joined(separator: ", "))",
+                ]
+                if !rsn.capabilities.isEmpty {
+                    lines.append("RSN Capabilities: \(rsn.capabilities.joined(separator: ", "))")
+                }
+                lines.append("Overrides the RSNE cipher/AKM lists for capable clients")
+                return (name: label, summary: rsn.summary, detailLines: lines)
+            default:
+                break
             }
         }
 
@@ -927,6 +1008,78 @@ struct InformationElementParser {
         let isAccessPoint = (category == 6 && subCategory == 1)
         let label = "\(categoryLabel) (Subcategory \(subCategory))"
         return (label, isAccessPoint)
+    }
+
+    private static func decodeMultipleBssid(_ data: Data) -> (summary: String, detailLines: [String]) {
+        guard let first = data.first else {
+            return ("Multiple BSSID (empty)", ["Raw: \(hexString(data))"])
+        }
+        let indicator = min(Int(first), 8)
+        let capacity = 1 << indicator
+        var offset = 1
+        var profileIndices: [Int] = []
+        while offset + 2 <= data.count {
+            let subelementID = Int(data[offset])
+            let length = Int(data[offset + 1])
+            offset += 2
+            guard offset + length <= data.count else { break }
+            let payload = data.subdata(in: offset..<(offset + length))
+            if subelementID == 0 {
+                profileIndices.append(bssidIndex(in: payload) ?? profileIndices.count + 1)
+            }
+            offset += length
+        }
+
+        var lines = [
+            "Max BSSID Indicator: \(indicator) (up to \(capacity) BSSIDs)",
+            "Non-transmitted profiles: \(profileIndices.count)",
+        ]
+        lines += profileIndices.enumerated().map { position, index in
+            "Profile \(position + 1) · BSSID index \(index)"
+        }
+        if profileIndices.isEmpty { lines.append("Raw: \(hexString(data))") }
+        let summary =
+            "Up to \(capacity) BSSIDs"
+            + (profileIndices.isEmpty
+                ? "" : " · \(profileIndices.count) profile\(profileIndices.count == 1 ? "" : "s")")
+        return (summary, lines)
+    }
+
+    /// Element 85 inside a non-transmitted profile carries the BSSID index.
+    private static func bssidIndex(in profile: Data) -> Int? {
+        var offset = 0
+        while offset + 2 <= profile.count {
+            let elementID = Int(profile[offset])
+            let length = Int(profile[offset + 1])
+            offset += 2
+            guard offset + length <= profile.count else { return nil }
+            if elementID == 85, length >= 1 {
+                return Int(profile[offset])
+            }
+            offset += length
+        }
+        return nil
+    }
+
+    private static func decodeExtendedBssLoad(_ data: Data) -> (summary: String, detailLines: [String]) {
+        guard data.count >= 6 else {
+            return ("Extended BSS Load (truncated)", ["Raw: \(hexString(data))"])
+        }
+        let muMimoStations = Int(UInt16(data[0]) | (UInt16(data[1]) << 8))
+        func percent(_ byte: UInt8) -> Int { Int((Double(byte) * 100.0 / 255.0).rounded()) }
+        let underutilization = percent(data[2])
+        let secondary20 = percent(data[3])
+        let secondary40 = percent(data[4])
+        let secondary80 = percent(data[5])
+        let summary = "\(muMimoStations) MU-MIMO STAs · \(underutilization)% stream underutilization"
+        let lines = [
+            "MU-MIMO capable STAs: \(muMimoStations)",
+            "Spatial stream underutilization: \(underutilization)%",
+            "Secondary 20 MHz utilization: \(secondary20)%",
+            "Secondary 40 MHz utilization: \(secondary40)%",
+            "Secondary 80 MHz utilization: \(secondary80)%",
+        ]
+        return (summary, lines)
     }
 
     private static func parseBssLoad(_ data: Data) -> (stationCount: Int?, channelUtilization: Int?) {
@@ -1062,6 +1215,8 @@ struct InformationElementParser {
     private static func defaultElementName(for id: Int) -> String {
         switch id {
         case 11: return "BSS Load"
+        case 71: return "Multiple BSSID"
+        case 193: return "Extended BSS Load"
         case 50: return "Extended Supported Rates"
         case 42: return "ERP"
         default: return "Element \(id)"
