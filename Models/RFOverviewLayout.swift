@@ -169,14 +169,19 @@ struct RFOverviewLayout: Equatable {
         }
 
         let hotRegions = buildHotRegions(spans)
-        let marker = recommendation.flatMap { marker(for: $0, band: band, domain: domain) }
+        let recommendedMarker: Marker?
+        if let recommendation {
+            recommendedMarker = Self.marker(for: recommendation, band: band, domain: domain)
+        } else {
+            recommendedMarker = nil
+        }
 
         return RFOverviewLayout(
             band: band,
             domainMHz: domain,
             spans: spans,
             hotRegions: hotRegions,
-            marker: marker,
+            marker: recommendedMarker,
             networkCount: spans.count,
             strongestSignal: spans.map(\.signal).max(),
             maxDepth: hotRegions.map(\.depth).max() ?? (spans.isEmpty ? 0 : 1)
