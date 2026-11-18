@@ -39,6 +39,11 @@ targets:
       - CLI/MCPProtocol.swift
       - CLI/MCPServer.swift
       - CLI/MCPToolkit.swift
+      - CLI/MCPToolkit+Arguments.swift
+      - CLI/MCPToolkit+Encoding.swift
+      - CLI/MCPToolkit+Probes.swift
+      - CLI/MCPToolkit+Scan.swift
+      - CLI/MCPToolkit+ServiceTools.swift
       - CLI/ScanExport.swift
       - path: Resources
         buildPhase: resources
@@ -115,6 +120,8 @@ targets:
       - path: Models/MonitorModels.swift
       - path: Models/MonitorAlertSettings.swift
       - path: Models/ToolDescriptor.swift
+      - path: Models/ToolRouting.swift
+      - path: Models/MCPToolSpec.swift
       - path: Models/ScanCadence.swift
       - path: Services/MonitorStore.swift
       - path: Models/ColumnCatalog.swift
@@ -252,6 +259,11 @@ targets:
       - path: Utils/MCPPaths.swift
       - path: CLI/ScanExport.swift
       - path: CLI/MCPToolkit.swift
+      - path: CLI/MCPToolkit+Arguments.swift
+      - path: CLI/MCPToolkit+Encoding.swift
+      - path: CLI/MCPToolkit+Probes.swift
+      - path: CLI/MCPToolkit+Scan.swift
+      - path: CLI/MCPToolkit+ServiceTools.swift
       - path: CLI/MCPProtocol.swift
       - path: Services/Toolkit/LANScannerService.swift
       - path: Services/Toolkit/BonjourDiscovery.swift
@@ -274,6 +286,7 @@ targets:
       - Utils/MCPPaths.swift
       - Utils/OUIParser.swift
       - Models/NetworkModel.swift
+      - Models/MCPToolSpec.swift
       - Models/ToolkitModels.swift
       - Models/SubnetCalculator.swift
       - Models/SpectrumSweep.swift
@@ -316,6 +329,7 @@ targets:
       - Services/PcapPacketIndex.swift
       - Models/ClientAnalytics.swift
       - Models/OpenConnections.swift
+      - Models/ProcessTraffic.swift
       - Models/ConnectionRules.swift
       - Models/Survey.swift
       - Models/SurveyGeo.swift

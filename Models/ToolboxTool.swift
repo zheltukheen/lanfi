@@ -68,4 +68,10 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     /// False for screens that are a tab of a host tool (see `ToolDescriptor`).
     var showsInSidebar: Bool { ToolRegistry.descriptor(for: self).showsInSidebar }
+
+    /// The view route this tool draws (shared by tabbed tools).
+    var screen: ToolScreen { ToolRegistry.descriptor(for: self).screen }
+
+    /// MCP specs this tool's area exposes.
+    var mcpTools: [String] { ToolRegistry.descriptor(for: self).mcpTools }
 }

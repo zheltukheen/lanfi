@@ -106,10 +106,13 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   - spectral-overlap fractions from primary channel + width;
   - ranked channel recommendations for 2.4/5/6 GHz (20/80 MHz candidates, DFS);
   - security findings (open/WEP/legacy WPA/WPS/PMF) and performance issues.
-- `ViewModels/AnalyzerViewModel.swift` — `@MainActor` state: scan timer, merge
-  and expiry, filtering/sorting, preferences, CSV/JSON export. Column metadata
-  lives in `Models/ColumnCatalog.swift`; formatting is delegated to
-  `NetworkColumnFormatter`.
+- `ViewModels/AnalyzerViewModel.swift` — `@MainActor` dependencies, published
+  state, initialisation and small helpers; behaviour lives in the
+  `ViewModels/Analyzer/AnalyzerViewModel+*.swift` extensions (scanning,
+  filtering, workspace queries, sessions, export, persistence). Scan timer,
+  merge/expiry, preferences and CSV/JSON export stay inside those extensions.
+  Column metadata lives in `Models/ColumnCatalog.swift`; formatting is
+  delegated to `NetworkColumnFormatter`.
 - `ViewModels/AppUIState.swift` — sidebar/inspector/bottom-tab state.
 - `Views/WiFiTableView.swift` — `NSViewRepresentable` around `NSTableView`,
   column diff/reorder/resize persistence, context menus, selection sync.
@@ -185,12 +188,19 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   grouped custom sidebar, per-tool screens and the full Wi-Fi analyzer
   workspace.
 - `CLI/MCPProtocol.swift`, `CLI/MCPToolkit.swift` — transport-free MCP
-  JSON-RPC handler and the full tool catalogue (scan analysis, client
-  analytics, survey planning and open connections plus ping,
-  traceroute, MTR, port scan, path check, DNS, propagation, WHOIS, GeoIP, TLS,
-  subnet, interfaces, routes, LAN scan, iperf3, speed test, uptime,
-  diagnostics, and spectrum CSV analysis). Unit tested in
-  `Tests/MCPProtocolTests.swift`.
+  JSON-RPC handler and the handler catalogue (scan analysis, client analytics,
+  survey planning and open connections plus ping, traceroute, MTR, port scan,
+  path check, DNS, propagation, WHOIS, GeoIP, TLS, subnet, interfaces, routes,
+  LAN scan, iperf3, speed test, uptime, diagnostics, and spectrum CSV analysis).
+  The handler lives in 73 lines; `CLI/MCPToolkit+{Scan,Probes,ServiceTools,
+  Arguments,Encoding}.swift` hold the implementations. The advertised specs are
+  `MCPToolRegistry` in `Models/MCPToolSpec.swift`, shared with the app and tests.
+  Unit tested in `Tests/MCPProtocolTests.swift` and `Tests/ToolRoutingTests.swift`.
+- `Models/ToolDescriptor.swift`, `Models/ToolRouting.swift` — the tool registry.
+  A descriptor carries title/icon/section, `screen: ToolScreen` (the view
+  route, shared by tabbed tools such as Sockets/Traffic) and `mcpTools` (the
+  `MCPToolRegistry` names the screen exposes). Add a tool by adding one
+  descriptor and one view case.
 - `Models/DeviceShelfModels.swift`, `Services/DeviceShelfStore.swift`,
   `ViewModels/DeviceShelfViewModel.swift`, `Views/Toolkit/DeviceShelfView.swift`
   — the Device Shelf tab of the LAN Scanner: a persistent inventory (alias,
