@@ -70,6 +70,9 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/TrafficAccounting.swift` / `Services/TrafficAccountingService.swift` —
+  P2: `TrafficLedger` (per-day, per-interface volume, day keys in the user's
+  calendar) and the minute poll that writes `traffic-accounting.json`.
 - `Models/LinkAutomation.swift` / `Services/LinkAutomationService.swift` —
   P3.8: the edge-triggered Wi-Fi/Ethernet policy, hardware-port parsing and the
   poller that writes `networksetup -setairportpower` (off by default).

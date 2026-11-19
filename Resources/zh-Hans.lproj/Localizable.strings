@@ -1465,3 +1465,12 @@
 "System default interface" = "系统默认接口";
 "Sortable table" = "可排序表格";
 "Sort by %@" = "按 %@ 排序";
+
+/* Traffic accounting */
+"Data usage" = "流量使用";
+"Today" = "今天";
+"Last 7 days" = "最近 7 天";
+"This month" = "本月";
+"Total" = "总计";
+"Reset" = "重置";
+"Counted from the interface byte counters once a minute; the ledger stays on this Mac." = "每分钟按接口字节计数器计算；记录只保存在这台 Mac 上。";

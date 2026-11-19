@@ -1465,3 +1465,12 @@
 "System default interface" = "Interface système par défaut";
 "Sortable table" = "Tableau triable";
 "Sort by %@" = "Trier par %@";
+
+/* Traffic accounting */
+"Data usage" = "Données utilisées";
+"Today" = "Aujourd'hui";
+"Last 7 days" = "7 derniers jours";
+"This month" = "Ce mois-ci";
+"Total" = "Total";
+"Reset" = "Réinitialiser";
+"Counted from the interface byte counters once a minute; the ledger stays on this Mac." = "Calculé une fois par minute à partir des compteurs d'octets des interfaces ; le journal reste sur ce Mac.";

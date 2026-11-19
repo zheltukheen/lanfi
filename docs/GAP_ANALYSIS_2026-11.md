@@ -296,9 +296,11 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
 - [x] **Per-process traffic** — per-PID received/sent deltas over a rolling
       window with the app's own traffic excluded and a privacy note in the
       screen; parsed locally, nothing leaves the machine.
-- [ ] **Traffic accounting** — day / week / month / total volumes per interface
-      from the same sampler, stored locally next to `speed-tests.json`, with a
-      reset control and CSV export.
+- [x] **Traffic accounting** — day / week / month / total volumes per interface
+      from the same sampler, stored locally in
+      `traffic-accounting.json`, with a reset control and CSV export
+      (`TrafficLedger`, `TrafficAccounting`, Data usage card in Network
+      Monitor).
 - [ ] **GPS scan map** — pin scanned networks on MapKit, colour open networks
       green and secured ones red, keep the best-signal position per BSSID, and
       save each trip as a named collection that can be reopened or exported
@@ -853,6 +855,19 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the thirtieth slice (2026-11-19)
+
+- **Traffic accounting (P2).** `TrafficAccounting` reads the same interface
+  byte counters the throughput sampler uses once a minute, folds the deltas
+  into per-day and per-interface buckets, and keeps the ledger in
+  `traffic-accounting.json`. The Network Monitor overview gained a Data usage
+  card with today, last 7 days, this month and lifetime totals, a Reset button
+  and CSV export. Days are keyed in the user's calendar; old days prune after
+  400 days while the lifetime total is never reduced. The same slice also
+  unified the analyzer's dropdowns (`AppMenuLabel`), made the scan-interface
+  caption a working menu, let the signal/quality bars fill their column, and
+  rebuilt the comparison table on the shared `AppTable` + `TableSorter`.
 
 ## Delivered in the twenty-ninth slice (2026-11-19)
 

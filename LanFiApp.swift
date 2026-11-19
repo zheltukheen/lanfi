@@ -77,6 +77,7 @@ struct LanFiApp: App {
                     GatewayGuard.shared.start()
                     VPNGuard.shared.start()
                     LinkAutomation.shared.start()
+                    TrafficAccounting.shared.start()
                 }
                 .sheet(
                     isPresented: Binding(

@@ -1502,3 +1502,12 @@
 "System default interface" = "Системный интерфейс по умолчанию";
 "Sortable table" = "Сортируемая таблица";
 "Sort by %@" = "Сортировать по %@";
+
+/* Traffic accounting */
+"Data usage" = "Расход трафика";
+"Today" = "Сегодня";
+"Last 7 days" = "7 дней";
+"This month" = "Этот месяц";
+"Total" = "Всего";
+"Reset" = "Сбросить";
+"Counted from the interface byte counters once a minute; the ledger stays on this Mac." = "Считается по счётчикам байтов интерфейсов раз в минуту; журнал остаётся на этом Mac.";

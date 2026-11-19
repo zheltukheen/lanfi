@@ -1466,3 +1466,12 @@
 "System default interface" = "System default interface";
 "Sortable table" = "Sortable table";
 "Sort by %@" = "Sort by %@";
+
+/* Traffic accounting */
+"Data usage" = "Data usage";
+"Today" = "Today";
+"Last 7 days" = "Last 7 days";
+"This month" = "This month";
+"Total" = "Total";
+"Reset" = "Reset";
+"Counted from the interface byte counters once a minute; the ledger stays on this Mac." = "Counted from the interface byte counters once a minute; the ledger stays on this Mac.";

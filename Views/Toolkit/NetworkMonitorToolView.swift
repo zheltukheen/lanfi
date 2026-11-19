@@ -3,6 +3,7 @@ import SwiftUI
 
 struct NetworkMonitorToolView: View {
     @ObservedObject var interfaces: InterfacesViewModel
+    @StateObject private var accounting = TrafficAccounting.shared
     @State private var tab: NetworkMonitorTab =
         ProcessInfo.processInfo.arguments.contains("--routes") ? .routes : .overview
     @State private var routes: [NetworkRoute] = []
@@ -41,7 +42,12 @@ struct NetworkMonitorToolView: View {
 
             switch tab {
             case .overview:
-                InterfacesView(interfaces: interfaces)
+                VStack(spacing: 0) {
+                    usageCard
+                        .padding(.horizontal, DesignToken.Spacing.card)
+                        .padding(.top, DesignToken.Spacing.medium)
+                    InterfacesView(interfaces: interfaces)
+                }
             case .routes:
                 routesContent
             }
@@ -72,6 +78,36 @@ struct NetworkMonitorToolView: View {
                 }
             }
             .padding(DesignToken.Spacing.card)
+        }
+    }
+
+    /// P2: day/week/month/total volumes from the interface counters, stored
+    /// locally next to the other LanFi stores.
+    private var usageCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "Data usage")
+                    Spacer()
+                    Button("Export CSV…") { accounting.exportCSV() }
+                        .controlSize(.small)
+                    Button("Reset") { accounting.reset() }
+                        .controlSize(.small)
+                }
+                HStack(spacing: 24) {
+                    ForEach(TrafficRange.allCases) { range in
+                        ToolkitMetric(
+                            title: LocalizedStringKey(range.title),
+                            value: TrafficByteFormat.string(accounting.volume(range).total))
+                    }
+                    Spacer()
+                }
+                Text(
+                    "Counted from the interface byte counters once a minute; the ledger stays on this Mac."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            }
         }
     }
 
