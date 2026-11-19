@@ -8,6 +8,7 @@ import UniformTypeIdentifiers
 /// or decrypts traffic itself.
 struct HTTPTrafficToolView: View {
     @ObservedObject var model: HTTPTrafficToolModel
+    @StateObject private var descriptions = ServiceDescriptionResolver.shared
 
     var body: some View {
         ScrollView {
@@ -197,6 +198,15 @@ struct HTTPTrafficToolView: View {
                 }
                 .width(64)
                 TableColumn("Host", value: \.host)
+                TableColumn("Service") { entry in
+                    let description = descriptions.description(forDomain: entry.host)
+                    Text(description.title)
+                        .font(.caption2)
+                        .lineLimit(1)
+                        .foregroundColor(description.source == .unknown ? .secondary : .primary)
+                        .help("\(description.category) · \(entry.host)")
+                }
+                .width(AppColumnWidth.medium)
                 TableColumn("Path") { entry in
                     Text(entry.path).lineLimit(1).help(entry.request.url)
                 }
@@ -255,6 +265,7 @@ struct HTTPTrafficToolView: View {
                         .font(.caption.monospaced())
                         .textSelection(.enabled)
                         .lineLimit(3)
+                    serviceRow(entry.host)
                     Text(
                         "\(HARTrafficAnalyzer.bytes(entry.sizeBytes)) transferred · "
                             + "\(HARTrafficAnalyzer.bytes(entry.response.content.size)) uncompressed"
@@ -312,6 +323,38 @@ struct HTTPTrafficToolView: View {
             }
             .frame(maxHeight: 420)
         }
+    }
+
+    /// P3.10: plain-language description next to the raw host, which stays one
+    /// click away. An unknown host can ask the on-device model when it is on.
+    private func serviceRow(_ host: String) -> some View {
+        let description = descriptions.description(forDomain: host)
+        return HStack(spacing: DesignToken.Spacing.small) {
+            Image(systemName: "questionmark.circle")
+                .foregroundColor(description.source == .unknown ? .secondary : AppPalette.info)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(description.title).font(.caption)
+                Text("\(description.category) · \(host)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .textSelection(.enabled)
+            }
+            Spacer()
+            if description.source == .unknown, descriptions.canGenerate(domain: host) {
+                Button("Describe") {
+                    Task { await descriptions.generate(domain: host) }
+                }
+                .controlSize(.mini)
+                .disabled(descriptions.pending.contains(host))
+            }
+            Button("Copy host") { copyText(host) }
+                .controlSize(.mini)
+        }
+    }
+
+    private func copyText(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 
     private func timingRow(_ phase: (name: String, milliseconds: Double), maxMilliseconds: Double) -> some View {

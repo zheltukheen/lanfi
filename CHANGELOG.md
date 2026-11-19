@@ -33,6 +33,15 @@
   path and fully quoted for the shell; LanFi never reads the Keychain, never
   types a password and never creates a key.
 
+### Added (service descriptions)
+- **Plain-language service names.** Connections gained a Service column and the
+  HTTP traffic screen a Service column plus an inspector row, so
+  `gateway.icloud.com` reads "Apple push notifications" and
+  `com.apple.WebKit.Networking` reads "Web content hosted by an app". The map
+  ships offline (43 domain patterns, 18 process names, exact before suffix), an
+  unknown name reads "Unknown service" with the raw host one copy away, and on
+  macOS 26 the opt-in on-device model can label unknown hosts locally.
+
 ### Changed
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.

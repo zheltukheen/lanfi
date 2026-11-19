@@ -575,17 +575,25 @@ endpoints.
 
 Tasks:
 
-- [ ] Bundle an offline map of common domains and processes to a one-line
-      description (for example `gateway.icloud.com` → Apple push service), so
-      the feature works on macOS 13 without a model.
-- [ ] When Foundation Models is available (macOS 26+), generate a description for
-      unknown domains on device; opt-in, no upload, and a model-unavailable
-      fallback to the bundled map.
-- [ ] Show the description in Connections and the HTTP traffic screen, with the
-      raw identifier one click away.
+- [x] Bundle an offline map of common domains and processes to a one-line
+      description (`ServiceDescriptionCatalog`: 43 domain patterns and 18
+      process names, exact entries before suffix entries), so the feature works
+      on macOS 13 without a model.
+- [x] When Foundation Models is available (macOS 26+), generate a description for
+      unknown domains on device through `ServiceDescriptionResolver`; opt-in
+      (`LanFi.descriptions.model`, off by default), no upload, and a
+      model-unavailable fallback to "Unknown service".
+- [x] Show the description in Connections (Service column per process) and on
+      the HTTP traffic screen (Service column plus the inspector row), with the
+      raw host one click away via a copy button.
 
 Acceptance: known domains explain themselves offline; unknown domains read
 "Unknown service" unless the on-device model is enabled.
+
+Delivered 2026-11-19: `Models/ServiceDescription.swift`,
+`Services/ServiceDescriptionResolver.swift`, the Service columns and the
+inspector row, the Settings toggle (only shown when the model is available) and
+`Tests/ServiceDescriptionTests.swift`.
 
 Not planned from this source: packet-filter enforcement, ad blocking with a
 root certificate, VPN clients, share automounting, cross-device file transfer,
@@ -819,6 +827,18 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-sixth slice (2026-11-19)
+
+- **P3.10 plain-language service descriptions.** Connections gained a Service
+  column and the HTTP traffic screen a Service column plus an inspector row:
+  `gateway.icloud.com` reads "Apple push notifications",
+  `com.apple.WebKit.Networking` reads "Web content hosted by an app", and an
+  unlisted name reads "Unknown service" with the raw identifier a copy away.
+  The bundled catalogue is offline and exact-before-suffix, so it works on
+  macOS 13; on macOS 26 the opt-in on-device model can label unknown hosts
+  locally, and the toggle only appears when Apple Intelligence is ready. 7 pure
+  tests cover matching and normalization.
 
 ## Delivered in the twenty-fifth slice (2026-11-19)
 

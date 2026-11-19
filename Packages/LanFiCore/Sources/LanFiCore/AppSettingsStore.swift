@@ -274,6 +274,8 @@ public final class AppSettingsStore: @unchecked Sendable {
             .processTrafficEnabled, settings.automation.processTrafficEnabled)
         settings.automation.listenerWatch = bool(
             .listenerWatch, settings.automation.listenerWatch)
+        settings.automation.serviceDescriptions = bool(
+            .serviceDescriptions, settings.automation.serviceDescriptions)
         settings.automation.autoUpdateOUI = bool(
             .autoUpdateOUI, settings.automation.autoUpdateOUI)
 
@@ -377,6 +379,9 @@ public final class AppSettingsStore: @unchecked Sendable {
             settings.automation.processTrafficEnabled,
             forKey: AppSettingsKey.processTrafficEnabled.rawValue)
         storage.set(settings.automation.listenerWatch, forKey: AppSettingsKey.listenerWatch.rawValue)
+        storage.set(
+            settings.automation.serviceDescriptions,
+            forKey: AppSettingsKey.serviceDescriptions.rawValue)
         storage.set(settings.automation.autoUpdateOUI, forKey: AppSettingsKey.autoUpdateOUI.rawValue)
 
         storage.set(

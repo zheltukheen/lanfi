@@ -267,6 +267,15 @@ struct GeneralSettingsPage: View {
             if let settingsMessage {
                 Text(settingsMessage).settingsHint()
             }
+            if ServiceDescriptionResolver.isModelAvailable {
+                Toggle(
+                    "Describe unknown services with the on-device model",
+                    isOn: binding(\.automation.serviceDescriptions))
+                Text(
+                    "Known services use the bundled offline map. The on-device model only labels unknown names, runs locally and never uploads anything."
+                )
+                .settingsHint()
+            }
             Text(
                 "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above."
             )

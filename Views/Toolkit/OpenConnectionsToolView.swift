@@ -9,6 +9,7 @@ struct OpenConnectionsToolView: View {
     @ObservedObject var rules: ConnectionRulesModel
 
     @StateObject private var watcher = ListenerWatcher.shared
+    @StateObject private var descriptions = ServiceDescriptionResolver.shared
 
     @State private var connections: [OpenConnection] = []
     @State private var includeListeners = false
@@ -351,6 +352,10 @@ struct OpenConnectionsToolView: View {
                 rowCell(row) { Text(primary(row)?.user ?? "—") }
             }
             .width(AppColumnWidth.compact)
+            TableColumn("Service") { row in
+                rowCell(row) { serviceLabel(row) }
+            }
+            .width(AppColumnWidth.medium)
             TableColumn("Proto") { row in
                 rowCell(row) {
                     Text(protoLabel(row))
@@ -509,6 +514,22 @@ struct OpenConnectionsToolView: View {
             if pids.count == 1 { return "\(pids[0])" }
             return "\(pids.prefix(2).map(String.init).joined(separator: ", "))…"
         case .connection(let connection): return "\(connection.pid)"
+        }
+    }
+
+    /// P3.10: the bundled offline catalogue answers for the process; unknown
+    /// names stay "Unknown service" and carry the raw name in the tooltip.
+    @ViewBuilder
+    private func serviceLabel(_ row: TableRow) -> some View {
+        if let connection = primary(row) {
+            let description = descriptions.description(forProcess: connection.process)
+            Text(description.title)
+                .font(.caption2)
+                .lineLimit(1)
+                .foregroundColor(description.source == .unknown ? .secondary : .primary)
+                .help("\(description.category) · \(connection.process)")
+        } else {
+            Text("—")
         }
     }
 

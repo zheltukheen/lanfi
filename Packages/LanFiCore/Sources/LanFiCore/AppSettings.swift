@@ -194,6 +194,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         public var lanGuardEnabled = false
         public var processTrafficEnabled = false
         public var listenerWatch = false
+        /// P3.10: describe unknown services with the on-device model.
+        public var serviceDescriptions = false
         public var autoUpdateOUI = true
 
         public init() {}

@@ -219,6 +219,7 @@ targets:
       - path: Models/ConnectivityWatchdog.swift
       - path: Models/ListenerWatch.swift
       - path: Models/SSHLaunch.swift
+      - path: Models/ServiceDescription.swift
       - path: Services/TerminalLauncher.swift
       - path: Models/FilterProfile.swift
       - path: Models/CustomFilter.swift
