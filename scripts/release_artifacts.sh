@@ -78,14 +78,53 @@ mkdir -p "$DIST" "$STABLE" "$RELEASE_DIR"
 
 ditto -c -k --sequesterRsrc --keepParent "$APP" "$DIST/LanFi-${VERSION}.zip"
 
+# The disk image is a folder, not an installer: LanFi.app, an Applications
+# shortcut to drag it into, and two read-me files that explain how to open an
+# unsigned build. The window layout is set through Finder once the read-write
+# image is mounted; if that fails (headless runner, no Finder) the plain folder
+# layout is still correct.
 mkdir -p "$DIST/dmg"
 cp -R "$APP" "$DIST/dmg/"
 ln -s /Applications "$DIST/dmg/Applications"
+cp packaging/dmg/read-me-en.html "$DIST/dmg/Read me (English).html"
+cp packaging/dmg/read-me-ru.html "$DIST/dmg/Прочтите меня (Русский).html"
+
+DMG_RW="$DIST/LanFi-${VERSION}-rw.dmg"
+DMG_OUT="$DIST/LanFi-${VERSION}.dmg"
 hdiutil create \
     -volname "LanFi ${VERSION}" \
     -srcfolder "$DIST/dmg" \
-    -ov -format UDZO \
-    "$DIST/LanFi-${VERSION}.dmg" >/dev/null
+    -ov -format UDRW \
+    "$DMG_RW" >/dev/null
+
+MOUNT_DIR="$(hdiutil attach "$DMG_RW" -nobrowse -readwrite -mountpoint "$DIST/dmg-mount" 2>/dev/null && echo "$DIST/dmg-mount" || true)"
+if [ -n "$MOUNT_DIR" ]; then
+    hdiutil detach "$MOUNT_DIR" >/dev/null 2>&1 || true
+    hdiutil attach "$DMG_RW" -nobrowse -readwrite -noautoopen -mountpoint "$MOUNT_DIR" >/dev/null 2>&1 || true
+    osascript <<APPLESCRIPT >/dev/null 2>&1 || echo "warning: could not set the Finder layout (headless?)" >&2
+tell application "Finder"
+    tell disk "LanFi ${VERSION}"
+        open
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set the bounds of container window to {200, 160, 860, 560}
+        set viewOptions to the icon view options of container window
+        set arrangement of viewOptions to not arranged
+        set icon size of viewOptions to 96
+        set position of item "LanFi.app" of container window to {170, 200}
+        set position of item "Applications" of container window to {470, 200}
+        set position of item "Read me (English).html" of container window to {170, 350}
+        set position of item "Прочтите меня (Русский).html" of container window to {470, 350}
+        close
+    end tell
+end tell
+APPLESCRIPT
+    sync
+    hdiutil detach "$MOUNT_DIR" >/dev/null 2>&1 || true
+fi
+hdiutil convert "$DMG_RW" -format UDZO -o "$DMG_OUT" >/dev/null
+rm -f "$DMG_RW"
 
 echo "==> Building universal CLI"
 xcodebuild build \

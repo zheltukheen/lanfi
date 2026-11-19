@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LanFi — install</title>
+<style>
+  body { font: 14px -apple-system, "Helvetica Neue", sans-serif; color: #1d1d1f;
+         margin: 28px auto; max-width: 680px; line-height: 1.5; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  h2 { font-size: 15px; margin: 22px 0 6px; }
+  code, kbd { font-family: "SF Mono", Menlo, monospace; background: #f2f2f4;
+              padding: 1px 5px; border-radius: 4px; }
+  pre { background: #f2f2f4; padding: 10px 12px; border-radius: 8px; overflow-x: auto; }
+  .note { color: #6e6e73; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>Install LanFi</h1>
+<p>Drag <strong>LanFi.app</strong> into the <strong>Applications</strong> folder next to this
+window, then eject the disk image and start LanFi from Applications.</p>
+
+<h2>This build is not signed or notarized</h2>
+<p>LanFi is distributed without an Apple Developer signature, so macOS may say
+“LanFi is damaged”, “cannot be opened” or “cannot verify the developer”. The app is
+fine — Gatekeeper only refuses software it cannot check. Choose one of these ways to
+open it:</p>
+
+<h2>Option 1 — right-click Open (recommended)</h2>
+<ol>
+  <li>Open Applications in Finder, then <strong>Control-click</strong> (or right-click) LanFi.</li>
+  <li>Choose <strong>Open</strong>, then <strong>Open</strong> again in the dialog.</li>
+  <li>Double-clicking works normally afterwards.</li>
+</ol>
+
+<h2>Option 2 — System Settings</h2>
+<ol>
+  <li>Try to open LanFi once and close the warning.</li>
+  <li>Open <strong>System Settings → Privacy &amp; Security</strong>.</li>
+  <li>In the “Security” section click <strong>Open Anyway</strong> and confirm.</li>
+</ol>
+
+<h2>Option 3 — Terminal, if macOS says “damaged”</h2>
+<p>Removing the quarantine flag is what the two steps above do through the UI:</p>
+<pre>xattr -dr com.apple.quarantine /Applications/LanFi.app</pre>
+
+<h2>Requirements</h2>
+<p>macOS 13 Ventura or newer, Intel or Apple silicon (one universal build).
+LanFi asks for Location Services the first time because macOS reveals Wi-Fi names
+and BSSIDs through that permission; the scans themselves happen locally.</p>
+
+<p class="note">Checksums and the CLI archive are published with each release on
+GitHub. No account is needed and there is nothing to activate.</p>
+</body>
+</html>

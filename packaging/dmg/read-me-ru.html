@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>LanFi — установка</title>
+<style>
+  body { font: 14px -apple-system, "Helvetica Neue", sans-serif; color: #1d1d1f;
+         margin: 28px auto; max-width: 680px; line-height: 1.5; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  h2 { font-size: 15px; margin: 22px 0 6px; }
+  code, kbd { font-family: "SF Mono", Menlo, monospace; background: #f2f2f4;
+              padding: 1px 5px; border-radius: 4px; }
+  pre { background: #f2f2f4; padding: 10px 12px; border-radius: 8px; overflow-x: auto; }
+  .note { color: #6e6e73; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>Установка LanFi</h1>
+<p>Перетащите <strong>LanFi.app</strong> в папку <strong>Applications</strong>
+(Программы) рядом с этим окном, извлеките диск и запустите LanFi из Программ.</p>
+
+<h2>Сборка без подписи и нотаризации</h2>
+<p>LanFi распространяется без подписи Apple Developer, поэтому macOS может
+сообщить «LanFi повреждён», «невозможно открыть» или «не удалось проверить
+разработчика». С приложением всё в порядке — Gatekeeper просто не может его
+проверить. Открыть можно одним из способов ниже.</p>
+
+<h2>Способ 1 — открыть через контекстное меню (рекомендуется)</h2>
+<ol>
+  <li>Откройте Программы в Finder и щёлкните LanFi с зажатой клавишей
+      <strong>Control</strong> (или правой кнопкой).</li>
+  <li>Выберите <strong>Открыть</strong>, затем <strong>Открыть</strong> в диалоге.</li>
+  <li>Дальше приложение запускается обычным двойным щелчком.</li>
+</ol>
+
+<h2>Способ 2 — Системные настройки</h2>
+<ol>
+  <li>Попробуйте запустить LanFi один раз и закройте предупреждение.</li>
+  <li>Откройте <strong>Системные настройки → Конфиденциальность и безопасность</strong>.</li>
+  <li>В разделе «Безопасность» нажмите <strong>Всё равно открыть</strong> и подтвердите.</li>
+</ol>
+
+<h2>Способ 3 — Терминал, если macOS пишет «повреждён»</h2>
+<p>Снятие карантина — это то же самое, что делают два способа выше:</p>
+<pre>xattr -dr com.apple.quarantine /Applications/LanFi.app</pre>
+
+<h2>Требования</h2>
+<p>macOS 13 Ventura или новее, Intel или Apple silicon (одна универсальная сборка).
+При первом запуске LanFi запросит доступ к службам геолокации: через это
+разрешение macOS отдаёт имена Wi-Fi сетей и BSSID. Сами сканирования выполняются
+локально.</p>
+
+<p class="note">Контрольные суммы и архив CLI публикуются с каждым релизом на
+GitHub. Аккаунт не нужен, активировать ничего не требуется.</p>
+</body>
+</html>
