@@ -9,78 +9,6 @@ struct ClientAnalyticsToolView: View {
 
     @State private var observations: [ClientObservation] = []
 
-    private enum APSortKey: String, CaseIterable, Identifiable {
-        case ssid, bssid, band, channel, clients, utilization, signal
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .ssid: return String(localized: "SSID")
-            case .bssid: return String(localized: "BSSID")
-            case .band: return String(localized: "Band")
-            case .channel: return String(localized: "Ch")
-            case .clients: return String(localized: "Clients")
-            case .utilization: return String(localized: "Util")
-            case .signal: return String(localized: "RSSI")
-            }
-        }
-    }
-
-    private enum ClientSortKey: String, CaseIterable, Identifiable {
-        case mac, vendor, bssid, frames, rssi, probes
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .mac: return String(localized: "MAC")
-            case .vendor: return String(localized: "Vendor")
-            case .bssid: return String(localized: "BSSID")
-            case .frames: return String(localized: "Frames")
-            case .rssi: return String(localized: "RSSI")
-            case .probes: return String(localized: "Probes")
-            }
-        }
-    }
-
-    @State private var apSortKey: APSortKey = .clients
-    @State private var apAscending = false
-    @State private var clientSortKey: ClientSortKey = .frames
-    @State private var clientAscending = false
-
-    private func sortedAccessPoints(
-        _ rows: [ClientAnalyticsSnapshot.AccessPointLoad]
-    ) -> [ClientAnalyticsSnapshot.AccessPointLoad] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch apSortKey {
-            case .ssid: return lhs.ssid.localizedStandardCompare(rhs.ssid) == .orderedAscending
-            case .bssid: return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .band: return lhs.band.localizedStandardCompare(rhs.band) == .orderedAscending
-            case .channel: return lhs.channel < rhs.channel
-            case .clients: return lhs.clients < rhs.clients
-            case .utilization:
-                return (lhs.utilization ?? .min) < (rhs.utilization ?? .min)
-            case .signal: return lhs.signal < rhs.signal
-            }
-        }
-        return apAscending ? ordered : ordered.reversed()
-    }
-
-    private func sortedObservations(_ rows: [ClientObservation]) -> [ClientObservation] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch clientSortKey {
-            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
-            case .vendor:
-                return lhs.vendor.localizedStandardCompare(rhs.vendor) == .orderedAscending
-            case .bssid: return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .frames: return lhs.frames < rhs.frames
-            case .rssi: return (lhs.rssi ?? .min) < (rhs.rssi ?? .min)
-            case .probes:
-                return lhs.probes.joined(separator: ", ")
-                    .localizedStandardCompare(rhs.probes.joined(separator: ", "))
-                    == .orderedAscending
-            }
-        }
-        return clientAscending ? ordered : ordered.reversed()
-    }
-
     @State private var isCapturing = false
     @State private var captureError: String?
     @State private var interfaces: [String] = []
@@ -187,9 +115,6 @@ struct ClientAnalyticsToolView: View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
             HStack {
                 SectionLabel(text: "Access point load")
-                TableSortControl(
-                    options: APSortKey.allCases.map { ($0, $0.title) },
-                    selection: $apSortKey, ascending: $apAscending)
                 Spacer()
             }
             if snapshot.busiestAccessPoints.isEmpty {
@@ -200,36 +125,55 @@ struct ClientAnalyticsToolView: View {
                     .appContentPadding()
                     .appTableSurface()
             } else {
-                Table(sortedAccessPoints(snapshot.busiestAccessPoints)) {
-                    TableColumn("SSID", value: \.ssid)
-                    TableColumn("BSSID", value: \.bssid)
-                        .width(AppColumnWidth.wide)
-                    TableColumn("Band", value: \.band)
-                        .width(AppColumnWidth.compact)
-                    TableColumn("Ch") { Text("\($0.channel)").monospacedDigit() }
-                        .width(AppColumnWidth.short)
-                    TableColumn("Clients") { row in
-                        HStack(spacing: DesignToken.Spacing.tight) {
-                            Text("\(row.clients)").monospacedDigit().bold()
-                            ProgressView(
-                                value: Double(min(row.clients, 30)), total: 30
-                            )
-                            .progressViewStyle(.linear)
-                            .frame(width: 46)
-                        }
-                    }
-                    .width(AppColumnWidth.medium)
-                    TableColumn("Util") { row in
-                        Text(row.utilization.map { "\($0)%" } ?? "—")
-                            .monospacedDigit()
-                            .foregroundColor(
-                                (row.utilization ?? 0) >= 60
-                                    ? AppPalette.warning : .secondary)
-                    }
-                    .width(AppColumnWidth.short)
-                    TableColumn("RSSI") { Text("\($0.signal) dBm").monospacedDigit() }
-                        .width(AppColumnWidth.compact)
-                }
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "ssid", title: "SSID", minWidth: 120,
+                            value: { .text($0.ssid) }
+                        ) { Text($0.ssid) },
+                        AppTableColumn(
+                            id: "bssid", title: "BSSID", minWidth: 140,
+                            value: { .text($0.bssid) }
+                        ) { Text($0.bssid).font(.caption.monospaced()) },
+                        AppTableColumn(
+                            id: "band", title: "Band", minWidth: 60,
+                            value: { .text($0.band) }
+                        ) { Text($0.band) },
+                        AppTableColumn(
+                            id: "channel", title: "Ch", minWidth: 44,
+                            value: { .number($0.channel) }
+                        ) { Text("\($0.channel)").monospacedDigit() },
+                        AppTableColumn(
+                            id: "clients", title: "Clients", minWidth: 100,
+                            value: { .number($0.clients) }
+                        ) { row in
+                            HStack(spacing: DesignToken.Spacing.tight) {
+                                Text("\(row.clients)").monospacedDigit().bold()
+                                ProgressView(
+                                    value: Double(min(row.clients, 30)), total: 30
+                                )
+                                .progressViewStyle(.linear)
+                                .frame(width: 46)
+                            }
+                        },
+                        AppTableColumn(
+                            id: "utilization", title: "Util", minWidth: 50,
+                            value: { .number($0.utilization) }
+                        ) { row in
+                            Text(row.utilization.map { "\($0)%" } ?? "—")
+                                .monospacedDigit()
+                                .foregroundColor(
+                                    (row.utilization ?? 0) >= 60
+                                        ? AppPalette.warning : .secondary)
+                        },
+                        AppTableColumn(
+                            id: "signal", title: "RSSI", minWidth: 80,
+                            value: { .number($0.signal) }
+                        ) { Text("\($0.signal) dBm").monospacedDigit() },
+                    ],
+                    rows: snapshot.busiestAccessPoints, initialKey: "clients",
+                    ascending: false
+                )
                 .frame(height: ToolkitTableHeight.rows(snapshot.busiestAccessPoints.count))
                 .appTableSurface()
             }
@@ -240,27 +184,42 @@ struct ClientAnalyticsToolView: View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
             HStack {
                 SectionLabel(text: "Captured clients")
-                TableSortControl(
-                    options: ClientSortKey.allCases.map { ($0, $0.title) },
-                    selection: $clientSortKey, ascending: $clientAscending)
                 Spacer()
             }
-            Table(sortedObservations(observations), selection: $selection) {
-                TableColumn("MAC", value: \.mac)
-                TableColumn("Vendor", value: \.vendor)
-                    .width(AppColumnWidth.wide)
-                TableColumn("BSSID", value: \.bssid)
-                    .width(AppColumnWidth.wide)
-                TableColumn("Frames") { Text("\($0.frames)").monospacedDigit() }
-                    .width(AppColumnWidth.short)
-                TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }
-                    .width(AppColumnWidth.short)
-                TableColumn("Probes") { row in
-                    Text(row.probes.isEmpty ? "—" : row.probes.joined(separator: ", "))
-                        .lineLimit(1)
-                        .help(row.probes.joined(separator: "\n"))
-                }
-            }
+            AppTable(
+                columns: [
+                    AppTableColumn(
+                        id: "mac", title: "MAC", minWidth: 120,
+                        value: { .text($0.mac) }
+                    ) { Text($0.mac).font(.caption.monospaced()) },
+                    AppTableColumn(
+                        id: "vendor", title: "Vendor", minWidth: 140,
+                        value: { .text($0.vendor) }
+                    ) { Text($0.vendor).font(.caption2) },
+                    AppTableColumn(
+                        id: "bssid", title: "BSSID", minWidth: 140,
+                        value: { .text($0.bssid) }
+                    ) { Text($0.bssid).font(.caption.monospaced()) },
+                    AppTableColumn(
+                        id: "frames", title: "Frames", minWidth: 60,
+                        value: { .number($0.frames) }
+                    ) { Text("\($0.frames)").monospacedDigit() },
+                    AppTableColumn(
+                        id: "rssi", title: "RSSI", minWidth: 70,
+                        value: { .number($0.rssi) }
+                    ) { Text($0.rssi.map { "\($0) dBm" } ?? "—") },
+                    AppTableColumn(
+                        id: "probes", title: "Probes", minWidth: 140,
+                        value: { .text($0.probes.joined(separator: ", ")) }
+                    ) { row in
+                        Text(row.probes.isEmpty ? "—" : row.probes.joined(separator: ", "))
+                            .lineLimit(1)
+                            .help(row.probes.joined(separator: "\n"))
+                    },
+                ],
+                rows: observations, initialKey: "frames", ascending: false,
+                selection: $selection
+            )
             .frame(height: ToolkitTableHeight.rows(observations.count))
             .appTableSurface()
         }

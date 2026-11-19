@@ -193,17 +193,11 @@ struct DeviceShelfView: View {
 
     // MARK: - Table
 
-    @StateObject private var sorter = TableSorter<ShelfDevice>(
-        columns: ShelfSort.columns, initialKey: "ip")
-
     private var table: some View {
         ToolkitCard(padding: 0) {
             VStack(spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
-                    TableSortControl(
-                        options: sorter.options,
-                        selection: $sorter.key, ascending: $sorter.ascending)
                     Spacer()
                     Text(String(format: String(localized: "%lld shown"), model.filteredDevices.count))
                         .font(.caption2)
@@ -213,129 +207,158 @@ struct DeviceShelfView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sorter.sorted(model.filteredDevices), selection: $model.selectedID) {
-                    TableColumn("") { device in
-                        Button {
-                            model.toggleFavourite(device.id)
-                        } label: {
-                            Image(systemName: device.isFavourite ? "star.fill" : "star")
-                                .font(.caption2)
-                                .foregroundColor(device.isFavourite ? .yellow : .secondary.opacity(0.5))
-                        }
-                        .buttonStyle(.plain)
-                        .help(favouriteActionLabel(isFavourite: device.isFavourite))
-                        .accessibilityLabel(favouriteActionLabel(isFavourite: device.isFavourite))
-                    }
-                    .width(AppColumnWidth.index)
-
-                    TableColumn("Device") { device in
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(device.isOnline ? Color.green : Color.secondary.opacity(0.35))
-                                .frame(width: 6, height: 6)
-                            Image(systemName: device.category.icon)
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .frame(width: 14)
-                            Text(device.displayName)
-                                .font(.caption)
-                                .lineLimit(1)
-                            if device.isNew {
-                                Text("NEW")
-                                    .font(.system(size: 8, weight: .bold))
-                                    .padding(.horizontal, DesignToken.Spacing.tight)
-                                    .padding(.vertical, 1)
-                                    .background(Color.orange.opacity(0.2), in: Capsule())
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "favourite", title: "", minWidth: 20,
+                            value: { .flag($0.isFavourite) }
+                        ) { device in
+                            Button {
+                                model.toggleFavourite(device.id)
+                            } label: {
+                                Image(systemName: device.isFavourite ? "star.fill" : "star")
+                                    .font(.caption2)
+                                    .foregroundColor(
+                                        device.isFavourite ? .yellow : .secondary.opacity(0.5))
                             }
-                        }
-                    }
-
-                    TableColumn(String(localized: "Hostname")) { device in
-                        Text(device.hostname ?? "—")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    .width(AppColumnWidth.medium)
-
-                    TableColumn("IP") { device in
-                        Text(device.ip)
-                            .font(.caption.monospaced())
-                    }
-                    .width(AppColumnWidth.compact)
-
-                    TableColumn("Vendor") { device in
-                        Text(device.vendor ?? "—")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    .width(AppColumnWidth.medium)
-
-                    TableColumn("Ports") { device in
-                        Text(
-                            device.openPorts.isEmpty
-                                ? "—"
-                                : device.openPorts.prefix(4).map(String.init).joined(separator: ",")
-                        )
-                        .font(.caption2.monospacedDigit())
-                        .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.compact)
-
-                    TableColumn("RTT") { device in
-                        Text(ToolkitFormat.milliseconds(device.latencyMs))
-                            .font(.caption2.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(70)
-
-                    TableColumn(String(localized: "Availability")) { device in
-                        Text(device.availabilityPercent.map { String(format: "%.0f%%", $0) } ?? "—")
-                            .font(.caption2.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(80)
-
-                    TableColumn(String(localized: "Warranty")) { device in
-                        switch device.warranty {
-                        case .unknown:
-                            Text("—")
+                            .buttonStyle(.plain)
+                            .help(favouriteActionLabel(isFavourite: device.isFavourite))
+                            .accessibilityLabel(favouriteActionLabel(isFavourite: device.isFavourite))
+                        },
+                        AppTableColumn(
+                            id: "device", title: "Device", minWidth: 180,
+                            value: { .text($0.displayName) }
+                        ) { device in
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(
+                                        device.isOnline
+                                            ? Color.green : Color.secondary.opacity(0.35)
+                                    )
+                                    .frame(width: 6, height: 6)
+                                Image(systemName: device.category.icon)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 14)
+                                Text(device.displayName)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                if device.isNew {
+                                    Text("NEW")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .padding(.horizontal, DesignToken.Spacing.tight)
+                                        .padding(.vertical, 1)
+                                        .background(Color.orange.opacity(0.2), in: Capsule())
+                                }
+                            }
+                        },
+                        AppTableColumn(
+                            id: "hostname", title: "Hostname", minWidth: 120,
+                            value: { .text($0.hostname) }
+                        ) { device in
+                            Text(device.hostname ?? "—")
                                 .font(.caption2)
-                                .foregroundColor(.secondary.opacity(0.6))
-                        case .active(let days):
-                            Text("\(days) d")
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        },
+                        AppTableColumn(
+                            id: "ip", title: "IP", minWidth: 100,
+                            value: { .text($0.ip) }
+                        ) { device in
+                            Text(device.ip)
+                                .font(.caption.monospaced())
+                        },
+                        AppTableColumn(
+                            id: "vendor", title: "Vendor", minWidth: 120,
+                            value: { .text($0.vendor) }
+                        ) { device in
+                            Text(device.vendor ?? "—")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        },
+                        AppTableColumn(
+                            id: "ports", title: "Ports", minWidth: 80,
+                            value: { .number($0.openPorts.count) }
+                        ) { device in
+                            Text(
+                                device.openPorts.isEmpty
+                                    ? "—"
+                                    : device.openPorts.prefix(4).map(String.init)
+                                        .joined(separator: ",")
+                            )
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary)
+                        },
+                        AppTableColumn(
+                            id: "rtt", title: "RTT", minWidth: 70,
+                            value: { .number($0.latencyMs) }
+                        ) { device in
+                            Text(ToolkitFormat.milliseconds(device.latencyMs))
                                 .font(.caption2.monospacedDigit())
                                 .foregroundColor(.secondary)
-                        case .expiring(let days):
-                            Text(days == 0 ? String(localized: "today") : "\(days) d")
-                                .font(.caption2.monospacedDigit())
-                                .foregroundColor(.orange)
-                        case .expired:
-                            Text(String(localized: "expired"))
-                                .font(.caption2)
-                                .foregroundColor(.red)
-                        }
-                    }
-                    .width(72)
-
-                    TableColumn(String(localized: "Last seen")) { device in
-                        Text(
-                            device.isOnline
-                                ? String(localized: "now")
-                                : device.lastSeen.formatted(.relative(presentation: .named))
-                        )
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    }
-                    .width(95)
-                }
-                .frame(height: ToolkitTableHeight.rows(model.filteredDevices.count, row: 26, maximum: 640))
-                .contextMenu {
-                    if let device = model.selectedDevice {
-                        shelfMenu(device)
-                    }
-                }
+                        },
+                        AppTableColumn(
+                            id: "availability", title: "Availability", minWidth: 80,
+                            value: { .number($0.availabilityPercent) }
+                        ) { device in
+                            Text(
+                                device.availabilityPercent.map {
+                                    String(format: "%.0f%%", $0)
+                                } ?? "—"
+                            )
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary)
+                        },
+                        AppTableColumn(
+                            id: "warranty", title: "Warranty", minWidth: 72,
+                            value: { device in
+                                switch device.warranty {
+                                case .active(let days), .expiring(let days): return .number(days)
+                                case .expired: return .number(0)
+                                case .unknown: return .none
+                                }
+                            }
+                        ) { device in
+                            switch device.warranty {
+                            case .unknown:
+                                Text("—")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary.opacity(0.6))
+                            case .active(let days):
+                                Text("\(days) d")
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor(.secondary)
+                            case .expiring(let days):
+                                Text(days == 0 ? String(localized: "today") : "\(days) d")
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor(.orange)
+                            case .expired:
+                                Text(String(localized: "expired"))
+                                    .font(.caption2)
+                                    .foregroundColor(.red)
+                            }
+                        },
+                        AppTableColumn(
+                            id: "lastSeen", title: "Last seen", minWidth: 95,
+                            value: { .number($0.lastSeen.timeIntervalSince1970) }
+                        ) { device in
+                            Text(
+                                device.isOnline
+                                    ? String(localized: "now")
+                                    : device.lastSeen.formatted(.relative(presentation: .named))
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        },
+                    ],
+                    rows: model.filteredDevices, initialKey: "ip",
+                    selection: $model.selectedID,
+                    rowMenu: { shelfMenu($0) }
+                )
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        model.filteredDevices.count, row: 26, maximum: 640))
             }
         }
     }
