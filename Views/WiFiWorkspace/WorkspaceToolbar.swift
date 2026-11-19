@@ -43,6 +43,12 @@ struct ToolbarView: View {
     @FocusState private var isSearchFocused: Bool
     @AppStorage(AppSettingsKey.toolbarSearch.rawValue) private var showSearch = true
     @AppStorage(AppSettingsKey.toolbarExport.rawValue) private var showExport = true
+    /// True while the interval popover is on screen. The countdown checks it and
+    /// swaps the 0.5 s `TimelineView` for a frozen label, so the open list is not
+    /// relaid out twice a second underneath the pointer.
+    @State private var isRefreshMenuOpen = false
+    @State private var menuOpenedAt = Date()
+    @State private var isRefreshHovering = false
 
     private var diagnosticsButton: some View {
         ToolbarIconButton(
@@ -96,43 +102,23 @@ struct ToolbarView: View {
     /// checked, and anything else is shown as "Custom".
     private static let presetIntervals: [Double] = [1, 3, 5, 10, 30, 60]
 
-    private func intervalBinding(for value: Double) -> Binding<Bool> {
-        Binding(
-            get: { abs(viewModel.refreshInterval - value) < 0.01 },
-            set: { isOn in
-                if isOn { viewModel.updateRefreshInterval(to: value) }
-            })
-    }
-
     /// The countdown pill is the interval menu: clicking it sets the scan
     /// cadence, opens the custom-interval sheet, or pauses auto-scan.
     private var refreshMenu: some View {
-        Menu {
-            Section {
-                ForEach(Self.presetIntervals, id: \.self) { value in
-                    Toggle(isOn: intervalBinding(for: value)) {
-                        Text(verbatim: intervalLabel(value))
-                    }
-                }
-                Button("Custom Interval...") {
-                    customIntervalText = String(Int(viewModel.refreshInterval))
-                    showingCustomIntervalAlert = true
-                }
-            } header: {
-                Text("Refresh interval")
-            }
-
-            Divider()
-
-            Button(viewModel.isAutoScanPaused ? "Resume auto-scan" : "Pause auto-scan") {
-                viewModel.isAutoScanPaused.toggle()
-            }
+        // A popover instead of a native `Menu`: a menu tracks the mouse on its
+        // own run loop, so an animated label inside it makes the list jump and
+        // can dismiss it. The popover also gives us an explicit `isPresented`,
+        // which is what stops the timer while the list is open.
+        Button {
+            menuOpenedAt = Date()
+            isRefreshMenuOpen.toggle()
         } label: {
             refreshCountdown
         }
-        .menuStyle(.borderlessButton)
-        .menuIndicator(.hidden)
-        .fixedSize()
+        .buttonStyle(.plain)
+        .popover(isPresented: $isRefreshMenuOpen, arrowEdge: .bottom) {
+            refreshMenuContent
+        }
         .help(
             viewModel.isAutoScanPaused
                 ? "Auto-scan is paused. Click to choose the refresh interval."
@@ -141,6 +127,45 @@ struct ToolbarView: View {
         .accessibilityLabel("Refresh interval")
         .accessibilityValue(
             viewModel.isAutoScanPaused ? "Paused" : "\(Int(viewModel.refreshInterval)) seconds")
+    }
+
+    /// Contents of the interval popover. Every row closes the popover, so a
+    /// choice applies once and the frozen countdown resumes on dismissal.
+    private var refreshMenuContent: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text("Refresh interval")
+                .font(.caption2.weight(.semibold))
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.6)
+                .padding(.horizontal, DesignToken.Spacing.compact)
+                .padding(.bottom, 2)
+            ForEach(Self.presetIntervals, id: \.self) { value in
+                AppListRow(
+                    title: intervalLabel(value),
+                    isSelected: abs(viewModel.refreshInterval - value) < 0.01
+                ) {
+                    viewModel.updateRefreshInterval(to: value)
+                    isRefreshMenuOpen = false
+                }
+            }
+            Divider().padding(.vertical, DesignToken.Spacing.tight)
+            AppListRow(icon: "slider.horizontal.3", title: String(localized: "Custom Interval...")) {
+                isRefreshMenuOpen = false
+                customIntervalText = String(Int(viewModel.refreshInterval))
+                showingCustomIntervalAlert = true
+            }
+            AppListRow(
+                icon: viewModel.isAutoScanPaused ? "play.fill" : "pause.fill",
+                title: viewModel.isAutoScanPaused
+                    ? String(localized: "Resume auto-scan") : String(localized: "Pause auto-scan")
+            ) {
+                viewModel.isAutoScanPaused.toggle()
+                isRefreshMenuOpen = false
+            }
+        }
+        .padding(DesignToken.Spacing.small)
+        .frame(width: 220)
     }
 
     private func intervalLabel(_ value: Double) -> String {
@@ -153,36 +178,56 @@ struct ToolbarView: View {
 
     /// Time until the next automatic scan, right next to Refresh/Pause so the
     /// analyzer shows how long the current list is good for.
+    ///
+    /// The timeline only runs while the popover is closed. The figure is whole
+    /// seconds in a fixed-width, monospaced slot and is followed by a chevron,
+    /// so the control keeps one size on every tick and reads as clickable even
+    /// though the native menu indicator is gone.
+    @ViewBuilder
     private var refreshCountdown: some View {
-        TimelineView(.periodic(from: .now, by: 0.5)) { context in
-            let remaining = remainingUntilRefresh(at: context.date)
-            HStack(spacing: 4) {
-                Image(systemName: viewModel.isAutoScanPaused ? "pause.fill" : "clock")
-                    .font(.system(size: 10, weight: .semibold))
-                Text(
-                    viewModel.isAutoScanPaused
-                        ? "Paused"
-                        : String(format: "%.1f s", remaining)
-                )
-                .font(.caption2.monospacedDigit())
+        if isRefreshMenuOpen {
+            countdownLabel(at: menuOpenedAt)
+        } else {
+            TimelineView(.periodic(from: .now, by: 0.5)) { context in
+                countdownLabel(at: context.date)
             }
-            .foregroundColor(
-                viewModel.isAutoScanPaused
-                    ? .secondary
-                    : (remaining <= 1 ? .accentColor : .secondary)
-            )
-            .padding(.horizontal, DesignToken.Spacing.small)
-            .frame(height: DesignToken.Toolbar.height)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(DesignToken.Radius.control)
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                    .stroke(
-                        Color.secondary.opacity(DesignToken.Toolbar.strokeOpacity),
-                        lineWidth: DesignToken.Stroke.hairline)
-            )
-            .accessibilityHidden(true)
         }
+    }
+
+    private func countdownLabel(at date: Date) -> some View {
+        let remaining = remainingUntilRefresh(at: date)
+        let paused = viewModel.isAutoScanPaused
+        return HStack(spacing: 4) {
+            Image(systemName: paused ? "pause.fill" : "clock")
+                .font(.system(size: 10, weight: .semibold))
+            Text(paused ? String(localized: "Paused") : String(format: "%.0f s", remaining))
+                .font(.caption2.monospacedDigit())
+                .frame(width: 34, alignment: .trailing)
+            Image(systemName: "chevron.down")
+                .font(.system(size: 8, weight: .bold))
+                .foregroundColor(.secondary)
+        }
+        .foregroundColor(
+            paused ? .secondary : (remaining <= 1 ? .accentColor : .secondary)
+        )
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .frame(height: DesignToken.Toolbar.height)
+        .background(
+            isRefreshHovering
+                ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor)
+        )
+        .cornerRadius(DesignToken.Radius.control)
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                .stroke(
+                    isRefreshHovering
+                        ? Color.accentColor.opacity(0.6)
+                        : Color.secondary.opacity(DesignToken.Toolbar.strokeOpacity),
+                    lineWidth: DesignToken.Stroke.hairline)
+        )
+        .contentShape(Rectangle())
+        .onHover { isRefreshHovering = $0 }
+        .accessibilityHidden(true)
     }
 
     /// P0.2 mode picker. Passive and directed open the plan sheet because they
