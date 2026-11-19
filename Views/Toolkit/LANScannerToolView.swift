@@ -340,6 +340,13 @@ struct LANScannerToolView: View {
                         if let mac = device.mac {
                             Button("Copy MAC address") { copyText(mac) }
                         }
+                        if let launch = SSHLaunchCommand(device: device) {
+                            Divider()
+                            Button("Open SSH session") {
+                                _ = TerminalLauncher.open(command: launch.command)
+                            }
+                            Button("Copy SSH command") { copyText(launch.command) }
+                        }
                     }
                 }
             }

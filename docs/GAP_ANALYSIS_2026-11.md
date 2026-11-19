@@ -550,10 +550,19 @@ already store host, user, port and identity file but only run probes.
 
 Tasks:
 
-- [ ] Context action on a saved sensor and on an SSH-capable LAN device that
-      opens Terminal with `ssh -p <port> -i <identity> user@host`, fully quoted.
-- [ ] A copy-command alternative for users who keep their own terminal.
-- [ ] No password storage and no key generation.
+- [x] Context action on a saved sensor (sidebar row and detail header) and on a
+      LAN device whose scan found port 22 open, opening Terminal with
+      `ssh -p <port> -i <identity> user@host`. `SSHLaunchCommand` quotes every
+      field for the shell, and the AppleScript hand-off escapes quotes and
+      backslashes again.
+- [x] A copy-command alternative for users who keep their own terminal.
+- [x] No password storage and no key generation: the command only carries the
+      key path the sensor already had, and the UI says so.
+
+Delivered 2026-11-19: `Models/SSHLaunch.swift` (command builder and quoting),
+`Services/TerminalLauncher.swift` (`osascript` hand-off and clipboard copy), the
+sensor row/header actions and the LAN Scanner context menu, plus
+`Tests/SSHLaunchTests.swift` (9 tests incl. quoting and AppleScript escaping).
 
 Acceptance: the action opens Terminal pre-filled for a saved sensor and the
 command contains no password.
@@ -810,6 +819,17 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-fifth slice (2026-11-19)
+
+- **P3.9 SSH quick launch.** Saved sensors have "Open in Terminal" and "Copy SSH
+  command" on the sidebar row, and the detail header gained a Terminal button;
+  a LAN Scanner device whose scan found port 22 open offers "Open SSH session"
+  in its context menu. `SSHLaunchCommand` quotes the destination, port and key
+  path for the shell (`O'Brien` → `'O'\''Brien'`), and the Terminal hand-off
+  escapes the AppleScript literal again, so a hostname cannot break out of the
+  command. Nothing is read from the Keychain, no password is typed and no key is
+  generated.
 
 ## Delivered in the twenty-fourth slice (2026-11-19)
 

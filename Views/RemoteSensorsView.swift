@@ -132,11 +132,17 @@ struct RemoteSensorsView: View {
                     ForEach(sensors) { sensor in
                         VStack(alignment: .leading, spacing: 1) {
                             Text(sensor.name).font(.caption.bold())
-                            Text("\(sensor.username)@\(sensor.host)")
+                            Text("ssh \(sensor.username)@\(sensor.host):\(sensor.port)")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                         .tag(sensor.id)
+                        .contextMenu {
+                            Button("Open in Terminal") { openTerminal(sensor) }
+                            Button("Copy SSH command") {
+                                TerminalLauncher.copy(SSHLaunchCommand(sensor: sensor).command)
+                            }
+                        }
                     }
                 }
                 .listStyle(.sidebar)
@@ -204,6 +210,13 @@ struct RemoteSensorsView: View {
                         .disabled(isScanning)
                     Button("Capture…") { showingRemoteCapture = true }
                         .disabled(isScanning)
+                    Button {
+                        openTerminal(selected)
+                    } label: {
+                        Label("Terminal", systemImage: "terminal")
+                    }
+                    .help("Open an SSH session in Terminal. No password is stored.")
+                    .disabled(!SSHLaunchCommand(sensor: selected).isUsable)
                 }
                 .padding([.horizontal, .top], 12)
 
@@ -258,6 +271,20 @@ struct RemoteSensorsView: View {
                 .buttonStyle(.borderedProminent)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    /// P3.9: hand `ssh` to Terminal. The command is fully quoted and carries
+    /// no credentials; key-based login is the user's own setup.
+    private func openTerminal(_ sensor: RemoteSensor) {
+        let launch = SSHLaunchCommand(sensor: sensor)
+        guard launch.isUsable else {
+            errorMessage = String(localized: "This sensor has no usable host.")
+            return
+        }
+        let result = TerminalLauncher.open(command: launch.command)
+        if !result.succeeded {
+            errorMessage = result.message
         }
     }
 

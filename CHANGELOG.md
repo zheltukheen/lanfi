@@ -25,6 +25,14 @@
   was already running. LAN-reachable is deliberately not called "public":
   LanFi cannot see your router's port forwarding.
 
+### Added (SSH quick launch)
+- **Open a saved sensor or an SSH-capable LAN device in Terminal.** The Remote
+  Sensors sidebar and header offer "Open in Terminal" and "Copy SSH command",
+  and a LAN Scanner device with port 22 open gets the same two actions in its
+  context menu. The command is built from the sensor's host, user, port and key
+  path and fully quoted for the shell; LanFi never reads the Keychain, never
+  types a password and never creates a key.
+
 ### Changed
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.

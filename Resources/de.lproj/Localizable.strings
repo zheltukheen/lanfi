@@ -1328,3 +1328,14 @@
 "Samples listening sockets every 30 s and notifies when one appears or closes." = "Prüft lauschende Sockets alle 30 s und meldet, wenn einer erscheint oder schließt.";
 "Adds UDP sockets, which answer clients without a TCP listener." = "Fügt UDP-Sockets hinzu, die ohne TCP-Listener antworten.";
 "Reachable" = "Erreichbar";
+
+/* SSH quick launch (P3.9) */
+"Open in Terminal" = "Im Terminal öffnen";
+"Copy SSH command" = "SSH-Befehl kopieren";
+"Open SSH session" = "SSH-Sitzung öffnen";
+"Terminal" = "Terminal";
+"Opened in Terminal." = "Im Terminal geöffnet.";
+"Nothing to run." = "Nichts auszuführen.";
+"Terminal did not accept the command." = "Terminal hat den Befehl nicht angenommen.";
+"This sensor has no usable host." = "Dieser Sensor hat keinen nutzbaren Host.";
+"Open an SSH session in Terminal. No password is stored." = "Öffnet eine SSH-Sitzung im Terminal. Es wird kein Passwort gespeichert.";

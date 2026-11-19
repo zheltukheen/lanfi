@@ -1365,3 +1365,14 @@
 "Samples listening sockets every 30 s and notifies when one appears or closes." = "Проверяет слушающие сокеты каждые 30 с и уведомляет о появлении или закрытии.";
 "Adds UDP sockets, which answer clients without a TCP listener." = "Добавляет UDP-сокеты, которые отвечают клиентам без TCP-слушателя.";
 "Reachable" = "Доступны";
+
+/* SSH quick launch (P3.9) */
+"Open in Terminal" = "Открыть в Терминале";
+"Copy SSH command" = "Скопировать команду ssh";
+"Open SSH session" = "Открыть SSH-сессию";
+"Terminal" = "Терминал";
+"Opened in Terminal." = "Открыто в Терминале.";
+"Nothing to run." = "Нечего выполнять.";
+"Terminal did not accept the command." = "Терминал не принял команду.";
+"This sensor has no usable host." = "У этого сенсора нет пригодного хоста.";
+"Open an SSH session in Terminal. No password is stored." = "Открыть SSH-сессию в Терминале. Пароль не сохраняется.";

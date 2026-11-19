@@ -70,6 +70,9 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/SSHLaunch.swift` / `Services/TerminalLauncher.swift` — P3.9: the
+  fully quoted `ssh` command for a saved sensor or an SSH-capable LAN device and
+  the `osascript` hand-off to Terminal. No Keychain access, no passwords.
 - `Models/ListenerWatch.swift` / `Services/ListenerWatchService.swift` — P3.1:
   the listener summary, the endpoint exposure classifier (`SocketExposure` in
   `Models/OpenConnections.swift`), the sample diff and the `ListenerWatcher`
