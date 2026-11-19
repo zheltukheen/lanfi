@@ -51,9 +51,12 @@ enum ToolRegistry {
             tool: .ping, screen: .ping, mcpTools: ["lanfi_ping"], title: String(localized: "Ping"),
             icon: "dot.radiowaves.left.and.right", section: .diagnostics),
         ToolDescriptor(
-            tool: .traceroute, screen: .traceroute, mcpTools: ["lanfi_traceroute"],
+            tool: .traceroute, screen: .visualTraceroute, mcpTools: ["lanfi_traceroute"],
             title: String(localized: "Traceroute"),
-            icon: "point.3.connected.trianglepath.dotted", section: .diagnostics),
+            icon: "point.3.connected.trianglepath.dotted", section: .diagnostics,
+            plannedDetail: String(localized: "The same screen as Visual Traceroute."),
+            // Merged into Visual Traceroute: the map plus the sortable hop table.
+            showsInSidebar: false),
         ToolDescriptor(
             tool: .mtr, screen: .mtr, mcpTools: ["lanfi_mtr"], title: String(localized: "MTR"),
             icon: "chart.line.uptrend.xyaxis", section: .diagnostics,

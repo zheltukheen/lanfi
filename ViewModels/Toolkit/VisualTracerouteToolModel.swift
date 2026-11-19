@@ -11,6 +11,11 @@ final class VisualTracerouteToolModel: ObservableObject {
 
     @Published var host = "example.com"
     @Published var maxHops = 20
+    /// The classic screen's controls, kept so the merged view can do everything
+    /// Traceroute could: probe count, per-probe timeout and PTR names.
+    @Published var probes = 1
+    @Published var waitSeconds = 2
+    @Published var resolveNames = true
     @Published private(set) var hops: [VisualTracerouteHop] = []
     @Published private(set) var phase: Phase = .idle
     @Published private(set) var origin: GeoIPReport?
@@ -65,8 +70,8 @@ final class VisualTracerouteToolModel: ObservableObject {
                 // Same runner and probe strategy as the plain Traceroute screen:
                 // one implementation, so both screens agree on a host.
                 let report = try await SystemTracerouteRunner().trace(
-                    host: targetHost, maxHops: limit, waitSeconds: 2, probes: 1,
-                    resolveNames: false)
+                    host: targetHost, maxHops: limit, waitSeconds: self.waitSeconds,
+                    probes: self.probes, resolveNames: self.resolveNames)
                 if Task.isCancelled { return }
                 self.hops = report.hops.map { VisualTracerouteHop(hop: $0, geo: nil) }
                 for hop in report.hops where hop.address != nil {

@@ -41,7 +41,10 @@ struct NetworkToolkitView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(minWidth: 980, minHeight: 640)
+        .frame(
+            minWidth: DesignToken.Layout.windowMinWidth,
+            minHeight: DesignToken.Layout.windowMinHeight
+        )
         .background(Color(nsColor: .windowBackgroundColor))
         .appTableDensity()
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowToolkit)) { note in

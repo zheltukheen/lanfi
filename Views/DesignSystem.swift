@@ -36,8 +36,11 @@ enum DesignToken {
     enum Layout {
         static let contentPadding: CGFloat = 18
         static let sheetPadding: CGFloat = 20
-        static let windowMinWidth: CGFloat = 980
-        static let windowMinHeight: CGFloat = 640
+        /// Wide enough for the sidebar, the table with its default columns and
+        /// the 300 pt inspector at once; below this the toolbar wraps and
+        /// controls start overlapping.
+        static let windowMinWidth: CGFloat = 1160
+        static let windowMinHeight: CGFloat = 700
         static let sheetWidth: CGFloat = 620
         static let sheetWidthCompact: CGFloat = 470
         static let sheetWidthWide: CGFloat = 900

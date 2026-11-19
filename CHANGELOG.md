@@ -76,6 +76,14 @@
   or resumes auto-scan, instead of being a read-only label.
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.
+- **Traceroute and Visual Traceroute are one screen.** The map view now carries
+  the classic controls (probes, timeout, resolve names) plus a sortable hop
+  table — address, hostname, latency, location — and the separate Traceroute
+  entry is gone from the sidebar.
+- **Window minimum raised to 1160 × 700** so the sidebar, table and inspector
+  fit together, and **LAN Scanner now shows device names** learned from reverse
+  DNS. On the Devices tab the All / In network / Favourites filter sits above
+  the search field.
 
 ## 5.4.0 — 2026-11-18
 

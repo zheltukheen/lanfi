@@ -61,7 +61,10 @@ struct LanFiApp: App {
                 // leaf without restarting; view models and stored settings
                 // live outside the identity and survive.
                 .id(colorBlindSafe)
-                .frame(minWidth: 1000, minHeight: 640)
+                .frame(
+                    minWidth: DesignToken.Layout.windowMinWidth,
+                    minHeight: DesignToken.Layout.windowMinHeight
+                )
                 .environmentObject(viewModel)
                 .environmentObject(uiState)
                 .environmentObject(diagnostics)

@@ -109,6 +109,22 @@ struct DeviceShelfView: View {
     private var header: some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
+                // Filter first, then search: the shelf mode is the coarser
+                // choice and it reads above the query it narrows further.
+                HStack(spacing: 12) {
+                    // The filter used to share the search row and overlapped it
+                    // at narrow widths; it gets its own line and a flexible width.
+                    Picker("Filter", selection: $model.filter) {
+                        ForEach(DeviceShelfViewModel.Filter.allCases) { filter in
+                            Text(filter.title).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(minWidth: 320, maxWidth: 460)
+                    Divider().frame(height: 18)
+                }
+
                 HStack(spacing: 12) {
                     HStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
@@ -143,20 +159,6 @@ struct DeviceShelfView: View {
                     }
                     .menuStyle(.borderlessButton)
                     .fixedSize()
-                }
-
-                HStack(spacing: 12) {
-                    // The filter used to share the search row and overlapped it
-                    // at narrow widths; it gets its own line and a flexible width.
-                    Picker("Filter", selection: $model.filter) {
-                        ForEach(DeviceShelfViewModel.Filter.allCases) { filter in
-                            Text(filter.title).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(minWidth: 320, maxWidth: 460)
-                    Divider().frame(height: 18)
                 }
 
                 HStack(spacing: 22) {

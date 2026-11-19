@@ -79,7 +79,7 @@ struct LANScannerService {
         let devices = LANDeviceAssembler.assemble(
             entries: entries,
             responsiveHosts: responsive,
-            hostnames: [:],
+            hostnames: reversed,
             probes: probes,
             gateway: resolvedGateway,
             thisMAC: interface.macAddress,

@@ -16,7 +16,10 @@ struct VisualTracerouteToolView: View {
                 map
                 hopList
             }
-            .frame(maxHeight: .infinity)
+            .frame(minHeight: 240, maxHeight: .infinity)
+            if !model.hops.isEmpty {
+                hopTable
+            }
         }
         .appContentPadding()
         .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: model.hops.count)
@@ -26,30 +29,131 @@ struct VisualTracerouteToolView: View {
 
     private var controls: some View {
         ToolkitCard {
-            HStack(spacing: 10) {
-                ToolTargetField(
-                    text: $model.host, placeholder: "Host or IP address",
-                    onSubmit: { model.run() })
-                Stepper("Max hops: \(model.maxHops)", value: $model.maxHops, in: 1...40)
-                    .font(.caption)
-                if model.isRunning {
-                    Button("Stop") { model.stop() }
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: 10) {
+                    ToolTargetField(
+                        text: $model.host, placeholder: "Host or IP address",
+                        onSubmit: { model.run() })
+                    Stepper("Max hops: \(model.maxHops)", value: $model.maxHops, in: 1...40)
+                        .font(.caption)
+                    if model.isRunning {
+                        Button("Stop") { model.stop() }
+                            .buttonStyle(.bordered)
+                    } else {
+                        Button("Trace") { model.run() }
+                            .buttonStyle(.borderedProminent)
+                    }
+                    Button("Copy") { copyRoute() }
                         .buttonStyle(.bordered)
-                } else {
-                    Button("Trace") { model.run() }
-                        .buttonStyle(.borderedProminent)
+                        .disabled(model.hops.isEmpty)
+                        .help("Copy the hop list as text")
+                    Button("Clear") { model.clear() }
+                        .buttonStyle(.borderless)
+                        .disabled(model.hops.isEmpty)
+                    Spacer()
+                    ToolkitStatusPill(text: statusText, tone: statusTone)
                 }
-                Button("Copy") { copyRoute() }
-                    .buttonStyle(.bordered)
-                    .disabled(model.hops.isEmpty)
-                    .help("Copy the hop list as text")
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
-                    .disabled(model.hops.isEmpty)
-                Spacer()
-                ToolkitStatusPill(text: statusText, tone: statusTone)
+                // The classic Traceroute screen's controls live here now, so the
+                // merged view can probe as often and as long as it used to.
+                HStack(spacing: 16) {
+                    Stepper("Probes: \(model.probes)", value: $model.probes, in: 1...3)
+                        .font(.caption)
+                        .fixedSize()
+                    Stepper("Timeout: \(model.waitSeconds) s", value: $model.waitSeconds, in: 1...10)
+                        .font(.caption)
+                        .fixedSize()
+                    Toggle("Resolve names", isOn: $model.resolveNames)
+                        .font(.caption)
+                    Spacer()
+                }
             }
         }
+    }
+
+    // MARK: - Hop table
+
+    /// The sortable hop table from the classic Traceroute screen: the map shows
+    /// where the route goes, this shows exactly what each probe returned.
+    private var hopTable: some View {
+        ToolkitCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "Hops")
+                    Spacer()
+                    Text(model.host)
+                        .font(.caption2.monospaced())
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
+
+                AppTable(
+                    columns: hopColumns, rows: model.hops, initialKey: "ttl"
+                )
+                .frame(height: ToolkitTableHeight.rows(model.hops.count, minimum: 120, maximum: 260))
+            }
+        }
+    }
+
+    private var hopColumns: [AppTableColumn<VisualTracerouteHop>] {
+        [
+            AppTableColumn(
+                id: "ttl", title: "Hop", minWidth: 40,
+                value: { .number($0.id) },
+                cell: { hop in
+                    AnyView(
+                        Text("\(hop.id)")
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "address", title: "Address", minWidth: 130,
+                value: { .text($0.hop.address) },
+                cell: { hop in
+                    AnyView(
+                        Text(hop.hop.address ?? "*")
+                            .font(.caption.monospaced())
+                            .lineLimit(1))
+                }),
+            AppTableColumn(
+                id: "name", title: "Name", minWidth: 120,
+                value: { .text($0.hop.hostname) },
+                cell: { hop in
+                    AnyView(
+                        Text(hop.hop.hostname ?? "—")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1))
+                }),
+            AppTableColumn(
+                id: "latency", title: "Latency", minWidth: 70,
+                value: { .number($0.hop.averageMilliseconds) },
+                cell: { hop in
+                    AnyView(
+                        Text(
+                            hop.hop.averageMilliseconds.map { String(format: "%.1f ms", $0) } ?? "—"
+                        )
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "location", title: "Location", minWidth: 160,
+                value: { .text([$0.geo?.city, $0.geo?.country].compactMap { $0 }.joined(separator: ", ")) },
+                cell: { hop in
+                    AnyView(
+                        Text(
+                            [hop.geo?.city, hop.geo?.country]
+                                .compactMap { $0 }
+                                .filter { !$0.isEmpty }
+                                .joined(separator: ", ")
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1))
+                }),
+        ]
     }
 
     private var statusText: String {

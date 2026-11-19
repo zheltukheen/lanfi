@@ -17,11 +17,20 @@ final class ToolRoutingTests: XCTestCase {
     }
 
     func testEveryScreenIsReachable() {
+        // `traceroute` is merged into `visualTraceroute`: one screen holds the map
+        // and the sortable hop table, so it is not routed on its own.
+        let merged: Set<ToolScreen> = [.traceroute]
         let routed = Set(ToolboxTool.allCases.map(\.screen))
-        XCTAssertEqual(routed.count, ToolScreen.allCases.count)
-        for screen in ToolScreen.allCases {
+        XCTAssertEqual(routed.count, ToolScreen.allCases.count - merged.count)
+        for screen in ToolScreen.allCases where !merged.contains(screen) {
             XCTAssertTrue(routed.contains(screen), "No tool routes to \(screen.rawValue)")
         }
+    }
+
+    func testClassicTracerouteIsMergedIntoTheVisualScreen() {
+        XCTAssertEqual(ToolboxTool.traceroute.screen, .visualTraceroute)
+        XCTAssertFalse(ToolboxTool.traceroute.showsInSidebar)
+        XCTAssertTrue(ToolboxTool.visualTraceroute.showsInSidebar)
     }
 
     func testSidebarToolsHaveDistinctScreensOrASharedHost() {

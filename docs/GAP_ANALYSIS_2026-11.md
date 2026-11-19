@@ -342,9 +342,10 @@ product does not need.
       capability, not measurement. An optional 4 Hz live mode for physical
       placement (WhyFi Radar) can ride the same sampler later, but only after
       the 5 s store is in place.
-- [ ] Noise in the history chart: `SignalHistoryView` plots RSSI only. Add the
+- [x] Noise in the history chart: `SignalHistoryView` plots RSSI only. Add the
       AirRadar-style mode switch (signal / noise / both) using the noise value
-      already carried by `NetworkModel`.
+      already carried by `NetworkModel`. (Verified present: the "History mode"
+      picker drives `HistoryChartMode`, and percent mode falls back to signal.)
 - [x] Wi-Fi card selection: `WiFiScanner` accepts a preferred interface name and
       Settings → Wi-Fi picks it; the workspace toolbar now shows a "Scanning
       with <interface>" label next to the scan controls (system default included).
@@ -857,6 +858,23 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the thirty-second slice (2026-11-19)
+
+- **Minimum window that fits the whole UI.** `DesignToken.Layout` now carries
+  one `windowMinWidth`/`windowMinHeight` (1160 × 700) used by the app window and
+  the toolkit, instead of the old 980–1000 × 640 frames that clipped the toolbar
+  and the inspector.
+- **LAN Scanner names.** PTR names discovered by the scan were merged into the
+  Bonjour advertisement but never handed to the assembler, so the Device and
+  Hostname columns stayed empty on networks that do return names; they are now
+  passed as `hostnames:`.
+- **Devices tab order.** The All / In network / Favourites filter now sits above
+  the search field, where the coarser choice belongs.
+- **Traceroute merged into Visual Traceroute.** The map screen gained the
+  classic screen's controls (probes, timeout, resolve names) and a sortable hop
+  table built on `AppTable`; the separate Traceroute entry is now a hidden alias
+  of the same screen, so the sidebar no longer offers two near-identical tools.
 
 ## Delivered in the thirty-first slice (2026-11-19)
 
