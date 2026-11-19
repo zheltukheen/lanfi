@@ -1304,3 +1304,27 @@
 "URL" = "URL";
 
 "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Les annotations, sessions, relevés, réglages et journaux de plantage restent sur ce Mac. Aucune télémétrie ; la seule requête en arrière-plan est la détection de portail captif, désactivable ci-dessus.";
+
+/* Listener watch (P3.1) */
+"Include UDP listeners" = "Inclure les sockets UDP";
+"Watch listeners" = "Surveiller les écouteurs";
+"Exposure" = "Exposition";
+"Local only" = "Local uniquement";
+"All interfaces" = "Toutes les interfaces";
+"LAN-reachable" = "Accessible sur le LAN";
+"Unknown" = "Inconnu";
+"Bound to loopback; other devices cannot connect." = "Lié au loopback ; les autres appareils ne peuvent pas se connecter.";
+"Answers on every interface, including the LAN." = "Répond sur toutes les interfaces, y compris le LAN.";
+"Bound to one address on this Mac." = "Lié à une adresse de ce Mac.";
+"The local endpoint could not be parsed." = "Le point local n'a pas pu être analysé.";
+"LanFi · Listeners" = "LanFi · Écouteurs";
+"New listener: %1$@ on %2$@ — %3$@" = "Nouvel écouteur : %1$@ sur %2$@ — %3$@";
+"Listener closed: %1$@ on %2$@" = "Écouteur fermé : %1$@ sur %2$@";
+"Listener watch" = "Surveillance des écouteurs";
+"Last sampled %@" = "Dernier relevé %@";
+"Sample now" = "Relever maintenant";
+"No listener changes yet. Watching samples lsof every 30 s." = "Aucun changement pour l'instant. La surveillance lit lsof toutes les 30 s.";
+"One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding." = "Une notification par écouteur ouvert ou fermé. Les sockets loopback sont dits locaux ; les autres sont accessibles sur le LAN, jamais \"publics\", car LanFi ne voit pas le transfert de ports du routeur.";
+"Samples listening sockets every 30 s and notifies when one appears or closes." = "Relève les sockets en écoute toutes les 30 s et notifie leur ouverture ou fermeture.";
+"Adds UDP sockets, which answer clients without a TCP listener." = "Ajoute les sockets UDP, qui répondent aux clients sans écouteur TCP.";
+"Reachable" = "Accessibles";

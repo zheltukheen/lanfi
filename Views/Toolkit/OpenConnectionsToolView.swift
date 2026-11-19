@@ -8,8 +8,11 @@ import SwiftUI
 struct OpenConnectionsToolView: View {
     @ObservedObject var rules: ConnectionRulesModel
 
+    @StateObject private var watcher = ListenerWatcher.shared
+
     @State private var connections: [OpenConnection] = []
     @State private var includeListeners = false
+    @State private var includeUDP = false
     @State private var search = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -151,10 +154,14 @@ struct OpenConnectionsToolView: View {
                 ruleBanner
             }
             summary
+            watcherCard
             table
         }
         .appContentPadding()
-        .task { await refresh() }
+        .task {
+            watcher.restoreFromSettings()
+            await refresh()
+        }
         .confirmationDialog(
             "Terminate process?",
             isPresented: $showKillConfirmation,
@@ -192,6 +199,17 @@ struct OpenConnectionsToolView: View {
                 .onChange(of: includeListeners) { _ in
                     Task { await refresh() }
                 }
+            Toggle("Include UDP listeners", isOn: $includeUDP)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .help("Adds UDP sockets, which answer clients without a TCP listener.")
+                .onChange(of: includeUDP) { _ in
+                    Task { await refresh() }
+                }
+            Toggle("Watch listeners", isOn: watchBinding)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .help("Samples listening sockets every 30 s and notifies when one appears or closes.")
             TextField("Filter by process, address or PID", text: $search)
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: DesignToken.Layout.controlWidthLarge)
@@ -245,8 +263,11 @@ struct OpenConnectionsToolView: View {
                             value: "\(OpenConnectionsParser.byProcess(connections).count)",
                             label: "Processes", tint: AppPalette.info)
                         StatTile(
-                            value: "\(connections.filter(\.isListening).count)", label: "Listening",
+                            value: "\(connections.filter(\.isListener).count)", label: "Listening",
                             tint: AppPalette.warning)
+                        StatTile(
+                            value: "\(connections.filter { $0.exposure.isLANReachable }.count)",
+                            label: "Reachable", tint: AppPalette.danger)
                         StatTile(
                             value: "\(groups.count)",
                             label: groupMode == .socket ? "Sockets" : "Process groups")
@@ -331,7 +352,9 @@ struct OpenConnectionsToolView: View {
             }
             .width(AppColumnWidth.compact)
             TableColumn("Proto") { row in
-                rowCell(row) { Text(primary(row)?.protocolName ?? "—") }
+                rowCell(row) {
+                    Text(protoLabel(row))
+                }
             }
             .width(AppColumnWidth.short)
             TableColumn("Local") { row in
@@ -341,6 +364,10 @@ struct OpenConnectionsToolView: View {
                 }
             }
             .width(AppColumnWidth.long)
+            TableColumn("Exposure") { row in
+                rowCell(row) { exposureLabel(row) }
+            }
+            .width(AppColumnWidth.compact)
             TableColumn("Remote") { row in
                 rowCell(row) {
                     Text(remoteLabel(row))
@@ -485,6 +512,107 @@ struct OpenConnectionsToolView: View {
         }
     }
 
+    private func protoLabel(_ row: TableRow) -> String {
+        guard let connection = primary(row) else { return "—" }
+        return "\(connection.protocolName) \(connection.transport)"
+    }
+
+    @ViewBuilder
+    private func exposureLabel(_ row: TableRow) -> some View {
+        if let connection = primary(row) {
+            let exposure = connection.exposure
+            Text(exposure.title)
+                .font(.caption2)
+                .foregroundColor(
+                    exposure.isLANReachable ? AppPalette.warning : .secondary
+                )
+                .help(exposure.detail)
+        } else {
+            Text("—")
+        }
+    }
+
+    private var watchBinding: Binding<Bool> {
+        Binding(
+            get: { watcher.isWatching },
+            set: { enabled in
+                if enabled {
+                    Task { _ = await MonitorNotifier.shared.requestAuthorization() }
+                }
+                watcher.setWatching(enabled)
+            }
+        )
+    }
+
+    @ViewBuilder
+    private var watcherCard: some View {
+        if watcher.isWatching || !watcher.changes.isEmpty {
+            AppCard {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                    HStack(spacing: DesignToken.Spacing.small) {
+                        SectionLabel(text: "Listener watch")
+                        if watcher.isSampling { ProgressView().controlSize(.mini) }
+                        Spacer()
+                        if let at = watcher.lastSampleAt {
+                            Text("Last sampled \(at.formatted(date: .omitted, time: .standard))")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        Button("Sample now") {
+                            Task { await watcher.sampleNow() }
+                        }
+                        .controlSize(.mini)
+                        .disabled(watcher.isSampling)
+                        Button("Clear") { watcher.clearChanges() }
+                            .controlSize(.mini)
+                            .disabled(watcher.changes.isEmpty)
+                    }
+
+                    if let error = watcher.errorMessage {
+                        Text(error)
+                            .font(.caption2)
+                            .foregroundColor(AppPalette.danger)
+                    } else if watcher.changes.isEmpty {
+                        Text("No listener changes yet. Watching samples lsof every 30 s.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    } else {
+                        ForEach(watcher.changes.prefix(6)) { change in
+                            HStack(spacing: 6) {
+                                Image(
+                                    systemName: change.kind == .opened
+                                        ? "plus.circle.fill" : "minus.circle.fill"
+                                )
+                                .font(.caption2)
+                                .foregroundColor(
+                                    change.kind == .opened
+                                        ? AppPalette.warning : AppPalette.muted)
+                                Text(change.listener.label)
+                                    .font(.caption.monospaced())
+                                Text(change.listener.exposure.title)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(
+                                    change.at.formatted(date: .omitted, time: .standard)
+                                )
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+
+                    Text(
+                        "One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
     private func localLabel(_ row: TableRow) -> String {
         if case .group(let group) = row { return group.local }
         return "—"
@@ -604,7 +732,8 @@ struct OpenConnectionsToolView: View {
         isLoading = true
         errorMessage = nil
         do {
-            connections = try await OpenConnectionsService.fetch(includeListeners: includeListeners)
+            connections = try await OpenConnectionsService.fetch(
+                includeListeners: includeListeners, includeUDP: includeUDP)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -613,7 +742,7 @@ struct OpenConnectionsToolView: View {
 
     private func copy() {
         let text = filtered.map {
-            "\($0.process)\t\($0.pid)\t\($0.user)\t\($0.local)\t\($0.remote)\t\($0.state)"
+            "\($0.process)\t\($0.pid)\t\($0.user)\t\($0.transport)\t\($0.local)\t\($0.remote)\t\($0.state)\t\($0.exposure.title)"
         }.joined(separator: "\n")
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)

@@ -70,6 +70,10 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/ListenerWatch.swift` / `Services/ListenerWatchService.swift` — P3.1:
+  the listener summary, the endpoint exposure classifier (`SocketExposure` in
+  `Models/OpenConnections.swift`), the sample diff and the `ListenerWatcher`
+  that samples `lsof` every 30 s behind the persisted "Watch listeners" toggle.
 - `Models/ConnectivityWatchdog.swift` / `Services/ConnectivityWatchdogService.swift` —
   P3.3: the online / captive-portal / offline verdict, its two-strike
   hysteresis, the probe classifier and the notification policy, plus the timed
@@ -250,6 +254,8 @@ so those values cannot be rolled back; `importData` overwrites them on purpose.
 - `LanFi.scan.dwellMilliseconds` — last passive/directed dwell per channel.
 - `LanFi.menuBar.metric|style|unit` — menu-bar meter metric, label style and
   throughput unit (mirrored from `AppSettings.menuBar`).
+- `LanFi.listeners.watch` — the Connections listener watcher toggle
+  (`AppSettings.automation.listenerWatch`).
 - `LanFi.connectivity.enabled|interval|primaryURL|fallbackURL` and
   `LanFi.connectivity.notify.offline|captive|restored` — the connectivity
   watchdog (`AppSettings.connectivity`); quiet hours are read from

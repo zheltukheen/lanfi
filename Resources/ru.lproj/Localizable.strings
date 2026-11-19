@@ -1341,3 +1341,27 @@
 "URL" = "URL";
 
 "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Аннотации, сессии, обследования, настройки и логи падений остаются на этом Mac. Телеметрии нет; единственный фоновый запрос — проверка captive portal от контроля связи, её можно отключить выше.";
+
+/* Listener watch (P3.1) */
+"Include UDP listeners" = "Показывать UDP-сокеты";
+"Watch listeners" = "Следить за слушателями";
+"Exposure" = "Доступность";
+"Local only" = "Только локально";
+"All interfaces" = "Все интерфейсы";
+"LAN-reachable" = "Доступен в LAN";
+"Unknown" = "Неизвестно";
+"Bound to loopback; other devices cannot connect." = "Привязан к loopback; другие устройства не подключатся.";
+"Answers on every interface, including the LAN." = "Отвечает на всех интерфейсах, включая LAN.";
+"Bound to one address on this Mac." = "Привязан к одному адресу на этом Mac.";
+"The local endpoint could not be parsed." = "Не удалось разобрать локальный адрес.";
+"LanFi · Listeners" = "LanFi · Слушатели";
+"New listener: %1$@ on %2$@ — %3$@" = "Новый слушатель: %1$@ на %2$@ — %3$@";
+"Listener closed: %1$@ on %2$@" = "Слушатель закрыт: %1$@ на %2$@";
+"Listener watch" = "Наблюдение за слушателями";
+"Last sampled %@" = "Последняя выборка %@";
+"Sample now" = "Проверить сейчас";
+"No listener changes yet. Watching samples lsof every 30 s." = "Изменений пока нет. Наблюдение читает lsof каждые 30 с.";
+"One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding." = "Одно уведомление на новый или закрытый слушатель. Loopback-сокеты помечаются как локальные, остальные — как доступные в LAN, но не «публичные»: LanFi не видит проброс портов на роутере.";
+"Samples listening sockets every 30 s and notifies when one appears or closes." = "Проверяет слушающие сокеты каждые 30 с и уведомляет о появлении или закрытии.";
+"Adds UDP sockets, which answer clients without a TCP listener." = "Добавляет UDP-сокеты, которые отвечают клиентам без TCP-слушателя.";
+"Reachable" = "Доступны";

@@ -111,6 +111,7 @@
 		2B21E9F330CB3FCD69F88484 /* ConnectionRulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A300CDCDE124EEB6A7439DA6 /* ConnectionRulesView.swift */; };
 		2BE21F3DA172274265B1154C /* SurveyGeo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEFAF211D6FA638431AD970 /* SurveyGeo.swift */; };
 		2CA7A1992461DD83C7B38D21 /* RegulatoryDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578AA14FD81ABF1B9E3CBAE2 /* RegulatoryDatabase.swift */; };
+		2D9FEF3D6B810E2CCB044948 /* ListenerWatchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCD19A742504006FA70B7E2 /* ListenerWatchService.swift */; };
 		2DAC67A036D3C64B4AF10398 /* SurveyMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28981A675C36E46F732829F /* SurveyMapView.swift */; };
 		2DC882EC059B7B315304C5A2 /* ToolRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B9A06947F3EA47D43A6C2D /* ToolRouting.swift */; };
 		2E63AB33C06CB71E549B0FCF /* HARTraffic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901A1E58A90C9AAFD381D03F /* HARTraffic.swift */; };
@@ -214,6 +215,7 @@
 		58B6C80CD67271533EA0EAB8 /* DiagnosticsHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F4351A08D1255E0E2730AB /* DiagnosticsHistoryTests.swift */; };
 		58EB7E9FCDAD4A9CC2E9A8B1 /* WakeOnLAN.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31D426DA1E37548B7E70FA4 /* WakeOnLAN.swift */; };
 		590D50DA6E2DA166F4C8554C /* SurveyInterpolator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E76D0661115093391A9191CE /* SurveyInterpolator.swift */; };
+		59286F8BC24372B50C4F7DE9 /* ListenerWatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3024B134790EE31F773A818D /* ListenerWatchTests.swift */; };
 		595F78682B37281ACC0324B0 /* ScanExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51713A91F4594785B4BB5930 /* ScanExport.swift */; };
 		59984C17119985747CA1793C /* SignalDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45D04CC7A1E781DCDEA4005 /* SignalDisplayMode.swift */; };
 		59AD8CE1F2C5452BF7CB6118 /* LinkTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6923AC478E244EAF259A748C /* LinkTelemetry.swift */; };
@@ -507,6 +509,7 @@
 		BFA03CF58B367BBBE7823AD7 /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
 		BFBDB449EAA23C41FAFB112E /* WorkspaceEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C09BF1703291D6C31F394B9 /* WorkspaceEmptyState.swift */; };
 		BFFC6CE6F7691DE2140BCC72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A523B096357134ADAD3A2442 /* Assets.xcassets */; };
+		C048933618202518DC8CBFED /* ListenerWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9944BB86E5DE07ABB80272A4 /* ListenerWatch.swift */; };
 		C0E5C41725FB609198FEC178 /* SurveyReportSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930CBC808AA855B912B998FF /* SurveyReportSettingsView.swift */; };
 		C1453D8D6ECBF744044B9FCF /* HARRedaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B774E7F23D9D680AF95AE8 /* HARRedaction.swift */; };
 		C18B76DA1D58B7FE2F645E31 /* PortScanToolModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14E7592CC163DA63CAEFC86 /* PortScanToolModel.swift */; };
@@ -651,6 +654,7 @@
 		F87ABA0C3327BD40BE52AE15 /* Iperf3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1231751D684779D89F4286E5 /* Iperf3Tests.swift */; };
 		F94BC344199F9437E0D6B9B1 /* ToolkitModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D0FDDBC5A669F1986F7F30 /* ToolkitModels.swift */; };
 		F99231FA85EDA4FF2FE3235F /* ScanMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838A94EE0E309470BD9A81F3 /* ScanMetricsTests.swift */; };
+		F9B875FA901D9E5A9489108E /* ListenerWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9944BB86E5DE07ABB80272A4 /* ListenerWatch.swift */; };
 		FA8DB1D0CCBABDAB3312E295 /* DeviceShelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16ABE02BDD6A7CCC817DCB91 /* DeviceShelfStore.swift */; };
 		FA913F3FF36064FF70BB2B7E /* PingToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 698DBB6C759F71B1B359E535 /* PingToolView.swift */; };
 		FB74BB6D5F6328EFE8755754 /* ToolkitViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793D85962F9D99F33349934C /* ToolkitViewModel.swift */; };
@@ -746,6 +750,7 @@
 		2F59C75A3F93DE315D71C726 /* NetworkHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkHistoryTests.swift; sourceTree = "<group>"; };
 		2FC81479F18BD38052D426D3 /* LanFiCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanFiCLI.swift; sourceTree = "<group>"; };
 		2FED3195DD05AC301C5DC465 /* GeoIPModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoIPModels.swift; sourceTree = "<group>"; };
+		3024B134790EE31F773A818D /* ListenerWatchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenerWatchTests.swift; sourceTree = "<group>"; };
 		30FFA0703F0A7F73955FD12C /* SurveyHeatmap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyHeatmap.swift; sourceTree = "<group>"; };
 		316ECB1DC40C877C4B2DCFF9 /* CustomFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFiltersView.swift; sourceTree = "<group>"; };
 		32D1B0C61C6CF5F95262A13C /* KnownNetworksToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnownNetworksToolView.swift; sourceTree = "<group>"; };
@@ -909,6 +914,7 @@
 		957F50461891605F6C31319B /* Survey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Survey.swift; sourceTree = "<group>"; };
 		98DA98C9384F3450DF0F24F8 /* SubnetCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubnetCalculatorTests.swift; sourceTree = "<group>"; };
 		99373C5F0562D292C28FCCB3 /* LiveClientDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveClientDiscoveryView.swift; sourceTree = "<group>"; };
+		9944BB86E5DE07ABB80272A4 /* ListenerWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenerWatch.swift; sourceTree = "<group>"; };
 		9A589436AA9C82730581B886 /* ExportFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFormatterTests.swift; sourceTree = "<group>"; };
 		9AA7B0F0189511DB7E761C6D /* NetworkComparisonTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkComparisonTable.swift; sourceTree = "<group>"; };
 		9BB0735CC7BCD75BA4920B4D /* PortSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortSpec.swift; sourceTree = "<group>"; };
@@ -1038,6 +1044,7 @@
 		DC2A826AB5F61814DF3A00EB /* SparklineGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparklineGeometry.swift; sourceTree = "<group>"; };
 		DD3D5F699AAF617B4DF925DF /* LANScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LANScannerService.swift; sourceTree = "<group>"; };
 		DDCB4D5D854B417B3F2D22E5 /* SurveyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyViewModel.swift; sourceTree = "<group>"; };
+		DDCD19A742504006FA70B7E2 /* ListenerWatchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenerWatchService.swift; sourceTree = "<group>"; };
 		DE45627167C818FDD5684C1E /* SurveyInterpolatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyInterpolatorTests.swift; sourceTree = "<group>"; };
 		DF9C4E45B43D82722584E0AF /* MTRToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRToolView.swift; sourceTree = "<group>"; };
 		DFE2B9C0995FE8B625C9BA4D /* QRCodeImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeImage.swift; sourceTree = "<group>"; };
@@ -1197,6 +1204,7 @@
 				A8D00951A5C916B60C7FC160 /* Iperf3HistoryTests.swift */,
 				1231751D684779D89F4286E5 /* Iperf3Tests.swift */,
 				CFFFBD941DFDFB8D27C6B495 /* LANScannerTests.swift */,
+				3024B134790EE31F773A818D /* ListenerWatchTests.swift */,
 				CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */,
 				03FE82B752FFF9DD0B89D690 /* MCPProtocolTests.swift */,
 				4B2E378036378E58C047B46C /* MenuBarAlertTests.swift */,
@@ -1398,6 +1406,7 @@
 				82A368027A99C180AAC72E8F /* KnownNetworksService.swift */,
 				7D77CB21E2AE78D2D1F1926E /* LanFiIntents.swift */,
 				BAE71D9536A0640EEF40187E /* LaunchAtLoginController.swift */,
+				DDCD19A742504006FA70B7E2 /* ListenerWatchService.swift */,
 				5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */,
 				1935527BA11697AF21ED58C9 /* LocalNetworkAccess.swift */,
 				547357481C8F3E73DD13D920 /* MCPSnapshotWriter.swift */,
@@ -1570,6 +1579,7 @@
 				4540DFB7C1F6D99785ABF64B /* KnownNetwork.swift */,
 				CCCDD717115184E6E8F99044 /* LANModels.swift */,
 				6923AC478E244EAF259A748C /* LinkTelemetry.swift */,
+				9944BB86E5DE07ABB80272A4 /* ListenerWatch.swift */,
 				2882C100005D36324C3471C1 /* MCPToolSpec.swift */,
 				6FBEB91987438B9C71550E0B /* MenuBarAlert.swift */,
 				C6A4DB36EA958667955490A3 /* MLOGroup.swift */,
@@ -2008,6 +2018,8 @@
 				4B509C51AB072386729337B9 /* LANScannerService.swift in Sources */,
 				4C39FAD8D118D06DE4C94B95 /* LANScannerTests.swift in Sources */,
 				59AD8CE1F2C5452BF7CB6118 /* LinkTelemetry.swift in Sources */,
+				F9B875FA901D9E5A9489108E /* ListenerWatch.swift in Sources */,
+				59286F8BC24372B50C4F7DE9 /* ListenerWatchTests.swift in Sources */,
 				78604E7198404854FAFAAC04 /* LiveCaptureService.swift in Sources */,
 				B4D6F48E2D0F1F0E56844497 /* LiveCaptureTests.swift in Sources */,
 				B4649BD048F84ED2C1BCF252 /* LocalNetworkAccess.swift in Sources */,
@@ -2302,6 +2314,8 @@
 				2EE392309D4BAFE13DD69C99 /* LaunchAtLoginController.swift in Sources */,
 				194C72D7D328F66A739AFE28 /* LinkInspectorSection.swift in Sources */,
 				D40AFCBCA8DF74EA532F5288 /* LinkTelemetry.swift in Sources */,
+				C048933618202518DC8CBFED /* ListenerWatch.swift in Sources */,
+				2D9FEF3D6B810E2CCB044948 /* ListenerWatchService.swift in Sources */,
 				9FDCDF1ED5506EF6DF7FC451 /* LiveCaptureService.swift in Sources */,
 				0077A4650CD2B467EC115AF5 /* LiveCaptureView.swift in Sources */,
 				13D80BA6C6CF5CA187E4871C /* LiveClientDiscoveryView.swift in Sources */,

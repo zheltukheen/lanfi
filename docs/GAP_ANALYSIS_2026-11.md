@@ -367,17 +367,27 @@ events are missing.
 
 Tasks:
 
-- [ ] Add UDP listeners (`lsof -nP -iUDP`) to the same table with a protocol
-      column; keep the TCP pass as the fast default.
-- [ ] Classify every socket from its local endpoint: loopback only
-      (`127.0.0.1`/`::1`), all interfaces (`0.0.0.0`/`::`), or one specific
-      address. Label the last two "LAN-reachable", not "public": without a
-      router table LanFi cannot claim internet exposure.
-- [ ] Sample on a timer while the Connections screen or a "Watch listeners"
-      toggle is on, diff the set and post one notification per new or closed
-      listener.
+- [x] Add UDP listeners (`-iUDP` in the same read-only `lsof` call) to the same
+      table behind an "Include UDP listeners" toggle, with the transport in the
+      Proto column; the TCP pass stays the fast default. UDP sockets count as
+      listeners, because they answer clients without a `LISTEN` state.
+- [x] Classify every socket from its local endpoint: loopback only
+      (`127.0.0.1`/`::1`/`localhost`), all interfaces (`*`/`0.0.0.0`/`::`), or
+      one specific address (`SocketExposureClassifier`). The last two are
+      labelled "LAN-reachable", never "public": without a router table LanFi
+      cannot claim internet exposure. Exposure is a sortable table column.
+- [x] Sample on a timer (30 s, cadence shared with the watcher) behind a
+      persisted "Watch listeners" toggle, diff the set by PID + transport +
+      local endpoint and post one notification per new or closed listener. The
+      first sample after starting is a baseline, so starting the watcher does
+      not announce every existing server.
 - [ ] Optional user-recorded global hotkey that opens Connections; one owner,
-      no default.
+      no default. (Still open: needs a hot-key recorder and a conflict rule.)
+
+Delivered 2026-11-19: `Models/ListenerWatch.swift` (summary, diff, copy),
+`Services/ListenerWatchService.swift` (`ListenerWatcher`, 30 s sampling through
+`MonitorNotifier.shared`), the Exposure column and watcher card in
+`Views/Toolkit/OpenConnectionsToolView.swift`, and `Tests/ListenerWatchTests.swift`.
 
 Acceptance: starting `python3 -m http.server` produces a LAN-reachable row and
 one notification within an interval; a loopback-only server is labelled local;
@@ -800,6 +810,21 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-fourth slice (2026-11-19)
+
+- **P3.1 listener watch.** Connections now lists UDP sockets next to TCP ones
+  (Proto carries the transport), every row gains an **Exposure** column built
+  from the local endpoint — loopback, all interfaces or one specific address —
+  and the summary counts LAN-reachable sockets separately. A persisted "Watch
+  listeners" toggle samples `lsof` every 30 s, diffs the set by PID + transport
+  + endpoint and posts one notification per new or closed listener through the
+  shared notifier; the first sample is a baseline, so turning it on does not
+  announce every server already running. 8 pure tests cover UDP parsing,
+  exposure classification, the diff and the notification copy.
+- **No "public" claim.** Sockets are labelled "LAN-reachable", and the card
+  says why: without a router table LanFi cannot know whether a port is
+  forwarded.
 
 ## Delivered in the twenty-third slice (2026-11-19)
 

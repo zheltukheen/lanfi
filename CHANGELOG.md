@@ -15,6 +15,16 @@
   interval (15 s–5 min), probe URLs and notifications in Settings → General, or
   ask Shortcuts for the current state.
 
+### Added (listener watch)
+- **Connections lists UDP listeners and watches the listener set.** The Sockets
+  table gained an **Include UDP listeners** toggle, the transport in the Proto
+  column and an **Exposure** column that labels every local endpoint as local
+  (loopback), all interfaces or LAN-reachable. "Watch listeners" samples `lsof`
+  every 30 s and posts one notification per new or closed listener; the first
+  sample is a baseline, so turning it on does not announce every server that
+  was already running. LAN-reachable is deliberately not called "public":
+  LanFi cannot see your router's port forwarding.
+
 ### Changed
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.

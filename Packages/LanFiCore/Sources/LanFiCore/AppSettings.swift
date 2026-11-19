@@ -193,6 +193,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         public var speedTestCadence: SpeedTestCadence = .off
         public var lanGuardEnabled = false
         public var processTrafficEnabled = false
+        public var listenerWatch = false
         public var autoUpdateOUI = true
 
         public init() {}

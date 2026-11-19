@@ -7,8 +7,8 @@ final class ConnectionRulesTests: XCTestCase {
         state: String = "ESTABLISHED"
     ) -> OpenConnection {
         OpenConnection(
-            id: "\(pid)|\(local)|\(remote)|\(state)", process: process, pid: pid, user: user,
-            protocolName: "IPv4", local: local, remote: remote, state: state)
+            id: "\(pid)|TCP|\(local)|\(remote)|\(state)", process: process, pid: pid, user: user,
+            protocolName: "IPv4", transport: "TCP", local: local, remote: remote, state: state)
     }
 
     func testPortMatchesEitherEndpoint() {

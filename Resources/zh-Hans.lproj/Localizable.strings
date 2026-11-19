@@ -1304,3 +1304,27 @@
 "URL" = "URL";
 
 "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "标注、会话、勘测、设置与崩溃日志都保留在这台 Mac 上。LanFi 没有遥测；唯一的后台请求是连接监控的强制门户检测，可在上方关闭。";
+
+/* Listener watch (P3.1) */
+"Include UDP listeners" = "包含 UDP 监听端口";
+"Watch listeners" = "监控监听端口";
+"Exposure" = "可达性";
+"Local only" = "仅本机";
+"All interfaces" = "所有接口";
+"LAN-reachable" = "局域网可达";
+"Unknown" = "未知";
+"Bound to loopback; other devices cannot connect." = "绑定到回环地址，其他设备无法连接。";
+"Answers on every interface, including the LAN." = "在所有接口上应答，包括局域网。";
+"Bound to one address on this Mac." = "绑定到这台 Mac 的一个地址。";
+"The local endpoint could not be parsed." = "无法解析本地端点。";
+"LanFi · Listeners" = "LanFi · 监听端口";
+"New listener: %1$@ on %2$@ — %3$@" = "新的监听端口：%1$@ 位于 %2$@ — %3$@";
+"Listener closed: %1$@ on %2$@" = "监听端口已关闭：%1$@ 位于 %2$@";
+"Listener watch" = "监听端口监控";
+"Last sampled %@" = "上次采样 %@";
+"Sample now" = "立即采样";
+"No listener changes yet. Watching samples lsof every 30 s." = "暂无变化。监控每 30 秒读取一次 lsof。";
+"One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding." = "每个新开或关闭的监听端口各通知一次。回环套接字标记为本机，其余为局域网可达，而不是“公网”，因为 LanFi 无法看到路由器的端口映射。";
+"Samples listening sockets every 30 s and notifies when one appears or closes." = "每 30 秒采样监听套接字，出现或关闭时通知。";
+"Adds UDP sockets, which answer clients without a TCP listener." = "加入 UDP 套接字，它们无需 TCP 监听即可应答客户端。";
+"Reachable" = "可达";

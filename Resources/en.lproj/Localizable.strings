@@ -1305,3 +1305,27 @@
 "URL" = "URL";
 
 "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above.";
+
+/* Listener watch (P3.1) */
+"Include UDP listeners" = "Include UDP listeners";
+"Watch listeners" = "Watch listeners";
+"Exposure" = "Exposure";
+"Local only" = "Local only";
+"All interfaces" = "All interfaces";
+"LAN-reachable" = "LAN-reachable";
+"Unknown" = "Unknown";
+"Bound to loopback; other devices cannot connect." = "Bound to loopback; other devices cannot connect.";
+"Answers on every interface, including the LAN." = "Answers on every interface, including the LAN.";
+"Bound to one address on this Mac." = "Bound to one address on this Mac.";
+"The local endpoint could not be parsed." = "The local endpoint could not be parsed.";
+"LanFi · Listeners" = "LanFi · Listeners";
+"New listener: %1$@ on %2$@ — %3$@" = "New listener: %1$@ on %2$@ — %3$@";
+"Listener closed: %1$@ on %2$@" = "Listener closed: %1$@ on %2$@";
+"Listener watch" = "Listener watch";
+"Last sampled %@" = "Last sampled %@";
+"Sample now" = "Sample now";
+"No listener changes yet. Watching samples lsof every 30 s." = "No listener changes yet. Watching samples lsof every 30 s.";
+"One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding." = "One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding.";
+"Samples listening sockets every 30 s and notifies when one appears or closes." = "Samples listening sockets every 30 s and notifies when one appears or closes.";
+"Adds UDP sockets, which answer clients without a TCP listener." = "Adds UDP sockets, which answer clients without a TCP listener.";
+"Reachable" = "Reachable";

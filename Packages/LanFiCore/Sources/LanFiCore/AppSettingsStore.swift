@@ -272,6 +272,8 @@ public final class AppSettingsStore: @unchecked Sendable {
             .lanGuardEnabled, settings.automation.lanGuardEnabled)
         settings.automation.processTrafficEnabled = bool(
             .processTrafficEnabled, settings.automation.processTrafficEnabled)
+        settings.automation.listenerWatch = bool(
+            .listenerWatch, settings.automation.listenerWatch)
         settings.automation.autoUpdateOUI = bool(
             .autoUpdateOUI, settings.automation.autoUpdateOUI)
 
@@ -374,6 +376,7 @@ public final class AppSettingsStore: @unchecked Sendable {
         storage.set(
             settings.automation.processTrafficEnabled,
             forKey: AppSettingsKey.processTrafficEnabled.rawValue)
+        storage.set(settings.automation.listenerWatch, forKey: AppSettingsKey.listenerWatch.rawValue)
         storage.set(settings.automation.autoUpdateOUI, forKey: AppSettingsKey.autoUpdateOUI.rawValue)
 
         storage.set(

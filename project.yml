@@ -217,6 +217,7 @@ targets:
       - path: Models/RemoteSensor.swift
       - path: Models/MenuBarAlert.swift
       - path: Models/ConnectivityWatchdog.swift
+      - path: Models/ListenerWatch.swift
       - path: Models/FilterProfile.swift
       - path: Models/CustomFilter.swift
       - path: Models/ColoringRule.swift
