@@ -64,6 +64,15 @@ because the delivered analysis depth is currently invisible in a screenshot.
 | P3.8 | Wired/Wi-Fi link automation | Automation | Low | S |
 | P3.9 | SSH quick launch from saved sensors | Workflow | Low | S |
 | P3.10 | Plain-language service descriptions | Presentation | Low | S/M |
+| P4.1 | Privileged helper with a hash-pinned binary | Engineering | Medium | M/L |
+| P4.2 | Supervised worker lifecycle: readiness, retry, auto-restart | Engineering | High | S/M |
+| P4.3 | DNS console: record types, DoH/DoT/DoQ, compare mode | Toolkit | High | S/M |
+| P4.4 | NAT type and STUN reachability test | Toolkit | Medium | M |
+| P4.5 | Command palette over tools and settings | Workflow | High | S/M |
+| P4.6 | Per-tool input history with pins | Workflow | Low | S |
+| P4.7 | Quick control: hotkey, widgets, launch at login | Integrations | Medium | M |
+| P4.8 | Validated settings import with a dry-run diff | Trust / workflow | Medium | S |
+| P4.9 | Accent colour and icon-set personalization | Presentation | Low | S |
 | D1 | Design tokens and shared components | Presentation | High | M |
 | D2 | Hero RF overview, first run and empty states | Presentation | High | S/M |
 | D3 | Table presentation: density, bars, relative time, wording | Presentation | High | S/M |
@@ -632,6 +641,221 @@ root certificate, VPN clients, share automounting, cross-device file transfer,
 CI/commute monitors and a system posture audit. The reasons are in
 [`ONMYMENUBAR_NETWORK_REVIEW_2026-11.md`](ONMYMENUBAR_NETWORK_REVIEW_2026-11.md)
 and in the non-goals below.
+
+## P4 — Bettbox review (Another Better Network Toolbox, 2026-11-19)
+
+Source: <https://github.com/appshubcc/Bettbox> (Flutter GUI over the Mihomo
+Go core, GPL-3.0, macOS 12+ Intel/Apple Silicon, Windows, Linux, Android).
+LanFi does not route or proxy traffic, so the proxy half of that app — TUN,
+subscriptions, protocol handlers, rule routing, media-unlock checks — is out of
+scope. What is worth reading is how it treats **long-running supervision, DNS
+debugging and tool discovery**; those parts fit LanFi's analyzer and toolkit.
+
+**Licence:** Bettbox is GPL-3.0. Nothing below is copied — no source, strings or
+assets. These are behaviour and interaction patterns to re-implement in Swift.
+Only the idea, the measurements and the UX shape carry over.
+
+### P4.1 — Privileged helper with a hash-pinned binary
+
+*What Bettbox does.* `services/helper` is a small Rust service (`src/ipc.rs`,
+`src/rpc.rs`, `src/ops.rs`) that installs as a system service and exposes RPC
+over a local channel. Before it starts anything it opens the requested
+executable, hashes it (SHA-256, streamed in 64 KiB blocks, cached by
+size+mtime) and compares the digest with a value compiled into the helper
+(`env!("TOKEN")`); a mismatch is logged and refused. It then spawns the process,
+binds it to a Job object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` so it cannot
+outlive the helper, keeps a bounded in-memory log ring, and offers process
+priority and memory-priority operations restricted to an allow-list of
+executable names.
+
+*Why it matters for LanFi.* Anything that needs root today (BPF capture without
+`tcpdump` setuid, raw sockets, `pf` inspection) is refused or shelled out with
+an admin prompt each time. A signed helper that only executes one hash-pinned
+binary is the pattern that makes such a feature shippable without handing the
+user a general root shell.
+
+*Where it would live.* `Helper/` target (Swift or Rust) plus a
+`HelperClient` in `Services/`; `SMAppService.daemon` registration, launchd job,
+NSXPCConnection instead of a pipe, code-signing requirement checked on both
+sides.
+
+*Decision.* Not in this cycle: it contradicts the current "no elevation, no
+persistent daemon" constraint and needs Developer ID first (P0.1). Recorded so
+the capture work has a safe shape when it is attempted.
+
+### P4.2 — Supervised worker lifecycle: readiness, retry, auto-restart
+
+*What Bettbox does.* `lib/clash/service.dart` runs the core as a long-lived
+child and treats its IPC transport as the readiness signal:
+
+- the transport is a Unix domain socket in the temp directory with a random
+  token in the name (`Bettbox_<random>.sock`) or, where that is unavailable,
+  loopback TCP on an ephemeral port — no fixed port, no world-readable socket;
+- "ready" means the socket connected **or** the process exited (whichever comes
+  first) within a 6 s production / 15 s development timeout;
+- if the child does not connect, the transport is rebound to a fresh socket and
+  the launch is retried once with the new argument;
+- an unexpected disconnect triggers one automatic restart after 2 s, rate
+  limited to one attempt per minute, and only while the helper reports healthy;
+- health is a real RPC (`getIsInit`) with a 2 s timeout, not "the process is
+  alive"; shutdown sends SIGTERM and escalates to SIGKILL after 2 s, and the
+  shutdown path is idempotent so a second call cannot double-kill;
+- restarts are serialised through a `Completer`, so concurrent callers await the
+  same restart instead of starting several workers.
+
+*Why it matters for LanFi.* The remote-sensor and capture helpers are spawned
+processes already, and they have neither a readiness probe nor a restart policy:
+a hung `tcpdump`/sensor looks like "no data". The rate-limited restart, the
+idempotent shutdown and the "await the same restart" rule are directly reusable
+in `Services/`.
+
+*Where it would live.* A `SupervisedProcess` type in `Services/` (start, readiness
+predicate, timeout, retry-with-new-transport, shutdown escalation), unit-tested
+with a fake child that exits, hangs and closes late.
+
+### P4.3 — DNS console: record types, encrypted transports, compare mode
+
+*What Bettbox does.* `lib/pages/toolbox/dns_query.dart` offers A, AAAA, CNAME,
+HTTPS, TXT, MX and NS as chips, three resolution modes (follow the running
+tunnel, system resolver, custom server) and a preset list mixing plain IPs with
+`https://…/dns-query` (DoH), `tls://dns.google` (DoT) and
+`quic://dns.adguard-dns.com` (DoQ). A **Compare** switch sends the same query to
+all applicable modes in parallel and renders one card per mode: RCODE and
+elapsed milliseconds in the header, one row per record with type badge, value,
+TTL, and — for A/AAAA — country, city, ASN and ISP, clickable into an IP detail
+sheet. A note under the answers explains *why* the answer looks like that
+(hosts hit, fake-ip on/off with its range, which outbound the domain would take),
+which is the part LanFi's plain record table lacks.
+
+*Where it would live.* `Views/Toolkit/DNSToolView.swift` gains a Compare card
+(the benchmark card already measures resolvers; this explains a single name),
+`Services/DNSLookupService` gains DoH/DoT via `URLSession`/`NWConnection`,
+`Models/DNSQueryComparison` holds the per-resolver result, and the record table
+reuses `AppTable` with a TTL column. The route explanation maps to LanFi's
+interface, gateway and DNS answers instead of proxy outbounds.
+
+*Caution.* LanFi must not flush the system DNS cache on the user's behalf; if a
+"flush cache" affordance is ever added it stays a documented, admin-prompted
+action, not a one-tap button.
+
+### P4.4 — NAT type and STUN reachability test
+
+*What Bettbox does.* `lib/pages/toolbox/nat_test.dart` runs a STUN session
+against a preset or custom `host:port` (validated by regex, port 1–65535) and
+classifies the result as Open, Full-cone (NAT1), Restricted (NAT2),
+Port-restricted (NAT3) or Symmetric (NAT4), with a separate mapping behaviour
+(independent / address / address-port / dependent) and filtering behaviour. It
+shows the external IP and port, the local IP, whether the port is preserved or
+randomised, latency and loss, and a phase indicator while binding, filtering and
+mapping are probed.
+
+*Why it matters for LanFi.* Port Scan answers "is the port open on this host";
+nothing answers "will anything from the internet reach me". NAT classification
+explains failures in port forwarding, game consoles, VPN handshakes and
+server hosting — a natural companion to the existing Port Scan and Gateway
+cards, and the only tool on this list LanFi has no equivalent of at all.
+
+*Where it would live.* `Services/STUNTester.swift` (RFC 5389 binding requests to
+two servers, RFC 5780 mapping/filtering probes over `NWConnection` UDP),
+`Models/NATProfile.swift` (pure classification, unit-testable with recorded
+responses), `Views/Toolkit/NATTestToolView.swift`, and a `ToolboxTool` entry.
+All traffic goes to public STUN servers only; the server list stays editable and
+the default set is documented.
+
+### P4.5 — Command palette over tools and settings
+
+*What Bettbox does.* `lib/views/tools.dart` indexes every screen and every
+setting into `_SearchItem` records (title, subtitle, category, destination),
+rebuilds the index only when the navigation set changes, filters with a 300 ms
+debounce, groups hits by category (Settings / Config / Network / NTP / Sniffer /
+…), and opens the target page or sheet directly. The palette is the primary way
+to reach a setting on a phone-sized screen.
+
+*Why it matters for LanFi.* The app now has 11 settings tabs, ~20 toolkit tools
+and a sidebar; finding "anonymous statistics" or "resolver benchmark" means
+knowing where it lives. A ⌘K palette over a declarative index is cheap and is
+the single largest discoverability win on this list.
+
+*Where it would live.* `Models/CommandIndex.swift` (id, title, keywords,
+category, action), a `.searchable`/sheet palette in `Views/`, opened by ⌘K and
+from the toolbar, with every settings page and `ToolboxTool` registering an
+entry. Tests cover ranking (exact title before keyword) and the empty state.
+
+### P4.6 — Per-tool input history with pins
+
+*What Bettbox does.* Every tool page mixes in `ToolHistoryMixin` with its own
+`historyKey`, persists the last successful inputs and renders a horizontal
+history bar above the results with one-tap re-run, plus a clear action; recent
+items are shared per tool, not globally.
+
+*Why it matters for LanFi.* `ToolTargetField` remembers one shared list for all
+tools. That is right for a single target but wrong for "the three switches I keep
+testing" — DNS names, iperf servers and STUN hosts want separate lists.
+
+*Where it would live.* Extend `ToolHistoryStore` with a per-tool key and a
+pinned flag, show it as chips under the target field, and keep the shared list
+as the default for one-off probes.
+
+### P4.7 — Quick control: hotkey, widgets, launch at login
+
+*What Bettbox does.* Desktop builds ship a tray menu (start/stop, mode switch,
+quick settings), global hotkeys (`lib/views/hotkey.dart`), launch-at-login as a
+first-class setting, and home-screen widgets (Android `home_widget_wide.xml`)
+that read the running state without opening the app. Mobile builds adapt to
+Doze by suspending work when the OS freezes the process.
+
+*Why it matters for LanFi.* P1.6 covers App Intents and widgets in outline only;
+the concrete gaps are a global hotkey to open the menu-bar meter, a WidgetKit
+widget (signal, throughput, watchdog state) and launch-at-login exposed in
+Settings rather than hidden.
+
+*Where it would live.* A `WidgetKit` extension target in `project.yml`, an
+`AppIntent` that returns the watchdog snapshot, a `KeyboardShortcuts`-free
+`NSEvent` global monitor or a menu command, and a launch-at-login toggle via
+`SMAppService.mainApp`.
+
+### P4.8 — Validated settings import with a dry-run diff
+
+*What Bettbox does.* Its visual config editor writes only overrides, never the
+whole file, so a UI change cannot damage unrelated configuration; the app also
+advertises "dual configuration verification" — the config is parsed and then
+semantically checked before it is applied, and a failed apply leaves the previous
+runtime untouched.
+
+*Why it matters for LanFi.* Settings export/import is on the list ("Advanced:
+full settings export/import") but as a blind overwrite. Importing a JSON blob
+that carries an unknown key or an out-of-range interval should not half-apply.
+
+*Where it would live.* `SettingsTransfer` gains `validate(_:) ->
+[SettingsIssue]` (unknown key, type mismatch, range, removed key) and the import
+sheet shows a diff of changed keys with a confirm step; applying writes the same
+`AppSettingsKey` catalogue and never raw `UserDefaults` keys.
+
+### P4.9 — Accent colour and icon-set personalization
+
+*What Bettbox does.* `lib/views/theme.dart` exposes colour-scheme seeds
+(Material You style), icon sets (`lib/views/icon_sets.dart`), custom menu titles
+and thirty speed-test animations.
+
+*What to take.* Only the accent-colour seed and an icon-set switch: LanFi's
+`DesignToken`/`AppPalette` already centralise colour, so a user-chosen accent
+flows through every screen for free. Chart palettes must stay
+colour-blind-safe (D7) — a free colour picker would break that, so the choice is
+a curated set of accents, not a full picker. The animation collection is not
+worth the maintenance and conflicts with Reduce Motion.
+
+### Not planned from this source
+
+| Feature | Why not |
+| --- | --- |
+| TUN device, strict route, ICMP forwarding | LanFi observes traffic; it never intercepts or forwards it. |
+| Proxy protocols, subscriptions, rule routing, policy groups | Out of the product's scope and a security liability without a signed core. |
+| Media-unlock checks | Requires third-party streaming APIs and accounts. |
+| Code-forge editor (Rust/Flutter code editor plugin) | LanFi has no scripting surface to edit. |
+| JS override scripts with a generated GUI | Same reason: no config language to expose. |
+| Doze/mobile background adaptation | macOS-only product. |
+| Android/TV widgets and HarmonyOS packaging | Not a target platform. |
+| In-app affiliate links and sponsor blocks | Not appropriate for a paid utility. |
 
 ## Design and presentation (оформление)
 
