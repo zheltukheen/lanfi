@@ -76,6 +76,65 @@ struct ToolbarView: View {
         }
     }
 
+    /// Preset cadences offered by the countdown menu; the current value is
+    /// checked, and anything else is shown as "Custom".
+    private static let presetIntervals: [Double] = [1, 3, 5, 10, 30, 60]
+
+    private func intervalBinding(for value: Double) -> Binding<Bool> {
+        Binding(
+            get: { abs(viewModel.refreshInterval - value) < 0.01 },
+            set: { isOn in
+                if isOn { viewModel.updateRefreshInterval(to: value) }
+            })
+    }
+
+    /// The countdown pill is the interval menu: clicking it sets the scan
+    /// cadence, opens the custom-interval sheet, or pauses auto-scan.
+    private var refreshMenu: some View {
+        Menu {
+            Section {
+                ForEach(Self.presetIntervals, id: \.self) { value in
+                    Toggle(isOn: intervalBinding(for: value)) {
+                        Text(verbatim: intervalLabel(value))
+                    }
+                }
+                Button("Custom Interval...") {
+                    customIntervalText = String(Int(viewModel.refreshInterval))
+                    showingCustomIntervalAlert = true
+                }
+            } header: {
+                Text("Refresh interval")
+            }
+
+            Divider()
+
+            Button(viewModel.isAutoScanPaused ? "Resume auto-scan" : "Pause auto-scan") {
+                viewModel.isAutoScanPaused.toggle()
+            }
+        } label: {
+            refreshCountdown
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help(
+            viewModel.isAutoScanPaused
+                ? "Auto-scan is paused. Click to choose the refresh interval."
+                : "Refresh every \(Int(viewModel.refreshInterval)) s. Click to change the frequency."
+        )
+        .accessibilityLabel("Refresh interval")
+        .accessibilityValue(
+            viewModel.isAutoScanPaused ? "Paused" : "\(Int(viewModel.refreshInterval)) seconds")
+    }
+
+    private func intervalLabel(_ value: Double) -> String {
+        let seconds = Int(value)
+        if abs(viewModel.refreshInterval - value) < 0.01 {
+            return "\(seconds) s (current)"
+        }
+        return "\(seconds) s"
+    }
+
     /// Time until the next automatic scan, right next to Refresh/Pause so the
     /// analyzer shows how long the current list is good for.
     private var refreshCountdown: some View {
@@ -106,12 +165,7 @@ struct ToolbarView: View {
                         Color.secondary.opacity(DesignToken.Toolbar.strokeOpacity),
                         lineWidth: DesignToken.Stroke.hairline)
             )
-            .help(
-                viewModel.isAutoScanPaused
-                    ? "Auto-scan is paused"
-                    : "Time until the next scan (\(Int(viewModel.refreshInterval)) s interval)"
-            )
-            .accessibilityLabel("Refresh countdown")
+            .accessibilityHidden(true)
         }
     }
 
@@ -188,8 +242,8 @@ struct ToolbarView: View {
                     viewModel.isAutoScanPaused.toggle()
                 }
 
-                // A3. Отсчёт до следующего автосканирования
-                refreshCountdown
+                // A3. Отсчёт до следующего автосканирования + меню частоты
+                refreshMenu
 
                 scanningWithLabel
 
