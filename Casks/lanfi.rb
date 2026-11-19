@@ -1,6 +1,6 @@
 cask "lanfi" do
-  version "5.4.0"
-  sha256 "cafa5a1985e5d7a7a6773c46e15fafcff9a32b1a2022dbaa47df71cef8401fa7"
+  version "5.5.0"
+  sha256 "78b9cb5b582dcfbab6469d0d2724b0bf7b7cd574e55ffb3f2073e1f49bd0d0be"
 
   url "https://github.com/zheltukheen/lanfi/releases/download/v#{version}/LanFi.dmg"
   name "LanFi"
