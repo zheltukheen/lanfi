@@ -205,11 +205,7 @@ enum RouteTableOutput {
             guard let first = fields.first, first == "default" else { continue }
             guard let last = fields.last else { continue }
             let name = String(last)
-            if name.hasPrefix("en") || name.hasPrefix("utun") || name.hasPrefix("ipsec")
-                || name.hasPrefix("ppp") || name.hasPrefix("tun") || name.hasPrefix("tap")
-            {
-                return name
-            }
+            if name.hasPrefix("en") || TunnelInterface.isTunnel(name) { return name }
         }
         return nil
     }

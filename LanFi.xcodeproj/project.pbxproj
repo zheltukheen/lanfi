@@ -480,6 +480,7 @@
 		AC2BA6635B0CCC071839253F /* PingToolModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CAF5236FA74BFCC00C098B /* PingToolModel.swift */; };
 		AD182A1CAEE5D4C891A29519 /* PcapPacketIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 561EA964B51BE853357A4F6A /* PcapPacketIndex.swift */; };
 		AD62130D04DBCF6B89354155 /* VendorIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11965C1682B2CF5DCB38E8D6 /* VendorIconProvider.swift */; };
+		ADD60D71C9096B36CCCD1056 /* SecurityGuardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6EC6791001BE7579E57B848 /* SecurityGuardSupport.swift */; };
 		AE63074E60A93D7CF851D661 /* Survey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957F50461891605F6C31319B /* Survey.swift */; };
 		AE71876A0AF8AE300753BEF6 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D738C591A8707E4A7316C0 /* UpdaterController.swift */; };
 		AECB4B2802B23477B7D4D9CF /* SurveyPlanning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C27FB6F55F1D6038983E716 /* SurveyPlanning.swift */; };
@@ -1095,6 +1096,7 @@
 		D5C81B34343BBB01AD1C9392 /* AnalyzerViewModel+Sessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnalyzerViewModel+Sessions.swift"; sourceTree = "<group>"; };
 		D5D01EE1E6CD07209D798EE4 /* MCPToolkit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolkit.swift; sourceTree = "<group>"; };
 		D5D55E6F30CC12C9679A7F6F /* MCPPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPPaths.swift; sourceTree = "<group>"; };
+		D6EC6791001BE7579E57B848 /* SecurityGuardSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityGuardSupport.swift; sourceTree = "<group>"; };
 		D72796E4BBF9F8782DAC84ED /* FilterProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterProfile.swift; sourceTree = "<group>"; };
 		D74EF96A4511D77B66707733 /* DNSMailLookupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSMailLookupService.swift; sourceTree = "<group>"; };
 		D82B38E83C110C408D82BAB6 /* TableStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableStyle.swift; sourceTree = "<group>"; };
@@ -1510,6 +1512,7 @@
 				7CD91277F79ED1C280C66008 /* ScanHardwareProbe.swift */,
 				FF13136D59AA6AA8FF987565 /* ScanJSONExporter.swift */,
 				AB9A82DDBC473A667972DDA7 /* ScanReportExporter.swift */,
+				D6EC6791001BE7579E57B848 /* SecurityGuardSupport.swift */,
 				8C3543F9C8415CBB18D3FC7D /* SecurityParser.swift */,
 				A7E4195258545DEE9147D337 /* SerialPortConnection.swift */,
 				FAFC3B6151E00C9AD9AF7AEE /* ServiceDescriptionResolver.swift */,
@@ -2539,6 +2542,7 @@
 				A1C7F69E62A196CD3A077F4C /* ScanModePlan.swift in Sources */,
 				56651295EFF628554130EDBB /* ScanReportExporter.swift in Sources */,
 				342C3649806ECE78FDD894D1 /* ScanSession.swift in Sources */,
+				ADD60D71C9096B36CCCD1056 /* SecurityGuardSupport.swift in Sources */,
 				C96DA99231C835100E21E39F /* SecurityParser.swift in Sources */,
 				BDF04A6989EDE81183969CC1 /* SecurityWatch.swift in Sources */,
 				43233507397EDA9D9109A11F /* SecurityWatchToolView.swift in Sources */,

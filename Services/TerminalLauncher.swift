@@ -12,7 +12,17 @@ enum TerminalLauncher {
 
     /// `osascript` rather than a temporary `.command` file: one process, no
     /// leftover scripts, and the command is passed as an AppleScript literal.
-    static func open(command: String) -> Result {
+    ///
+    /// The AppleScript request runs off the main actor: the first call may wait
+    /// on the Automation permission sheet, and blocking the button handler there
+    /// would freeze the window. The caller awaits the outcome and shows the
+    /// message, including a refused or missing permission.
+    static func open(command: String) async -> Result {
+        await Task.detached(priority: .userInitiated) { run(command: command) }.value
+    }
+
+    /// Blocking implementation, only called from the detached task above.
+    private static func run(command: String) -> Result {
         guard !command.isEmpty else {
             return Result(succeeded: false, message: String(localized: "Nothing to run."))
         }

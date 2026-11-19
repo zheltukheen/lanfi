@@ -8,6 +8,7 @@ struct LANScannerToolView: View {
     @State private var showingDiscover = false
     @State private var serviceDetails: [String: [UInt16: String]] = [:]
     @State private var detectingDeviceID: String?
+    @State private var terminalError: String?
     @AppStorage(AppSettingsKey.lanScannerTab.rawValue) private var tabRaw = 0
     @StateObject private var sorter = TableSorter<LANDevice>(
         columns: LANSort.columns, initialKey: "ip")
@@ -92,6 +93,9 @@ struct LANScannerToolView: View {
                 controls
                 if let error = model.errorMessage {
                     ToolkitErrorBanner(message: error)
+                }
+                if let terminalError {
+                    ToolkitErrorBanner(message: terminalError)
                 }
                 if !model.newMACs.isEmpty {
                     newDevicesBanner
@@ -328,7 +332,11 @@ struct LANScannerToolView: View {
                         if let launch = SSHLaunchCommand(device: device) {
                             Divider()
                             Button("Open SSH session") {
-                                _ = TerminalLauncher.open(command: launch.command)
+                                Task {
+                                    let result = await TerminalLauncher.open(
+                                        command: launch.command)
+                                    if !result.succeeded { terminalError = result.message }
+                                }
                             }
                             Button("Copy SSH command") { copyText(launch.command) }
                         }

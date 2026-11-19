@@ -7,55 +7,24 @@ import LanFiCore
 /// One poll every 20 s, all local, no provider API and no credentials. Drop and
 /// leak findings are posted as Monitor events through the security channel.
 @MainActor
-final class VPNGuard: ObservableObject {
+final class VPNGuard: PollingGuard {
     static let shared = VPNGuard()
     static let pollInterval: TimeInterval = 20
 
     @Published private(set) var report: VPNGuardReport = .empty
-    @Published private(set) var isSampling = false
 
-    private var timer: Timer?
     private var lastSignature: String?
     private var announcedLeakSignature: String?
-    private var isSampleInFlight = false
 
-    deinit {
-        timer?.invalidate()
+    private init() {
+        super.init(interval: Self.pollInterval)
     }
 
-    var isEnabled: Bool {
+    override var isEnabled: Bool {
         AppSettingsStore.shared.settings.automation.vpnGuard
     }
 
-    func start() {
-        guard timer == nil else { return }
-        let timer = Timer(timeInterval: Self.pollInterval, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in await self?.sample() }
-        }
-        timer.tolerance = Self.pollInterval * 0.3
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
-        Task { await sample() }
-    }
-
-    func stop() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    func sampleNow() async {
-        await sample()
-    }
-
-    private func sample() async {
-        guard isEnabled, !isSampleInFlight else { return }
-        isSampleInFlight = true
-        isSampling = true
-        defer {
-            isSampling = false
-            isSampleInFlight = false
-        }
-
+    override func performSample() async {
         async let ipv4Routes = Self.routeTable(family: "inet")
         async let ipv6Routes = Self.routeTable(family: "inet6")
         async let dnsOutput = Self.scutilDNS()
@@ -78,7 +47,7 @@ final class VPNGuard: ObservableObject {
         lastSignature = signature
 
         if wasUp, !vpn.isUp {
-            post(
+            SecurityEvent.post(
                 .vpnDropped, subject: previous.vpn.interfaceLabel ?? "VPN",
                 detail: String(localized: "The VPN tunnel went down unexpectedly."))
         }
@@ -88,42 +57,20 @@ final class VPNGuard: ObservableObject {
             let detail = [dns.status == .leak ? dns.detail : nil, ipv6.status == .leak ? ipv6.detail : nil]
                 .compactMap { $0 }
                 .joined(separator: " ")
-            post(.vpnLeak, subject: vpn.interfaceLabel ?? "VPN", detail: detail)
+            SecurityEvent.post(.vpnLeak, subject: vpn.interfaceLabel ?? "VPN", detail: detail)
         } else if !updated.hasLeak {
             announcedLeakSignature = nil
         }
     }
 
-    private func post(_ kind: MonitorEventKind, subject: String, detail: String) {
-        let event = MonitorEvent(
-            at: Date(), kind: kind, bssid: "", ssid: subject, detail: detail)
-        NotificationCenter.default.post(
-            name: .lanFiSecurityEvent, object: nil, userInfo: ["event": event])
-    }
-
     // MARK: - System reads
 
     private static func routeTable(family: String) async -> String {
-        await run("/usr/sbin/netstat", ["-rn", "-f", family])
+        await ShellOutput.run("/usr/sbin/netstat", ["-rn", "-f", family])
     }
 
     private static func scutilDNS() async -> String {
-        await run("/usr/sbin/scutil", ["--dns"])
-    }
-
-    private static func run(_ path: String, _ arguments: [String]) async -> String {
-        await Task.detached(priority: .utility) {
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: path)
-            process.arguments = arguments
-            let pipe = Pipe()
-            process.standardOutput = pipe
-            process.standardError = FileHandle.nullDevice
-            guard (try? process.run()) != nil else { return "" }
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            process.waitUntilExit()
-            return String(decoding: data, as: UTF8.self)
-        }.value
+        await ShellOutput.run("/usr/sbin/scutil", ["--dns"])
     }
 
     private static func upTunnelInterfaces() -> [String] {

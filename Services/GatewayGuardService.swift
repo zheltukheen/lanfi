@@ -2,13 +2,6 @@ import Foundation
 import LanFiCore
 import SystemConfiguration
 
-extension Notification.Name {
-    /// P3.7: the gateway guard posts findings here, and `MonitorViewModel`
-    /// folds them into its event log. This keeps the guard independent of the
-    /// monitor's lifetime.
-    static let lanFiSecurityEvent = Notification.Name("LanFi.securityEvent")
-}
-
 /// P3.7 — gateway ARP and DNS answer integrity.
 ///
 /// Every two minutes it re-reads the default gateway and its ARP entry; every
@@ -16,7 +9,7 @@ extension Notification.Name {
 /// with what Cloudflare returns directly. Both findings become Monitor events,
 /// so the existing alert rules, quiet hours and Security Watch screen apply.
 @MainActor
-final class GatewayGuard: ObservableObject {
+final class GatewayGuard: PollingGuard {
     static let shared = GatewayGuard()
 
     static let sampleInterval: TimeInterval = 120
@@ -25,65 +18,34 @@ final class GatewayGuard: ObservableObject {
     @Published private(set) var gatewayIP: String?
     @Published private(set) var gatewayMAC: String?
     @Published private(set) var resolverCheck: ResolverIntegrityCheck = .unknown
-    @Published private(set) var lastCheckedAt: Date?
     @Published private(set) var macChangeCount = 0
-    @Published private(set) var isSampling = false
 
     private var watch = GatewayARPWatch()
-    private var timer: Timer?
     private var lastDNSCheckAt: Date?
     private var lastMismatchSignature: String?
-    private var isSampleInFlight = false
 
-    deinit {
-        timer?.invalidate()
+    private init() {
+        super.init(interval: Self.sampleInterval)
     }
 
-    var isEnabled: Bool {
+    override var isEnabled: Bool {
         AppSettingsStore.shared.settings.automation.gatewayGuard
-    }
-
-    func start() {
-        guard timer == nil else { return }
-        let timer = Timer(timeInterval: Self.sampleInterval, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in await self?.sample() }
-        }
-        timer.tolerance = Self.sampleInterval * 0.2
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
-        Task { await sample() }
-    }
-
-    func stop() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    func sampleNow() async {
-        await sample()
     }
 
     // MARK: - Sampling
 
-    private func sample() async {
-        guard isEnabled, !isSampleInFlight else { return }
-        isSampleInFlight = true
-        isSampling = true
-        defer {
-            isSampling = false
-            isSampleInFlight = false
-        }
-
+    override func performSample() async {
         let gateway = Self.defaultGateway()
         let entries = await Self.arpEntries()
         let change = watch.observe(gateway: gateway, entries: entries)
         gatewayIP = watch.gatewayIP
         gatewayMAC = watch.gatewayMAC
         macChangeCount = watch.changeCount
-        lastCheckedAt = Date()
 
         if let change, change.isSuspicious {
-            post(.gatewayChanged, subject: watch.gatewayIP ?? gateway ?? "gateway", detail: change.detail)
+            SecurityEvent.post(
+                .gatewayChanged, subject: watch.gatewayIP ?? gateway ?? "gateway",
+                detail: change.detail)
         }
 
         if let last = lastDNSCheckAt, Date().timeIntervalSince(last) < Self.dnsInterval { return }
@@ -108,14 +70,7 @@ final class GatewayGuard: ObservableObject {
         let signature = check.systemAnswer.sorted().joined(separator: ",")
         guard signature != lastMismatchSignature else { return }
         lastMismatchSignature = signature
-        post(.dnsMismatch, subject: "DNS", detail: check.detail)
-    }
-
-    private func post(_ kind: MonitorEventKind, subject: String, detail: String) {
-        let event = MonitorEvent(
-            at: Date(), kind: kind, bssid: "", ssid: subject, detail: detail)
-        NotificationCenter.default.post(
-            name: .lanFiSecurityEvent, object: nil, userInfo: ["event": event])
+        SecurityEvent.post(.dnsMismatch, subject: "DNS", detail: check.detail)
     }
 
     // MARK: - System reads
@@ -142,18 +97,7 @@ final class GatewayGuard: ObservableObject {
     }
 
     private static func arpEntries() async -> [ARPEntry] {
-        await Task.detached(priority: .utility) {
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/sbin/arp")
-            process.arguments = ["-an"]
-            let pipe = Pipe()
-            process.standardOutput = pipe
-            process.standardError = FileHandle.nullDevice
-            guard (try? process.run()) != nil else { return [] }
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            process.waitUntilExit()
-            return ARPParser.parse(String(decoding: data, as: UTF8.self))
-        }.value
+        ARPParser.parse(await ShellOutput.run("/usr/sbin/arp", ["-an"]))
     }
 
     /// The addresses macOS itself returns, i.e. through the configured resolver.

@@ -282,9 +282,11 @@ struct RemoteSensorsView: View {
             errorMessage = String(localized: "This sensor has no usable host.")
             return
         }
-        let result = TerminalLauncher.open(command: launch.command)
-        if !result.succeeded {
-            errorMessage = result.message
+        Task {
+            let result = await TerminalLauncher.open(command: launch.command)
+            if !result.succeeded {
+                errorMessage = result.message
+            }
         }
     }
 
