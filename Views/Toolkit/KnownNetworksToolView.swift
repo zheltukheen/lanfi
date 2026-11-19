@@ -55,7 +55,7 @@ struct KnownNetworksToolView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        ToolkitHeaderBar {
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(networks.count) saved networks")
                     .font(.callout.weight(.semibold))
@@ -63,21 +63,11 @@ struct KnownNetworksToolView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
-            Spacer()
-            if isLoading {
-                ProgressView().controlSize(.small)
-            }
-            Button {
+        } trailing: {
+            AppButton("Reload", systemImage: "arrow.clockwise", isBusy: isLoading, isEnabled: !isLoading) {
                 Task { await load() }
-            } label: {
-                Label("Reload", systemImage: "arrow.clockwise")
             }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            .disabled(isLoading)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, DesignToken.Spacing.medium)
     }
 
     private var list: some View {
@@ -218,13 +208,9 @@ struct KnownNetworksToolView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
-                Button {
+                AppButton("Create QR…", systemImage: "qrcode", tone: .primary) {
                     shareTarget = network
-                } label: {
-                    Label("Create QR…", systemImage: "qrcode")
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
             }
         }
     }

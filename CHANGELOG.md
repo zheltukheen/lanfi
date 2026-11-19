@@ -89,11 +89,29 @@
   action. It is edge-triggered, so a manual Wi-Fi change always wins.
 
 ### Changed
+- **One button, one header, one list row across the toolkit.** Every tool
+  screen now draws its actions with `AppButton` (plus `AppIconButton` for
+  icon-only controls) and its header strip with `ToolkitHeaderBar`, so DNS,
+  Ping, GeoIP, iperf3, the LAN Scanner, Uptime, Roaming and the connections
+  screens share one control height, radius, stroke and padding. Menus, context
+  menus and confirmation dialogs keep native buttons, because a custom button
+  style does not render inside them.
+- **The DMG opens a folder instead of an installer.** The disk image mounts a
+  window with `LanFi.app` next to an Applications alias and two read-me pages,
+  English and Russian, that explain dragging the app in and opening it despite
+  Gatekeeper on an unsigned build (`Control`-click → Open, System Settings →
+  Open Anyway, `xattr -dr com.apple.quarantine`).
 - **Help no longer ships screenshots.** The topic pages use a symbol banner and
   the existing caption, so the manual cannot expose anyone's SSIDs, addresses
   or device names.
 
 ### Fixed
+- **Signal and quality bars no longer squeeze their label.** The bar width is
+  computed from the measured text width (`SignalBarMetrics`, capped at 60% of
+  the column, 12 pt minimum bar) instead of `intrinsicContentSize`, which
+  returns -1 before layout and the pre-truncation width after it — the value
+  stayed legible in a narrow inspector column and the bar grew back in a wide
+  one. Covered by five unit tests.
 - **The shared target history now records every run, not just Return.** Ping,
   Traceroute, MTR, DNS, Whois, GeoIP, Port Scan, TLS, Path Check and iperf3
   store the address they probed, so the Recent menu fills up no matter how the

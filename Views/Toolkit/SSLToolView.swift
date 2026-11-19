@@ -67,14 +67,11 @@ struct SSLToolView: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 70)
                 Spacer()
-                Button("Inspect") { model.run() }
-                    .buttonStyle(.borderedProminent)
+                AppButton("Inspect", tone: .primary) { model.run() }
                     .disabled(model.isRunning)
-                Button("Copy") { copy() }
-                    .buttonStyle(.bordered)
+                AppButton("Copy", tone: .secondary) { copy() }
                     .disabled(model.report == nil)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
+                AppButton("Clear", tone: .quiet) { model.clear() }
                     .disabled(model.report == nil)
                 ToolkitStatusPill(text: statusText, tone: statusTone)
             }

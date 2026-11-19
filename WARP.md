@@ -73,10 +73,20 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Views/AppTable.swift` — the shared SwiftUI table builder; its column
   headers sort on click. New tables use it instead of a separate sort menu, and
   the so-far unmigrated SwiftUI `Table` screens still pass `TableSortControl`
-  (the Wi-Fi analyzer keeps its own sort/filter UI by design).
+  (the Wi-Fi analyzer keeps its own sort/filter UI by design). Columns are
+  declared with the `@ViewBuilder` initializer, so a cell is written as a
+  normal view instead of a hand-wrapped `AnyView`.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,
   `AppIconButton`, `AppListRow`, `AppSearchField`, `ToolkitHeaderBar`); route
-  new buttons, lists and tool headers through it.
+  new buttons, lists and tool headers through it. `AppButton(localized:)`
+  takes a title that is already localized at runtime (a computed `String`).
+  Menus, context menus and confirmation dialogs keep plain `Button`s on
+  purpose — a custom button style does not render inside them.
+- `Models/SignalBarMetrics.swift` — the pure arithmetic behind the signal and
+  quality bars; the cell measures the text with
+  `NSAttributedString.size(withAttributes:)` (never `intrinsicContentSize`,
+  which is -1 before layout) and `SignalBarMetricsTests` covers a narrow and a
+  wide column.
 - `Models/AppTrafficHistory.swift` / `Services/AppTrafficHistoryService.swift` —
   P3.6: hourly per-app byte buckets (`app-traffic-history.json`), seven-day
   retention, CSV export, LanFi's own traffic excluded.
@@ -414,6 +424,11 @@ The app uses the same seam style: `WiFiScanning` is injected into
 
 ## Automation and release
 
+- `scripts/release_artifacts.sh` builds a drag-to-install DMG: a read-write
+  image is mounted, an AppleScript places `LanFi.app`, an Applications alias and
+  the two bilingual read-me pages (`packaging/dmg/read-me-en.html`,
+  `read-me-ru.html`, Gatekeeper bypass steps), then it is converted to UDZO.
+  The read-mes are never embedded in the app bundle.
 - `scripts/autopush.sh` commits/pushes meaningful changes; `--install-hook`
   installs a `post-commit` hook. It refuses credentials/oversized files and
   rebases on non-fast-forward pushes.

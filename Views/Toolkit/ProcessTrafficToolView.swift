@@ -210,13 +210,12 @@ struct ProcessTrafficToolView: View {
 
     private var controls: some View {
         HStack(spacing: DesignToken.Spacing.small) {
-            Button {
+            AppButton(
+                "Refresh", systemImage: "arrow.clockwise", tone: .primary,
+                isBusy: isLoading, isEnabled: !isLoading
+            ) {
                 Task { await refresh() }
-            } label: {
-                Label("Refresh", systemImage: "arrow.clockwise")
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(isLoading)
             TextField("Filter by process or PID", text: $search)
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: DesignToken.Layout.controlWidthLarge)
@@ -254,8 +253,7 @@ struct ProcessTrafficToolView: View {
             Toggle("Enabled", isOn: $enabled)
                 .toggleStyle(.switch)
                 .controlSize(.small)
-            Button("Copy") { copy() }
-                .buttonStyle(.borderless)
+            AppButton("Copy", tone: .quiet) { copy() }
                 .disabled(filtered.isEmpty)
         }
     }
@@ -287,8 +285,7 @@ struct ProcessTrafficToolView: View {
                 .foregroundColor(AppPalette.info)
             Text(text).font(.caption)
             Spacer()
-            Button("Dismiss") { notice = nil }
-                .buttonStyle(.borderless)
+            AppButton("Dismiss", tone: .quiet) { notice = nil }
                 .font(.caption2)
         }
         .padding(DesignToken.Spacing.compact)
@@ -309,7 +306,7 @@ struct ProcessTrafficToolView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            Button("Terminate matches") {
+            AppButton("Terminate matches") {
                 let pids = Array(Set(matchingRows.map(\.pid))).sorted()
                 killTarget = KillTarget(
                     pids: pids,

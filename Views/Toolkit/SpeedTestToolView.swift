@@ -77,11 +77,9 @@ struct SpeedTestToolView: View {
                     ProgressView()
                         .controlSize(.small)
                 }
-                Button("Run Test") { model.run() }
-                    .buttonStyle(.borderedProminent)
+                AppButton("Run Test", tone: .primary) { model.run() }
                     .disabled(model.isRunning)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
+                AppButton("Clear", tone: .quiet) { model.clear() }
                     .disabled(model.report == nil)
                 ToolkitStatusPill(text: statusText, tone: statusTone)
             }
@@ -357,8 +355,7 @@ struct SpeedTestToolView: View {
                             selection: $historySortKey, ascending: $historyAscending)
                     }
                     Spacer()
-                    Button("Clear") { model.clearHistory() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clearHistory() }
                         .font(.caption2)
                         .disabled(model.history.isEmpty)
                 }

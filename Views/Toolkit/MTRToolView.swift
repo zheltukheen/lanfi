@@ -47,17 +47,13 @@ struct MTRToolView: View {
                         .font(.caption)
                     Spacer()
                     if model.isRunning {
-                        Button("Stop") { model.stop() }
-                            .buttonStyle(.bordered)
+                        AppButton("Stop", tone: .secondary) { model.stop() }
                     } else {
-                        Button("Start") { model.run() }
-                            .buttonStyle(.borderedProminent)
+                        AppButton("Start", tone: .primary) { model.run() }
                     }
-                    Button("Copy") { copy() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(model.report == nil)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.report == nil)
                     ToolkitStatusPill(text: statusText, tone: statusTone)
                 }

@@ -157,20 +157,16 @@ struct ClientAnalyticsToolView: View {
                     }
                     .labelsHidden()
                     .frame(width: DesignToken.Layout.controlWidthSmall + 60)
-                    Button {
+                    AppButton(
+                        isCapturing ? "Capturing…" : "Capture 10 s of client frames",
+                        systemImage: "dot.radiowaves.left.and.right", tone: .primary,
+                        isBusy: isCapturing, isEnabled: !isCapturing && !interfaces.isEmpty
+                    ) {
                         capture()
-                    } label: {
-                        Label(
-                            isCapturing ? "Capturing…" : "Capture 10 s of client frames",
-                            systemImage: "dot.radiowaves.left.and.right")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(isCapturing || interfaces.isEmpty)
-                    if isCapturing { ProgressView().controlSize(.small) }
                     Spacer()
                     if !observations.isEmpty {
-                        Button("Clear capture") { observations = [] }
-                            .buttonStyle(.borderless)
+                        AppButton("Clear capture", tone: .quiet) { observations = [] }
                     }
                 }
                 Text(

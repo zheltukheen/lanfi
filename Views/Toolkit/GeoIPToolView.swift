@@ -48,21 +48,14 @@ struct GeoIPToolView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 280)
                 .onSubmit { model.run() }
-                Button("Look Up") { model.run() }
-                    .buttonStyle(.borderedProminent)
+                AppButton("Look Up", tone: .primary) { model.run() }
                     .disabled(model.isRunning)
-                Button {
+                AppButton("My IP", systemImage: "location", isEnabled: !model.isRunning) {
                     model.run(myIP: true)
-                } label: {
-                    Label("My IP", systemImage: "location")
                 }
-                .buttonStyle(.bordered)
-                .disabled(model.isRunning)
-                Button("Copy") { copy() }
-                    .buttonStyle(.bordered)
+                AppButton("Copy", tone: .secondary) { copy() }
                     .disabled(model.report == nil)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
+                AppButton("Clear", tone: .quiet) { model.clear() }
                     .disabled(model.report == nil)
                 Spacer()
                 ToolkitStatusPill(text: statusText, tone: statusTone)
@@ -136,12 +129,9 @@ struct GeoIPToolView: View {
                         .font(.callout.monospacedDigit())
                 }
                 Spacer()
-                Button {
+                AppButton("Open in Maps", systemImage: "map") {
                     openInMaps(report)
-                } label: {
-                    Label("Open in Maps", systemImage: "map")
                 }
-                .buttonStyle(.bordered)
             }
         }
     }

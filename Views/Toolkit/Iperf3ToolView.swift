@@ -65,17 +65,13 @@ struct Iperf3ToolView: View {
                     .fixedSize()
                     Spacer()
                     if model.isRunning {
-                        Button("Stop") { model.stop() }
-                            .buttonStyle(.bordered)
+                        AppButton("Stop", tone: .secondary) { model.stop() }
                     } else {
-                        Button("Run") { model.run() }
-                            .buttonStyle(.borderedProminent)
+                        AppButton("Run", tone: .primary) { model.run() }
                     }
-                    Button("Copy") { copy() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(model.report == nil)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.report == nil)
                     ToolkitStatusPill(text: statusText, tone: statusTone)
                 }
@@ -126,16 +122,12 @@ struct Iperf3ToolView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 } else {
-                    Button {
+                    AppButton(
+                        model.installSucceeded == false ? "Try Again" : "Install iperf3",
+                        systemImage: "arrow.down.circle", tone: .primary
+                    ) {
                         model.install()
-                    } label: {
-                        Label(
-                            model.installSucceeded == false
-                                ? "Try Again" : "Install iperf3",
-                            systemImage: "arrow.down.circle")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
                 }
             }
             if let output = model.installOutput, !output.isEmpty {
@@ -147,13 +139,11 @@ struct Iperf3ToolView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             HStack(spacing: 8) {
-                Button("Copy brew command") {
+                AppButton("Copy brew command", tone: .quiet) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(
                         ToolInstaller.command(for: "iperf3"), forType: .string)
                 }
-                .buttonStyle(.borderless)
-                .font(.caption2)
                 Text("Homebrew is required; a server must run on the target.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
@@ -276,8 +266,7 @@ struct Iperf3ToolView: View {
                             selection: $sortKey, ascending: $sortAscending)
                     }
                     Spacer()
-                    Button("Clear history") { model.clearHistory() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear history", tone: .quiet) { model.clearHistory() }
                         .font(.caption2)
                 }
                 .padding(.horizontal, DesignToken.Spacing.card)

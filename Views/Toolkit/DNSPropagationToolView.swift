@@ -85,17 +85,13 @@ struct DNSPropagationToolView: View {
                         .frame(maxWidth: 280)
                     Spacer()
                     if model.isRunning {
-                        Button("Stop") { model.stop() }
-                            .buttonStyle(.bordered)
+                        AppButton("Stop", tone: .secondary) { model.stop() }
                     } else {
-                        Button("Check") { model.run() }
-                            .buttonStyle(.borderedProminent)
+                        AppButton("Check", tone: .primary) { model.run() }
                     }
-                    Button("Copy") { copy() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(model.results.isEmpty)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.results.isEmpty)
                     ToolkitStatusPill(text: statusText, tone: statusTone)
                 }

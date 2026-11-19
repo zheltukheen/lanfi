@@ -187,13 +187,12 @@ struct OpenConnectionsToolView: View {
 
     private var controls: some View {
         HStack(spacing: DesignToken.Spacing.small) {
-            Button {
+            AppButton(
+                "Refresh", systemImage: "arrow.clockwise", tone: .primary,
+                isBusy: isLoading, isEnabled: !isLoading
+            ) {
                 Task { await refresh() }
-            } label: {
-                Label("Refresh", systemImage: "arrow.clockwise")
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(isLoading)
             Toggle("Include listening sockets", isOn: $includeListeners)
                 .toggleStyle(.switch)
                 .controlSize(.small)
@@ -240,8 +239,7 @@ struct OpenConnectionsToolView: View {
             .help("Expand or collapse every group")
             .disabled(groups.isEmpty)
             Spacer()
-            Button("Copy") { copy() }
-                .buttonStyle(.borderless)
+            AppButton("Copy", tone: .quiet) { copy() }
                 .disabled(filtered.isEmpty)
         }
     }
@@ -298,8 +296,7 @@ struct OpenConnectionsToolView: View {
                 .foregroundColor(AppPalette.info)
             Text(text).font(.caption)
             Spacer()
-            Button("Dismiss") { notice = nil }
-                .buttonStyle(.borderless)
+            AppButton("Dismiss", tone: .quiet) { notice = nil }
                 .font(.caption2)
         }
         .padding(DesignToken.Spacing.compact)
@@ -318,7 +315,7 @@ struct OpenConnectionsToolView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            Button("Terminate matches") {
+            AppButton("Terminate matches") {
                 let pids = Array(Set(matchingConnections.map(\.pid))).sorted()
                 killTarget = KillTarget(
                     pids: pids,

@@ -63,14 +63,11 @@ struct WhoisToolView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 300)
                 .onSubmit { model.run() }
-                Button("Look Up") { model.run() }
-                    .buttonStyle(.borderedProminent)
+                AppButton("Look Up", tone: .primary) { model.run() }
                     .disabled(model.isRunning)
-                Button("Copy") { copy() }
-                    .buttonStyle(.bordered)
+                AppButton("Copy", tone: .secondary) { copy() }
                     .disabled(model.report == nil)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
+                AppButton("Clear", tone: .quiet) { model.clear() }
                     .disabled(model.report == nil)
                 Spacer()
                 ToolkitStatusPill(text: statusText, tone: statusTone)

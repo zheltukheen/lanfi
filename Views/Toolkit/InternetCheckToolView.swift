@@ -100,15 +100,13 @@ struct InternetCheckToolView: View {
                     .labelsHidden()
                     .frame(width: 190)
 
-                    Button {
+                    AppButton(
+                        mode == .full ? "Full Check" : "Quick Check",
+                        systemImage: "arrow.clockwise", tone: .primary,
+                        isEnabled: !diagnostics.isRunning && !speedTest.isRunning
+                    ) {
                         Task { await runCheck() }
-                    } label: {
-                        Label(
-                            mode == .full ? "Full Check" : "Quick Check",
-                            systemImage: "arrow.clockwise")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(diagnostics.isRunning || speedTest.isRunning)
 
                     Toggle("Monitor every 60 s", isOn: $diagnostics.autoMonitor)
                         .toggleStyle(.switch)
@@ -126,8 +124,7 @@ struct InternetCheckToolView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button("Copy") { diagnostics.copyReport() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { diagnostics.copyReport() }
                         .disabled(diagnostics.report == nil)
                 }
             }

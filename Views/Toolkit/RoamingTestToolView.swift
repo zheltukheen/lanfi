@@ -87,21 +87,15 @@ struct RoamingTestToolView: View {
                     tone: .running)
             }
             Spacer()
-            Button {
+            AppButton("Start Walk Test", systemImage: "figure.walk") {
                 walkStart = Date()
-            } label: {
-                Label("Start Walk Test", systemImage: "figure.walk")
             }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            Button {
+            AppButton(
+                "Use all history", systemImage: "clock.arrow.circlepath", tone: .quiet,
+                isEnabled: walkStart != nil
+            ) {
                 walkStart = nil
-            } label: {
-                Label("Use all history", systemImage: "clock.arrow.circlepath")
             }
-            .buttonStyle(.borderless)
-            .controlSize(.small)
-            .disabled(walkStart == nil)
         }
     }
 

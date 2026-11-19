@@ -136,14 +136,12 @@ struct DNSToolView: View {
                             .frame(width: 120)
                     }
                     Spacer()
-                    Button(runButtonTitle) { model.run() }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(model.isRunning)
-                    Button("Copy") { copy() }
-                        .buttonStyle(.bordered)
+                    AppButton(localized: runButtonTitle, tone: .primary, isEnabled: !model.isRunning) {
+                        model.run()
+                    }
+                    AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(!hasResult)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(!hasResult)
                     ToolkitStatusPill(text: statusText, tone: statusTone)
                 }
@@ -178,10 +176,9 @@ struct DNSToolView: View {
                         ProgressView()
                             .controlSize(.small)
                     }
-                    Button(benchmark.isRunning ? "Stop" : "Benchmark") {
+                    AppButton(benchmark.isRunning ? "Stop" : "Benchmark", tone: .secondary) {
                         if benchmark.isRunning { benchmark.stop() } else { benchmark.run() }
                     }
-                    .buttonStyle(.bordered)
                 }
                 Text(
                     "Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS."

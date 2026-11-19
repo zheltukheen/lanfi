@@ -496,8 +496,7 @@ struct DeviceShelfView: View {
                         .labelsHidden()
                         .controlSize(.mini)
                         if device.purchaseDate != nil {
-                            Button("Clear") { model.setPurchaseDate(nil, for: device.id) }
-                                .buttonStyle(.borderless)
+                            AppButton("Clear", tone: .quiet) { model.setPurchaseDate(nil, for: device.id) }
                                 .font(.caption2)
                         }
                     }
@@ -514,8 +513,7 @@ struct DeviceShelfView: View {
                         .labelsHidden()
                         .controlSize(.mini)
                         if device.warrantyEnd != nil {
-                            Button("Clear") { model.setWarrantyEnd(nil, for: device.id) }
-                                .buttonStyle(.borderless)
+                            AppButton("Clear", tone: .quiet) { model.setWarrantyEnd(nil, for: device.id) }
                                 .font(.caption2)
                         }
                     }

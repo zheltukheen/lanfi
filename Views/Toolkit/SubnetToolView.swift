@@ -37,12 +37,9 @@ struct SubnetToolView: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 340)
                     .onSubmit { model.calculate() }
-                Button("Calculate") { model.calculate() }
-                    .buttonStyle(.borderedProminent)
-                Button("This Mac") { model.useCurrentNetwork() }
-                    .buttonStyle(.bordered)
-                Button("Copy") { copy() }
-                    .buttonStyle(.bordered)
+                AppButton("Calculate", tone: .primary) { model.calculate() }
+                AppButton("This Mac", tone: .secondary) { model.useCurrentNetwork() }
+                AppButton("Copy", tone: .secondary) { copy() }
                     .disabled(model.result == nil)
                 Spacer()
                 if let subnet = model.result {

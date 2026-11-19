@@ -63,6 +63,22 @@ struct AppButton: View {
         self.action = action
     }
 
+    /// Variant for a title that is already localized at runtime (a computed
+    /// `String`), so the call site does not have to build a `LocalizedStringKey`.
+    init(
+        localized title: String,
+        systemImage: String? = nil,
+        tone: AppButtonTone = .secondary,
+        isBusy: Bool = false,
+        help: LocalizedStringKey? = nil,
+        isEnabled: Bool = true,
+        action: @escaping () -> Void
+    ) {
+        self.init(
+            LocalizedStringKey(title), systemImage: systemImage, tone: tone, isBusy: isBusy,
+            help: help, isEnabled: isEnabled, action: action)
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: DesignToken.Spacing.tight) {

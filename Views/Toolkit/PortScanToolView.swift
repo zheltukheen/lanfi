@@ -95,11 +95,9 @@ struct PortScanToolView: View {
                     .fixedSize()
                     Spacer()
                     if model.isRunning {
-                        Button("Stop") { model.stop() }
-                            .buttonStyle(.bordered)
+                        AppButton("Stop", tone: .secondary) { model.stop() }
                     } else {
-                        Button("Scan") { model.run() }
-                            .buttonStyle(.borderedProminent)
+                        AppButton("Scan", tone: .primary) { model.run() }
                     }
                     ToolkitStatusPill(text: statusText, tone: statusTone)
                 }
@@ -134,11 +132,9 @@ struct PortScanToolView: View {
                     Toggle("Also UDP (10 ports)", isOn: $model.includeUDP)
                         .font(.caption)
                     Spacer()
-                    Button("Copy") { copy() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(model.results.isEmpty)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.results.isEmpty)
                 }
                 Text(

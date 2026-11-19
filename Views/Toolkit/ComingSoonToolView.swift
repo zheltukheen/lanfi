@@ -57,13 +57,12 @@ struct WiFiRedirectToolView: View {
                         }
                         Spacer()
                     }
-                    Button {
+                    AppButton(
+                        "Open main LanFi", systemImage: "arrow.up.forward.app", tone: .primary
+                    ) {
                         openWindow(id: "main")
                         NSApp.activate(ignoringOtherApps: true)
-                    } label: {
-                        Label("Open main LanFi", systemImage: "arrow.up.forward.app")
                     }
-                    .buttonStyle(.borderedProminent)
                 }
             }
         }

@@ -60,8 +60,7 @@ struct HTTPTrafficToolView: View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    Button("Open HAR…") { open() }
-                        .buttonStyle(.borderedProminent)
+                    AppButton("Open HAR…", tone: .primary) { open() }
                     if !model.fileName.isEmpty {
                         Text(model.fileName)
                             .font(.caption)
@@ -74,8 +73,7 @@ struct HTTPTrafficToolView: View {
                         .disabled(model.traffic == nil)
                     Button("CSV…") { exportCSV() }
                         .disabled(model.traffic == nil)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.traffic == nil)
                 }
                 HStack(spacing: 10) {

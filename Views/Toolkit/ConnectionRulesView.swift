@@ -9,12 +9,9 @@ struct ConnectionRulesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
             HStack {
-                Button {
+                AppButton("Add rule", systemImage: "plus", tone: .primary) {
                     editor = BlockRuleDraft(scope: .application, value: "")
-                } label: {
-                    Label("Add rule", systemImage: "plus")
                 }
-                .buttonStyle(.borderedProminent)
                 if !rules.rules.isEmpty {
                     Button("Remove all", role: .destructive) { rules.removeAll() }
                         .buttonStyle(.borderless)

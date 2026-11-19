@@ -860,6 +860,27 @@ locales.
 
 ---
 
+## Delivered in the thirty-fifth slice (2026-11-19)
+
+- **Toolkit control unification (D5).** The remaining raw `Button` calls on the
+  tool screens were migrated to `AppButton`/`AppIconButton` — DNS (run and
+  resolver benchmark), LAN Scanner (permission gate), GeoIP, Internet Check,
+  Client Analytics, iperf3, Known Networks, Roaming, Uptime, Connections,
+  Process Traffic, Connection Rules and Coming Soon. The LAN Scanner and Known
+  Networks header strips now use `ToolkitHeaderBar` instead of their own padded
+  `HStack` + `Divider`. Menus, context menus and confirmation dialogs keep
+  native buttons by design.
+- **DMG packaging.** The image is a drag-to-install folder (app, Applications
+  alias, bilingual read-me pages with the Gatekeeper steps for an unsigned
+  build) built from a read-write image with an AppleScript layout.
+- **Signal/quality bar geometry.** `SignalBarMetrics` owns the arithmetic and
+  the table cell measures text explicitly; five tests cover narrow and wide
+  columns.
+- **AppTable simplification.** Columns take a `@ViewBuilder` cell instead of a
+  hand-written `AnyView`; `NetworkComparisonTable` uses it, so the comparison
+  table no longer builds 13 closures by hand.
+- 633 app tests green (1 skipped); lint and Debug build clean.
+
 ## Delivered in the thirty-fourth slice (2026-11-19)
 
 - **Privacy policy and settings.** New Settings → Privacy page with the policy,

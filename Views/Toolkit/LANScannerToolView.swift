@@ -22,7 +22,7 @@ struct LANScannerToolView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
+            ToolkitHeaderBar {
                 AppTabBar(
                     sections: [
                         .init(
@@ -42,13 +42,7 @@ struct LANScannerToolView: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
-                Spacer()
             }
-            .padding(.horizontal, DesignToken.Layout.contentPadding)
-            .padding(.top, DesignToken.Spacing.medium)
-            .padding(.bottom, DesignToken.Spacing.small)
-
-            Divider()
 
             if tabRaw == 0 {
                 scanContent
@@ -126,11 +120,9 @@ struct LANScannerToolView: View {
         ToolkitCard {
             HStack(spacing: 10) {
                 if model.isScanning {
-                    Button("Stop") { model.stop() }
-                        .buttonStyle(.bordered)
+                    AppButton("Stop", tone: .secondary) { model.stop() }
                 } else {
-                    Button("Scan") { model.scan() }
-                        .buttonStyle(.borderedProminent)
+                    AppButton("Scan", tone: .primary) { model.scan() }
                 }
                 Toggle("Guard this network", isOn: $model.guardEnabled)
                     .toggleStyle(.switch)
@@ -139,11 +131,9 @@ struct LANScannerToolView: View {
                     .font(.caption.monospaced())
                     .foregroundColor(.secondary)
                 Spacer()
-                Button("Copy") { copy() }
-                    .buttonStyle(.bordered)
+                AppButton("Copy", tone: .secondary) { copy() }
                     .disabled(model.devices.isEmpty)
-                Button("Clear") { model.clear() }
-                    .buttonStyle(.borderless)
+                AppButton("Clear", tone: .quiet) { model.clear() }
                     .disabled(model.result == nil)
                 ToolkitStatusPill(text: statusText, tone: statusTone)
             }
@@ -222,14 +212,9 @@ struct LANScannerToolView: View {
             .foregroundColor(.secondary)
             .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
-                Button("Open Settings") { LocalNetworkAccess.openSettings() }
-                    .controlSize(.small)
-                Button("Request access") { LocalNetworkAccess.request() }
-                    .controlSize(.small)
-                Button("Rescan") { model.scan() }
-                    .controlSize(.small)
-                    .buttonStyle(.borderedProminent)
-                    .disabled(model.isScanning)
+                AppButton("Open Settings") { LocalNetworkAccess.openSettings() }
+                AppButton("Request access") { LocalNetworkAccess.request() }
+                AppButton("Rescan", tone: .primary, isEnabled: !model.isScanning) { model.scan() }
             }
         }
         .padding(DesignToken.Spacing.compact)

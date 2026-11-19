@@ -37,18 +37,14 @@ struct VisualTracerouteToolView: View {
                     Stepper("Max hops: \(model.maxHops)", value: $model.maxHops, in: 1...40)
                         .font(.caption)
                     if model.isRunning {
-                        Button("Stop") { model.stop() }
-                            .buttonStyle(.bordered)
+                        AppButton("Stop", tone: .secondary) { model.stop() }
                     } else {
-                        Button("Trace") { model.run() }
-                            .buttonStyle(.borderedProminent)
+                        AppButton("Trace", tone: .primary) { model.run() }
                     }
-                    Button("Copy") { copyRoute() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { copyRoute() }
                         .disabled(model.hops.isEmpty)
                         .help("Copy the hop list as text")
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.hops.isEmpty)
                     Spacer()
                     ToolkitStatusPill(text: statusText, tone: statusTone)

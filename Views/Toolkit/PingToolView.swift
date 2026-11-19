@@ -63,17 +63,13 @@ struct PingToolView: View {
                     }
                     Spacer()
                     if model.isRunning {
-                        Button("Stop") { model.stop() }
-                            .buttonStyle(.bordered)
+                        AppButton("Stop", tone: .secondary) { model.stop() }
                     } else {
-                        Button("Run") { model.run() }
-                            .buttonStyle(.borderedProminent)
+                        AppButton("Run", tone: .primary) { model.run() }
                     }
-                    Button("Copy") { copy() }
-                        .buttonStyle(.bordered)
+                    AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(model.statistics == nil)
-                    Button("Clear") { model.clear() }
-                        .buttonStyle(.borderless)
+                    AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.samples.isEmpty)
                 }
                 HStack(spacing: 18) {

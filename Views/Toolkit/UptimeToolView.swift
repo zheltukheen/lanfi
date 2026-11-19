@@ -69,13 +69,9 @@ struct UptimeToolView: View {
                 Text("Targets")
                     .font(.caption.bold())
                 Spacer()
-                Button {
+                AppIconButton(systemImage: "plus", label: "Add a target") {
                     showingAdd = true
-                } label: {
-                    Image(systemName: "plus")
                 }
-                .buttonStyle(.borderless)
-                .help("Add a target")
                 .accessibilityLabel("Add an uptime target")
             }
             .padding(.horizontal, DesignToken.Spacing.medium)
@@ -98,16 +94,14 @@ struct UptimeToolView: View {
             }
 
             Divider()
-            Button {
+            AppButton(
+                "Check All Now", systemImage: "arrow.clockwise", tone: .quiet,
+                isEnabled: !monitor.isChecking && !monitor.targets.isEmpty
+            ) {
                 Task { await monitor.checkAllNow() }
-            } label: {
-                Label("Check All Now", systemImage: "arrow.clockwise")
-                    .font(.caption)
             }
-            .buttonStyle(.borderless)
             .padding(.horizontal, DesignToken.Spacing.medium)
             .padding(.bottom, DesignToken.Spacing.medium)
-            .disabled(monitor.isChecking || monitor.targets.isEmpty)
         }
         .background(Color(nsColor: .windowBackgroundColor))
     }
@@ -229,15 +223,13 @@ struct UptimeToolView: View {
                     value: state.lastCheck?.at.formatted(date: .omitted, time: .shortened)
                         ?? "—")
                 Spacer()
-                Button {
+                AppButton(
+                    "Check Now", systemImage: "arrow.clockwise",
+                    isEnabled: !monitor.isChecking
+                ) {
                     Task { await monitor.checkNow(state.target.id) }
-                } label: {
-                    Label("Check Now", systemImage: "arrow.clockwise")
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
                 .fixedSize()
-                .disabled(monitor.isChecking)
             }
         }
     }
