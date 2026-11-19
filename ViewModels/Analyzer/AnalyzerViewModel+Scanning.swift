@@ -36,6 +36,25 @@ extension AnalyzerViewModel {
         ).interval(isForeground: isAppActive)
     }
 
+    /// Switches the CoreWLAN interface the scanner uses. `nil` means "system
+    /// default"; the choice is persisted where every scanner reads it and the
+    /// loop restarts so the next scan uses the new radio.
+    func selectScanInterface(_ name: String?) {
+        let value = (name?.isEmpty ?? true) ? nil : name
+        if let value {
+            UserDefaults.standard.set(value, forKey: AppSettingsKey.wifiInterface.rawValue)
+        } else {
+            UserDefaults.standard.removeObject(forKey: AppSettingsKey.wifiInterface.rawValue)
+        }
+        var settings = AppSettingsStore.shared.settings
+        settings.networkInterface.preferred = value ?? ""
+        AppSettingsStore.shared.save(settings)
+
+        guard loadedSession == nil else { return }
+        startScanningLoop()
+        refresh()
+    }
+
     func updateRefreshInterval(to newValue: Double) {
         refreshInterval = newValue
         UserDefaults.standard.set(newValue, forKey: refreshIntervalKey)

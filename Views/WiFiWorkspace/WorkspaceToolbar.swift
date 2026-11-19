@@ -56,24 +56,40 @@ struct ToolbarView: View {
         }
     }
 
-    /// Shows which CoreWLAN interface the scanner will use. The choice lives in
-    /// Settings → Wi-Fi; when it is the system default, the name still appears
-    /// so multi-radio Macs are never ambiguous.
-    private var scanningWithLabel: some View {
-        Group {
-            if let interfaceName = WiFiInterfaceCatalog.activeName() {
-                HStack(spacing: DesignToken.Spacing.tight) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.system(size: 10, weight: .semibold))
-                    Text("Scanning with \(interfaceName)")
-                        .font(.caption2)
-                        .lineLimit(1)
+    /// Scan interface picker: any CoreWLAN radio macOS exposes can be used, so
+    /// the label is a menu instead of a static caption. The choice is persisted
+    /// where `WiFiScanner` and `PassiveScanEngine` read it, and selecting an
+    /// adapter restarts the loop so the next scan uses the new radio.
+    private var scanInterfaceMenu: some View {
+        Menu {
+            Picker("Scan interface", selection: scanInterfaceBinding) {
+                Text("System default").tag("")
+                ForEach(WiFiInterfaceCatalog.names(), id: \.self) { name in
+                    Text(name).tag(name)
                 }
-                .foregroundColor(.secondary)
-                .help("Scan interface. Change it in Settings → Wi-Fi.")
-                .accessibilityLabel("Scanning with interface \(interfaceName)")
             }
+        } label: {
+            AppMenuLabel(
+                title: preferredInterface.map { String(localized: "Scanning with \($0)") }
+                    ?? String(localized: "System default interface"),
+                systemImage: "antenna.radiowaves.left.and.right",
+                isActive: preferredInterface != nil)
         }
+        .appMenuStyle()
+        .help("Scan interface. Pick any Wi-Fi adapter macOS exposes.")
+        .accessibilityLabel("Scan interface")
+        .accessibilityValue(preferredInterface ?? String(localized: "System default"))
+    }
+
+    private var preferredInterface: String? {
+        let value = UserDefaults.standard.string(forKey: AppSettingsKey.wifiInterface.rawValue)
+        return (value?.isEmpty ?? true) ? nil : value
+    }
+
+    private var scanInterfaceBinding: Binding<String> {
+        Binding(
+            get: { preferredInterface ?? "" },
+            set: { viewModel.selectScanInterface($0.isEmpty ? nil : $0) })
     }
 
     /// Preset cadences offered by the countdown menu; the current value is
@@ -171,24 +187,32 @@ struct ToolbarView: View {
 
     /// P0.2 mode picker. Passive and directed open the plan sheet because they
     /// are on-demand runs rather than the background scan.
+    /// Modal picker replaced by a menu so it matches every other dropdown; the
+    /// current mode is the label and a checkmark marks it in the list.
     private var scanModePicker: some View {
-        Picker(
-            "Scan mode",
-            selection: Binding(
-                get: { passiveScan.mode },
-                set: { mode in
+        Menu {
+            ForEach(ScanMode.allCases) { mode in
+                Button {
                     viewModel.selectScanMode(mode)
                     if mode != .active { showingScanModes = true }
-                })
-        ) {
-            ForEach(ScanMode.allCases) { mode in
-                Label(mode.title, systemImage: mode.systemImage).tag(mode)
+                } label: {
+                    if passiveScan.mode == mode {
+                        Label(mode.title, systemImage: "checkmark")
+                    } else {
+                        Label(mode.title, systemImage: mode.systemImage)
+                    }
+                }
             }
+        } label: {
+            AppMenuLabel(
+                title: passiveScan.mode.title,
+                systemImage: passiveScan.mode.systemImage,
+                isActive: passiveScan.mode != .active)
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .appMenuStyle()
         .help("Scan mode: active, passive or directed")
         .accessibilityLabel("Scan mode")
+        .accessibilityValue(passiveScan.mode.title)
     }
 
     private func remainingUntilRefresh(at date: Date) -> Double {
@@ -207,11 +231,9 @@ struct ToolbarView: View {
             Button("Analyze Capture…") { postWiFiTool("analyze") }
             Button("Remote Sensors…") { postWiFiTool("sensors") }
         } label: {
-            Label("Wi-Fi Tools", systemImage: "wrench.and.screwdriver")
-                .font(.caption)
+            AppMenuLabel(title: "Wi-Fi Tools", systemImage: "wrench.and.screwdriver")
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .appMenuStyle()
         .help("Spectrum, capture analysis and remote sensors")
     }
 
@@ -245,7 +267,7 @@ struct ToolbarView: View {
                 // A3. Отсчёт до следующего автосканирования + меню частоты
                 refreshMenu
 
-                scanningWithLabel
+                scanInterfaceMenu
 
                 scanModePicker
 
@@ -306,8 +328,7 @@ struct ToolbarView: View {
                         .font(.system(size: 14))
                         .frame(width: DesignToken.Toolbar.iconWidth + 8)
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
+                .appMenuStyle()
                 .appToolbarChrome()
                 .help("Settings & Monitoring Control")
                 .accessibilityLabel("Scan settings")
@@ -363,8 +384,7 @@ struct ToolbarView: View {
                         Image(systemName: "square.and.arrow.up")
                             .frame(width: DesignToken.Toolbar.iconWidth - 8)
                     }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
+                    .appMenuStyle()
                     .appToolbarChrome()
                     .help("Export scan results")
                     .accessibilityLabel("Export scan results")

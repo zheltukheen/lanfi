@@ -1496,3 +1496,9 @@
 "Wi-Fi restored" = "Wi-Fi включён";
 "Pause automation" = "Приостановить автоматизацию";
 "On" = "Вкл.";
+
+/* Unified dropdowns and the shared table builder */
+"Scanning with %@" = "Сканирование через %@";
+"System default interface" = "Системный интерфейс по умолчанию";
+"Sortable table" = "Сортируемая таблица";
+"Sort by %@" = "Сортировать по %@";

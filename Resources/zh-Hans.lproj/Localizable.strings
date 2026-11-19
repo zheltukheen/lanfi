@@ -1459,3 +1459,9 @@
 "Wi-Fi restored" = "Wi-Fi 已恢复";
 "Pause automation" = "暂停自动化";
 "On" = "开";
+
+/* Unified dropdowns and the shared table builder */
+"Scanning with %@" = "正在通过 %@ 扫描";
+"System default interface" = "系统默认接口";
+"Sortable table" = "可排序表格";
+"Sort by %@" = "按 %@ 排序";

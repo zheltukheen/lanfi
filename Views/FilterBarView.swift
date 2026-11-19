@@ -83,15 +83,13 @@ struct FilterBarView: View {
                 }
             }
         } label: {
-            Label(
-                viewModel.minSignalThreshold <= -100
+            AppMenuLabel(
+                title: viewModel.minSignalThreshold <= -100
                     ? "Any signal" : "≥ \(Int(viewModel.minSignalThreshold)) dBm",
-                systemImage: "cellularbars"
-            )
-            .filterControl(active: viewModel.minSignalThreshold > -100)
+                systemImage: "cellularbars",
+                isActive: viewModel.minSignalThreshold > -100)
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .appMenuStyle()
         .help("Minimum signal")
     }
 
@@ -114,11 +112,10 @@ struct FilterBarView: View {
                     }
                 }
             } label: {
-                Label(sortTitle, systemImage: "arrow.up.arrow.down")
-                    .font(.caption)
+                AppMenuLabel(
+                    title: sortTitle, systemImage: "arrow.up.arrow.down", isActive: true)
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
+            .appMenuStyle()
 
             Button {
                 viewModel.isSortAscending.toggle()
@@ -155,14 +152,12 @@ struct FilterBarView: View {
                 }
             }
         } label: {
-            Label(
-                viewModel.groupMode == .none ? "No grouping" : viewModel.groupMode.title,
-                systemImage: "square.grid.2x2"
-            )
-            .filterControl(active: viewModel.groupMode != .none)
+            AppMenuLabel(
+                title: viewModel.groupMode == .none ? "No grouping" : viewModel.groupMode.title,
+                systemImage: "square.grid.2x2",
+                isActive: viewModel.groupMode != .none)
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .appMenuStyle()
         .help("Group networks")
     }
 
@@ -184,11 +179,12 @@ struct FilterBarView: View {
             Divider()
             Button("Edit custom filters…") { showCustomFilters = true }
         } label: {
-            Label(viewModel.activeFilter?.name ?? "No rule", systemImage: "line.3.horizontal.decrease.circle")
-                .filterControl(active: viewModel.activeFilter != nil)
+            AppMenuLabel(
+                title: viewModel.activeFilter?.name ?? "No rule",
+                systemImage: "line.3.horizontal.decrease.circle",
+                isActive: viewModel.activeFilter != nil)
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .appMenuStyle()
         .help("Saved filter rules")
     }
 
@@ -275,30 +271,6 @@ struct FilterBarView: View {
         .disabled(!viewModel.hasActiveFilters)
         .help("Clear all filters")
         .accessibilityLabel("Clear all filters")
-    }
-}
-
-/// Keeps every control at the same caption type size, tinting the ones that
-/// currently narrow the list so an active filter is visible in the bar itself.
-private struct FilterControlStyle: ViewModifier {
-    let active: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .font(.caption)
-            .foregroundColor(active ? .accentColor : .primary)
-            .padding(.horizontal, DesignToken.Spacing.small)
-            .padding(.vertical, DesignToken.Spacing.tight)
-            .background(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                    .fill(active ? Color.accentColor.opacity(0.14) : Color.clear)
-            )
-    }
-}
-
-extension View {
-    fileprivate func filterControl(active: Bool) -> some View {
-        modifier(FilterControlStyle(active: active))
     }
 }
 

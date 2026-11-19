@@ -1,115 +1,97 @@
 import SwiftUI
 
 /// Single comparison table used by both the side inspector and the bottom
-/// Profile/Raw Data panels.
+/// Profile/Raw Data panels. Built with `AppTable`, so the header, sorting and
+/// striping are the same as every other table in the app.
 struct NetworkComparisonTable: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     let networks: [NetworkModel]
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case network, bssid, band, channel, width, security, signal, noise, snr, clients,
-            utilization, quality, generation
-
-        var id: String { rawValue }
-
-        var title: String {
-            switch self {
-            case .network: return "Network"
-            case .bssid: return "BSSID"
-            case .band: return "Band"
-            case .channel: return "Ch"
-            case .width: return "Width"
-            case .security: return "Security"
-            case .signal: return "dBm"
-            case .noise: return "Noise"
-            case .snr: return "SNR"
-            case .clients: return "Clients"
-            case .utilization: return "Util."
-            case .quality: return "Quality"
-            case .generation: return "Generation"
-            }
-        }
+    private func metric(_ text: String?) -> AnyView {
+        AnyView(
+            Text(text ?? "—")
+                .font(.caption2)
+                .lineLimit(1)
+                .foregroundColor(text == nil ? .secondary : .primary)
+        )
     }
 
-    @State private var sortKey: SortKey = .signal
-    @State private var ascending = false
+    private func number(_ value: Int?) -> AnyView {
+        metric(value.map(String.init))
+    }
 
-    private var sortedNetworks: [NetworkModel] {
-        let ordered = networks.sorted { (lhs: NetworkModel, rhs: NetworkModel) -> Bool in
-            switch sortKey {
-            case .network:
-                return lhs.displaySSID.localizedStandardCompare(rhs.displaySSID)
-                    == .orderedAscending
-            case .bssid:
-                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .band: return lhs.band.rawValue < rhs.band.rawValue
-            case .channel: return lhs.channel < rhs.channel
-            case .width: return lhs.channelWidthMHz < rhs.channelWidthMHz
-            case .security:
-                return lhs.security.localizedStandardCompare(rhs.security) == .orderedAscending
-            case .signal: return lhs.signal < rhs.signal
-            case .noise: return (lhs.noise ?? Int.min) < (rhs.noise ?? Int.min)
-            case .snr: return (lhs.snr ?? Int.min) < (rhs.snr ?? Int.min)
-            case .clients: return (lhs.clients ?? Int.min) < (rhs.clients ?? Int.min)
-            case .utilization:
-                return (lhs.channelUtilization ?? Int.min) < (rhs.channelUtilization ?? Int.min)
-            case .quality:
-                return (viewModel.metrics(for: lhs)?.qualityScore ?? 0)
-                    < (viewModel.metrics(for: rhs)?.qualityScore ?? 0)
-            case .generation: return lhs.generation.sortOrder < rhs.generation.sortOrder
-            }
-        }
-        return ascending ? ordered : ordered.reversed()
+    private var columns: [AppTableColumn<NetworkModel>] {
+        [
+            AppTableColumn(
+                id: "network", title: "Network", minWidth: 110,
+                value: { .text($0.displaySSID) },
+                cell: { network in
+                    AnyView(
+                        Text(network.displaySSID)
+                            .font(.caption)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading))
+                }),
+            AppTableColumn(
+                id: "bssid", title: "BSSID", minWidth: 120,
+                value: { .text($0.bssid) },
+                cell: { network in
+                    AnyView(Text(network.bssid).font(.caption2.monospaced()).lineLimit(1))
+                }),
+            AppTableColumn(
+                id: "band", title: "Band", minWidth: 44,
+                value: { .text($0.band.label) },
+                cell: { network in AnyView(Text(network.band.label).font(.caption2)) }),
+            AppTableColumn(
+                id: "channel", title: "Ch", minWidth: 36,
+                value: { .number($0.channel) },
+                cell: { network in AnyView(Text("\(network.channel)").font(.caption2)) }),
+            AppTableColumn(
+                id: "width", title: "Width", minWidth: 46,
+                value: { .number($0.channelWidthMHz) },
+                cell: { network in AnyView(Text(network.channelWidthLabel).font(.caption2)) }),
+            AppTableColumn(
+                id: "security", title: "Security", minWidth: 76,
+                value: { .text($0.security) },
+                cell: { network in
+                    AnyView(Text(network.security).font(.caption2).lineLimit(1))
+                }),
+            AppTableColumn(
+                id: "signal", title: "dBm", minWidth: 40,
+                value: { .number($0.signal) },
+                cell: { network in AnyView(Text("\(network.signal)").font(.caption2)) }),
+            AppTableColumn(
+                id: "noise", title: "Noise", minWidth: 44,
+                value: { .number($0.noise) }, cell: { network in number(network.noise) }),
+            AppTableColumn(
+                id: "snr", title: "SNR", minWidth: 36,
+                value: { .number($0.snr) }, cell: { network in number(network.snr) }),
+            AppTableColumn(
+                id: "clients", title: "Clients", minWidth: 52,
+                value: { .number($0.clients) }, cell: { network in number(network.clients) }),
+            AppTableColumn(
+                id: "utilization", title: "Util.", minWidth: 44,
+                value: { .number($0.channelUtilization) },
+                cell: { network in
+                    metric(network.channelUtilization.map { "\($0)%" })
+                }),
+            AppTableColumn(
+                id: "quality", title: "Quality", minWidth: 52,
+                value: { .number(viewModel.metrics(for: $0)?.qualityScore) },
+                cell: { network in
+                    number(viewModel.metrics(for: network)?.qualityScore)
+                }),
+            AppTableColumn(
+                id: "generation", title: "Generation", minWidth: 70,
+                value: { .text($0.generation.label) },
+                cell: { network in
+                    AnyView(Text(network.generation.label).font(.caption2))
+                }),
+        ]
     }
 
     var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 5) {
-                GridRow {
-                    ForEach(SortKey.allCases) { key in
-                        Button {
-                            if sortKey == key {
-                                ascending.toggle()
-                            } else {
-                                sortKey = key
-                                ascending = key == .network || key == .bssid
-                            }
-                        } label: {
-                            HStack(spacing: 2) {
-                                Text(key.title)
-                                if sortKey == key {
-                                    Image(systemName: ascending ? "chevron.up" : "chevron.down")
-                                }
-                            }
-                            .font(.caption2.bold())
-                            .foregroundColor(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                        .help("Sort by \(key.title)")
-                    }
-                }
-                Divider().gridCellColumns(SortKey.allCases.count)
-                ForEach(sortedNetworks) { network in
-                    GridRow {
-                        Text(network.displaySSID).font(.caption).lineLimit(1).frame(minWidth: 110, alignment: .leading)
-                        Text(network.bssid).font(.caption2.monospaced()).lineLimit(1)
-                        Text(network.band.label).font(.caption2)
-                        Text("\(network.channel)").font(.caption2)
-                        Text(network.channelWidthLabel).font(.caption2)
-                        Text(network.security).font(.caption2).lineLimit(1)
-                        Text("\(network.signal)").font(.caption2)
-                        Text(network.noise.map(String.init) ?? "—").font(.caption2)
-                        Text(network.snr.map(String.init) ?? "—").font(.caption2)
-                        Text(network.clients.map(String.init) ?? "—").font(.caption2)
-                        Text(network.channelUtilization.map { "\($0)%" } ?? "—").font(.caption2)
-                        Text("\(viewModel.metrics(for: network)?.qualityScore ?? 0)").font(.caption2)
-                        Text(network.generation.label).font(.caption2)
-                    }
-                    Divider().gridCellColumns(SortKey.allCases.count)
-                }
-            }
-            .padding(DesignToken.Spacing.tight)
-        }
-        .accessibilityLabel("Network comparison")
+        AppTable(columns: columns, rows: networks, initialKey: "signal", ascending: false)
+            .accessibilityLabel("Network comparison")
     }
 }

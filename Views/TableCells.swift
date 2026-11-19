@@ -180,9 +180,13 @@ final class WiFiTableCellView: NSTableCellView {
         }
 
         if let columnWidth {
-            // The bar grows with its column instead of staying a fixed 34 pt.
-            let width = min(max(columnWidth * 0.38, 28), 72)
-            barWidthConstraint?.constant = width
+            // The bar fills every point the number does not need, so widening
+            // the column widens the bar instead of leaving a dead gutter, and
+            // a 6 pt gap always separates the bar from the figure.
+            let textWidth = ceil(textFieldLabel.intrinsicContentSize.width)
+            let measured = textWidth > 0 ? textWidth : columnWidth * 0.3
+            let available = columnWidth - measured - 5 - 6 - 6
+            barWidthConstraint?.constant = max(12, available)
         }
 
         apply(visual: visual)

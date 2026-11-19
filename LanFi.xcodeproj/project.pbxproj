@@ -594,6 +594,7 @@
 		DAFD3C961A424BEE3A7EB974 /* NetworkAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */; };
 		DB2AC9503743CA5E1E17CF6C /* ProtocolAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BEE8A050D2295AABABA46 /* ProtocolAnalyzerTests.swift */; };
 		DBA254C5682AAE9B5E7C5B3E /* ProtocolProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5FF2FE2D86134E95301A60 /* ProtocolProfile.swift */; };
+		DBA4F41046A0C1F9FBA2B16B /* AppTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8FB175264E137BC5C0C04DA /* AppTable.swift */; };
 		DC08C5814E7C8C4D6524B900 /* NetworkRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4281B36C4184F64C974C3F72 /* NetworkRoute.swift */; };
 		DC1CA154F2D0E479884BBE47 /* ScanModePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C5CCF943B6F98967573E1AE /* ScanModePlanTests.swift */; };
 		DC952CF84FA99BBEAEFFE20F /* ThroughputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81EC7247D1E56F9712A60063 /* ThroughputTests.swift */; };
@@ -1136,6 +1137,7 @@
 		F7C7744EF29C51E908F9D722 /* SSLToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSLToolView.swift; sourceTree = "<group>"; };
 		F7CAF5236FA74BFCC00C098B /* PingToolModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PingToolModel.swift; sourceTree = "<group>"; };
 		F81BD0FF834A3CA118C4E5E4 /* ClientAnalyticsToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientAnalyticsToolView.swift; sourceTree = "<group>"; };
+		F8FB175264E137BC5C0C04DA /* AppTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTable.swift; sourceTree = "<group>"; };
 		F99ADA3B851F094D80D3EE09 /* HardwareInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareInventory.swift; sourceTree = "<group>"; };
 		FA9A277B818539165DFF0E8D /* DeviceShelfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceShelfView.swift; sourceTree = "<group>"; };
 		FAFC3B6151E00C9AD9AF7AEE /* ServiceDescriptionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDescriptionResolver.swift; sourceTree = "<group>"; };
@@ -1508,6 +1510,7 @@
 				2C668C45805BE620587A4C21 /* AppCommands.swift */,
 				1A15755927E4D0684A0785FC /* AppLayout.swift */,
 				8389C712965EE82EAD2B4160 /* AppTabBar.swift */,
+				F8FB175264E137BC5C0C04DA /* AppTable.swift */,
 				6DD3A7E0AC5C8C2DA27B2F1F /* AutomationSettingsView.swift */,
 				7C37E446911F821AEF2FC7DB /* ChartStyle.swift */,
 				C70F649DE5D78DFB69DC4F6B /* ColorRulesSettingsView.swift */,
@@ -2267,6 +2270,7 @@
 				6D4965E974C0A1C2386168DB /* AppLayout.swift in Sources */,
 				A1EA44C383DF9D487D307F1A /* AppSmokeTest.swift in Sources */,
 				9CDC8FDA73A90F8BC5430709 /* AppTabBar.swift in Sources */,
+				DBA4F41046A0C1F9FBA2B16B /* AppTable.swift in Sources */,
 				8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */,
 				CB0C061C7995E4AB1820BCAC /* AutomationSettingsView.swift in Sources */,
 				14C86002AF68658D37BB897D /* BonjourDiscovery.swift in Sources */,

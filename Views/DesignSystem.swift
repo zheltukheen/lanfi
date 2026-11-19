@@ -284,3 +284,46 @@ struct ToolbarIconButton: View {
         .accessibilityValue(isActive ? "On" : "")
     }
 }
+
+/// One label + chrome for every dropdown in the app.
+///
+/// Menus used to be a mix of bare `Picker`s, icon-only menus and full-width
+/// labels. A `Menu` with this label reads as the same control on the analyzer
+/// toolbar, the filter bar and the toolkit headers, and it always shows the
+/// current value plus the chevron that says "this opens a list".
+struct AppMenuLabel: View {
+    let title: String
+    var systemImage: String?
+    var isActive = false
+    var showsChevron = true
+
+    var body: some View {
+        HStack(spacing: DesignToken.Spacing.tight) {
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            Text(LocalizedStringKey(title))
+                .font(.caption)
+                .lineLimit(1)
+            if showsChevron {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .foregroundColor(isActive ? .accentColor : .primary)
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .appToolbarChrome(isActive: isActive)
+        .accessibilityHidden(true)
+    }
+}
+
+extension View {
+    /// The shared dropdown chrome: borderless, intrinsic width, no bezel — the
+    /// label carries the chrome via `appToolbarChrome`/`AppMenuLabel`.
+    func appMenuStyle() -> some View {
+        menuStyle(.borderlessButton)
+            .fixedSize()
+    }
+}

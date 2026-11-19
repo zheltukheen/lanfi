@@ -1459,3 +1459,9 @@
 "Wi-Fi restored" = "Wi-Fi rétabli";
 "Pause automation" = "Suspendre l'automatisation";
 "On" = "Activé";
+
+/* Unified dropdowns and the shared table builder */
+"Scanning with %@" = "Analyse via %@";
+"System default interface" = "Interface système par défaut";
+"Sortable table" = "Tableau triable";
+"Sort by %@" = "Trier par %@";
