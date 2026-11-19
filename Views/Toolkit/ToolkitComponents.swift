@@ -278,11 +278,9 @@ struct TableSortControl<Key: Hashable>: View {
                 }
             }
         } label: {
-            Label("Sort", systemImage: "arrow.up.arrow.down")
-                .font(.caption2)
+            AppMenuLabel(title: "Sort", systemImage: "arrow.up.arrow.down")
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .appMenuStyle()
         .help("Sort the table")
         .accessibilityLabel("Sort the table")
         .accessibilityValue(ascending ? "Ascending" : "Descending")

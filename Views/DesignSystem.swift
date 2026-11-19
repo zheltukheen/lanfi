@@ -271,17 +271,14 @@ struct ToolbarIconButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(tint ?? (isActive ? .accentColor : .primary))
-                .frame(width: DesignToken.Toolbar.iconWidth)
-        }
-        .buttonStyle(.borderless)
-        .appToolbarChrome(isActive: isActive)
+        AppIconButton(
+            systemImage: systemImage,
+            label: LocalizedStringKey(label),
+            tint: tint,
+            isActive: isActive,
+            action: action
+        )
         .help(help)
-        .accessibilityLabel(label)
-        .accessibilityValue(isActive ? "On" : "")
     }
 }
 

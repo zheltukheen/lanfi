@@ -507,8 +507,10 @@ no domains.
 
 Tasks:
 
-- [ ] Persist nettop deltas per app per hour and per day next to traffic
-      accounting; retention 7 or 30 days, CSV export.
+- [x] Persist nettop deltas per app per hour and per day next to traffic
+      accounting; retention 7 days, CSV export (`AppTrafficHistory`,
+      `AppTrafficHistoryModel`, "App history" card on Process Traffic; LanFi's
+      own traffic excluded).
 - [ ] Attribute contacted domains from HTTP capture and cached reverse DNS, not
       payload; show the top domains per app.
 - [ ] Exclude LanFi's own traffic, keep the privacy note and drop query strings
@@ -855,6 +857,22 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the thirty-first slice (2026-11-19)
+
+- **One control kit (UI unification).** New `Views/AppControls.swift` holds the
+  single button (`AppButton`/`AppIconButton`), list row (`AppListRow`), search
+  field (`AppSearchField`) and toolkit header strip (`ToolkitHeaderBar`).
+  Connections and Network Monitor now share the same tab strip and header
+  chrome instead of a segmented `Picker` versus a custom `HStack`; the toolkit
+  sidebar tool list, its search field, its detail header, the toolkit sort menu
+  and `ToolbarIconButton` all route through those components.
+- **P3.6 step one (per-app traffic history).** `AppTrafficHistory` keeps hourly
+  per-app byte buckets for seven days in `app-traffic-history.json`, sampled
+  every five minutes from the same `nettop` deltas while Process Traffic is on,
+  excluding LanFi's own process. The Process Traffic screen gained an "App
+  history" card with today's total, the top apps and CSV export. Domains and
+  full URLs are still not attributed — that half of P3.6 remains open.
 
 ## Delivered in the thirtieth slice (2026-11-19)
 

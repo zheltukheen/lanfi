@@ -11,7 +11,6 @@ struct NetworkToolkitView: View {
     @EnvironmentObject private var survey: SurveyViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
-    @FocusState private var searchFocused: Bool
     @AppStorage(AppSettingsKey.toolkitSidebarWidth.rawValue) private var storedSidebarWidth: Double = 228
     @State private var sidebarDragOffset: CGFloat = 0
 
@@ -37,7 +36,6 @@ struct NetworkToolkitView: View {
             VStack(spacing: 0) {
                 if !isWorkspaceTool {
                     detailHeader
-                    Divider()
                 }
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -128,30 +126,9 @@ struct NetworkToolkitView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            TextField("Search tools", text: $searchText)
-                .textFieldStyle(.plain)
-                .font(.callout)
-                .focused($searchFocused)
-            if !searchText.isEmpty {
-                Button {
-                    searchText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.borderless)
-                .accessibilityLabel("Clear search")
-            }
-        }
-        .padding(.horizontal, DesignToken.Spacing.small)
-        .padding(.vertical, DesignToken.Spacing.tight)
-        .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
-        .padding(.horizontal, DesignToken.Spacing.small)
-        .padding(.top, DesignToken.Spacing.small)
+        AppSearchField(placeholder: "Search tools", text: $searchText)
+            .padding(.horizontal, DesignToken.Spacing.small)
+            .padding(.top, DesignToken.Spacing.small)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -166,69 +143,42 @@ struct NetworkToolkitView: View {
     }
 
     private func toolRow(_ tool: ToolboxTool) -> some View {
-        let selected = toolkit.selection == tool
-        return Button {
+        AppListRow(
+            icon: tool.icon,
+            title: tool.title,
+            trailingText: tool.isAvailable ? nil : String(localized: "Soon"),
+            isSelected: toolkit.selection == tool,
+            isEnabled: tool.isAvailable,
+            help: tool.isAvailable ? tool.title : tool.plannedDetail
+        ) {
             toolkit.select(tool)
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: tool.icon)
-                    .font(.system(size: 12))
-                    .frame(width: 17)
-                Text(tool.title)
-                    .font(.callout)
-                    .lineLimit(1)
-                Spacer(minLength: 4)
-                if !tool.isAvailable {
-                    Text("Soon")
-                        .font(.system(size: 9, weight: .semibold))
-                        .padding(.horizontal, DesignToken.Spacing.tight)
-                        .padding(.vertical, 1)
-                        .background(Color.secondary.opacity(0.12), in: Capsule())
-                }
-            }
-            .padding(.horizontal, DesignToken.Spacing.small)
-            .padding(.vertical, DesignToken.Spacing.tight)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundColor(
-                selected ? .white : (tool.isAvailable ? .primary : .secondary)
-            )
-            .background(
-                selected ? Color.accentColor : Color.clear,
-                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-            )
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .disabled(!tool.isAvailable)
-        .help(tool.isAvailable ? tool.title : tool.plannedDetail)
     }
 
     private var detailHeader: some View {
-        HStack(spacing: 10) {
-            Image(systemName: toolkit.selection.icon)
-                .font(.title3)
-                .foregroundColor(.accentColor)
-                .frame(width: 24)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(toolkit.selection.title)
-                    .font(.title3.bold())
-                Text(toolkit.selection.section.title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        ToolkitHeaderBar {
+            HStack(spacing: DesignToken.Spacing.compact) {
+                Image(systemName: toolkit.selection.icon)
+                    .font(.title3)
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(toolkit.selection.title)
+                        .font(.title3.bold())
+                    Text(toolkit.selection.section.title)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
-            Spacer()
-            ToolbarIconButton(
+        } trailing: {
+            AppIconButton(
                 systemImage: "questionmark.circle",
                 label: "Open LanFi Help",
-                help: "LanFi Help",
                 tint: .secondary
             ) {
                 openWindow(id: "help")
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, DesignToken.Spacing.compact)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     /// The route comes from the registry (`ToolDescriptor.screen`), so a tool

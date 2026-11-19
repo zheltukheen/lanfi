@@ -70,6 +70,12 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Views/AppControls.swift` — the single control kit (`AppButton`,
+  `AppIconButton`, `AppListRow`, `AppSearchField`, `ToolkitHeaderBar`); route
+  new buttons, lists and tool headers through it.
+- `Models/AppTrafficHistory.swift` / `Services/AppTrafficHistoryService.swift` —
+  P3.6: hourly per-app byte buckets (`app-traffic-history.json`), seven-day
+  retention, CSV export, LanFi's own traffic excluded.
 - `Models/TrafficAccounting.swift` / `Services/TrafficAccountingService.swift` —
   P2: `TrafficLedger` (per-day, per-interface volume, day keys in the user's
   calendar) and the minute poll that writes `traffic-accounting.json`.

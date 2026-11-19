@@ -26,7 +26,7 @@ struct ConnectionsToolView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            ToolkitHeaderBar {
                 AppTabBar(
                     sections: [
                         .init(
@@ -43,12 +43,7 @@ struct ConnectionsToolView: View {
                     selection: selection,
                     showsGroupTitles: false
                 )
-                Spacer()
             }
-            .padding(.horizontal, DesignToken.Layout.contentPadding)
-            .padding(.vertical, DesignToken.Spacing.small)
-
-            Divider()
 
             Group {
                 switch tab {

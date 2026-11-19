@@ -13,32 +13,31 @@ struct NetworkMonitorToolView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Picker("Mode", selection: $tab) {
-                    ForEach(NetworkMonitorTab.allCases) { tab in
-                        Text(tab.title).tag(tab)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(width: 240)
-                Spacer()
+            ToolkitHeaderBar {
+                AppTabBar(
+                    sections: [
+                        .init(
+                            id: "monitor", title: nil,
+                            items: [
+                                .init(
+                                    id: NetworkMonitorTab.overview.rawValue,
+                                    title: "Overview", icon: "gauge"),
+                                .init(
+                                    id: NetworkMonitorTab.routes.rawValue,
+                                    title: "Routes", icon: "arrow.triangle.branch"),
+                            ])
+                    ],
+                    selection: tabSelection,
+                    showsGroupTitles: false)
+            } trailing: {
                 if tab == .routes {
-                    Button {
+                    AppButton(
+                        "Refresh", systemImage: "arrow.clockwise", isBusy: isLoadingRoutes
+                    ) {
                         Task { await loadRoutes() }
-                    } label: {
-                        if isLoadingRoutes {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Label("Refresh", systemImage: "arrow.clockwise")
-                        }
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(isLoadingRoutes)
                 }
             }
-            .padding(.horizontal, DesignToken.Spacing.card)
-            .padding(.top, DesignToken.Spacing.medium)
 
             switch tab {
             case .overview:
@@ -79,6 +78,12 @@ struct NetworkMonitorToolView: View {
             }
             .padding(DesignToken.Spacing.card)
         }
+    }
+
+    private var tabSelection: Binding<String> {
+        Binding(
+            get: { tab.rawValue },
+            set: { raw in tab = NetworkMonitorTab(rawValue: raw) ?? .overview })
     }
 
     /// P2: day/week/month/total volumes from the interface counters, stored

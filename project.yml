@@ -224,6 +224,7 @@ targets:
       - path: Models/VPNGuard.swift
       - path: Models/LinkAutomation.swift
       - path: Models/TrafficAccounting.swift
+      - path: Models/AppTrafficHistory.swift
       - path: Services/TerminalLauncher.swift
       - path: Models/FilterProfile.swift
       - path: Models/CustomFilter.swift

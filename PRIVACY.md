@@ -52,8 +52,9 @@ LanFi makes only these outbound requests:
   requests are made only when you press the corresponding button; LanFi does
   not attach an account, device identifier or telemetry payload.
 
-Traffic totals are kept locally in `traffic-accounting.json`; they never leave
-the Mac and can be cleared from the Data usage card or by deleting the file.
+Traffic totals are kept locally in `traffic-accounting.json` and per-app hourly
+totals in `app-traffic-history.json` (byte counts only, seven days, only while
+Process Traffic is enabled); they never leave the Mac and can be cleared from the Data usage card or by deleting the file.
 
 There is no telemetry, cloud sync, remote logging or third-party analytics SDK.
 Exports (CSV/JSON/PCAP) and saved sessions/annotations/surveys are written only

@@ -8,6 +8,7 @@ import SwiftUI
 /// process or create a local block rule.
 struct ProcessTrafficToolView: View {
     @ObservedObject var rules: ConnectionRulesModel
+    @StateObject private var appHistory = AppTrafficHistoryModel.shared
 
     @AppStorage(AppSettingsKey.processTrafficEnabled.rawValue) private var enabled = false
     @State private var rows: [ProcessTrafficDelta] = []
@@ -150,6 +151,7 @@ struct ProcessTrafficToolView: View {
             }
             if enabled {
                 summary
+                appHistoryCard
                 table
             } else {
                 consentCard
@@ -322,6 +324,53 @@ struct ProcessTrafficToolView: View {
         .padding(DesignToken.Spacing.compact)
         .background(
             Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+    }
+
+    /// P3.6: the week of hourly per-app totals this screen feeds.
+    private var appHistoryCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "App history")
+                    if appHistory.isSampling { ProgressView().controlSize(.mini) }
+                    Spacer()
+                    AppButton("Export CSV…", systemImage: "square.and.arrow.up") {
+                        appHistory.exportCSV()
+                    }
+                }
+                if appHistory.topAppsToday.isEmpty {
+                    Text(
+                        "Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                } else {
+                    HStack(spacing: 24) {
+                        ToolkitMetric(
+                            title: "Today",
+                            value: TrafficByteFormat.string(appHistory.todayTotal.total))
+                        Spacer()
+                    }
+                    ForEach(appHistory.topAppsToday, id: \.app) { entry in
+                        HStack(spacing: DesignToken.Spacing.small) {
+                            Text(entry.app)
+                                .font(.caption)
+                                .lineLimit(1)
+                            Spacer(minLength: DesignToken.Spacing.small)
+                            Text(TrafficByteFormat.string(entry.volume.total))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    Text(
+                        "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
     }
 
     private var table: some View {

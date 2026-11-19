@@ -1474,3 +1474,8 @@
 "Total" = "Gesamt";
 "Reset" = "Zurücksetzen";
 "Counted from the interface byte counters once a minute; the ledger stays on this Mac." = "Wird einmal pro Minute aus den Byte-Zählern der Schnittstellen berechnet; das Journal bleibt auf diesem Mac.";
+
+/* Unified controls and per-app traffic history */
+"App history" = "App-Verlauf";
+"Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on." = "Noch nichts erfasst. Summen werden alle 5 Minuten erfasst, solange Prozess-Traffic aktiv ist.";
+"Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored." = "Sieben Tage stündlicher Byte-Summen pro App, LanFis eigener Verkehr ausgenommen. Keine Domains, URLs oder Nutzdaten werden gespeichert.";
