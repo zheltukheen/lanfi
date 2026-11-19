@@ -359,6 +359,8 @@ struct MonitorView: View {
         case .weakSignal: return "exclamationmark.triangle"
         case .deauthBurst: return "bolt.trianglebadge.exclamationmark"
         case .roamingFailure: return "arrow.triangle.2.circlepath.circle"
+        case .gatewayChanged: return "exclamationmark.shield"
+        case .dnsMismatch: return "questionmark.circle"
         }
     }
 
@@ -372,6 +374,8 @@ struct MonitorView: View {
         case .weakSignal: return .yellow
         case .deauthBurst: return .red
         case .roamingFailure: return .orange
+        case .gatewayChanged: return .red
+        case .dnsMismatch: return .orange
         }
     }
 

@@ -42,6 +42,17 @@
   unknown name reads "Unknown service" with the raw host one copy away, and on
   macOS 26 the opt-in on-device model can label unknown hosts locally.
 
+### Added (gateway and DNS integrity)
+- **Gateway ARP and DNS-hijack detection.** Every two minutes LanFi re-reads the
+  default gateway's hardware address from the ARP table and posts a critical
+  "Gateway MAC changed" event if the IP stays the same but the MAC does not —
+  the classic ARP-spoofing signature. Every ten minutes it compares the system
+  resolver's answer for a canary host with Cloudflare's direct answer and raises
+  a warning-level "DNS answer mismatch", explicitly labelled as a warning
+  because CDNs vary by resolver. Both feed the Monitor log, quiet hours and the
+  Security Watch screen, each with its own alert toggle; the guard is on by
+  default and can be switched off in Settings → General.
+
 ### Changed
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.

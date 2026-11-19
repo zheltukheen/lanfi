@@ -8,6 +8,9 @@ struct MonitorAlertSettings: Codable, Equatable {
     var securityChange: Bool = true
     var deauthBurst: Bool = true
     var roamingFailure: Bool = true
+    /// P3.7
+    var gatewayChange: Bool = true
+    var dnsMismatch: Bool = true
 
     var quietHoursEnabled: Bool = false
     var quietStartHour: Int = 22
@@ -18,7 +21,7 @@ struct MonitorAlertSettings: Codable, Equatable {
 
     var anyEnabled: Bool {
         weakSignal || disconnect || roam || channelChange || securityChange || deauthBurst
-            || roamingFailure
+            || roamingFailure || gatewayChange || dnsMismatch
     }
 
     func isEnabled(for kind: MonitorEventKind) -> Bool {
@@ -30,13 +33,15 @@ struct MonitorAlertSettings: Codable, Equatable {
         case .securityChanged: return securityChange
         case .deauthBurst: return deauthBurst
         case .roamingFailure: return roamingFailure
+        case .gatewayChanged: return gatewayChange
+        case .dnsMismatch: return dnsMismatch
         case .connected: return false
         }
     }
 
     private enum CodingKeys: String, CodingKey {
         case weakSignal, disconnect, roam, channelChange, securityChange, deauthBurst,
-            roamingFailure
+            roamingFailure, gatewayChange, dnsMismatch
         case quietHoursEnabled, quietStartHour, quietEndHour, cooldownMinutes
     }
 
@@ -52,6 +57,8 @@ struct MonitorAlertSettings: Codable, Equatable {
         deauthBurst = try container.decodeIfPresent(Bool.self, forKey: .deauthBurst) ?? true
         roamingFailure =
             try container.decodeIfPresent(Bool.self, forKey: .roamingFailure) ?? true
+        gatewayChange = try container.decodeIfPresent(Bool.self, forKey: .gatewayChange) ?? true
+        dnsMismatch = try container.decodeIfPresent(Bool.self, forKey: .dnsMismatch) ?? true
         quietHoursEnabled =
             try container.decodeIfPresent(Bool.self, forKey: .quietHoursEnabled) ?? false
         quietStartHour = try container.decodeIfPresent(Int.self, forKey: .quietStartHour) ?? 22

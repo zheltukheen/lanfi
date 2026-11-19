@@ -77,6 +77,9 @@ struct SecurityWatchAlert: Identifiable, Equatable {
         case securityDowngrade
         case randomizedBSSID
         case deauthBurst
+        /// P3.7: gateway ARP and DNS answer integrity.
+        case gatewayChanged
+        case dnsMismatch
 
         var title: String {
             switch self {
@@ -84,6 +87,8 @@ struct SecurityWatchAlert: Identifiable, Equatable {
             case .securityDowngrade: return String(localized: "Security downgrade")
             case .randomizedBSSID: return String(localized: "Randomized BSSID")
             case .deauthBurst: return String(localized: "Deauthentication burst")
+            case .gatewayChanged: return String(localized: "Gateway MAC changed")
+            case .dnsMismatch: return String(localized: "DNS answer mismatch")
             }
         }
 
@@ -93,6 +98,8 @@ struct SecurityWatchAlert: Identifiable, Equatable {
             case .securityDowngrade: return "lock.slash"
             case .randomizedBSSID: return "questionmark.diamond"
             case .deauthBurst: return "bolt.trianglebadge.exclamationmark"
+            case .gatewayChanged: return "exclamationmark.shield"
+            case .dnsMismatch: return "questionmark.circle"
             }
         }
     }
@@ -131,6 +138,9 @@ struct SecurityWatchReport: Equatable {
 /// feed to normal apps.
 enum SecurityWatchEvaluator {
     static let deauthWindow: TimeInterval = 15 * 60
+    /// Gateway/resolver findings stay visible for an hour, because one spoofed
+    /// ARP reply matters until the user has looked at it.
+    static let gatewayWindow: TimeInterval = 60 * 60
 
     static func evaluate(
         networks: [NetworkModel],
@@ -214,6 +224,23 @@ enum SecurityWatchEvaluator {
                         ),
                         at: now))
             }
+        }
+
+        // P3.7: gateway and resolver findings arrive as Monitor events and are
+        // surfaced here next to the beacon heuristics.
+        for event in events
+        where (event.kind == .gatewayChanged || event.kind == .dnsMismatch)
+            && now.timeIntervalSince(event.at) <= gatewayWindow
+        {
+            alerts.append(
+                SecurityWatchAlert(
+                    id: "\(event.kind.rawValue)-\(event.id.uuidString)",
+                    kind: event.kind == .gatewayChanged ? .gatewayChanged : .dnsMismatch,
+                    severity: event.kind == .gatewayChanged ? .critical : .warning,
+                    ssid: event.ssid,
+                    bssid: event.bssid,
+                    detail: event.detail,
+                    at: event.at))
         }
 
         for event in events

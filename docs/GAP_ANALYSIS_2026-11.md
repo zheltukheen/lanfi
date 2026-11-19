@@ -515,12 +515,21 @@ Wi-Fi layer.
 
 Tasks:
 
-- [ ] Watch the default gateway's MAC in the ARP table and raise a high-severity
-      Security Watch event when it changes while the gateway IP stays the same.
-- [ ] Compare the configured resolver with the one actually used for a canary
-      lookup; flag a mismatch on a known network or under a VPN.
-- [ ] Feed both events into the Monitor event log and the existing notification
-      rules, with a per-kind toggle.
+- [x] Watch the default gateway's MAC in the ARP table and raise a high-severity
+      Security Watch event when it changes while the gateway IP stays the same
+      (`GatewayARPWatch`, sampled every 2 minutes; a missing ARP entry is
+      treated as unknown, never as a change).
+- [x] Compare the system resolver's answer for a canary host with the answer a
+      public resolver returns directly (`ResolverIntegrity`); a disjoint answer
+      is a warning on the Security Watch screen and in the Monitor log.
+- [x] Feed both events into the Monitor event log and the existing notification
+      rules through `.lanFiSecurityEvent` → `MonitorViewModel.ingestExternal`,
+      with `gatewayChange` / `dnsMismatch` toggles in the alert sheet.
+
+Delivered 2026-11-19: `Models/GatewayIntegrity.swift`,
+`Services/GatewayGuardService.swift`, new `MonitorEventKind` cases, the Security
+Watch integrity card and `Tests/GatewayIntegrityTests.swift` (11 tests including
+the spoof/no-spoof seam).
 
 Acceptance: a test seam that changes the gateway MAC produces one event and one
 notification; an unchanged MAC produces none; a resolver mismatch is labelled as
@@ -827,6 +836,19 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-seventh slice (2026-11-19)
+
+- **P3.7 gateway ARP and DNS-hijack detection.** `GatewayGuard` re-reads the
+  default gateway and its ARP entry every two minutes and posts a critical
+  `Gateway MAC changed` Monitor event when the address changes while the IP
+  stays the same; a hidden ARP table (Local Network access off) is treated as
+  unknown, never as a spoof. Every ten minutes it also compares the system
+  resolver's answer for `captive.apple.com` with Cloudflare's direct answer and
+  raises a warning-level `DNS answer mismatch`. Both events flow through the
+  existing Monitor log, quiet hours, cooldown and per-kind toggles, and the
+  Security Watch screen gained a Gateway/DNS integrity card plus matching
+  alert rows. The guard is on by default and can be turned off in Settings.
 
 ## Delivered in the twenty-sixth slice (2026-11-19)
 

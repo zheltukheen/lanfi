@@ -1407,3 +1407,22 @@
 "SSH session" = "SSH 会话";
 "Time Machine backup" = "Time Machine 备份";
 "LanFi socket scan" = "LanFi 套接字扫描";
+
+/* Gateway and DNS integrity (P3.7) */
+"Gateway MAC changed" = "网关 MAC 已变化";
+"DNS answer mismatch" = "DNS 应答不一致";
+"Gateway and DNS integrity" = "网关与 DNS 完整性";
+"Check now" = "立即检查";
+"Gateway" = "网关";
+"MAC" = "MAC";
+"Match" = "一致";
+"Mismatch" = "不一致";
+"Watch gateway and DNS integrity" = "监控网关与 DNS 完整性";
+"Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "每 2 分钟从 ARP 表重新读取默认网关的 MAC，每 10 分钟把一次探针 DNS 查询与 Cloudflare 的直连结果比较。只有该查询会离开这台 Mac，结果都留在本机。";
+"Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "在 Wi-Fi 之下：每 2 分钟重读网关 MAC，每 10 分钟把系统解析器对探针主机的应答与 Cloudflare 的直连应答比较。两者都是警告而非证据：CDN 会因解析器不同而不同。";
+"Gateway %1$@ uses %2$@." = "网关 %1$@ 使用 %2$@。";
+"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "网关 %1$@ 的硬件地址由 %2$@ 变为 %3$@，而 IP 未变。";
+"Gateway %1$@ is no longer the default route." = "网关 %1$@ 不再是默认路由。";
+"The system resolver and the public resolver agree." = "系统解析器与公共解析器结果一致。";
+"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "系统解析器对 %@ 返回的地址与公共解析器不同。这是警告：CDN 会因解析器不同而不同，但劫持或过滤 DNS 也会呈现同样现象。";
+"Not enough answers to compare." = "可比较的应答不足。";

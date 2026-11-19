@@ -220,6 +220,7 @@ targets:
       - path: Models/ListenerWatch.swift
       - path: Models/SSHLaunch.swift
       - path: Models/ServiceDescription.swift
+      - path: Models/GatewayIntegrity.swift
       - path: Services/TerminalLauncher.swift
       - path: Models/FilterProfile.swift
       - path: Models/CustomFilter.swift

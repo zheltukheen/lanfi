@@ -46,6 +46,10 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
     case weakSignal
     case deauthBurst
     case roamingFailure
+    /// P3.7: the gateway's MAC changed while its IP stayed the same.
+    case gatewayChanged
+    /// P3.7: the system resolver disagreed with a public resolver.
+    case dnsMismatch
 
     var title: String {
         switch self {
@@ -57,6 +61,8 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
         case .weakSignal: return String(localized: "Weak signal")
         case .deauthBurst: return String(localized: "Deauth burst")
         case .roamingFailure: return String(localized: "Roaming failure")
+        case .gatewayChanged: return String(localized: "Gateway MAC changed")
+        case .dnsMismatch: return String(localized: "DNS answer mismatch")
         }
     }
 }
@@ -321,6 +327,17 @@ struct MonitorSnapshot: Codable, Equatable {
             changed = true
         }
         return changed
+    }
+
+    /// Folds an event produced outside the scan loop (gateway/DNS guard) into
+    /// the same stream, so the Monitor log and alert rules apply unchanged.
+    @discardableResult
+    mutating func ingest(event: MonitorEvent) -> Bool {
+        events.append(event)
+        if events.count > 500 {
+            events.removeFirst(events.count - 500)
+        }
+        return true
     }
 
     mutating func trim(

@@ -267,6 +267,11 @@ struct GeneralSettingsPage: View {
             if let settingsMessage {
                 Text(settingsMessage).settingsHint()
             }
+            Toggle("Watch gateway and DNS integrity", isOn: binding(\.automation.gatewayGuard))
+            Text(
+                "Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local."
+            )
+            .settingsHint()
             if ServiceDescriptionResolver.isModelAvailable {
                 Toggle(
                     "Describe unknown services with the on-device model",

@@ -1444,3 +1444,22 @@
 "SSH session" = "SSH-сессия";
 "Time Machine backup" = "Резервная копия Time Machine";
 "LanFi socket scan" = "Сканирование сокетов LanFi";
+
+/* Gateway and DNS integrity (P3.7) */
+"Gateway MAC changed" = "MAC шлюза изменился";
+"DNS answer mismatch" = "Несовпадение ответа DNS";
+"Gateway and DNS integrity" = "Целостность шлюза и DNS";
+"Check now" = "Проверить сейчас";
+"Gateway" = "Шлюз";
+"MAC" = "MAC";
+"Match" = "Совпадает";
+"Mismatch" = "Не совпадает";
+"Watch gateway and DNS integrity" = "Следить за целостностью шлюза и DNS";
+"Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "Каждые 2 минуты перечитывает MAC шлюза по умолчанию из таблицы ARP и каждые 10 минут сравнивает тестовый DNS-запрос с ответом Cloudflare. Наружу уходит только этот запрос; результаты остаются на Mac.";
+"Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "Ниже уровня Wi-Fi: MAC шлюза перечитывается из таблицы ARP каждые 2 минуты, а каждые 10 минут ответ системного резолвера для контрольного хоста сравнивается с прямым ответом Cloudflare. Это предупреждения, а не доказательство: CDN законно отвечает по-разному.";
+"Gateway %1$@ uses %2$@." = "Шлюз %1$@ использует %2$@.";
+"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "У шлюза %1$@ изменился аппаратный адрес с %2$@ на %3$@, а IP остался прежним.";
+"Gateway %1$@ is no longer the default route." = "Шлюз %1$@ больше не маршрут по умолчанию.";
+"The system resolver and the public resolver agree." = "Системный и публичный резолверы отвечают одинаково.";
+"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "Системный резолвер вернул для %@ другой адрес, чем публичный. Это предупреждение: CDN отвечают по-разному, но перехват или фильтрующий DNS выглядит так же.";
+"Not enough answers to compare." = "Недостаточно ответов для сравнения.";

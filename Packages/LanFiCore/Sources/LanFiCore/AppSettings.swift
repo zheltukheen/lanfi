@@ -196,6 +196,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         public var listenerWatch = false
         /// P3.10: describe unknown services with the on-device model.
         public var serviceDescriptions = false
+        /// P3.7: watch the gateway ARP entry and the resolver answer.
+        public var gatewayGuard = true
         public var autoUpdateOUI = true
 
         public init() {}

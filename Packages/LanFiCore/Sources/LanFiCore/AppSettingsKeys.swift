@@ -103,6 +103,7 @@ public enum AppSettingsKey: String, CaseIterable, Sendable {
     case processTrafficEnabled = "LanFi.processTraffic.enabled"
     case listenerWatch = "LanFi.listeners.watch"
     case serviceDescriptions = "LanFi.descriptions.model"
+    case gatewayGuard = "LanFi.gatewayGuard.enabled"
     case iperf3Servers = "LanFi.iperf3.servers"
 
     // MARK: Layout and navigation state

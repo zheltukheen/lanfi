@@ -5,6 +5,7 @@ import SwiftUI
 struct SecurityWatchToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
     @ObservedObject var monitor: MonitorViewModel
+    @StateObject private var gatewayGuard = GatewayGuard.shared
 
     private var report: SecurityWatchReport {
         SecurityWatchEvaluator.evaluate(networks: analyzer.networks, events: monitor.events)
@@ -21,6 +22,7 @@ struct SecurityWatchToolView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 summary
+                integrityCard
                 if report.alerts.isEmpty {
                     cleanState
                 } else {
@@ -65,6 +67,59 @@ struct SecurityWatchToolView: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
             }
+        }
+    }
+
+    /// P3.7: the below-Wi-Fi checks — gateway ARP and resolver answers.
+    private var integrityCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "Gateway and DNS integrity")
+                    if gatewayGuard.isSampling { ProgressView().controlSize(.mini) }
+                    Spacer()
+                    if let at = gatewayGuard.lastCheckedAt {
+                        Text("Last checked \(at.formatted(date: .omitted, time: .standard))")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Button("Check now") {
+                        Task { await gatewayGuard.sampleNow() }
+                    }
+                    .controlSize(.small)
+                    .disabled(gatewayGuard.isSampling)
+                }
+                HStack(spacing: 24) {
+                    ToolkitMetric(
+                        title: "Gateway", value: gatewayGuard.gatewayIP ?? "—", tint: .primary)
+                    ToolkitMetric(
+                        title: "MAC", value: gatewayGuard.gatewayMAC ?? "—",
+                        tint: gatewayGuard.macChangeCount > 0 ? AppPalette.danger : .primary)
+                    ToolkitMetric(
+                        title: "DNS", value: resolverLabel, tint: resolverTint)
+                    Spacer()
+                }
+                Text(gatewayGuard.resolverCheck.detail)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var resolverLabel: String {
+        switch gatewayGuard.resolverCheck.verdict {
+        case .match: return String(localized: "Match")
+        case .mismatch: return String(localized: "Mismatch")
+        case .unknown: return String(localized: "Not checked yet")
+        }
+    }
+
+    private var resolverTint: Color {
+        switch gatewayGuard.resolverCheck.verdict {
+        case .match: return AppPalette.ok
+        case .mismatch: return AppPalette.warning
+        case .unknown: return .secondary
         }
     }
 
@@ -199,6 +254,12 @@ struct SecurityWatchToolView: View {
                 ToolkitSectionLabel(text: "What this checks")
                 Text(
                     "Evil twin: the same SSID is advertised with a lower security class (open or WEP) than another BSSID of that SSID, and the weaker radio is not an inferred co-located radio of the stronger one. Downgrade: the same pattern with WPA/WPA2. Randomized BSSID: a locally administered address next to registered hardware addresses for one SSID. Deauth: a captured burst from the Wi-Fi Monitor."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                Text(
+                    "Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver."
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)

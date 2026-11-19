@@ -1408,3 +1408,22 @@
 "SSH session" = "SSH session";
 "Time Machine backup" = "Time Machine backup";
 "LanFi socket scan" = "LanFi socket scan";
+
+/* Gateway and DNS integrity (P3.7) */
+"Gateway MAC changed" = "Gateway MAC changed";
+"DNS answer mismatch" = "DNS answer mismatch";
+"Gateway and DNS integrity" = "Gateway and DNS integrity";
+"Check now" = "Check now";
+"Gateway" = "Gateway";
+"MAC" = "MAC";
+"Match" = "Match";
+"Mismatch" = "Mismatch";
+"Watch gateway and DNS integrity" = "Watch gateway and DNS integrity";
+"Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local.";
+"Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver.";
+"Gateway %1$@ uses %2$@." = "Gateway %1$@ uses %2$@.";
+"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same.";
+"Gateway %1$@ is no longer the default route." = "Gateway %1$@ is no longer the default route.";
+"The system resolver and the public resolver agree." = "The system resolver and the public resolver agree.";
+"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same.";
+"Not enough answers to compare." = "Not enough answers to compare.";

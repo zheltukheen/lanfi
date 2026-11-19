@@ -32,6 +32,7 @@ final class MonitorViewModel: ObservableObject {
     /// Injected so the retention trim and event timestamps are reproducible.
     private let clock: any Clock
     private var saveTask: Task<Void, Never>?
+    private var securityObserver: NSObjectProtocol?
 
     init(
         clock: any Clock = SystemClock(),
@@ -57,6 +58,15 @@ final class MonitorViewModel: ObservableObject {
         var loaded = store.load()
         loaded.trim(retention: savedRetention.interval, now: clock.now)
         snapshot = loaded
+
+        // P3.7: gateway and DNS findings arrive from `GatewayGuard` through the
+        // notification center, so the guard does not own the monitor.
+        securityObserver = NotificationCenter.default.addObserver(
+            forName: .lanFiSecurityEvent, object: nil, queue: .main
+        ) { [weak self] note in
+            guard let event = note.userInfo?["event"] as? MonitorEvent else { return }
+            Task { @MainActor [weak self] in self?.ingestExternal(event) }
+        }
     }
 
     var samples: [MonitorSample] { snapshot.samples }
@@ -96,6 +106,17 @@ final class MonitorViewModel: ObservableObject {
         scheduleSave()
     }
 
+    /// Folds an externally produced event (gateway/DNS guard) into the log and
+    /// the same alert policy as the scan events.
+    func ingestExternal(_ event: MonitorEvent) {
+        guard isRecording else { return }
+        var updated = snapshot
+        updated.ingest(event: event)
+        snapshot = updated
+        notifier.notify(event, settings: alerts)
+        scheduleSave()
+    }
+
     func requestNotificationPermission() async -> Bool {
         await notifier.requestAuthorization()
     }
@@ -105,6 +126,12 @@ final class MonitorViewModel: ObservableObject {
         saveTask = nil
         snapshot = .empty
         store.clear()
+    }
+
+    deinit {
+        if let securityObserver {
+            NotificationCenter.default.removeObserver(securityObserver)
+        }
     }
 
     private func saveAlerts() {

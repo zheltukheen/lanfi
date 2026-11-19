@@ -70,6 +70,9 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/GatewayIntegrity.swift` / `Services/GatewayGuardService.swift` — P3.7:
+  the gateway ARP watch, the DNS-answer comparison, and the guard that posts
+  `gatewayChanged` / `dnsMismatch` Monitor events through `.lanFiSecurityEvent`.
 - `Models/ServiceDescription.swift` / `Services/ServiceDescriptionResolver.swift`
   — P3.10: the bundled offline domain/process description catalogue and the
   opt-in on-device model (`FoundationModels`, macOS 26+) used for unknown names
@@ -265,6 +268,8 @@ so those values cannot be rolled back; `importData` overwrites them on purpose.
   (`AppSettings.automation.listenerWatch`).
 - `LanFi.descriptions.model` — opt-in on-device service descriptions
   (`AppSettings.automation.serviceDescriptions`).
+- `LanFi.gatewayGuard.enabled` — gateway ARP / DNS integrity guard
+  (`AppSettings.automation.gatewayGuard`).
 - `LanFi.connectivity.enabled|interval|primaryURL|fallbackURL` and
   `LanFi.connectivity.notify.offline|captive|restored` — the connectivity
   watchdog (`AppSettings.connectivity`); quiet hours are read from

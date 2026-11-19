@@ -276,6 +276,8 @@ public final class AppSettingsStore: @unchecked Sendable {
             .listenerWatch, settings.automation.listenerWatch)
         settings.automation.serviceDescriptions = bool(
             .serviceDescriptions, settings.automation.serviceDescriptions)
+        settings.automation.gatewayGuard = bool(
+            .gatewayGuard, settings.automation.gatewayGuard)
         settings.automation.autoUpdateOUI = bool(
             .autoUpdateOUI, settings.automation.autoUpdateOUI)
 
@@ -382,6 +384,7 @@ public final class AppSettingsStore: @unchecked Sendable {
         storage.set(
             settings.automation.serviceDescriptions,
             forKey: AppSettingsKey.serviceDescriptions.rawValue)
+        storage.set(settings.automation.gatewayGuard, forKey: AppSettingsKey.gatewayGuard.rawValue)
         storage.set(settings.automation.autoUpdateOUI, forKey: AppSettingsKey.autoUpdateOUI.rawValue)
 
         storage.set(

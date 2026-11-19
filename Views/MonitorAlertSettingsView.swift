@@ -25,6 +25,8 @@ struct MonitorAlertSettingsView: View {
                     Toggle("Security downgrade", isOn: $monitor.alerts.securityChange)
                     Toggle("Deauth burst", isOn: $monitor.alerts.deauthBurst)
                     Toggle("Roaming failure", isOn: $monitor.alerts.roamingFailure)
+                    Toggle("Gateway MAC changed", isOn: $monitor.alerts.gatewayChange)
+                    Toggle("DNS answer mismatch", isOn: $monitor.alerts.dnsMismatch)
                 }
 
                 Section("Quiet hours") {

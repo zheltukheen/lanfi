@@ -37,6 +37,12 @@ LanFi makes only these outbound requests:
   (`captive.apple.com`, falling back to `www.apple.com`) every 15 s–5 min to
   tell an online link from a captive portal or a dead WAN. It sends no payload
   and no identifiers, and the verdict stays on your Mac.
+- **Gateway and DNS integrity guard** (on by default, can be turned off in
+  Settings → General) reads the default gateway's MAC from the local ARP table
+  and sends one A query for `captive.apple.com` directly to Cloudflare
+  (`1.1.1.1`) every 10 minutes, then compares it with the system resolver's
+  answer for the same name. The query carries no identifier; the comparison
+  stays on your Mac.
 - **Speed Test** uses Apple's `networkQuality` command. These third-party
   requests are made only when you press the corresponding button; LanFi does
   not attach an account, device identifier or telemetry payload.

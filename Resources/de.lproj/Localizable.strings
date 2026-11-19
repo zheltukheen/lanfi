@@ -1407,3 +1407,22 @@
 "SSH session" = "SSH-Sitzung";
 "Time Machine backup" = "Time-Machine-Sicherung";
 "LanFi socket scan" = "LanFi-Socket-Scan";
+
+/* Gateway and DNS integrity (P3.7) */
+"Gateway MAC changed" = "Gateway-MAC geändert";
+"DNS answer mismatch" = "DNS-Antwort weicht ab";
+"Gateway and DNS integrity" = "Gateway- und DNS-Integrität";
+"Check now" = "Jetzt prüfen";
+"Gateway" = "Gateway";
+"MAC" = "MAC";
+"Match" = "Übereinstimmung";
+"Mismatch" = "Abweichung";
+"Watch gateway and DNS integrity" = "Gateway- und DNS-Integrität überwachen";
+"Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "Liest die MAC des Standard-Gateways alle 2 Minuten aus der ARP-Tabelle und vergleicht alle 10 Minuten eine Canary-DNS-Abfrage mit Cloudflare. Nur diese Abfrage verlässt den Mac; Ergebnisse bleiben lokal.";
+"Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "Unterhalb von Wi-Fi: Die Gateway-MAC wird alle 2 Minuten aus der ARP-Tabelle gelesen, und alle 10 Minuten wird die Antwort des System-Resolvers für einen Canary-Host mit der direkten Antwort von Cloudflare verglichen. Beides sind Warnungen, kein Beweis: CDNs antworten je nach Resolver unterschiedlich.";
+"Gateway %1$@ uses %2$@." = "Gateway %1$@ verwendet %2$@.";
+"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "Gateway %1$@ hat seine Hardwareadresse von %2$@ auf %3$@ geändert, während die IP gleich blieb.";
+"Gateway %1$@ is no longer the default route." = "Gateway %1$@ ist nicht mehr die Standardroute.";
+"The system resolver and the public resolver agree." = "System- und öffentlicher Resolver stimmen überein.";
+"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "Der System-Resolver lieferte für %@ eine andere Adresse als der öffentliche Resolver. Das ist eine Warnung: CDNs variieren je nach Resolver, aber ein Hijack oder ein filternder DNS sieht genauso aus.";
+"Not enough answers to compare." = "Nicht genug Antworten zum Vergleichen.";
