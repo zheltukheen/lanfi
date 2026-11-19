@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 5.5.0 — 2026-11-19
+
+### Fixed
+- **The Device Shelf no longer crashes on launch.** `AppTable`'s generic
+  context-menu initializer delegated to a designated initializer with the same
+  `selection:rowMenu:` labels, so overload resolution picked the generic
+  initializer again and every table with a row menu recursed until the stack
+  overflowed. The designated initializer now uses distinct labels; the shelf
+  (and any future screen with per-row menus) renders normally.
 
 ### Changed (tables, batch 2)
 - **Eight more screens sort from their headers.** Speed Test history, Roaming

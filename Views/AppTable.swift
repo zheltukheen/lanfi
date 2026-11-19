@@ -47,7 +47,7 @@ struct AppTable<Row: Identifiable>: View {
     ) {
         self.init(
             columns: columns, rows: rows, initialKey: initialKey, ascending: ascending,
-            selection: nil, rowMenu: nil)
+            resolvedSelection: nil, resolvedRowMenu: nil)
     }
 
     /// A table whose rows can be selected and opened with a context menu.
@@ -57,7 +57,7 @@ struct AppTable<Row: Identifiable>: View {
     ) {
         self.init(
             columns: columns, rows: rows, initialKey: initialKey, ascending: ascending,
-            selection: selection, rowMenu: nil)
+            resolvedSelection: selection, resolvedRowMenu: nil)
     }
 
     init<Menu: View>(
@@ -67,17 +67,22 @@ struct AppTable<Row: Identifiable>: View {
     ) {
         self.init(
             columns: columns, rows: rows, initialKey: initialKey, ascending: ascending,
-            selection: selection, rowMenu: { AnyView(rowMenu($0)) })
+            resolvedSelection: selection, resolvedRowMenu: { AnyView(rowMenu($0)) })
     }
 
+    /// The designated initializer. Its labels are deliberately different from
+    /// the public ones: when it shared `selection:rowMenu:` with the generic
+    /// view-builder overload, the compiler resolved the delegation above back
+    /// to the generic initializer and every table with a row menu recursed
+    /// until the stack overflowed.
     private init(
         columns: [AppTableColumn<Row>], rows: [Row], initialKey: String, ascending: Bool,
-        selection: Binding<Row.ID?>?, rowMenu: ((Row) -> AnyView)?
+        resolvedSelection: Binding<Row.ID?>?, resolvedRowMenu: ((Row) -> AnyView)?
     ) {
         self.columns = columns
         self.rows = rows
-        self.selection = selection
-        self.rowMenu = rowMenu
+        self.selection = resolvedSelection
+        self.rowMenu = resolvedRowMenu
         _sorter = StateObject(
             wrappedValue: TableSorter(
                 columns: columns.map {
