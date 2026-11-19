@@ -25,6 +25,7 @@ final class PingToolModel: ObservableObject {
 
     func run() {
         guard !isRunning else { return }
+        AnalysisTarget.shared.remember(host)
         guard let target = ToolTarget.parse(host, defaultPort: 443) else {
             errorMessage = "Enter a host name or address."
             return

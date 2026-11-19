@@ -15,6 +15,7 @@ final class SSLToolModel: ObservableObject {
 
     func run() {
         guard !isRunning else { return }
+        AnalysisTarget.shared.remember(host)
         guard let target = ToolTarget.parse(host), let port = UInt16(portText), port > 0 else {
             errorMessage = "Enter a host and a port between 1 and 65535."
             return

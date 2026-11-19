@@ -21,6 +21,7 @@ final class PathCheckToolModel: ObservableObject {
 
     func run() {
         guard !isRunning else { return }
+        AnalysisTarget.shared.remember(host)
         guard let parsed = ToolTarget.parse(host) else {
             errorMessage = "Enter a host name or address."
             return

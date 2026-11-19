@@ -14,6 +14,7 @@ final class WhoisToolModel: ObservableObject {
 
     func run() {
         guard !isRunning else { return }
+        AnalysisTarget.shared.remember(query)
         let target = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !target.isEmpty else {
             errorMessage = "Enter a domain or IP address."

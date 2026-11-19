@@ -1479,3 +1479,19 @@
 "App history" = "应用历史";
 "Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on." = "尚无记录。开启进程流量后每 5 分钟采样一次。";
 "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored." = "保留七天按小时的应用流量，排除 LanFi 自身流量。不保存域名、URL 或负载内容。";
+
+/* 2026-11 fixes: MTR chart, survey heatmap, resolver benchmark */
+"Latency and loss by hop" = "各跳延迟与丢包";
+"Avg latency" = "平均延迟";
+"No hops yet." = "还没有跳。";
+"Average latency and packet loss per hop" = "各跳平均延迟与丢包";
+"Computing coverage…" = "正在计算覆盖…";
+"Resolver benchmark" = "解析器基准测试";
+"Benchmark" = "基准测试";
+"Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS." = "通过系统、Cloudflare、Google 和 Quad9 解析三个域名的中位耗时，每个三轮。仅作测量：LanFi 不会更改你的 DNS。";
+"Median" = "中位数";
+"Range" = "范围";
+"Lookups" = "查询";
+"Failures" = "失败";
+"Fastest: %1$@ · %2$@" = "最快：%1$@ · %2$@";
+"Run the benchmark to compare resolvers." = "运行基准测试以比较解析器。";

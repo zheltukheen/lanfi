@@ -1516,3 +1516,19 @@
 "App history" = "История по приложениям";
 "Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on." = "Пока ничего нет. Итоги снимаются каждые 5 минут, пока включён трафик процессов.";
 "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored." = "Семь дней почасовых объёмов по приложениям без трафика самого LanFi. Домены, URL и содержимое не сохраняются.";
+
+/* 2026-11 fixes: MTR chart, survey heatmap, resolver benchmark */
+"Latency and loss by hop" = "Задержка и потери по хопам";
+"Avg latency" = "Средняя задержка";
+"No hops yet." = "Пока нет хопов.";
+"Average latency and packet loss per hop" = "Средняя задержка и потери пакетов по хопам";
+"Computing coverage…" = "Расчёт покрытия…";
+"Resolver benchmark" = "Сравнение резолверов";
+"Benchmark" = "Сравнить";
+"Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS." = "Медианное время разбора трёх доменов, по три круга, через системный, Cloudflare, Google и Quad9. Это только измерение: LanFi не меняет ваш DNS.";
+"Median" = "Медиана";
+"Range" = "Диапазон";
+"Lookups" = "Запросы";
+"Failures" = "Ошибки";
+"Fastest: %1$@ · %2$@" = "Быстрее всех: %1$@ · %2$@";
+"Run the benchmark to compare resolvers." = "Запустите сравнение, чтобы оценить резолверы.";

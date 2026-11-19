@@ -1,5 +1,4 @@
 import AppKit
-import Charts
 import SwiftUI
 
 struct MTRToolView: View {
@@ -153,31 +152,33 @@ struct MTRToolView: View {
     }
 
     private func latencyChart(_ report: MTRReport) -> some View {
-        let points = report.hops.filter { $0.averageMilliseconds != nil }
-        return ToolkitCard {
+        ToolkitCard {
             VStack(alignment: .leading, spacing: 6) {
-                ToolkitSectionLabel(text: "Latency by hop")
-                if points.isEmpty {
-                    Text("No latency samples yet.")
+                HStack(spacing: 10) {
+                    ToolkitSectionLabel(text: "Latency and loss by hop")
+                    Spacer()
+                    chartLegendItem(color: .accentColor, text: "Avg latency")
+                    chartLegendItem(color: .orange, text: "Loss")
+                }
+                if report.hops.isEmpty {
+                    Text("No hops yet.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
-                    Chart(points) { hop in
-                        LineMark(
-                            x: .value("Hop", hop.hop),
-                            y: .value("Average", hop.averageMilliseconds ?? 0)
-                        )
-                        .interpolationMethod(.monotone)
-                        PointMark(
-                            x: .value("Hop", hop.hop),
-                            y: .value("Average", hop.averageMilliseconds ?? 0)
-                        )
-                        .symbolSize(22)
-                    }
-                    .chartYAxisLabel("ms")
-                    .frame(height: 160)
+                    MTRHopChart(hops: report.hops)
                 }
             }
+        }
+    }
+
+    private func chartLegendItem(color: Color, text: LocalizedStringKey) -> some View {
+        HStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 1)
+                .fill(color)
+                .frame(width: 10, height: 3)
+            Text(text)
+                .font(.caption2)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -265,5 +266,94 @@ struct MTRToolView: View {
         }
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(lines.joined(separator: "\n"), forType: .string)
+    }
+}
+
+/// Hand-drawn hop chart: average latency per hop as a line, packet loss per hop
+/// as bars on the same x axis. Swift Charts collapsed to an empty card here, so
+/// the plot is a plain Canvas with its own axes and it always draws when there
+/// is at least one hop.
+private struct MTRHopChart: View {
+    let hops: [MTRHop]
+
+    private var latencyMax: Double {
+        let peak = hops.compactMap(\.averageMilliseconds).max() ?? 0
+        return max(10, (peak / 10).rounded(.up) * 10)
+    }
+
+    var body: some View {
+        Canvas { context, size in
+            let leading: CGFloat = 38
+            let trailing: CGFloat = 10
+            let top: CGFloat = 8
+            let bottom: CGFloat = 20
+            let plot = CGRect(
+                x: leading, y: top,
+                width: max(1, size.width - leading - trailing),
+                height: max(1, size.height - top - bottom))
+
+            // Latency grid: three lines with ms labels on the left.
+            let gridColor = Color.secondary.opacity(0.25)
+            for step in 0...2 {
+                let fraction = CGFloat(step) / 2
+                let y = plot.maxY - plot.height * fraction
+                var line = Path()
+                line.move(to: CGPoint(x: plot.minX, y: y))
+                line.addLine(to: CGPoint(x: plot.maxX, y: y))
+                context.stroke(line, with: .color(gridColor), style: StrokeStyle(lineWidth: 0.5))
+                let value = Int(latencyMax * Double(step) / 2)
+                context.draw(
+                    Text("\(value)").font(.system(size: 8)).foregroundColor(.secondary),
+                    at: CGPoint(x: leading - 12, y: y), anchor: .trailing)
+            }
+
+            guard !hops.isEmpty else { return }
+            let stepX = hops.count > 1 ? plot.width / CGFloat(hops.count - 1) : 0
+            func x(_ index: Int) -> CGFloat {
+                hops.count > 1 ? plot.minX + CGFloat(index) * stepX : plot.midX
+            }
+
+            // Loss bars grow from the bottom; 100 % loss fills a third of the plot.
+            for (index, hop) in hops.enumerated() where hop.lossPercent > 0 {
+                let height = plot.height * 0.33 * CGFloat(min(hop.lossPercent, 100) / 100)
+                let bar = CGRect(
+                    x: x(index) - 2, y: plot.maxY - height, width: 4, height: max(1, height))
+                context.fill(Path(bar), with: .color(.orange.opacity(0.55)))
+            }
+
+            // Average latency line with a dot per replied hop.
+            var path = Path()
+            var started = false
+            var dots: [CGPoint] = []
+            for (index, hop) in hops.enumerated() {
+                guard let milliseconds = hop.averageMilliseconds else { continue }
+                let point = CGPoint(
+                    x: x(index),
+                    y: plot.maxY - plot.height * CGFloat(min(milliseconds, latencyMax) / latencyMax))
+                if started {
+                    path.addLine(to: point)
+                } else {
+                    path.move(to: point)
+                    started = true
+                }
+                dots.append(point)
+            }
+            context.stroke(path, with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.5))
+            for point in dots {
+                context.fill(
+                    Path(ellipseIn: CGRect(x: point.x - 2.5, y: point.y - 2.5, width: 5, height: 5)),
+                    with: .color(.accentColor))
+            }
+
+            // Hop numbers along the bottom, thinned out on long routes.
+            let stride = max(1, hops.count / 8)
+            for (index, hop) in hops.enumerated() where index % stride == 0 {
+                context.draw(
+                    Text("\(hop.hop)").font(.system(size: 8)).foregroundColor(.secondary),
+                    at: CGPoint(x: x(index), y: plot.maxY + 9))
+            }
+        }
+        .frame(height: 170)
+        .accessibilityLabel("Average latency and packet loss per hop")
     }
 }

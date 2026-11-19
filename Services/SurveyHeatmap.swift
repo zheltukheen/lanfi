@@ -3,7 +3,7 @@ import Foundation
 /// Immutable snapshot of everything the survey heatmap needs. Building a grid
 /// can take tens of milliseconds on a dense plan, so the request is copied to a
 /// background task and the view only publishes the finished grid.
-struct SurveyHeatmapRequest {
+struct SurveyHeatmapRequest: Sendable {
     let columns: Int
     let rows: Int
     let cellSize: Double

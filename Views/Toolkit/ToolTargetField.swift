@@ -85,8 +85,12 @@ struct ToolTargetField: View {
                     Button("Clear history") { clearHistory() }
                 }
             } label: {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.caption)
+                // A visible label, not just a glyph: the history is only useful
+                // if it is discoverable next to the field.
+                AppMenuLabel(
+                    title: String(localized: "Recent"),
+                    systemImage: "clock.arrow.circlepath",
+                    showsChevron: false)
             }
             .menuStyle(.borderlessButton)
             .fixedSize()

@@ -1480,3 +1480,19 @@
 "App history" = "App history";
 "Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on." = "Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on.";
 "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored." = "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored.";
+
+/* 2026-11 fixes: MTR chart, survey heatmap, resolver benchmark */
+"Latency and loss by hop" = "Latency and loss by hop";
+"Avg latency" = "Avg latency";
+"No hops yet." = "No hops yet.";
+"Average latency and packet loss per hop" = "Average latency and packet loss per hop";
+"Computing coverage…" = "Computing coverage…";
+"Resolver benchmark" = "Resolver benchmark";
+"Benchmark" = "Benchmark";
+"Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS." = "Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS.";
+"Median" = "Median";
+"Range" = "Range";
+"Lookups" = "Lookups";
+"Failures" = "Failures";
+"Fastest: %1$@ · %2$@" = "Fastest: %1$@ · %2$@";
+"Run the benchmark to compare resolvers." = "Run the benchmark to compare resolvers.";

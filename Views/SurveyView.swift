@@ -680,13 +680,16 @@ struct SurveyView: View {
                     }
                     .allowsHitTesting(false)
                     .task(id: request.key) {
-                        if heatGridRequestKey != request.key {
-                            heatGrid = nil
-                        }
-                        for await grid in request.stream() {
-                            guard !Task.isCancelled else { return }
-                            heatGrid = grid
-                        }
+                        // Build the grid once per request key on a background
+                        // task. The previous streaming loop restarted on every
+                        // key change and could end up publishing nothing, which
+                        // left the plan without any heat at all.
+                        heatGrid = nil
+                        let built = await Task.detached(priority: .userInitiated) {
+                            request.build()
+                        }.value
+                        guard !Task.isCancelled else { return }
+                        heatGrid = built
                         heatGridRequestKey = request.key
                     }
                     .accessibilityLabel(String(localized: "Floor plan heatmap"))
@@ -710,6 +713,13 @@ struct SurveyView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(2)
                             .frame(maxWidth: 260, alignment: .leading)
+                        if heatGrid == nil,
+                            !displayedSamples.isEmpty || (predictiveMode && !survey.accessPoints.isEmpty)
+                        {
+                            Text("Computing coverage…")
+                                .font(.caption2)
+                                .foregroundColor(.accentColor)
+                        }
                     }
                     .padding(DesignToken.Spacing.small)
                     .background(.regularMaterial)
@@ -747,48 +757,12 @@ struct SurveyView: View {
                     }
                 }
                 .contentShape(Rectangle())
-                .onTapGesture { location in
-                    guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
-                    let x = Double((location.x - rect.minX) / rect.width)
-                    let y = Double((location.y - rect.minY) / rect.height)
-                    if calibrating {
-                        calibrationPoints.append(SurveyPoint(x: x, y: y))
-                        if calibrationPoints.count == 2 {
-                            finishCalibration()
+                .gesture(
+                    SpatialTapGesture()
+                        .onEnded { value in
+                            surveyTap(at: value.location, in: rect)
                         }
-                        return
-                    }
-                    if predictiveMode {
-                        let network = captureNetwork
-                        survey.addAccessPoint(
-                            x: x, y: y,
-                            band: network?.band.label ?? "5GHz",
-                            channel: network?.channel ?? 36
-                        )
-                        return
-                    }
-                    if roomMode {
-                        roomPoints.append(SurveyPoint(x: x, y: y))
-                        survey.statusMessage = String(
-                            format: String(localized: "Room vertices: %lld. Finish Room when ready."),
-                            roomPoints.count)
-                        return
-                    }
-                    if wallMode {
-                        if let start = pendingWallStart {
-                            survey.addWall(x1: Double(start.x), y1: Double(start.y), x2: x, y2: y)
-                            pendingWallStart = nil
-                        } else {
-                            pendingWallStart = CGPoint(x: x, y: y)
-                            survey.statusMessage = String(
-                                localized: "Wall start set. Click the second point.")
-                        }
-                        return
-                    }
-                    guard let network = captureNetwork else { return }
-                    survey.addSample(x: x, y: y, network: network)
-                }
-                .onContinuousHover { phase in
+                ).onContinuousHover { phase in
                     guard walkMode, !roomMode, !wallMode, phase != .ended else { return }
                     guard case .active(let location) = phase else { return }
                     guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
@@ -804,6 +778,52 @@ struct SurveyView: View {
                 }
             }
         }
+    }
+
+    /// Records a tap on the plan. `SpatialTapGesture` is the supported way to
+    /// get the click position; the location closure of `onTapGesture` stopped
+    /// arriving on current macOS, which left the plan unclickable and the
+    /// heatmap without any samples.
+    private func surveyTap(at location: CGPoint, in rect: CGRect) {
+        guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
+        let x = Double((location.x - rect.minX) / rect.width)
+        let y = Double((location.y - rect.minY) / rect.height)
+        if calibrating {
+            calibrationPoints.append(SurveyPoint(x: x, y: y))
+            if calibrationPoints.count == 2 {
+                finishCalibration()
+            }
+            return
+        }
+        if predictiveMode {
+            let network = captureNetwork
+            survey.addAccessPoint(
+                x: x, y: y,
+                band: network?.band.label ?? "5GHz",
+                channel: network?.channel ?? 36
+            )
+            return
+        }
+        if roomMode {
+            roomPoints.append(SurveyPoint(x: x, y: y))
+            survey.statusMessage = String(
+                format: String(localized: "Room vertices: %lld. Finish Room when ready."),
+                roomPoints.count)
+            return
+        }
+        if wallMode {
+            if let start = pendingWallStart {
+                survey.addWall(x1: Double(start.x), y1: Double(start.y), x2: x, y2: y)
+                pendingWallStart = nil
+            } else {
+                pendingWallStart = CGPoint(x: x, y: y)
+                survey.statusMessage = String(
+                    localized: "Wall start set. Click the second point.")
+            }
+            return
+        }
+        guard let network = captureNetwork else { return }
+        survey.addSample(x: x, y: y, network: network)
     }
 
     private func onboardingStep(

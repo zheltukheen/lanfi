@@ -18,6 +18,7 @@ final class TracerouteToolModel: ObservableObject {
 
     func run() {
         guard !isRunning else { return }
+        AnalysisTarget.shared.remember(host)
         guard let target = ToolTarget.parse(host) else {
             errorMessage = "Enter a host name or address."
             return

@@ -1479,3 +1479,19 @@
 "App history" = "App-Verlauf";
 "Nothing recorded yet. Totals are sampled every 5 minutes while Process Traffic is on." = "Noch nichts erfasst. Summen werden alle 5 Minuten erfasst, solange Prozess-Traffic aktiv ist.";
 "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored." = "Sieben Tage stündlicher Byte-Summen pro App, LanFis eigener Verkehr ausgenommen. Keine Domains, URLs oder Nutzdaten werden gespeichert.";
+
+/* 2026-11 fixes: MTR chart, survey heatmap, resolver benchmark */
+"Latency and loss by hop" = "Latenz und Verlust pro Hop";
+"Avg latency" = "Ø Latenz";
+"No hops yet." = "Noch keine Hops.";
+"Average latency and packet loss per hop" = "Durchschnittliche Latenz und Paketverlust pro Hop";
+"Computing coverage…" = "Abdeckung wird berechnet…";
+"Resolver benchmark" = "Resolver-Benchmark";
+"Benchmark" = "Benchmark";
+"Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS." = "Medianzeit für drei Namen, je drei Runden, über System-, Cloudflare-, Google- und Quad9-Resolver. Nur eine Messung: LanFi ändert dein DNS nicht.";
+"Median" = "Median";
+"Range" = "Spanne";
+"Lookups" = "Abfragen";
+"Failures" = "Fehler";
+"Fastest: %1$@ · %2$@" = "Schnellster: %1$@ · %2$@";
+"Run the benchmark to compare resolvers." = "Starte den Benchmark, um Resolver zu vergleichen.";

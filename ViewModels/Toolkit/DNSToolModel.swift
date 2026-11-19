@@ -28,6 +28,7 @@ final class DNSToolModel: ObservableObject {
     }
 
     func run() {
+        AnalysisTarget.shared.remember(host)
         switch tab {
         case .records: runRecords()
         case .mail, .reports: runMail()

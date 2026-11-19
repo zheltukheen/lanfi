@@ -37,6 +37,7 @@ final class Iperf3ToolModel: ObservableObject {
     }
 
     func saveCurrentServer() {
+        AnalysisTarget.shared.remember(host)
         guard let parsed = ToolTarget.parse(host), let port = UInt16(portText), port > 0
         else { return }
         savedServers.removeAll { $0.host == parsed.host && $0.port == port }
