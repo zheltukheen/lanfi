@@ -10,9 +10,6 @@ struct LANScannerToolView: View {
     @State private var detectingDeviceID: String?
     @State private var terminalError: String?
     @AppStorage(AppSettingsKey.lanScannerTab.rawValue) private var tabRaw = 0
-    @StateObject private var sorter = TableSorter<LANDevice>(
-        columns: LANSort.columns, initialKey: "ip")
-
     @StateObject private var shelf = DeviceShelfViewModel()
 
     private var tabSelection: Binding<String> {
@@ -231,9 +228,6 @@ struct LANScannerToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Devices")
-                    TableSortControl(
-                        options: sorter.options,
-                        selection: $sorter.key, ascending: $sorter.ascending)
                     Spacer()
                     Text(result.subnet)
                         .font(.caption2.monospaced())
@@ -243,82 +237,10 @@ struct LANScannerToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.small)
 
-                Table(sorter.sorted(result.devices), selection: $selectedID) {
-                    TableColumn("Device") { device in
-                        HStack(spacing: 6) {
-                            if device.isGateway {
-                                Image(systemName: "wifi.router")
-                                    .font(.caption2)
-                                    .foregroundColor(.accentColor)
-                            }
-                            Text(device.displayName)
-                                .font(.caption)
-                                .lineLimit(1)
-                            if device.isNew {
-                                Text("NEW")
-                                    .font(.system(size: 8, weight: .bold))
-                                    .padding(.horizontal, DesignToken.Spacing.tight)
-                                    .background(Color.orange.opacity(0.2), in: Capsule())
-                            }
-                        }
-                    }
-                    TableColumn(String(localized: "Hostname")) { device in
-                        Text(device.hostname ?? "—")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    .width(AppColumnWidth.medium)
-                    TableColumn("IP") { device in
-                        Text(device.ip)
-                            .font(.caption.monospaced())
-                    }
-                    .width(AppColumnWidth.compact + 15)
-                    TableColumn("Type") { device in
-                        Text(device.kindLabel)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    .width(AppColumnWidth.medium)
-                    TableColumn("Make / model") { device in
-                        Text(
-                            [device.makeLabel, device.model]
-                                .compactMap { $0 }
-                                .filter { !$0.isEmpty && $0 != "—" }
-                                .joined(separator: " · ")
-                        )
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                    }
-                    TableColumn("Services") { device in
-                        Text(
-                            device.serviceSummary.isEmpty
-                                ? "—"
-                                : device.serviceSummary.prefix(2).joined(separator: ", ")
-                        )
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                    }
-                    .width(AppColumnWidth.wide - 10)
-                    TableColumn("Open ports") { device in
-                        Text(
-                            device.openPorts.isEmpty
-                                ? "—"
-                                : device.openPorts.prefix(4).map(String.init).joined(separator: ",")
-                        )
-                        .font(.caption2.monospacedDigit())
-                    }
-                    .width(AppColumnWidth.medium)
-                    TableColumn("Latency") { device in
-                        Text(ToolkitFormat.milliseconds(device.latencyMilliseconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.short + 5)
-                }
+                AppTable(
+                    columns: lanColumns, rows: result.devices, initialKey: "ip",
+                    selection: $selectedID
+                )
                 .frame(height: ToolkitTableHeight.rows(result.devices.count, row: 26))
                 .appTableSurface(cornerRadius: DesignToken.Radius.card)
                 .contextMenu {
@@ -343,6 +265,98 @@ struct LANScannerToolView: View {
                     }
                 }
             }
+        }
+    }
+
+    /// Columns come from `LANSort`, so the table header and the sort values
+    /// stay one list; only the cell drawing lives here.
+    private var lanColumns: [AppTableColumn<LANDevice>] {
+        LANSort.columns.map { column in
+            AppTableColumn(
+                id: column.id, title: column.title, minWidth: lanMinWidth(column.id),
+                value: column.value
+            ) { device in
+                lanCell(device, id: column.id)
+            }
+        }
+    }
+
+    private func lanMinWidth(_ id: String) -> CGFloat {
+        switch id {
+        case "device": return 170
+        case "hostname": return 120
+        case "ip": return 110
+        case "type": return 90
+        case "make": return 140
+        case "services": return 120
+        case "openPorts": return 100
+        default: return 70
+        }
+    }
+
+    @ViewBuilder
+    private func lanCell(_ device: LANDevice, id: String) -> some View {
+        switch id {
+        case "device":
+            HStack(spacing: 6) {
+                if device.isGateway {
+                    Image(systemName: "wifi.router")
+                        .font(.caption2)
+                        .foregroundColor(.accentColor)
+                }
+                Text(device.displayName)
+                    .font(.caption)
+                    .lineLimit(1)
+                if device.isNew {
+                    Text("NEW")
+                        .font(.system(size: 8, weight: .bold))
+                        .padding(.horizontal, DesignToken.Spacing.tight)
+                        .background(Color.orange.opacity(0.2), in: Capsule())
+                }
+            }
+        case "hostname":
+            Text(device.hostname ?? "—")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        case "ip":
+            Text(device.ip)
+                .font(.caption.monospaced())
+        case "type":
+            Text(device.kindLabel)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        case "make":
+            Text(
+                [device.makeLabel, device.model]
+                    .compactMap { $0 }
+                    .filter { !$0.isEmpty && $0 != "—" }
+                    .joined(separator: " · ")
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .lineLimit(1)
+        case "services":
+            Text(
+                device.serviceSummary.isEmpty
+                    ? "—"
+                    : device.serviceSummary.prefix(2).joined(separator: ", ")
+            )
+            .font(.caption2)
+            .foregroundColor(.secondary)
+            .lineLimit(1)
+        case "openPorts":
+            Text(
+                device.openPorts.isEmpty
+                    ? "—"
+                    : device.openPorts.prefix(4).map(String.init).joined(separator: ",")
+            )
+            .font(.caption2.monospacedDigit())
+        default:
+            Text(ToolkitFormat.milliseconds(device.latencyMilliseconds))
+                .font(.caption.monospacedDigit())
+                .foregroundColor(.secondary)
         }
     }
 
