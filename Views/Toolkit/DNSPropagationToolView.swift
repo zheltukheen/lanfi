@@ -5,39 +5,6 @@ struct DNSPropagationToolView: View {
     /// Embedded in the DNS tab: no second scroll view or page padding.
     var embedded = false
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case resolver, value, queryTime, status
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .resolver: return String(localized: "Resolver")
-            case .value: return String(localized: "Value")
-            case .queryTime: return String(localized: "Query time")
-            case .status: return String(localized: "Status")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .resolver
-    @State private var sortAscending = true
-
-    private func sortedResults(_ rows: [DNSPropagationResult]) -> [DNSPropagationResult] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .resolver:
-                return lhs.resolver.name.localizedStandardCompare(rhs.resolver.name)
-                    == .orderedAscending
-            case .value:
-                return lhs.values.joined(separator: ", ")
-                    .localizedStandardCompare(rhs.values.joined(separator: ", "))
-                    == .orderedAscending
-            case .queryTime: return lhs.milliseconds < rhs.milliseconds
-            case .status: return (lhs.isSuccess ? 1 : 0) < (rhs.isSuccess ? 1 : 0)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     var body: some View {
         if embedded {
             content
@@ -153,9 +120,6 @@ struct DNSPropagationToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Resolvers")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(model.host)
                         .font(.caption.monospaced())
@@ -165,54 +129,65 @@ struct DNSPropagationToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedResults(model.results)) {
-                    TableColumn("Resolver") { result in
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(result.isSuccess ? Color.green : Color.red)
-                                .frame(width: 7, height: 7)
-                            Text(result.resolver.name)
-                                .font(.caption)
-                            Text(result.resolver.address ?? "")
-                                .font(.caption2.monospaced())
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    TableColumn("Value") { result in
-                        VStack(alignment: .leading, spacing: 1) {
-                            if let error = result.error {
-                                Text(error)
-                                    .font(.caption2)
-                                    .foregroundColor(.orange)
-                                    .lineLimit(2)
-                            } else if result.values.isEmpty {
-                                Text("No records")
-                                    .font(.caption2)
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "resolver", title: "Resolver", minWidth: 200,
+                            value: { .text($0.resolver.name) }
+                        ) { result in
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(result.isSuccess ? Color.green : Color.red)
+                                    .frame(width: 7, height: 7)
+                                Text(result.resolver.name)
+                                    .font(.caption)
+                                Text(result.resolver.address ?? "")
+                                    .font(.caption2.monospaced())
                                     .foregroundColor(.secondary)
-                            } else {
-                                let joined = result.values.joined(separator: ", ")
-                                Text(joined)
-                                    .font(.caption.monospaced())
-                                    .lineLimit(1)
-                                    .truncationMode(.middle)
-                                    .foregroundColor(
-                                        model.expected.isEmpty
-                                            || result.values.allSatisfy({
-                                                $0.caseInsensitiveCompare(model.expected)
-                                                    == .orderedSame
-                                            })
-                                            ? .primary : .orange
-                                    )
                             }
-                        }
-                    }
-                    TableColumn("Query time") { result in
-                        Text(result.isSuccess ? "\(result.milliseconds) ms" : "—")
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(95)
-                }
+                        },
+                        AppTableColumn(
+                            id: "value", title: "Value", minWidth: 220,
+                            value: { .text($0.values.joined(separator: ", ")) }
+                        ) { result in
+                            VStack(alignment: .leading, spacing: 1) {
+                                if let error = result.error {
+                                    Text(error)
+                                        .font(.caption2)
+                                        .foregroundColor(.orange)
+                                        .lineLimit(2)
+                                } else if result.values.isEmpty {
+                                    Text("No records")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    let joined = result.values.joined(separator: ", ")
+                                    Text(joined)
+                                        .font(.caption.monospaced())
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                        .foregroundColor(
+                                            model.expected.isEmpty
+                                                || result.values.allSatisfy({
+                                                    $0.caseInsensitiveCompare(model.expected)
+                                                        == .orderedSame
+                                                })
+                                                ? .primary : .orange
+                                        )
+                                }
+                            }
+                        },
+                        AppTableColumn(
+                            id: "queryTime", title: "Query time", minWidth: 95,
+                            value: { .number($0.milliseconds) }
+                        ) { result in
+                            Text(result.isSuccess ? "\(result.milliseconds) ms" : "—")
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        },
+                    ],
+                    rows: model.results, initialKey: "resolver"
+                )
                 .frame(
                     height: ToolkitTableHeight.rows(
                         model.results.count, row: 32, header: 42, minimum: 230,

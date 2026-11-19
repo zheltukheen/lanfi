@@ -6,34 +6,6 @@ import SwiftUI
 struct RoamingTestToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case when, from, to, signal
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .when: return String(localized: "When")
-            case .from: return String(localized: "From")
-            case .to: return String(localized: "To")
-            case .signal: return String(localized: "Signal")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .when
-    @State private var sortAscending = false
-
-    private func sortedTransitions(_ rows: [RoamTransition]) -> [RoamTransition] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .when: return lhs.at < rhs.at
-            case .from:
-                return lhs.fromBSSID.localizedStandardCompare(rhs.fromBSSID) == .orderedAscending
-            case .to: return lhs.toBSSID.localizedStandardCompare(rhs.toBSSID) == .orderedAscending
-            case .signal: return lhs.rssiAfter < rhs.rssiAfter
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
     @State private var walkStart: Date?
 
     private var samples: [MonitorSample] {
@@ -196,11 +168,6 @@ struct RoamingTestToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "BSSID transitions")
-                    if !assessment.transitions.isEmpty {
-                        TableSortControl(
-                            options: SortKey.allCases.map { ($0, $0.title) },
-                            selection: $sortKey, ascending: $sortAscending)
-                    }
                     Spacer()
                     Text("\(assessment.transitions.count)")
                         .font(.caption2.monospacedDigit())
@@ -217,25 +184,42 @@ struct RoamingTestToolView: View {
                         .padding(.horizontal, DesignToken.Spacing.card)
                         .padding(.bottom, DesignToken.Spacing.card)
                 } else {
-                    Table(sortedTransitions(Array(assessment.transitions.prefix(20)))) {
-                        TableColumn("When") { transition in
-                            Text(transition.at.formatted(date: .omitted, time: .standard))
+                    AppTable(
+                        columns: [
+                            AppTableColumn(
+                                id: "when", title: "When", minWidth: 90,
+                                value: { .number($0.at.timeIntervalSince1970) }
+                            ) { transition in
+                                Text(
+                                    transition.at.formatted(date: .omitted, time: .standard)
+                                )
                                 .font(.caption2)
-                        }
-                        .width(AppColumnWidth.compact)
-                        TableColumn("From") { transition in
-                            Text(transition.fromBSSID).font(.caption2.monospaced())
-                        }
-                        TableColumn("To") { transition in
-                            Text(transition.toBSSID).font(.caption2.monospaced())
-                        }
-                        TableColumn("Signal") { transition in
-                            Text("\(transition.rssiBefore) → \(transition.rssiAfter) dBm")
-                                .font(.caption2.monospacedDigit())
-                                .foregroundColor(transition.isFailure ? .red : .secondary)
-                        }
-                        .width(AppColumnWidth.wide)
-                    }
+                            },
+                            AppTableColumn(
+                                id: "from", title: "From", minWidth: 130,
+                                value: { .text($0.fromBSSID) }
+                            ) { transition in
+                                Text(transition.fromBSSID).font(.caption2.monospaced())
+                            },
+                            AppTableColumn(
+                                id: "to", title: "To", minWidth: 130,
+                                value: { .text($0.toBSSID) }
+                            ) { transition in
+                                Text(transition.toBSSID).font(.caption2.monospaced())
+                            },
+                            AppTableColumn(
+                                id: "signal", title: "Signal", minWidth: 140,
+                                value: { .number($0.rssiAfter) }
+                            ) { transition in
+                                Text("\(transition.rssiBefore) → \(transition.rssiAfter) dBm")
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor(
+                                        transition.isFailure ? .red : .secondary)
+                            },
+                        ],
+                        rows: Array(assessment.transitions.prefix(20)),
+                        initialKey: "when", ascending: false
+                    )
                     .frame(
                         height: ToolkitTableHeight.rows(
                             min(assessment.transitions.count, 20), row: 26, header: 36,

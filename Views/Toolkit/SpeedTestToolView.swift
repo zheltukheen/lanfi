@@ -304,56 +304,11 @@ struct SpeedTestToolView: View {
         }
     }
 
-    private enum HistorySortKey: String, CaseIterable, Identifiable {
-        case when, network, download, upload, latency, grade
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .when: return String(localized: "When")
-            case .network: return String(localized: "Network")
-            case .download: return String(localized: "Down")
-            case .upload: return String(localized: "Up")
-            case .latency: return String(localized: "Latency")
-            case .grade: return String(localized: "Grade")
-            }
-        }
-    }
-
-    @State private var historySortKey: HistorySortKey = .when
-    @State private var historyAscending = false
-
-    private func sortedHistory(_ rows: [ThroughputMeasurement]) -> [ThroughputMeasurement] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch historySortKey {
-            case .when: return lhs.testedAt < rhs.testedAt
-            case .network:
-                return (lhs.network?.displayName ?? "").localizedStandardCompare(
-                    rhs.network?.displayName ?? "") == .orderedAscending
-            case .download:
-                return (lhs.report.downloadMbps ?? .infinity) < (rhs.report.downloadMbps ?? .infinity)
-            case .upload:
-                return (lhs.report.uploadMbps ?? .infinity) < (rhs.report.uploadMbps ?? .infinity)
-            case .latency:
-                return (lhs.report.latencyMilliseconds ?? .infinity)
-                    < (rhs.report.latencyMilliseconds ?? .infinity)
-            case .grade:
-                return (lhs.bufferbloatGrade ?? "").localizedStandardCompare(
-                    rhs.bufferbloatGrade ?? "") == .orderedAscending
-            }
-        }
-        return historyAscending ? ordered : ordered.reversed()
-    }
-
     private var historyCard: some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "History")
-                    if !visibleHistory.isEmpty {
-                        TableSortControl(
-                            options: HistorySortKey.allCases.map { ($0, $0.title) },
-                            selection: $historySortKey, ascending: $historyAscending)
-                    }
                     Spacer()
                     AppButton("Clear", tone: .quiet) { model.clearHistory() }
                         .font(.caption2)
@@ -374,56 +329,76 @@ struct SpeedTestToolView: View {
                     .padding(.horizontal, DesignToken.Spacing.card)
                     .padding(.bottom, DesignToken.Spacing.card)
                 } else {
-                    Table(sortedHistory(visibleHistory)) {
-                        TableColumn("When") { measurement in
-                            Text(
-                                measurement.testedAt.formatted(
-                                    date: .abbreviated, time: .shortened)
-                            )
-                            .font(.caption2)
-                        }
-                        TableColumn("Network") { measurement in
-                            Text(
-                                measurement.network?.displayName
-                                    ?? String(localized: "Not recorded")
-                            )
-                            .font(.caption2)
-                            .lineLimit(1)
-                        }
-                        .width(min: 120, ideal: 160)
-                        TableColumn("Down") { measurement in
-                            Text(
-                                measurement.report.downloadMbps.map {
-                                    String(format: "%.0f Mbps", $0)
-                                } ?? "—"
-                            )
-                            .font(.caption.monospacedDigit())
-                        }
-                        .width(AppColumnWidth.compact)
-                        TableColumn("Up") { measurement in
-                            Text(
-                                measurement.report.uploadMbps.map {
-                                    String(format: "%.0f Mbps", $0)
-                                } ?? "—"
-                            )
-                            .font(.caption.monospacedDigit())
-                        }
-                        .width(AppColumnWidth.compact)
-                        TableColumn("Latency") { measurement in
-                            Text(
-                                measurement.report.latencyMilliseconds.map {
-                                    String(format: "%.0f ms", $0)
-                                } ?? "—"
-                            )
-                            .font(.caption.monospacedDigit())
-                        }
-                        .width(80)
-                        TableColumn("Grade") { measurement in
-                            Text(measurement.bufferbloatGrade ?? "—")
-                                .font(.caption.bold())
-                        }
-                        .width(60)
-                    }
+                    AppTable(
+                        columns: [
+                            AppTableColumn(
+                                id: "when", title: "When", minWidth: 120,
+                                value: { .number($0.testedAt.timeIntervalSince1970) }
+                            ) { measurement in
+                                Text(
+                                    measurement.testedAt.formatted(
+                                        date: .abbreviated, time: .shortened)
+                                )
+                                .font(.caption2)
+                            },
+                            AppTableColumn(
+                                id: "network", title: "Network", minWidth: 120,
+                                value: {
+                                    .text(
+                                        $0.network?.displayName
+                                            ?? String(localized: "Not recorded"))
+                                }
+                            ) { measurement in
+                                Text(
+                                    measurement.network?.displayName
+                                        ?? String(localized: "Not recorded")
+                                )
+                                .font(.caption2)
+                                .lineLimit(1)
+                            },
+                            AppTableColumn(
+                                id: "down", title: "Down", minWidth: 90,
+                                value: { .number($0.report.downloadMbps) }
+                            ) { measurement in
+                                Text(
+                                    measurement.report.downloadMbps.map {
+                                        String(format: "%.0f Mbps", $0)
+                                    } ?? "—"
+                                )
+                                .font(.caption.monospacedDigit())
+                            },
+                            AppTableColumn(
+                                id: "up", title: "Up", minWidth: 90,
+                                value: { .number($0.report.uploadMbps) }
+                            ) { measurement in
+                                Text(
+                                    measurement.report.uploadMbps.map {
+                                        String(format: "%.0f Mbps", $0)
+                                    } ?? "—"
+                                )
+                                .font(.caption.monospacedDigit())
+                            },
+                            AppTableColumn(
+                                id: "latency", title: "Latency", minWidth: 80,
+                                value: { .number($0.report.latencyMilliseconds) }
+                            ) { measurement in
+                                Text(
+                                    measurement.report.latencyMilliseconds.map {
+                                        String(format: "%.0f ms", $0)
+                                    } ?? "—"
+                                )
+                                .font(.caption.monospacedDigit())
+                            },
+                            AppTableColumn(
+                                id: "grade", title: "Grade", minWidth: 60,
+                                value: { .text($0.bufferbloatGrade) }
+                            ) { measurement in
+                                Text(measurement.bufferbloatGrade ?? "—")
+                                    .font(.caption.bold())
+                            },
+                        ],
+                        rows: visibleHistory, initialKey: "when", ascending: false
+                    )
                     .frame(height: min(CGFloat(visibleHistory.count) * 24 + 46, 240))
                 }
             }

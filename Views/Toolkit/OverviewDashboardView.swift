@@ -97,18 +97,6 @@ struct OverviewDashboardView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-
-                    Divider()
-
-                    HStack(spacing: DesignToken.Spacing.card) {
-                        fact(
-                            title: "Gateway", value: gateway.gatewayIP ?? "—",
-                            detail: gateway.gatewayMAC)
-                        fact(
-                            title: "DNS", value: dnsShortValue,
-                            detail: resolverLine, tone: dnsTone)
-                        Spacer(minLength: 0)
-                    }
                 } else {
                     Text("No Wi-Fi connection")
                         .font(.headline)
@@ -121,6 +109,20 @@ struct OverviewDashboardView: View {
                     AppButton("Open Wi-Fi Analyzer", tone: .secondary) {
                         toolkit.select(.wifiAnalyzer)
                     }
+                }
+
+                // Gateway, its MAC and the DNS verdict describe the active link,
+                // not Wi-Fi: keep them on screen when Ethernet carries traffic.
+                Divider()
+
+                HStack(spacing: DesignToken.Spacing.card) {
+                    fact(
+                        title: "Gateway", value: gateway.gatewayIP ?? "—",
+                        detail: gateway.gatewayMAC)
+                    fact(
+                        title: "DNS", value: dnsShortValue,
+                        detail: resolverLine, tone: dnsTone)
+                    Spacer(minLength: 0)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
