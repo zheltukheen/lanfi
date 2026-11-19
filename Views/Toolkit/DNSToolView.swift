@@ -4,6 +4,7 @@ import SwiftUI
 struct DNSToolView: View {
     @ObservedObject var model: DNSToolModel
     @ObservedObject var propagation: DNSPropagationToolModel
+    @StateObject private var benchmark = DNSBenchmarkModel()
 
     private enum Section: String, CaseIterable, Identifiable {
         case lookup, propagation
@@ -58,6 +59,7 @@ struct DNSToolView: View {
                     if let error = model.errorMessage {
                         ToolkitErrorBanner(message: error)
                     }
+                    benchmarkCard
                     switch model.tab {
                     case .records:
                         recordsContent
@@ -162,6 +164,102 @@ struct DNSToolView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Resolver benchmark
+
+    private var benchmarkCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "Resolver benchmark")
+                    Spacer()
+                    if benchmark.isRunning {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Button(benchmark.isRunning ? "Stop" : "Benchmark") {
+                        if benchmark.isRunning { benchmark.stop() } else { benchmark.run() }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                Text(
+                    "Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+
+                if let report = benchmark.report, !report.results.isEmpty {
+                    let rows = report.ranked
+                    AppTable(columns: benchmarkColumns, rows: rows, initialKey: "median")
+                        .frame(height: min(CGFloat(rows.count) * 30 + 34, 200))
+                    if let fastest = report.fastest {
+                        Text("Fastest: \(fastest.name) · \(Self.milliseconds(fastest.medianMilliseconds))")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                } else if !benchmark.isRunning {
+                    Text("Run the benchmark to compare resolvers.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+
+    private var benchmarkColumns: [AppTableColumn<DNSBenchmarkResult>] {
+        [
+            AppTableColumn(
+                id: "resolver", title: "Resolver", minWidth: 150,
+                value: { .text($0.name) },
+                cell: { row in
+                    AnyView(Text(row.name).font(.caption).lineLimit(1))
+                }),
+            AppTableColumn(
+                id: "median", title: "Median", minWidth: 80, alignment: .trailing,
+                value: { .number($0.medianMilliseconds) },
+                cell: { row in
+                    AnyView(
+                        Text(Self.milliseconds(row.medianMilliseconds))
+                            .font(.caption.monospacedDigit()))
+                }),
+            AppTableColumn(
+                id: "range", title: "Range", minWidth: 100, alignment: .trailing,
+                value: { .number($0.fastestMilliseconds) },
+                cell: { row in
+                    // Plain String, not an interpolated localizable key.
+                    let range = row.fastestMilliseconds.map { fastest in
+                        "\(Self.milliseconds(fastest))–\(Self.milliseconds(row.slowestMilliseconds))"
+                    }
+                    return AnyView(
+                        Text(range ?? "—")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "lookups", title: "Lookups", minWidth: 70, alignment: .trailing,
+                value: { .number(Double($0.lookupCount)) },
+                cell: { row in
+                    AnyView(
+                        Text("\(row.lookupCount)")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "failures", title: "Failures", minWidth: 70, alignment: .trailing,
+                value: { .number(Double($0.failures)) },
+                cell: { row in
+                    AnyView(
+                        Text("\(row.failures)")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(row.failures > 0 ? .orange : .secondary))
+                }),
+        ]
+    }
+
+    private static func milliseconds(_ value: Double?) -> String {
+        guard let value else { return "—" }
+        return String(format: "%.0f ms", value)
     }
 
     private var runButtonTitle: String {

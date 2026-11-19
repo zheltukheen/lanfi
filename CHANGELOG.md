@@ -63,12 +63,33 @@
   alert toggle. Everything is a local read — no provider API, no credentials —
   and both indicators are explicitly labelled as indicators, not proof.
 
+### Added (resolver benchmark)
+- **Compare DNS resolvers without switching them.** The DNS screen has a
+  Benchmark card that resolves three names three times through the system,
+  Cloudflare, Google and Quad9 resolvers, then ranks them by median lookup time
+  and shows the range and failed lookups. It only measures: LanFi still never
+  changes your DNS setting on its own.
+
 ### Added (Ethernet/Wi-Fi automation)
 - **Turn Wi-Fi off while Ethernet is connected.** Off by default: when a
   physical Ethernet link comes up, LanFi turns Wi-Fi off once and restores it
   once when the cable goes away, with a master pause, a notification per change
   and a Settings card showing the link, the Wi-Fi power state and the last
   action. It is edge-triggered, so a manual Wi-Fi change always wins.
+
+### Fixed
+- **The shared target history now records every run, not just Return.** Ping,
+  Traceroute, MTR, DNS, Whois, GeoIP, Port Scan, TLS, Path Check and iperf3
+  store the address they probed, so the Recent menu fills up no matter how the
+  run was started; the field shows a labelled "Recent" control instead of a
+  lone clock glyph.
+- **MTR plots its hop chart again.** Average latency is a line and packet loss
+  bars on one hop axis, drawn on a Canvas instead of the Swift Charts view that
+  came out empty.
+- **Site Survey accepts taps on the plan again** (samples, walls, rooms, access
+  points, calibration) via `SpatialTapGesture`; the coverage heat grid is built
+  once per change on a background task, with a "Computing coverage…" note while
+  it runs.
 
 ### Changed
 - The analyzer's countdown pill is now a working menu: it sets the scan

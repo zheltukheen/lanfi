@@ -487,9 +487,10 @@ change the system setting.
 
 Tasks:
 
-- [ ] Benchmark: median lookup time for a fixed name set against the system,
+- [x] Benchmark: median lookup time for a fixed name set against the system,
       Cloudflare, Google, Quad9 and custom resolvers (IPv4 and IPv6 where
-      available), three rounds, ranked.
+      available), three rounds, ranked. (Shipped for IPv4 resolvers; the
+      resolver pool in the card is the four built-ins.)
 - [ ] Opt-in switching through `networksetup -setdnsservers` behind an admin or
       Touch ID prompt, with a one-click revert and a cache flush
       (`dscacheutil -flushcache` and `killall -HUP mDNSResponder`).
@@ -858,6 +859,30 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the thirty-third slice (2026-11-19)
+
+- **The shared target history records every run.** History was only written by
+  the field's Return key, so pressing Ping / Trace / Start never stored the
+  address; every probe model now remembers its target when it runs, and the
+  field's history control carries a visible "Recent" label instead of a bare
+  clock glyph.
+- **MTR draws its hop chart.** The Swift Charts view rendered an empty card; the
+  plot is now a `Canvas` that draws average latency as a line, packet loss as
+  bars on the same hop axis, with ms labels and a legend, so it renders whenever
+  there is at least one hop.
+- **Site Survey taps work again.** The plan used the deprecated
+  `onTapGesture` location closure, which no longer delivered coordinates, so
+  samples, walls, rooms, access points and calibration could not be placed —
+  and without samples the heatmap never had anything to interpolate. The plan
+  now uses `SpatialTapGesture`, the heat grid is built once per request key on a
+  background task, and a "Computing coverage…" note makes the wait visible.
+- **P3.5 task 1 — resolver benchmark.** A card on the DNS screen measures the
+  median lookup time of three names, three rounds each, through the system,
+  Cloudflare, Google and Quad9 resolvers, ranks them and names the fastest one
+  that answered everything. Read-only: no switching, no admin prompt.
+  `Models/DNSBenchmark.swift`, `Services/DNSBenchmarkService.swift`,
+  `ViewModels/Toolkit/DNSBenchmarkModel.swift`, `Tests/DNSBenchmarkTests.swift`.
 
 ## Delivered in the thirty-second slice (2026-11-19)
 
