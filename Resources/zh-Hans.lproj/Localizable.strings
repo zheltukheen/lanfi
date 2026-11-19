@@ -1448,3 +1448,14 @@
 "Watch VPN state and leaks" = "监控 VPN 状态与泄漏";
 "Shows whether a tunnel is up and flags a resolver or IPv6 default route that looks like it bypasses it. Local reads only: no provider API and no credentials." = "显示隧道是否启用，并标记看起来绕过隧道的解析器或 IPv6 默认路由。仅本地读取：不调用服务商 API，不使用凭据。";
 "VPN: the tunnel is detected from the default route and up `utun`/`ipsec`/`ppp` interfaces; a DNS leak is reported when the resolver actually in use is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default route leaves through a non-tunnel interface. Both are indicators, not proof — split DNS and split-default tunnels do this legitimately." = "VPN：通过默认路由和已启用的 `utun`/`ipsec`/`ppp` 接口识别隧道；实际使用的解析器不是隧道下发的就报 DNS 泄漏，全局 IPv6 默认路由从非隧道接口出去就报 IPv6 泄漏。两者都是提示而非证据：拆分 DNS 和 split-default 隧道会合法地这样。";
+
+/* Analyzer refresh menu and Ethernet/Wi-Fi automation */
+"Auto-scan is paused. Click to choose the refresh interval." = "自动扫描已暂停。点击选择刷新频率。";
+"Refresh every %lld s. Click to change the frequency." = "每 %lld 秒刷新。点击更改频率。";
+"Wi-Fi was turned off because an Ethernet link is active." = "因以太网链路已启用，Wi-Fi 已关闭。";
+"Wi-Fi was restored because the Ethernet link went away." = "以太网链路已断开，Wi-Fi 已恢复。";
+"macOS refused to change Wi-Fi power." = "macOS 拒绝更改 Wi-Fi 电源。";
+"Wi-Fi turned off" = "Wi-Fi 已关闭";
+"Wi-Fi restored" = "Wi-Fi 已恢复";
+"Pause automation" = "暂停自动化";
+"On" = "开";

@@ -550,12 +550,21 @@ unplug, edge-triggered and wake-aware. LanFi only reads interface state.
 
 Tasks:
 
-- [ ] Observe physical Ethernet transitions; when a wired link is primary,
-      optionally power Wi-Fi off, and restore it on unplug.
-- [ ] Edge-triggered only: never override a manual Wi-Fi change between events;
-      re-apply the correct state after wake.
-- [ ] Adapter allow-list that excludes VPN, VM and bridge interfaces; a master
-      pause; off by default with a first-run explanation of the write action.
+- [x] Observe physical Ethernet transitions; when a wired link is primary,
+      optionally power Wi-Fi off, and restore it on unplug (`LinkAutomation`,
+      10 s poll of `networksetup -listallhardwareports` + `ifconfig status`).
+- [x] Edge-triggered only: a manual Wi-Fi change wins, the policy forgets its
+      own intent when the user re-enables Wi-Fi while docked, and the intent is
+      re-applied once after wake.
+- [x] Adapter allow-list that excludes VPN, VM and bridge interfaces
+      (`LinkAutomationClassifier`); a master pause in Settings; off by default
+      with an explanation of the write action next to the toggle.
+
+Delivered 2026-11-19: `Models/LinkAutomation.swift` (policy, hardware-port
+parser, `ifconfig`/airport-power parsers),
+`Services/LinkAutomationService.swift` (poll, wake observer, `networksetup
+-setairportpower` write with an explicit error, notification per change) and
+`Tests/LinkAutomationTests.swift` (12 tests covering every edge case).
 
 Acceptance: plugging Ethernet disables Wi-Fi once, unplugging restores it, a
 manual disable while docked survives a re-plug, and pause stops all toggling.
@@ -844,6 +853,17 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-ninth slice (2026-11-19)
+
+- **P3.8 Wired/Wi-Fi link automation.** The analyzer's countdown pill is now a
+  menu. Separately, `LinkAutomation` polls the hardware ports every 10 s and,
+  when the user opts in (off by default), turns Wi-Fi off once when a physical
+  Ethernet link comes up and back on once when it goes away. It is strictly
+  edge-triggered: a manual Wi-Fi change wins, a manual disable while docked
+  survives a re-plug, VPN/VM/bridge devices are never treated as an uplink, and
+  a master pause stops all writes. Each change posts a notification, and the
+  Settings card shows the wired interface, Wi-Fi power and the last action.
 
 ## Delivered in the twenty-eighth slice (2026-11-19)
 

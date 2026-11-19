@@ -1448,3 +1448,14 @@
 "Watch VPN state and leaks" = "Surveiller le VPN et les fuites";
 "Shows whether a tunnel is up and flags a resolver or IPv6 default route that looks like it bypasses it. Local reads only: no provider API and no credentials." = "Indique si un tunnel est actif et signale un résolveur ou une route IPv6 par défaut qui semble le contourner. Lectures locales uniquement : pas d'API du fournisseur, pas d'identifiants.";
 "VPN: the tunnel is detected from the default route and up `utun`/`ipsec`/`ppp` interfaces; a DNS leak is reported when the resolver actually in use is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default route leaves through a non-tunnel interface. Both are indicators, not proof — split DNS and split-default tunnels do this legitimately." = "VPN : le tunnel est détecté via la route par défaut et les interfaces `utun`/`ipsec`/`ppp` actives ; une fuite DNS est signalée quand le résolveur réellement utilisé ne vient pas du tunnel, une fuite IPv6 quand une route IPv6 par défaut globale sort par une interface hors tunnel. Ce sont des indicateurs, pas des preuves : le split DNS et les tunnels split-default le font légitimement.";
+
+/* Analyzer refresh menu and Ethernet/Wi-Fi automation */
+"Auto-scan is paused. Click to choose the refresh interval." = "Le scan automatique est en pause. Cliquez pour choisir l'intervalle.";
+"Refresh every %lld s. Click to change the frequency." = "Actualisation toutes les %lld s. Cliquez pour changer la fréquence.";
+"Wi-Fi was turned off because an Ethernet link is active." = "Le Wi-Fi a été désactivé car une liaison Ethernet est active.";
+"Wi-Fi was restored because the Ethernet link went away." = "Le Wi-Fi a été réactivé car la liaison Ethernet a disparu.";
+"macOS refused to change Wi-Fi power." = "macOS a refusé de modifier l'alimentation Wi-Fi.";
+"Wi-Fi turned off" = "Wi-Fi désactivé";
+"Wi-Fi restored" = "Wi-Fi rétabli";
+"Pause automation" = "Suspendre l'automatisation";
+"On" = "Activé";

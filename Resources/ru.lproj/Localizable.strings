@@ -1485,3 +1485,14 @@
 "Watch VPN state and leaks" = "Следить за VPN и утечками";
 "Shows whether a tunnel is up and flags a resolver or IPv6 default route that looks like it bypasses it. Local reads only: no provider API and no credentials." = "Показывает, активен ли туннель, и отмечает резолвер или маршрут IPv6 по умолчанию, которые выглядят как обход туннеля. Только локальное чтение: без API провайдера и без учётных данных.";
 "VPN: the tunnel is detected from the default route and up `utun`/`ipsec`/`ppp` interfaces; a DNS leak is reported when the resolver actually in use is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default route leaves through a non-tunnel interface. Both are indicators, not proof — split DNS and split-default tunnels do this legitimately." = "VPN: туннель определяется по маршруту по умолчанию и активным интерфейсам `utun`/`ipsec`/`ppp`; утечка DNS — когда используемый резолвер не из тех, что предложил туннель; утечка IPv6 — когда глобальный маршрут IPv6 по умолчанию идёт через нетуннельный интерфейс. Это индикаторы, а не доказательство: split DNS и split-default туннели делают так законно.";
+
+/* Analyzer refresh menu and Ethernet/Wi-Fi automation */
+"Auto-scan is paused. Click to choose the refresh interval." = "Автосканирование на паузе. Нажмите, чтобы выбрать частоту обновления.";
+"Refresh every %lld s. Click to change the frequency." = "Обновление каждые %lld с. Нажмите, чтобы изменить частоту.";
+"Wi-Fi was turned off because an Ethernet link is active." = "Wi-Fi выключен, потому что активен канал Ethernet.";
+"Wi-Fi was restored because the Ethernet link went away." = "Wi-Fi включён, потому что канал Ethernet пропал.";
+"macOS refused to change Wi-Fi power." = "macOS не позволила изменить питание Wi-Fi.";
+"Wi-Fi turned off" = "Wi-Fi выключен";
+"Wi-Fi restored" = "Wi-Fi включён";
+"Pause automation" = "Приостановить автоматизацию";
+"On" = "Вкл.";

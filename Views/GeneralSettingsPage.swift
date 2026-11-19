@@ -11,6 +11,7 @@ struct GeneralSettingsPage: View {
     @Environment(\.openWindow) private var openWindow
 
     @StateObject private var launchAtLogin = LaunchAtLoginController()
+    @StateObject private var linkAutomation = LinkAutomation.shared
     @State private var settings = AppSettingsStore.shared.settings
     @State private var settingsMessage: String?
     @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false
@@ -31,6 +32,7 @@ struct GeneralSettingsPage: View {
                 updatesCard
                 menuBarCard
                 connectivityCard
+                linkAutomationCard
                 displayCard
                 dataCard
                 helpCard
@@ -237,6 +239,49 @@ struct GeneralSettingsPage: View {
                 "A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded."
             )
             .settingsHint()
+        }
+    }
+
+    private var linkAutomationCard: some View {
+        SettingsCard(title: "Ethernet and Wi-Fi", icon: "cable.connector") {
+            Toggle(
+                "Turn Wi-Fi off while Ethernet is connected",
+                isOn: binding(\.automation.linkAutomation))
+            Text(
+                "Writes the Wi-Fi power state with networksetup: when a physical Ethernet link comes up LanFi turns Wi-Fi off once, and when the cable goes away it turns Wi-Fi back on once. A manual Wi-Fi change always wins: if you switch Wi-Fi back on while docked, LanFi leaves it alone. Off by default."
+            )
+            .settingsHint()
+            if linkAutomation.isEnabled {
+                Toggle("Pause automation", isOn: $linkAutomation.isPaused)
+                LabeledContent("Ethernet") {
+                    Text(linkAutomation.wiredInterface ?? String(localized: "Not connected"))
+                        .font(.caption.monospaced())
+                        .foregroundColor(linkAutomation.wiredConnected ? AppPalette.ok : .secondary)
+                }
+                LabeledContent("Wi-Fi") {
+                    Text(wifiStateLabel)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                if let action = linkAutomation.lastAction, let at = linkAutomation.lastActionAt {
+                    Text(
+                        verbatim:
+                            "\(action.detail) \(at.formatted(date: .omitted, time: .shortened))"
+                    )
+                    .settingsHint()
+                }
+                if let error = linkAutomation.lastError {
+                    Text(error).font(.caption2).foregroundColor(AppPalette.danger)
+                }
+            }
+        }
+    }
+
+    private var wifiStateLabel: String {
+        switch linkAutomation.wifiPowerOn {
+        case true?: return String(localized: "On")
+        case false?: return String(localized: "Off")
+        case nil: return String(localized: "Unknown")
         }
     }
 

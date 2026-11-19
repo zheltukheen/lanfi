@@ -70,6 +70,9 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/LinkAutomation.swift` / `Services/LinkAutomationService.swift` —
+  P3.8: the edge-triggered Wi-Fi/Ethernet policy, hardware-port parsing and the
+  poller that writes `networksetup -setairportpower` (off by default).
 - `Models/VPNGuard.swift` / `Services/VPNGuardService.swift` — P3.4: VPN
   detection, the `scutil --dns` / `netstat` parsers, the DNS and IPv6 leak
   verdicts, and the poller that posts `vpnDropped` / `vpnLeak` events.
@@ -275,6 +278,8 @@ so those values cannot be rolled back; `importData` overwrites them on purpose.
   (`AppSettings.automation.gatewayGuard`).
 - `LanFi.vpnGuard.enabled` — VPN state and leak indicators
   (`AppSettings.automation.vpnGuard`).
+- `LanFi.linkAutomation.enabled` — Wi-Fi off while Ethernet is up
+  (`AppSettings.automation.linkAutomation`, off by default).
 - `LanFi.connectivity.enabled|interval|primaryURL|fallbackURL` and
   `LanFi.connectivity.notify.offline|captive|restored` — the connectivity
   watchdog (`AppSettings.connectivity`); quiet hours are read from

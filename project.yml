@@ -222,6 +222,7 @@ targets:
       - path: Models/ServiceDescription.swift
       - path: Models/GatewayIntegrity.swift
       - path: Models/VPNGuard.swift
+      - path: Models/LinkAutomation.swift
       - path: Services/TerminalLauncher.swift
       - path: Models/FilterProfile.swift
       - path: Models/CustomFilter.swift

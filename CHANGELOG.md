@@ -63,7 +63,17 @@
   alert toggle. Everything is a local read — no provider API, no credentials —
   and both indicators are explicitly labelled as indicators, not proof.
 
+### Added (Ethernet/Wi-Fi automation)
+- **Turn Wi-Fi off while Ethernet is connected.** Off by default: when a
+  physical Ethernet link comes up, LanFi turns Wi-Fi off once and restores it
+  once when the cable goes away, with a master pause, a notification per change
+  and a Settings card showing the link, the Wi-Fi power state and the last
+  action. It is edge-triggered, so a manual Wi-Fi change always wins.
+
 ### Changed
+- The analyzer's countdown pill is now a working menu: it sets the scan
+  interval (1, 3, 5, 10, 30, 60 s), opens the custom-interval sheet, and pauses
+  or resumes auto-scan, instead of being a read-only label.
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.
 

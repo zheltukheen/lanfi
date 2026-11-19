@@ -200,6 +200,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         public var gatewayGuard = true
         /// P3.4: show VPN state and DNS/IPv6 leak indicators.
         public var vpnGuard = true
+        /// P3.8: turn Wi-Fi off while a physical Ethernet link is up.
+        public var linkAutomation = false
         public var autoUpdateOUI = true
 
         public init() {}
