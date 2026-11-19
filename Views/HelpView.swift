@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// Task-oriented help: each topic answers one "how do I…" question and ships
-/// exactly one screenshot of the screen that task uses.
+/// one short caption that says what to look at on that screen.
 struct HelpView: View {
     @State private var selection: String
     @State private var query = ""
@@ -68,7 +68,7 @@ struct HelpView: View {
                             }
                         }
 
-                        screenshot(selectedTopic)
+                        topicBanner(selectedTopic)
 
                         ForEach(selectedTopic.sections) { section in
                             VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
@@ -110,32 +110,18 @@ struct HelpView: View {
         .frame(minWidth: 860, minHeight: 620)
     }
 
-    /// One screenshot per topic, with a caption that says what to look at.
-    private func screenshot(_ topic: HelpTopic) -> some View {
+    /// A symbol banner instead of a screenshot: the help text must not ship
+    /// pictures of anyone's network, SSIDs, addresses or device names.
+    private func topicBanner(_ topic: HelpTopic) -> some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
-            if let image = HelpScreenshot.image(named: topic.screenshot) {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                            .strokeBorder(
-                                Color.primary.opacity(0.10),
-                                lineWidth: DesignToken.Stroke.hairline)
-                    )
-                    .accessibilityLabel(topic.screenshotCaption)
-            } else {
+            ZStack {
                 RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                    .fill(Color(nsColor: .controlBackgroundColor))
-                    .frame(height: 140)
-                    .overlay(
-                        Label("Screenshot unavailable", systemImage: "photo")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    )
+                    .fill(Color.accentColor.opacity(0.10))
+                Image(systemName: topic.icon)
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundColor(.accentColor)
             }
+            .frame(height: 110)
             Text(topic.screenshotCaption)
                 .font(.caption2)
                 .foregroundColor(.secondary)
@@ -175,8 +161,7 @@ struct HelpTopic: Identifiable {
     let title: String
     let summary: String
     let icon: String
-    /// Resource name (without extension) in the app bundle.
-    let screenshot: String
+    /// Caption shown under the topic's symbol banner.
     let screenshotCaption: String
     let sections: [HelpSection]
 }
@@ -190,15 +175,6 @@ struct HelpSection: Identifiable {
         self.id = heading
         self.heading = heading
         self.lines = lines
-    }
-}
-
-enum HelpScreenshot {
-    static func image(named name: String) -> NSImage? {
-        guard let url = Bundle.main.url(forResource: name, withExtension: "png") else {
-            return nil
-        }
-        return NSImage(contentsOf: url)
     }
 }
 
@@ -225,7 +201,6 @@ private enum HelpContent {
             title: "Run your first scan",
             summary: "Grant access, pick a scan mode and read the network list.",
             icon: "sparkles",
-            screenshot: "help-analyzer",
             screenshotCaption:
                 "The Wi-Fi Analyzer: table and inspector above, All Bands chart below.",
             sections: [
@@ -257,7 +232,6 @@ private enum HelpContent {
             title: "See what this Mac is connecting to",
             summary: "List the TCP connections and listening sockets per process.",
             icon: "arrow.left.arrow.right",
-            screenshot: "help-connections",
             screenshotCaption:
                 "Connections: per-process TCP endpoints, filterable by process, address or PID.",
             sections: [
@@ -285,7 +259,6 @@ private enum HelpContent {
             title: "Diagnose a slow or broken connection",
             summary: "Run the health checks, follow the path and drill into one hop.",
             icon: "stethoscope",
-            screenshot: "help-diagnostics",
             screenshotCaption:
                 "Internet Check: health verdict, the Mac → router → internet → DNS → web path and per-check details.",
             sections: [
@@ -314,7 +287,6 @@ private enum HelpContent {
             title: "Measure Wi-Fi coverage",
             summary: "Record RSSI samples on a floor plan and turn them into a heatmap.",
             icon: "map",
-            screenshot: "help-survey",
             screenshotCaption:
                 "Site Survey: floor-plan canvas, coverage summary, sample tools and the RSSI legend.",
             sections: [
@@ -339,7 +311,6 @@ private enum HelpContent {
             title: "Find the app using your bandwidth",
             summary: "See per-process download and upload rates without leaving the Mac.",
             icon: "chart.bar.xaxis",
-            screenshot: "help-traffic",
             screenshotCaption:
                 "Process Traffic is opt-in: rates appear only after you enable the read-only sampler.",
             sections: [
@@ -362,7 +333,6 @@ private enum HelpContent {
             title: "Set up, update and automate",
             summary: "Preferences, updates, automation and what to do when a screen is empty.",
             icon: "gearshape",
-            screenshot: "help-settings",
             screenshotCaption:
                 "Settings → General: appearance and density, startup, updates and menu-bar options.",
             sections: [
@@ -396,7 +366,6 @@ private enum HelpContent {
             title: "Запустить первый скан",
             summary: "Выдать доступ, выбрать режим и прочитать список сетей.",
             icon: "sparkles",
-            screenshot: "help-analyzer",
             screenshotCaption:
                 "Анализатор Wi-Fi: таблица и инспектор сверху, график All Bands снизу.",
             sections: [
@@ -428,7 +397,6 @@ private enum HelpContent {
             title: "Узнать, куда подключается Mac",
             summary: "TCP-соединения и слушающие сокеты по процессам.",
             icon: "arrow.left.arrow.right",
-            screenshot: "help-connections",
             screenshotCaption:
                 "Connections: TCP-эндпоинты по процессам с фильтром по имени, адресу или PID.",
             sections: [
@@ -456,7 +424,6 @@ private enum HelpContent {
             title: "Найти причину медленного интернета",
             summary: "Проверки здоровья, путь до интернета и разбор одного участка.",
             icon: "stethoscope",
-            screenshot: "help-diagnostics",
             screenshotCaption:
                 "Internet Check: вердикт, путь Mac → роутер → интернет → DNS → web и детали проверок.",
             sections: [
@@ -485,7 +452,6 @@ private enum HelpContent {
             title: "Измерить покрытие Wi-Fi",
             summary: "Записать RSSI на плане помещения и получить heatmap.",
             icon: "map",
-            screenshot: "help-survey",
             screenshotCaption:
                 "Site Survey: план помещения, сводка покрытия, инструменты сэмплов и легенда RSSI.",
             sections: [
@@ -510,7 +476,6 @@ private enum HelpContent {
             title: "Найти приложение, съедающее трафик",
             summary: "Скорость скачивания и отдачи по процессам, без выхода в сеть.",
             icon: "chart.bar.xaxis",
-            screenshot: "help-traffic",
             screenshotCaption:
                 "Process Traffic включается вручную: цифры появляются после включения read-only сэмплера.",
             sections: [
@@ -533,7 +498,6 @@ private enum HelpContent {
             title: "Настроить, обновить и автоматизировать",
             summary: "Настройки, обновления, автоматизация и что делать, если экран пуст.",
             icon: "gearshape",
-            screenshot: "help-settings",
             screenshotCaption:
                 "Settings → General: внешний вид и плотность, запуск, обновления и меню-бар.",
             sections: [

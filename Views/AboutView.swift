@@ -35,7 +35,7 @@ struct AboutView: View {
                 aboutRow("stethoscope", "Diagnostics with monitoring and history")
                 aboutRow("map", "IDW survey heatmaps, walls and PDF reports")
                 aboutRow("terminal", "CLI, deep links and offline pcap analysis")
-                aboutRow("lock.shield", "Local-only, no telemetry or account")
+                aboutRow("lock.shield", "Local data only; anonymous statistics are opt-in")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 

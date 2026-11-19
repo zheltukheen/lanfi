@@ -5,33 +5,6 @@ import SwiftUI
 struct PingToolView: View {
     @ObservedObject var model: PingToolModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case sequence, roundTrip, status
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .sequence: return "#"
-            case .roundTrip: return String(localized: "Round trip")
-            case .status: return String(localized: "Status")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .sequence
-    @State private var sortAscending = true
-
-    private func sortedSamples(_ rows: [PingSample]) -> [PingSample] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .sequence: return lhs.sequence < rhs.sequence
-            case .roundTrip:
-                return (lhs.rttMilliseconds ?? .infinity) < (rhs.rttMilliseconds ?? .infinity)
-            case .status: return (lhs.succeeded ? 1 : 0) < (rhs.succeeded ? 1 : 0)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -207,9 +180,6 @@ struct PingToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Probes")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text("\(stats.samples.count)")
                         .font(.caption2)
@@ -219,29 +189,46 @@ struct PingToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedSamples(stats.samples)) {
-                    TableColumn("#") { sample in
-                        Text("\(sample.sequence)")
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(44)
-                    TableColumn("Round trip") { sample in
-                        Text(ToolkitFormat.milliseconds(sample.rttMilliseconds))
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Status") { sample in
-                        Text(
-                            sample.succeeded
-                                ? String(localized: "Reply") : (sample.error ?? String(localized: "No reply"))
-                        )
-                        .font(.caption)
-                        .foregroundColor(sample.succeeded ? .secondary : .orange)
-                    }
-                }
-                .frame(height: min(CGFloat(stats.samples.count) * 24 + 28, 230))
+                // Column headers sort the table; the analyzer keeps its own
+                // sort and filter controls.
+                AppTable(columns: sampleColumns, rows: stats.samples, initialKey: "sequence")
+                    .frame(height: min(CGFloat(stats.samples.count) * 24 + 28, 230))
             }
         }
+    }
+
+    private var sampleColumns: [AppTableColumn<PingSample>] {
+        [
+            AppTableColumn(
+                id: "sequence", title: "#", minWidth: 44,
+                value: { .number(Double($0.sequence)) },
+                cell: { sample in
+                    AnyView(
+                        Text("\(sample.sequence)")
+                            .font(.caption.monospacedDigit()))
+                }),
+            AppTableColumn(
+                id: "rtt", title: "Round trip", minWidth: 90,
+                value: { .number($0.rttMilliseconds) },
+                cell: { sample in
+                    AnyView(
+                        Text(ToolkitFormat.milliseconds(sample.rttMilliseconds))
+                            .font(.caption.monospacedDigit()))
+                }),
+            AppTableColumn(
+                id: "status", title: "Status", minWidth: 160,
+                value: { .text($0.succeeded ? "1" : "0") },
+                cell: { sample in
+                    AnyView(
+                        Text(
+                            sample.succeeded
+                                ? String(localized: "Reply")
+                                : (sample.error ?? String(localized: "No reply"))
+                        )
+                        .font(.caption)
+                        .foregroundColor(sample.succeeded ? .secondary : .orange))
+                }),
+        ]
     }
 
     private func copy() {

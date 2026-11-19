@@ -4,51 +4,6 @@ import SwiftUI
 struct MTRToolView: View {
     @ObservedObject var model: MTRToolModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case hop, address, loss, sent, last, average, best, worst, jitter
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .hop: return String(localized: "Hop")
-            case .address: return String(localized: "Address")
-            case .loss: return String(localized: "Loss")
-            case .sent: return String(localized: "Sent")
-            case .last: return String(localized: "Last")
-            case .average: return String(localized: "Avg")
-            case .best: return String(localized: "Best")
-            case .worst: return String(localized: "Worst")
-            case .jitter: return String(localized: "Jitter")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .hop
-    @State private var sortAscending = true
-
-    private func sortedHops(_ hops: [MTRHop]) -> [MTRHop] {
-        let ordered = hops.sorted { lhs, rhs in
-            switch sortKey {
-            case .hop: return lhs.hop < rhs.hop
-            case .address:
-                return (lhs.address ?? "").localizedStandardCompare(rhs.address ?? "")
-                    == .orderedAscending
-            case .loss: return lhs.lossPercent < rhs.lossPercent
-            case .sent: return lhs.sent < rhs.sent
-            case .last:
-                return (lhs.lastMilliseconds ?? .infinity) < (rhs.lastMilliseconds ?? .infinity)
-            case .average:
-                return (lhs.averageMilliseconds ?? .infinity) < (rhs.averageMilliseconds ?? .infinity)
-            case .best:
-                return (lhs.bestMilliseconds ?? .infinity) < (rhs.bestMilliseconds ?? .infinity)
-            case .worst:
-                return (lhs.worstMilliseconds ?? .infinity) < (rhs.worstMilliseconds ?? .infinity)
-            case .jitter:
-                return (lhs.jitterMilliseconds ?? .infinity) < (rhs.jitterMilliseconds ?? .infinity)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -187,9 +142,6 @@ struct MTRToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Hops")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(report.startedAt.formatted(date: .omitted, time: .shortened))
                         .font(.caption2)
@@ -199,61 +151,93 @@ struct MTRToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedHops(report.hops)) {
-                    TableColumn("Hop") { hop in
-                        Text("\(hop.hop)")
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(AppColumnWidth.index)
-                    TableColumn("Address") { hop in
-                        Text(hop.address ?? "*")
-                            .font(.caption.monospaced())
-                            .foregroundColor(hop.address == nil ? .secondary : .primary)
-                    }
-                    TableColumn("Loss") { hop in
-                        Text(String(format: "%.0f%%", hop.lossPercent))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(hop.lossPercent > 0 ? .orange : .secondary)
-                    }
-                    .width(52)
-                    TableColumn("Sent") { hop in
-                        Text("\(hop.sent)")
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(44)
-                    TableColumn("Last") { hop in
-                        Text(ToolkitFormat.milliseconds(hop.lastMilliseconds))
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(72)
-                    TableColumn("Avg") { hop in
-                        Text(ToolkitFormat.milliseconds(hop.averageMilliseconds))
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(72)
-                    TableColumn("Best") { hop in
-                        Text(ToolkitFormat.milliseconds(hop.bestMilliseconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(72)
-                    TableColumn("Worst") { hop in
-                        Text(ToolkitFormat.milliseconds(hop.worstMilliseconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(72)
-                    TableColumn("Jitter") { hop in
-                        Text(ToolkitFormat.milliseconds(hop.jitterMilliseconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(72)
-                }
-                .frame(height: min(CGFloat(report.hops.count) * 26 + 52, 500))
+                // Column headers sort the table; the analyzer keeps its own
+                // sort and filter controls.
+                AppTable(columns: hopColumns, rows: report.hops, initialKey: "hop")
+                    .frame(height: min(CGFloat(report.hops.count) * 26 + 52, 500))
             }
         }
+    }
+
+    private var hopColumns: [AppTableColumn<MTRHop>] {
+        [
+            AppTableColumn(
+                id: "hop", title: "Hop", minWidth: 40,
+                value: { .number(Double($0.hop)) },
+                cell: { hop in
+                    AnyView(Text("\(hop.hop)").font(.caption.monospacedDigit()))
+                }),
+            AppTableColumn(
+                id: "address", title: "Address", minWidth: 130,
+                value: { .text($0.address) },
+                cell: { hop in
+                    AnyView(
+                        Text(hop.address ?? "*")
+                            .font(.caption.monospaced())
+                            .foregroundColor(hop.address == nil ? .secondary : .primary))
+                }),
+            AppTableColumn(
+                id: "loss", title: "Loss", minWidth: 52, alignment: .trailing,
+                value: { .number($0.lossPercent) },
+                cell: { hop in
+                    AnyView(
+                        Text(String(format: "%.0f%%", hop.lossPercent))
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(hop.lossPercent > 0 ? .orange : .secondary))
+                }),
+            AppTableColumn(
+                id: "sent", title: "Sent", minWidth: 44, alignment: .trailing,
+                value: { .number(Double($0.sent)) },
+                cell: { hop in
+                    AnyView(
+                        Text("\(hop.sent)")
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "last", title: "Last", minWidth: 72, alignment: .trailing,
+                value: { .number($0.lastMilliseconds) },
+                cell: { hop in
+                    AnyView(
+                        Text(ToolkitFormat.milliseconds(hop.lastMilliseconds))
+                            .font(.caption.monospacedDigit()))
+                }),
+            AppTableColumn(
+                id: "average", title: "Avg", minWidth: 72, alignment: .trailing,
+                value: { .number($0.averageMilliseconds) },
+                cell: { hop in
+                    AnyView(
+                        Text(ToolkitFormat.milliseconds(hop.averageMilliseconds))
+                            .font(.caption.monospacedDigit()))
+                }),
+            AppTableColumn(
+                id: "best", title: "Best", minWidth: 72, alignment: .trailing,
+                value: { .number($0.bestMilliseconds) },
+                cell: { hop in
+                    AnyView(
+                        Text(ToolkitFormat.milliseconds(hop.bestMilliseconds))
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "worst", title: "Worst", minWidth: 72, alignment: .trailing,
+                value: { .number($0.worstMilliseconds) },
+                cell: { hop in
+                    AnyView(
+                        Text(ToolkitFormat.milliseconds(hop.worstMilliseconds))
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+            AppTableColumn(
+                id: "jitter", title: "Jitter", minWidth: 72, alignment: .trailing,
+                value: { .number($0.jitterMilliseconds) },
+                cell: { hop in
+                    AnyView(
+                        Text(ToolkitFormat.milliseconds(hop.jitterMilliseconds))
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary))
+                }),
+        ]
     }
 
     private func copy() {

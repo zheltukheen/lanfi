@@ -1,7 +1,10 @@
 # Privacy
 
-LanFi is a local-first macOS utility. It does not include analytics, crash
-reporting, advertising, accounts, or any network telemetry.
+LanFi is a local-first macOS utility. It has no advertising, no accounts and no
+mandatory telemetry. The only thing that could ever be reported is optional,
+anonymous usage statistics — off by default, described below.
+
+Last updated: 19 November 2026.
 
 ## What LanFi accesses
 
@@ -70,3 +73,23 @@ Mac until you remove them (the Homebrew cask `zap` stanza removes them).
 
 Open an issue at <https://github.com/zheltukheen/lanfi/issues> for privacy
 questions.
+
+## Optional anonymous statistics
+
+Settings → Privacy has a single switch, **Allow anonymous usage statistics**,
+off by default. When it is enabled, LanFi may send anonymised counters to help
+improve the app: app version, macOS version, which tools were opened and how
+often, and whether a run completed or failed.
+
+Those records never contain network names, BSSIDs, signal readings, IP or MAC
+addresses, host or device names, domains, URLs, DNS queries, captured packets,
+survey data, file paths or any free-text field, and they are not linked to a
+person, an account or a device identifier.
+
+Current builds transmit nothing at all: the switch stores your preference so
+that a future build can honour it.
+
+## Contact
+
+Questions or data requests: open an issue at
+<https://github.com/zheltukheen/lanfi/issues>.

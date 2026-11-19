@@ -61,7 +61,7 @@ struct GeneralSettingsPage: View {
                     Text("Wi-Fi analyzer and network toolkit · \(version) (\(build))")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("Local-only: no accounts, telemetry or cloud services.")
+                    Text("No accounts, no cloud services. Anonymous statistics are optional and off by default.")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }

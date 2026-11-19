@@ -22,10 +22,10 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: selection) {
                 Section("Application") {
-                    rows([.general, .alerts, .wifi])
+                    rows([.general, .alerts, .wifi, .privacy])
                 }
                 Section("Analysis") {
-                    rows([.vendors, .colors, .columns, .diagnostics, .hardware])
+                    rows([.vendors, .colors, .columns, .diagnostics, .hardware, .toolkit])
                 }
                 Section("Integrations") {
                     rows([.automation, .controllers, .mcp])
@@ -68,6 +68,8 @@ struct SettingsView: View {
         case .automation: AutomationSettingsView(viewModel: analyzer)
         case .controllers: ControllersSettingsView()
         case .mcp: MCPSettingsView()
+        case .privacy: PrivacySettingsPage()
+        case .toolkit: ToolkitSettingsPage()
         }
     }
 }
@@ -84,6 +86,8 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
     case automation
     case controllers
     case mcp
+    case privacy
+    case toolkit
 
     var id: String { rawValue }
 
@@ -100,6 +104,8 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
         case .automation: return String(localized: "Automation")
         case .controllers: return String(localized: "Controllers")
         case .mcp: return String(localized: "MCP")
+        case .privacy: return String(localized: "Privacy")
+        case .toolkit: return String(localized: "Toolkit")
         }
     }
 
@@ -116,6 +122,8 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
         case .automation: return "clock.arrow.circlepath"
         case .controllers: return "server.rack"
         case .mcp: return "sparkles"
+        case .privacy: return "hand.raised"
+        case .toolkit: return "wrench.and.screwdriver"
         }
     }
 }

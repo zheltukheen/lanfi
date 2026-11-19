@@ -1496,3 +1496,24 @@
 "Failures" = "Failures";
 "Fastest: %1$@ · %2$@" = "Fastest: %1$@ · %2$@";
 "Run the benchmark to compare resolvers." = "Run the benchmark to compare resolvers.";
+
+/* Settings: privacy and toolkit */
+"Privacy" = "Privacy";
+"Toolkit" = "Toolkit";
+"No accounts, no cloud services. Anonymous statistics are optional and off by default." = "No accounts, no cloud services. Anonymous statistics are optional and off by default.";
+"Local data only; anonymous statistics are opt-in" = "Local data only; anonymous statistics are opt-in";
+"Privacy policy" = "Privacy policy";
+"Last updated: 19 November 2026" = "Last updated: 19 November 2026";
+"Allow anonymous usage statistics" = "Allow anonymous usage statistics";
+"Anonymous statistics are disabled." = "Anonymous statistics are disabled.";
+"What LanFi never collects" = "What LanFi never collects";
+"Your data, your files" = "Your data, your files";
+"Read the full policy on GitHub" = "Read the full policy on GitHub";
+"Network names, BSSIDs, channels and signal readings" = "Network names, BSSIDs, channels and signal readings";
+"IP and MAC addresses, host names and device names" = "IP and MAC addresses, host names and device names";
+"Domains, URLs, DNS queries and captured traffic" = "Domains, URLs, DNS queries and captured traffic";
+"Survey floor plans, samples and photos you import" = "Survey floor plans, samples and photos you import";
+"Accounts, contacts and any personal identifier" = "Accounts, contacts and any personal identifier";
+"Default analysis target" = "Default analysis target";
+"Recent targets" = "Recent targets";
+"Nothing yet. Run any probe tool and its address is kept here (five most recent)." = "Nothing yet. Run any probe tool and its address is kept here (five most recent).";

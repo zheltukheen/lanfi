@@ -1495,3 +1495,24 @@
 "Failures" = "失败";
 "Fastest: %1$@ · %2$@" = "最快：%1$@ · %2$@";
 "Run the benchmark to compare resolvers." = "运行基准测试以比较解析器。";
+
+/* Settings: privacy and toolkit */
+"Privacy" = "隐私";
+"Toolkit" = "工具";
+"No accounts, no cloud services. Anonymous statistics are optional and off by default." = "没有账户和云服务。匿名统计为可选项，默认关闭。";
+"Local data only; anonymous statistics are opt-in" = "仅本地数据；匿名统计需主动开启";
+"Privacy policy" = "隐私政策";
+"Last updated: 19 November 2026" = "更新于 2026 年 11 月 19 日";
+"Allow anonymous usage statistics" = "允许匿名使用统计";
+"Anonymous statistics are disabled." = "匿名统计已关闭。";
+"What LanFi never collects" = "LanFi 绝不收集";
+"Your data, your files" = "你的数据，你的文件";
+"Read the full policy on GitHub" = "在 GitHub 上阅读完整政策";
+"Network names, BSSIDs, channels and signal readings" = "网络名称、BSSID、信道与信号值";
+"IP and MAC addresses, host names and device names" = "IP 与 MAC 地址、主机名和设备名";
+"Domains, URLs, DNS queries and captured traffic" = "域名、URL、DNS 查询与抓取的流量";
+"Survey floor plans, samples and photos you import" = "平面图、采样和你导入的照片";
+"Accounts, contacts and any personal identifier" = "账户、联系人和任何个人标识";
+"Default analysis target" = "默认分析目标";
+"Recent targets" = "最近目标";
+"Nothing yet. Run any probe tool and its address is kept here (five most recent)." = "还没有记录。运行任意探测工具后，地址会保存在这里（最近五个）。";

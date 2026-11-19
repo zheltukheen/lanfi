@@ -860,6 +860,20 @@ locales.
 
 ---
 
+## Delivered in the thirty-fourth slice (2026-11-19)
+
+- **Privacy policy and settings.** New Settings → Privacy page with the policy,
+  the never-collected list and an off-by-default anonymous statistics switch;
+  `PRIVACY.md` is the long form. Settings → Toolkit manages the shared analysis
+  target and its recent list.
+- **Help screenshots removed.** Topic pages draw a symbol banner instead of a
+  bundled screenshot, so the manual cannot leak SSIDs, BSSIDs, addresses or
+  device names.
+- **Table sorting by column header.** `AppTable` (comparison, visual traceroute,
+  DNS benchmark, Ping probes, MTR hops) now sorts from the header; those screens
+  no longer carry a separate sort menu. Remaining SwiftUI `Table` screens are
+  listed in WARP.md as the follow-up.
+
 ## Delivered in the thirty-third slice (2026-11-19)
 
 - **The shared target history records every run.** History was only written by

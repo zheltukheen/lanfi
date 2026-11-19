@@ -63,6 +63,17 @@
   alert toggle. Everything is a local read — no provider API, no credentials —
   and both indicators are explicitly labelled as indicators, not proof.
 
+### Added (privacy and settings)
+- **Privacy settings and a written policy.** Settings → Privacy carries the
+  policy, a list of what LanFi never collects, and an **Allow anonymous usage
+  statistics** switch that is off by default; when enabled, future builds may
+  send anonymised counters (app and macOS version, which tools were opened, run
+  outcome) with no SSIDs, addresses, host names, domains, paths or free text.
+  Current builds transmit nothing. The full text ships as `PRIVACY.md`.
+- **Toolkit settings.** Settings → Toolkit sets the default analysis target
+  shared by every probe screen and manages the five-entry recent list, instead
+  of leaving the value wherever the last tool left it.
+
 ### Added (resolver benchmark)
 - **Compare DNS resolvers without switching them.** The DNS screen has a
   Benchmark card that resolves three names three times through the system,
@@ -76,6 +87,11 @@
   once when the cable goes away, with a master pause, a notification per change
   and a Settings card showing the link, the Wi-Fi power state and the last
   action. It is edge-triggered, so a manual Wi-Fi change always wins.
+
+### Changed
+- **Help no longer ships screenshots.** The topic pages use a symbol banner and
+  the existing caption, so the manual cannot expose anyone's SSIDs, addresses
+  or device names.
 
 ### Fixed
 - **The shared target history now records every run, not just Return.** Ping,

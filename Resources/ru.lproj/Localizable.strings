@@ -1532,3 +1532,24 @@
 "Failures" = "Ошибки";
 "Fastest: %1$@ · %2$@" = "Быстрее всех: %1$@ · %2$@";
 "Run the benchmark to compare resolvers." = "Запустите сравнение, чтобы оценить резолверы.";
+
+/* Settings: privacy and toolkit */
+"Privacy" = "Конфиденциальность";
+"Toolkit" = "Инструменты";
+"No accounts, no cloud services. Anonymous statistics are optional and off by default." = "Без аккаунтов и облачных сервисов. Обезличенная статистика необязательна и по умолчанию выключена.";
+"Local data only; anonymous statistics are opt-in" = "Только локальные данные; обезличенная статистика по желанию";
+"Privacy policy" = "Политика конфиденциальности";
+"Last updated: 19 November 2026" = "Обновлено 19 ноября 2026";
+"Allow anonymous usage statistics" = "Разрешить обезличенную статистику";
+"Anonymous statistics are disabled." = "Обезличенная статистика выключена.";
+"What LanFi never collects" = "Что LanFi не собирает никогда";
+"Your data, your files" = "Ваши данные — ваши файлы";
+"Read the full policy on GitHub" = "Полная политика на GitHub";
+"Network names, BSSIDs, channels and signal readings" = "Имена сетей, BSSID, каналы и уровни сигнала";
+"IP and MAC addresses, host names and device names" = "IP- и MAC-адреса, имена хостов и устройств";
+"Domains, URLs, DNS queries and captured traffic" = "Домены, URL, DNS-запросы и захваченный трафик";
+"Survey floor plans, samples and photos you import" = "Планы помещений, замеры и импортированные фото";
+"Accounts, contacts and any personal identifier" = "Аккаунты, контакты и любые персональные идентификаторы";
+"Default analysis target" = "Цель анализа по умолчанию";
+"Recent targets" = "Недавние цели";
+"Nothing yet. Run any probe tool and its address is kept here (five most recent)." = "Пока ничего. Запустите любой инструмент — адрес сохранится здесь (последние пять).";

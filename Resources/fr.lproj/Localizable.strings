@@ -1495,3 +1495,24 @@
 "Failures" = "Échecs";
 "Fastest: %1$@ · %2$@" = "Le plus rapide : %1$@ · %2$@";
 "Run the benchmark to compare resolvers." = "Lancez la comparaison pour évaluer les résolveurs.";
+
+/* Settings: privacy and toolkit */
+"Privacy" = "Confidentialité";
+"Toolkit" = "Outils";
+"No accounts, no cloud services. Anonymous statistics are optional and off by default." = "Aucun compte ni service cloud. Les statistiques anonymes sont facultatives et désactivées par défaut.";
+"Local data only; anonymous statistics are opt-in" = "Données locales uniquement ; statistiques anonymes sur demande";
+"Privacy policy" = "Politique de confidentialité";
+"Last updated: 19 November 2026" = "Dernière mise à jour : 19 novembre 2026";
+"Allow anonymous usage statistics" = "Autoriser les statistiques anonymes";
+"Anonymous statistics are disabled." = "Les statistiques anonymes sont désactivées.";
+"What LanFi never collects" = "Ce que LanFi ne collecte jamais";
+"Your data, your files" = "Vos données, vos fichiers";
+"Read the full policy on GitHub" = "Lire la politique complète sur GitHub";
+"Network names, BSSIDs, channels and signal readings" = "Noms de réseaux, BSSID, canaux et niveaux de signal";
+"IP and MAC addresses, host names and device names" = "Adresses IP et MAC, noms d'hôtes et d'appareils";
+"Domains, URLs, DNS queries and captured traffic" = "Domaines, URL, requêtes DNS et trafic capturé";
+"Survey floor plans, samples and photos you import" = "Plans, mesures et photos importées";
+"Accounts, contacts and any personal identifier" = "Comptes, contacts et tout identifiant personnel";
+"Default analysis target" = "Cible d'analyse par défaut";
+"Recent targets" = "Cibles récentes";
+"Nothing yet. Run any probe tool and its address is kept here (five most recent)." = "Rien pour l'instant. Lancez un outil : son adresse apparaîtra ici (les cinq dernières).";

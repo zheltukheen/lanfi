@@ -70,8 +70,10 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
-- `Views/AppTable.swift` — the shared SwiftUI table builder used by the
-  comparison table and the traceroute hop table; new tables should use it.
+- `Views/AppTable.swift` — the shared SwiftUI table builder; its column
+  headers sort on click. New tables use it instead of a separate sort menu, and
+  the so-far unmigrated SwiftUI `Table` screens still pass `TableSortControl`
+  (the Wi-Fi analyzer keeps its own sort/filter UI by design).
 - `Views/AppControls.swift` — the single control kit (`AppButton`,
   `AppIconButton`, `AppListRow`, `AppSearchField`, `ToolkitHeaderBar`); route
   new buttons, lists and tool headers through it.
