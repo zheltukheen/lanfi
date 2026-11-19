@@ -4,7 +4,6 @@
 "NETWORK" = "网络";
 "Interfaces" = "接口";
 "Network interfaces" = "网络接口";
-"Every BSD interface on this Mac — physical, virtual, VPN, bridge and loopback." = "此 Mac 上的每个 BSD 接口 — 物理、虚拟、VPN、网桥和回环。";
 "Auto-refresh" = "自动刷新";
 "Primary" = "主接口";
 "Router" = "路由器";
@@ -520,7 +519,6 @@
 "HTTP / HTTPS" = "HTTP / HTTPS";
 "Idle latency" = "空闲延迟";
 "Inspect" = "检查";
-"Interfaces, addresses, gateway, DNS and VPN tunnels already live in the main window. The toolkit opens that screen instead of keeping a second copy." = "接口、地址、网关、DNS 和 VPN 隧道已在主窗口中。工具包会直接打开该界面，而不会另存一份副本。";
 "Internet Check" = "互联网检查";
 "iperf3 is not installed. Run `brew install iperf3` and reopen the toolkit." = "未安装 iperf3。请运行 `brew install iperf3`，然后重新打开工具包。";
 "iperf3 returned no interval samples." = "iperf3 未返回任何间隔采样。";
@@ -554,7 +552,6 @@
 "Open Network Monitor" = "打开网络监控器";
 "Open ports" = "开放端口";
 "Open the Internet Check verdict" = "打开互联网检查结论";
-"Open the Wi-Fi analyzer" = "打开 Wi-Fi 分析器";
 "Path Check" = "路径检查";
 "Planned for a later phase." = "计划在后续阶段推出。";
 "Planned for a later phase. The probe layer and the window are in place." = "计划在后续阶段推出。探测层和窗口已经就绪。";
@@ -656,7 +653,6 @@
 "Scanned" = "已扫描";
 "Scanning…" = "扫描中…";
 "Server" = "服务器";
-"Shows every hop the traffic passes through, with the latency of each router. Uses the system traceroute binary." = "显示流量经过的每一跳以及每个路由器的延迟。使用系统自带的 traceroute 程序。";
 "Target" = "目标";
 "TCP connect scan with a bounded number of concurrent probes. Open, closed and filtered states are reported separately." = "TCP 连接扫描，并限制同时进行的探测数量。开放、关闭和已过滤状态会分别报告。";
 "Tests this Mac, the router, the internet, DNS and the web, then says where the problem most likely is." = "检测这台 Mac、路由器、互联网、DNS 和网站，然后指出问题最可能出现的位置。";
@@ -679,10 +675,8 @@
 "Web" = "网页";
 
 /* Network Toolkit Wi-Fi workspace */
-"No active Wi-Fi association" = "没有活动的 Wi-Fi 连接";
 "Not connected" = "未连接";
 "Open full analyzer" = "打开完整分析器";
-"Scan, quality, channels and the Wi-Fi tools that used to sit in the Tools menu." = "扫描、质量、信道以及原先位于“工具”菜单中的 Wi-Fi 工具。";
 "Select a connected network" = "选择已连接的网络";
 "Show Internet Check" = "显示互联网检查";
 "Show Network Monitor" = "显示网络监控器";
@@ -696,7 +690,6 @@
 /* Network Toolkit Wi-Fi workspace labels */
 "Connected" = "已连接";
 "5 GHz advice" = "5 GHz 建议";
-"Wi-Fi tools" = "Wi-Fi 工具";
 "Site Survey" = "现场勘测";
 "Floor plan, samples and heatmap" = "平面图、采样和热力图";
 "Hardware Spectrum" = "硬件频谱";
@@ -794,8 +787,6 @@
 "Probes: %lld" = "探测数：%lld";
 "Timeout: %lld s" = "超时：%lld 秒";
 "Resolve names" = "解析名称";
-"Latency by hop" = "每跳延迟";
-"No latency samples yet." = "暂无延迟样本。";
 "443 — HTTPS" = "443 — HTTPS";
 "80 — HTTP" = "80 — HTTP";
 "22 — SSH" = "22 — SSH";
@@ -1420,11 +1411,7 @@
 "Watch gateway and DNS integrity" = "监控网关与 DNS 完整性";
 "Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "每 2 分钟从 ARP 表重新读取默认网关的 MAC，每 10 分钟把一次探针 DNS 查询与 Cloudflare 的直连结果比较。只有该查询会离开这台 Mac，结果都留在本机。";
 "Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "在 Wi-Fi 之下：每 2 分钟重读网关 MAC，每 10 分钟把系统解析器对探针主机的应答与 Cloudflare 的直连应答比较。两者都是警告而非证据：CDN 会因解析器不同而不同。";
-"Gateway %1$@ uses %2$@." = "网关 %1$@ 使用 %2$@。";
-"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "网关 %1$@ 的硬件地址由 %2$@ 变为 %3$@，而 IP 未变。";
-"Gateway %1$@ is no longer the default route." = "网关 %1$@ 不再是默认路由。";
 "The system resolver and the public resolver agree." = "系统解析器与公共解析器结果一致。";
-"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "系统解析器对 %@ 返回的地址与公共解析器不同。这是警告：CDN 会因解析器不同而不同，但劫持或过滤 DNS 也会呈现同样现象。";
 "Not enough answers to compare." = "可比较的应答不足。";
 
 /* VPN state and leak indicators (P3.4) */
@@ -1439,10 +1426,8 @@
 "The default route goes through %@." = "默认路由经过 %@。";
 "A tunnel interface is up but it does not carry the default route." = "隧道接口已启用，但不承载默认路由。";
 "The resolver in use belongs to the tunnel." = "正在使用的解析器属于该隧道。";
-"The tunnel pushes %1$@ but the system resolver is %2$@. Lookups may leave the tunnel. Indicator only: split DNS does this legitimately." = "隧道下发 %1$@，但系统解析器是 %2$@。查询可能绕过隧道。仅为提示：拆分 DNS 会合法地这样。";
 "Not enough resolver information to judge." = "解析器信息不足，无法判断。";
 "No IPv6 default route escapes the tunnel." = "没有 IPv6 默认路由绕过隧道。";
-"A global IPv6 default route leaves through %@ while the tunnel is up, so IPv6 traffic may bypass it." = "隧道启用时，全局 IPv6 默认路由从 %@ 出去，IPv6 流量可能绕过隧道。";
 "No tunnel to check IPv6 against." = "没有隧道可用于检查 IPv6。";
 "The VPN tunnel went down unexpectedly." = "VPN 隧道意外断开。";
 "Watch VPN state and leaks" = "监控 VPN 状态与泄漏";
@@ -1522,9 +1507,6 @@
 "Open Internet Check" = "打开网络检查";
 "VPN" = "VPN";
 "Traffic today" = "今日流量";
-"DNS matches the public resolver" = "DNS 与公共解析器一致";
-"DNS answers differ" = "DNS 应答不一致";
-"DNS not checked yet" = "尚未检查 DNS";
 "Leak reported" = "检测到泄漏";
 "No tunnel in use" = "未使用隧道";
 "No leaks" = "无泄漏";
@@ -1554,3 +1536,8 @@
 "Off. Enable it in Settings → General to turn Wi-Fi off while a cable is up." = "已关闭。在 设置 → 通用 中开启后，插入网线时会关闭 Wi‑Fi。";
 "Whois & GeoIP" = "Whois 与 GeoIP";
 "No target yet" = "尚未设置目标";
+"Public resolver agrees" = "公共解析器结果一致";
+"Answers differ" = "应答不一致";
+"Public IP" = "公网 IP";
+"Automation" = "自动化";
+"Analyzer" = "分析器";

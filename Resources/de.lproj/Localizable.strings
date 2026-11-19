@@ -4,7 +4,6 @@
 "NETWORK" = "NETZWERK";
 "Interfaces" = "Schnittstellen";
 "Network interfaces" = "Netzwerkschnittstellen";
-"Every BSD interface on this Mac — physical, virtual, VPN, bridge and loopback." = "Jede BSD-Schnittstelle auf diesem Mac — physisch, virtuell, VPN, Bridge und Loopback.";
 "Auto-refresh" = "Auto-Aktualisierung";
 "Primary" = "Primär";
 "Router" = "Router";
@@ -520,7 +519,6 @@
 "HTTP / HTTPS" = "HTTP / HTTPS";
 "Idle latency" = "Latenz im Leerlauf";
 "Inspect" = "Prüfen";
-"Interfaces, addresses, gateway, DNS and VPN tunnels already live in the main window. The toolkit opens that screen instead of keeping a second copy." = "Schnittstellen, Adressen, Gateway, DNS und VPN-Tunnel sind bereits im Hauptfenster zu finden. Das Toolkit öffnet diesen Bildschirm, statt eine zweite Kopie zu führen.";
 "Internet Check" = "Internet-Check";
 "iperf3 is not installed. Run `brew install iperf3` and reopen the toolkit." = "iperf3 ist nicht installiert. Führen Sie `brew install iperf3` aus und öffnen Sie das Toolkit erneut.";
 "iperf3 returned no interval samples." = "iperf3 hat keine Intervall-Messwerte geliefert.";
@@ -554,7 +552,6 @@
 "Open Network Monitor" = "Netzwerkmonitor öffnen";
 "Open ports" = "Offene Ports";
 "Open the Internet Check verdict" = "Öffnen Sie das Ergebnis des Internet-Checks";
-"Open the Wi-Fi analyzer" = "Öffnen Sie den Wi-Fi-Analysator";
 "Path Check" = "Pfadprüfung";
 "Planned for a later phase." = "Für eine spätere Phase geplant.";
 "Planned for a later phase. The probe layer and the window are in place." = "Für eine spätere Phase geplant. Die Sondenschicht und das Fenster sind bereits vorhanden.";
@@ -656,7 +653,6 @@
 "Scanned" = "Gescannt";
 "Scanning…" = "Scan läuft…";
 "Server" = "Server";
-"Shows every hop the traffic passes through, with the latency of each router. Uses the system traceroute binary." = "Zeigt jeden Hop, den der Datenverkehr durchläuft, samt Latenz jedes Routers. Nutzt das systemeigene traceroute-Binary.";
 "Target" = "Ziel";
 "TCP connect scan with a bounded number of concurrent probes. Open, closed and filtered states are reported separately." = "TCP-Connect-Scan mit begrenzter Anzahl gleichzeitiger Sonden. Zustände „offen“, „geschlossen“ und „gefiltert“ werden getrennt gemeldet.";
 "Tests this Mac, the router, the internet, DNS and the web, then says where the problem most likely is." = "Prüft diesen Mac, den Router, das Internet, DNS und das Web und sagt dann, wo das Problem am wahrscheinlichsten liegt.";
@@ -679,10 +675,8 @@
 "Web" = "Web";
 
 /* Network Toolkit Wi-Fi workspace */
-"No active Wi-Fi association" = "Keine aktive WLAN-Verbindung";
 "Not connected" = "Nicht verbunden";
 "Open full analyzer" = "Vollständigen Analyzer öffnen";
-"Scan, quality, channels and the Wi-Fi tools that used to sit in the Tools menu." = "Scan, Qualität, Kanäle und die Wi-Fi-Werkzeuge, die früher im Menü „Tools“ lagen.";
 "Select a connected network" = "Verbundenes Netzwerk auswählen";
 "Show Internet Check" = "Internetprüfung anzeigen";
 "Show Network Monitor" = "Netzwerkmonitor anzeigen";
@@ -696,7 +690,6 @@
 /* Network Toolkit Wi-Fi workspace labels */
 "Connected" = "Verbunden";
 "5 GHz advice" = "5-GHz-Empfehlung";
-"Wi-Fi tools" = "Wi-Fi-Werkzeuge";
 "Site Survey" = "Standortvermessung";
 "Floor plan, samples and heatmap" = "Grundriss, Messpunkte und Heatmap";
 "Hardware Spectrum" = "Hardware-Spektrum";
@@ -794,8 +787,6 @@
 "Probes: %lld" = "Sonden: %lld";
 "Timeout: %lld s" = "Timeout: %lld s";
 "Resolve names" = "Namen auflösen";
-"Latency by hop" = "Latenz pro Hop";
-"No latency samples yet." = "Noch keine Latenzwerte.";
 "443 — HTTPS" = "443 — HTTPS";
 "80 — HTTP" = "80 — HTTP";
 "22 — SSH" = "22 — SSH";
@@ -1420,11 +1411,7 @@
 "Watch gateway and DNS integrity" = "Gateway- und DNS-Integrität überwachen";
 "Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "Liest die MAC des Standard-Gateways alle 2 Minuten aus der ARP-Tabelle und vergleicht alle 10 Minuten eine Canary-DNS-Abfrage mit Cloudflare. Nur diese Abfrage verlässt den Mac; Ergebnisse bleiben lokal.";
 "Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "Unterhalb von Wi-Fi: Die Gateway-MAC wird alle 2 Minuten aus der ARP-Tabelle gelesen, und alle 10 Minuten wird die Antwort des System-Resolvers für einen Canary-Host mit der direkten Antwort von Cloudflare verglichen. Beides sind Warnungen, kein Beweis: CDNs antworten je nach Resolver unterschiedlich.";
-"Gateway %1$@ uses %2$@." = "Gateway %1$@ verwendet %2$@.";
-"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "Gateway %1$@ hat seine Hardwareadresse von %2$@ auf %3$@ geändert, während die IP gleich blieb.";
-"Gateway %1$@ is no longer the default route." = "Gateway %1$@ ist nicht mehr die Standardroute.";
 "The system resolver and the public resolver agree." = "System- und öffentlicher Resolver stimmen überein.";
-"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "Der System-Resolver lieferte für %@ eine andere Adresse als der öffentliche Resolver. Das ist eine Warnung: CDNs variieren je nach Resolver, aber ein Hijack oder ein filternder DNS sieht genauso aus.";
 "Not enough answers to compare." = "Nicht genug Antworten zum Vergleichen.";
 
 /* VPN state and leak indicators (P3.4) */
@@ -1439,10 +1426,8 @@
 "The default route goes through %@." = "Die Standardroute läuft über %@.";
 "A tunnel interface is up but it does not carry the default route." = "Eine Tunnelschnittstelle ist aktiv, trägt aber nicht die Standardroute.";
 "The resolver in use belongs to the tunnel." = "Der verwendete Resolver gehört zum Tunnel.";
-"The tunnel pushes %1$@ but the system resolver is %2$@. Lookups may leave the tunnel. Indicator only: split DNS does this legitimately." = "Der Tunnel gibt %1$@ vor, der System-Resolver ist aber %2$@. Abfragen können den Tunnel verlassen. Nur ein Hinweis: Split-DNS tut das legitim.";
 "Not enough resolver information to judge." = "Zu wenig Resolver-Informationen.";
 "No IPv6 default route escapes the tunnel." = "Keine IPv6-Standardroute verlässt den Tunnel.";
-"A global IPv6 default route leaves through %@ while the tunnel is up, so IPv6 traffic may bypass it." = "Eine globale IPv6-Standardroute verlässt den Tunnel über %@, während der Tunnel aktiv ist; IPv6-Verkehr kann ihn umgehen.";
 "No tunnel to check IPv6 against." = "Kein Tunnel für die IPv6-Prüfung.";
 "The VPN tunnel went down unexpectedly." = "Der VPN-Tunnel wurde unerwartet getrennt.";
 "Watch VPN state and leaks" = "VPN-Status und Lecks überwachen";
@@ -1522,9 +1507,6 @@
 "Open Internet Check" = "Internetprüfung öffnen";
 "VPN" = "VPN";
 "Traffic today" = "Traffic heute";
-"DNS matches the public resolver" = "DNS stimmt mit dem öffentlichen Resolver überein";
-"DNS answers differ" = "DNS-Antworten weichen ab";
-"DNS not checked yet" = "DNS noch nicht geprüft";
 "Leak reported" = "Leck gemeldet";
 "No tunnel in use" = "Kein Tunnel aktiv";
 "No leaks" = "Keine Lecks";
@@ -1554,3 +1536,8 @@
 "Off. Enable it in Settings → General to turn Wi-Fi off while a cable is up." = "Aus. Aktivieren Sie es unter Einstellungen → Allgemein, damit WLAN bei aktivem Kabel ausgeschaltet wird.";
 "Whois & GeoIP" = "Whois & GeoIP";
 "No target yet" = "Noch kein Ziel";
+"Public resolver agrees" = "Öffentlicher Resolver stimmt zu";
+"Answers differ" = "Antworten weichen ab";
+"Public IP" = "Öffentliche IP";
+"Automation" = "Automatik";
+"Analyzer" = "Analyse";

@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+### Changed (overview and guards)
+- **The overview is a dashboard, not a stack of equal boxes.** It leads with the
+  link and the internet verdict side by side (signal, quality, channel and
+  security next to latency, public IP and the check time), then four equal
+  metric tiles (VPN, Wi-Fi, traffic today, automation), live throughput next to
+  uptime, the band and channel picture, and a three-column quick-action grid
+  whose buttons all fill their cells. Gateway, DNS verdict and MAC live under
+  the connection instead of in a separate tile.
+- **The overview no longer needs the app environment to exist.**
+  `NetworkToolkitView` and `OverviewDashboardView` take the meter as an explicit
+  parameter defaulting to the one shared `MenuBarMeterModel`, so previews, the
+  snapshot harness and the smoke test cannot crash on a missing
+  `@EnvironmentObject` and no second sampler is created.
+- **GatewayGuard and VPNGuard share one polling layer.** `PollingGuard` owns the
+  timer, its tolerance, the overlap guard and the `isSampling` /
+  `lastCheckedAt` flags; `SecurityEvent.post` is the single event channel and
+  `ShellOutput.run` the single off-main shell read. Each guard now only answers
+  its own question in `performSample()`.
+
+### Fixed
+- **Opening Terminal no longer freezes the window.** The `osascript`
+  hand-off runs off the main actor, so the first Automation permission prompt
+  cannot block the UI; a refused or failed request now reports the message in
+  Remote Sensors and in the LAN Scanner context menu.
+
 ### Added
 - **Connectivity watchdog in the menu bar.** LanFi now checks whether the
   internet actually works, not just whether Wi-Fi is associated. An

@@ -34,7 +34,7 @@ struct LanFiApp: App {
     @StateObject private var interfaces = InterfacesViewModel()
     @StateObject private var toolkit = ToolkitViewModel()
     @StateObject private var uptime = UptimeMonitor()
-    @StateObject private var meter = MenuBarMeterModel()
+    @StateObject private var meter = MenuBarMeterModel.shared
     @StateObject private var connectivity = ConnectivityWatchdog.shared
     @AppStorage("LanFi.highContrast") private var highContrast = false
     @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false

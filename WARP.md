@@ -81,6 +81,13 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   `MenuBarMeterModel`, `UptimeMonitor`, `LinkAutomation`) into one summary; the
   Wi-Fi analyzer is one tool in the sidebar, not the root screen. Nothing here
   starts its own timer: a new card must read an existing service.
+  `NetworkToolkitView` and the dashboard take `meter` as an explicit
+  `@ObservedObject` with `MenuBarMeterModel.shared` as the default, so previews,
+  the snapshot harness and the smoke test build the screen without the app's
+  environment and without a second sampler. The layout is a fixed set of rows
+  (link + internet, four metric tiles, live throughput + uptime, bands +
+  channels, uniform quick-action grid), and every button in a row fills its
+  cell, so control sizes no longer shift with the text.
 - `Views/AppTable.swift` — the shared SwiftUI table builder; its column
   headers sort on click. Whois events, Path Check, the TLS chain, DNS answers,
   Ping, MTR and the comparison panels use it. Still on native `Table` +
@@ -111,6 +118,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Models/LinkAutomation.swift` / `Services/LinkAutomationService.swift` —
   P3.8: the edge-triggered Wi-Fi/Ethernet policy, hardware-port parsing and the
   poller that writes `networksetup -setairportpower` (off by default).
+- `Services/SecurityGuardSupport.swift` — `PollingGuard` (timer, tolerance,
+  overlap guard and the published `isSampling` / `lastCheckedAt`), the
+  `SecurityEvent.post` channel both guards share, and `ShellOutput.run`. Add a
+  new guard by subclassing `PollingGuard` and overriding `performSample()`;
+  do not add another timer or another `Notification.Name`.
 - `Models/VPNGuard.swift` / `Services/VPNGuardService.swift` — P3.4: VPN
   detection, the `scutil --dns` / `netstat` parsers, the DNS and IPv6 leak
   verdicts, and the poller that posts `vpnDropped` / `vpnLeak` events.
@@ -124,6 +136,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 - `Models/SSHLaunch.swift` / `Services/TerminalLauncher.swift` — P3.9: the
   fully quoted `ssh` command for a saved sensor or an SSH-capable LAN device and
   the `osascript` hand-off to Terminal. No Keychain access, no passwords.
+  `open(command:)` is `async` and runs the AppleScript in a detached task: the
+  first call can wait on the Automation permission sheet, and blocking the
+  button handler there would freeze the window. Both call sites (Remote Sensors
+  and the LAN Scanner context menu) await the result and show `message` when
+  the request is refused.
 - `Models/ListenerWatch.swift` / `Services/ListenerWatchService.swift` — P3.1:
   the listener summary, the endpoint exposure classifier (`SocketExposure` in
   `Models/OpenConnections.swift`), the sample diff and the `ListenerWatcher`

@@ -1,16 +1,19 @@
 import SwiftUI
 
-/// The default screen: a summary of everything LanFi already watches, with one
-/// route into the tool that explains each number.
+/// The default screen: what this Mac is connected to, whether it works, and
+/// what LanFi is watching right now, with one route into the tool that explains
+/// each number.
 ///
-/// The Wi-Fi analyzer is one card here, not the whole app. The dashboard reads
-/// the same shared services the menu bar and the toolkit use, so it never
-/// starts a second poller or a second scan loop.
+/// The Wi-Fi analyzer is one part of the app, not the whole of it. Every value
+/// comes from a service the app already runs — the dashboard never starts a scan
+/// loop or a second sampler of its own.
 struct OverviewDashboardView: View {
     @ObservedObject var toolkit: ToolkitViewModel
+    /// Defaults to the one shared meter so the screen also builds outside the
+    /// main window (previews, snapshots, smoke tests) without an environment.
+    @ObservedObject var meter: MenuBarMeterModel = .shared
     @EnvironmentObject private var analyzer: AnalyzerViewModel
     @EnvironmentObject private var uptime: UptimeMonitor
-    @EnvironmentObject private var meter: MenuBarMeterModel
     @StateObject private var connectivity = ConnectivityWatchdog.shared
     @StateObject private var accounting = TrafficAccounting.shared
     @StateObject private var gateway = GatewayGuard.shared
@@ -20,36 +23,31 @@ struct OverviewDashboardView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignToken.Spacing.card) {
-                HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-                    connectionCard
-                    internetCard
-                }
+                heroRow
                 keyMetrics
-                HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-                    bandCard
-                    channelCard
-                }
-                HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-                    throughputCard
-                    uptimeCard
-                }
-                HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-                    quickActions
-                    linkCard
-                }
+                liveRow
+                wifiRow
+                actionRow
                 footer
             }
             .appContentPadding()
         }
     }
 
-    // MARK: - Connection and internet
+    // MARK: - Hero: link and internet
 
     private var connected: NetworkModel? { analyzer.connectedNetwork }
 
     private var qualityScore: Int? {
         guard let connected else { return nil }
         return analyzer.metrics(for: connected)?.qualityScore
+    }
+
+    private var heroRow: some View {
+        HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
+            connectionCard
+            internetCard
+        }
     }
 
     private var connectionCard: some View {
@@ -59,20 +57,39 @@ struct OverviewDashboardView: View {
                     ToolkitSectionLabel(text: "Connection")
                     Spacer()
                     if let network = connected {
-                        ToolkitStatusPill(
-                            text: network.band.label, tone: .neutral)
+                        ToolkitStatusPill(text: network.band.label, tone: .neutral)
                     }
                 }
+
                 if let network = connected {
-                    HStack(alignment: .firstTextBaseline, spacing: DesignToken.Spacing.small) {
-                        Text(analyzer.displayName(for: network))
-                            .font(.title3.bold())
-                            .lineLimit(1)
-                        Spacer(minLength: DesignToken.Spacing.small)
-                        Text("\(network.signal) dBm")
-                            .font(.callout.monospacedDigit())
-                            .foregroundColor(.secondary)
+                    Text(analyzer.displayName(for: network))
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    HStack(spacing: DesignToken.Spacing.compact) {
+                        signalChip(network)
+                        if let qualityScore {
+                            chip(
+                                title: String(localized: "Quality"),
+                                value: "\(qualityScore)/100",
+                                tone: qualityScore >= 70 ? .good : (qualityScore >= 45 ? .warning : .bad)
+                            )
+                        }
+                        if network.maxRate.map({ $0 > 0 }) == true {
+                            chip(
+                                title: String(localized: "Link"),
+                                value: String(format: "%.0f Mbps", network.maxRate ?? 0),
+                                tone: .neutral
+                            )
+                        }
+                        Spacer(minLength: 0)
                     }
+
+                    LevelBar(
+                        fraction: levelFraction(for: network),
+                        color: AppPalette.band(network.band))
+
                     Text(
                         verbatim:
                             "Ch \(network.channel) · \(network.channelWidthLabel) · \(network.security)"
@@ -81,25 +98,20 @@ struct OverviewDashboardView: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
 
-                    LevelBar(
-                        fraction: levelFraction(for: network),
-                        color: AppPalette.band(network.band))
-                    HStack {
-                        Text("Quality")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        if let qualityScore {
-                            Text(verbatim: "\(qualityScore)/100")
-                                .font(.caption2.monospacedDigit())
-                        }
-                        Spacer()
-                        Text(verbatim: rateLine(for: network))
-                            .font(.caption2.monospacedDigit())
-                            .foregroundColor(.secondary)
+                    Divider()
+
+                    HStack(spacing: DesignToken.Spacing.card) {
+                        fact(
+                            title: "Gateway", value: gateway.gatewayIP ?? "—",
+                            detail: gateway.gatewayMAC)
+                        fact(
+                            title: "DNS", value: dnsShortValue,
+                            detail: resolverLine, tone: dnsTone)
+                        Spacer(minLength: 0)
                     }
                 } else {
                     Text("No Wi-Fi connection")
-                        .font(.callout)
+                        .font(.headline)
                     Text(
                         "Ethernet may be carrying traffic, or Location access is off so SSIDs are hidden."
                     )
@@ -111,7 +123,9 @@ struct OverviewDashboardView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var internetCard: some View {
@@ -120,16 +134,26 @@ struct OverviewDashboardView: View {
                 HStack {
                     ToolkitSectionLabel(text: "Internet")
                     Spacer()
-                    ToolkitStatusPill(
-                        text: connectivity.verdict.title,
-                        tone: connectivityTone)
+                    ToolkitStatusPill(text: connectivity.verdict.title, tone: connectivityTone)
                 }
-                Text(latencyLine)
-                    .font(.system(size: 26, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
+
+                HStack(alignment: .firstTextBaseline, spacing: DesignToken.Spacing.tight) {
+                    Text(latencyLine)
+                        .font(.system(size: 30, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                }
+
                 Text(checkedLine(connectivity.lastCheckedAt))
                     .font(.caption2)
                     .foregroundColor(.secondary)
+
+                if let ip = meter.publicIP {
+                    Divider()
+                    fact(
+                        title: "Public IP", value: ip,
+                        detail: meter.publicCountry)
+                }
+
                 HStack(spacing: DesignToken.Spacing.small) {
                     AppButton(
                         "Check now", systemImage: "arrow.clockwise",
@@ -138,12 +162,16 @@ struct OverviewDashboardView: View {
                     ) {
                         Task { await connectivity.checkNow() }
                     }
-                    AppButton("Open Internet Check", tone: .quiet) {
+                    .frame(maxWidth: .infinity)
+                    AppButton("Internet Check", tone: .secondary) {
                         toolkit.select(.internetCheck)
                     }
+                    .frame(maxWidth: .infinity)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var connectivityTone: ToolkitTone {
@@ -163,22 +191,27 @@ struct OverviewDashboardView: View {
     // MARK: - Key metrics
 
     private var keyMetrics: some View {
-        HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-            metricTile(
-                title: "Gateway", value: gateway.gatewayIP ?? "—",
-                detail: resolverLine, icon: "point.topleft.down.curvedto.point.bottomright.up",
-                tone: gateway.macChangeCount > 0 ? .warning : .neutral)
+        LazyVGrid(
+            columns: Array(
+                repeating: GridItem(.flexible(), spacing: DesignToken.Spacing.card),
+                count: 4),
+            spacing: DesignToken.Spacing.card
+        ) {
             metricTile(
                 title: "VPN", value: vpnValue, detail: leakLine, icon: "lock.shield",
                 tone: vpn.report.hasLeak ? .bad : (vpn.report.vpn.isUp ? .good : .neutral))
+            metricTile(
+                title: "Wi-Fi", value: "\(analyzer.networks.count) networks",
+                detail: scanLine, icon: "wifi",
+                tone: connected == nil ? .warning : .good)
             metricTile(
                 title: "Traffic today",
                 value: TrafficByteFormat.string(accounting.volume(.today).total),
                 detail: rateText, icon: "arrow.up.arrow.down", tone: .neutral)
             metricTile(
-                title: "Wi-Fi", value: "\(analyzer.networks.count) networks",
-                detail: scanLine, icon: "wifi",
-                tone: connected == nil ? .warning : .good)
+                title: "Automation", value: automation.isEnabled ? onOff(true) : onOff(false),
+                detail: wifiAutomationLine, icon: "wand.and.stars",
+                tone: automationTone)
         }
     }
 
@@ -195,6 +228,7 @@ struct OverviewDashboardView: View {
                         .font(.caption2.weight(.semibold))
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
+                    Spacer(minLength: 0)
                 }
                 Text(value)
                     .font(.callout.weight(.semibold))
@@ -206,14 +240,41 @@ struct OverviewDashboardView: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }
+            .frame(maxWidth: .infinity, minHeight: 62, alignment: .topLeading)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func onOff(_ value: Bool) -> String {
+        value ? String(localized: "On") : String(localized: "Off")
+    }
+
+    private var automationTone: ToolkitTone {
+        guard automation.isEnabled else { return .neutral }
+        return automation.isPaused ? .warning : .good
+    }
+
+    private var dnsShortValue: String {
+        switch gateway.resolverCheck.verdict {
+        case .match: return String(localized: "Match")
+        case .mismatch: return String(localized: "Mismatch")
+        case .unknown: return "—"
+        }
+    }
+
+    private var dnsTone: ToolkitTone {
+        switch gateway.resolverCheck.verdict {
+        case .match: return .good
+        case .mismatch: return .bad
+        case .unknown: return .neutral
         }
     }
 
     private var resolverLine: String {
         switch gateway.resolverCheck.verdict {
-        case .match: return String(localized: "DNS matches the public resolver")
-        case .mismatch: return String(localized: "DNS answers differ")
-        case .unknown: return String(localized: "DNS not checked yet")
+        case .match: return String(localized: "Public resolver agrees")
+        case .mismatch: return String(localized: "Answers differ")
+        case .unknown: return String(localized: "Not checked yet")
         }
     }
 
@@ -239,6 +300,126 @@ struct OverviewDashboardView: View {
             + last.formatted(date: .omitted, time: .shortened)
     }
 
+    // MARK: - Live throughput and uptime
+
+    private var liveRow: some View {
+        HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
+            throughputCard
+            uptimeCard
+        }
+    }
+
+    private var throughputCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack {
+                    ToolkitSectionLabel(text: "Live throughput")
+                    Spacer()
+                    if let rate = meter.primaryRate {
+                        Text(verbatim: "\(TrafficByteFormat.string(UInt64(rate.totalBytesPerSecond)))/s")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary)
+                    }
+                }
+                if meter.samples.count < 2 {
+                    Text("Not sampled yet")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
+                } else {
+                    DashboardSparkline(samples: meter.samples)
+                        .frame(height: 46)
+                }
+                HStack(spacing: DesignToken.Spacing.card) {
+                    rateColumn(
+                        title: "Down", icon: "arrow.down",
+                        value: meter.primaryRate?.receivedBytesPerSecond)
+                    rateColumn(
+                        title: "Up", icon: "arrow.up",
+                        value: meter.primaryRate?.sentBytesPerSecond)
+                    Spacer()
+                    AppButton("Speed Test", tone: .quiet) {
+                        toolkit.select(.speedTest)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func rateColumn(title: LocalizedStringKey, icon: String, value: Double?) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            HStack(spacing: 3) {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .bold))
+                Text(title)
+                    .font(.caption2)
+            }
+            .foregroundColor(.secondary)
+            Text(
+                value.map { "\(TrafficByteFormat.string(UInt64($0)))/s" } ?? "—"
+            )
+            .font(.caption.monospacedDigit())
+        }
+    }
+
+    private var uptimeCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack {
+                    ToolkitSectionLabel(text: "Uptime")
+                    Spacer()
+                    AppButton("Open", tone: .quiet) {
+                        toolkit.select(.uptimeMonitor)
+                    }
+                }
+                if uptime.targets.isEmpty {
+                    Text("No targets yet")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
+                } else {
+                    ForEach(uptime.targets.prefix(3)) { target in
+                        let state = uptime.state(for: target)
+                        HStack(spacing: DesignToken.Spacing.small) {
+                            Circle()
+                                .fill(uptimeTone(state).color)
+                                .frame(width: 7, height: 7)
+                            Text(target.name)
+                                .font(.caption)
+                                .lineLimit(1)
+                            Spacer()
+                            Text(uptimeDetail(state))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func uptimeTone(_ state: UptimeTargetState) -> ToolkitTone {
+        switch state.isUp {
+        case true?: return .good
+        case false?: return .bad
+        case nil: return .neutral
+        }
+    }
+
+    private func uptimeDetail(_ state: UptimeTargetState) -> String {
+        if let percent = state.uptimePercent {
+            return String(format: "%.1f %%", percent)
+        }
+        if let latency = state.averageLatencyMilliseconds {
+            return String(format: "%.0f ms", latency)
+        }
+        return String(localized: "No checks yet")
+    }
+
     // MARK: - Wi-Fi landscape
 
     private var bandCounts: [(band: WiFiBand, count: Int)] {
@@ -256,6 +437,7 @@ struct OverviewDashboardView: View {
                     Text("No scan yet")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
                 } else {
                     GeometryReader { geometry in
                         HStack(spacing: 2) {
@@ -288,7 +470,9 @@ struct OverviewDashboardView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var totalNetworks: Int {
@@ -312,11 +496,18 @@ struct OverviewDashboardView: View {
     private var channelCard: some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
-                ToolkitSectionLabel(text: "Busiest channels")
+                HStack {
+                    ToolkitSectionLabel(text: "Busiest channels")
+                    Spacer()
+                    AppButton("Analyzer", tone: .quiet) {
+                        toolkit.select(.wifiAnalyzer)
+                    }
+                }
                 if topChannels.isEmpty {
                     Text("No scan yet")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 46, alignment: .center)
                 } else {
                     let peak = max(topChannels.map(\.count).max() ?? 1, 1)
                     HStack(alignment: .bottom, spacing: DesignToken.Spacing.small) {
@@ -335,167 +526,89 @@ struct OverviewDashboardView: View {
                         }
                     }
                     .frame(height: 76, alignment: .bottom)
-                    AppButton("Open Wi-Fi Analyzer", tone: .quiet) {
-                        toolkit.select(.wifiAnalyzer)
-                    }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Throughput and uptime
-
-    private var throughputCard: some View {
-        ToolkitCard {
-            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
-                ToolkitSectionLabel(text: "Live throughput")
-                if meter.samples.count < 2 {
-                    Text("Not sampled yet")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    DashboardSparkline(samples: meter.samples)
-                        .frame(height: 46)
-                }
-                HStack(spacing: DesignToken.Spacing.card) {
-                    rateColumn(
-                        title: "Down", icon: "arrow.down",
-                        value: meter.primaryRate?.receivedBytesPerSecond)
-                    rateColumn(
-                        title: "Up", icon: "arrow.up",
-                        value: meter.primaryRate?.sentBytesPerSecond)
-                    Spacer()
-                }
-            }
+    private var wifiRow: some View {
+        HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
+            bandCard
+            channelCard
         }
-    }
-
-    private func rateColumn(title: LocalizedStringKey, icon: String, value: Double?) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            HStack(spacing: 3) {
-                Image(systemName: icon)
-                    .font(.system(size: 9, weight: .bold))
-                Text(title)
-                    .font(.caption2)
-            }
-            .foregroundColor(.secondary)
-            Text(
-                value.map { "\(TrafficByteFormat.string(UInt64($0)))/s" } ?? "—"
-            )
-            .font(.caption.monospacedDigit())
-        }
-    }
-
-    private var uptimeCard: some View {
-        ToolkitCard {
-            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
-                ToolkitSectionLabel(text: "Uptime")
-                if uptime.targets.isEmpty {
-                    Text("No targets yet")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    ForEach(uptime.targets.prefix(3)) { target in
-                        let state = uptime.state(for: target)
-                        HStack(spacing: DesignToken.Spacing.small) {
-                            Circle()
-                                .fill(uptimeTone(state).color)
-                                .frame(width: 7, height: 7)
-                            Text(target.name)
-                                .font(.caption)
-                                .lineLimit(1)
-                            Spacer()
-                            Text(uptimeDetail(state))
-                                .font(.caption2.monospacedDigit())
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                AppButton("Open Uptime Monitor", tone: .quiet) {
-                    toolkit.select(.uptimeMonitor)
-                }
-            }
-        }
-    }
-
-    private func uptimeTone(_ state: UptimeTargetState) -> ToolkitTone {
-        switch state.isUp {
-        case true?: return .good
-        case false?: return .bad
-        case nil: return .neutral
-        }
-    }
-
-    private func uptimeDetail(_ state: UptimeTargetState) -> String {
-        if let percent = state.uptimePercent {
-            return String(format: "%.1f %%", percent)
-        }
-        if let latency = state.averageLatencyMilliseconds {
-            return String(format: "%.0f ms", latency)
-        }
-        return String(localized: "No checks yet")
     }
 
     // MARK: - Actions
 
-    private var quickActions: some View {
-        ToolkitCard {
-            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
-                ToolkitSectionLabel(text: "Quick actions")
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: DesignToken.Spacing.small),
-                        GridItem(.flexible(), spacing: DesignToken.Spacing.small),
-                    ],
-                    spacing: DesignToken.Spacing.small
-                ) {
-                    AppButton("Wi-Fi Analyzer", systemImage: "wifi") {
-                        toolkit.select(.wifiAnalyzer)
-                    }
-                    AppButton("Ping", systemImage: "dot.radiowaves.left.and.right") {
-                        toolkit.select(.ping)
-                    }
-                    AppButton("DNS Lookup", systemImage: "magnifyingglass") {
-                        toolkit.select(.dnsLookup)
-                    }
-                    AppButton("Speed Test", systemImage: "speedometer") {
-                        toolkit.select(.speedTest)
-                    }
-                    AppButton("Connections", systemImage: "arrow.triangle.branch") {
-                        toolkit.select(.openConnections)
-                    }
-                    AppButton("LAN Scanner", systemImage: "desktopcomputer") {
-                        toolkit.select(.lanScanner)
+    private var quickTools: [(title: LocalizedStringKey, icon: String, tool: ToolboxTool)] {
+        [
+            ("Wi-Fi Analyzer", "wifi", .wifiAnalyzer),
+            ("Ping", "dot.radiowaves.left.and.right", .ping),
+            ("DNS Lookup", "magnifyingglass", .dnsLookup),
+            ("Speed Test", "speedometer", .speedTest),
+            ("Connections", "arrow.triangle.branch", .openConnections),
+            ("LAN Scanner", "desktopcomputer", .lanScanner),
+        ]
+    }
+
+    private var actionRow: some View {
+        HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
+            ToolkitCard {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "Quick actions")
+                    LazyVGrid(
+                        columns: Array(
+                            repeating: GridItem(.flexible(), spacing: DesignToken.Spacing.small),
+                            count: 3),
+                        spacing: DesignToken.Spacing.small
+                    ) {
+                        ForEach(quickTools.indices, id: \.self) { index in
+                            AppButton(
+                                quickTools[index].title,
+                                systemImage: quickTools[index].icon
+                            ) {
+                                toolkit.select(quickTools[index].tool)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
+            .frame(maxWidth: .infinity)
+
+            linkCard
+                .frame(maxWidth: .infinity)
         }
     }
 
     private var linkCard: some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
-                ToolkitSectionLabel(text: "Link automation")
-                HStack(spacing: DesignToken.Spacing.tight) {
-                    Text(automation.isEnabled ? String(localized: "On") : String(localized: "Off"))
-                        .font(.caption.weight(.semibold))
-                    if automation.isPaused && automation.isEnabled {
-                        Text("Paused")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
+                HStack {
+                    ToolkitSectionLabel(text: "Link automation")
                     Spacer()
-                    if automation.wiredConnected {
-                        Text(automation.wiredInterface ?? "")
-                            .font(.caption2.monospaced())
-                            .foregroundColor(.secondary)
-                    }
+                    ToolkitStatusPill(
+                        text: automation.isEnabled
+                            ? (automation.isPaused
+                                ? String(localized: "Paused") : String(localized: "On"))
+                            : String(localized: "Off"),
+                        tone: automationTone)
+                }
+                if automation.wiredConnected {
+                    Text(verbatim: automation.wiredInterface ?? "")
+                        .font(.caption.monospaced())
+                        .foregroundColor(.secondary)
                 }
                 Text(wifiAutomationLine)
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
     }
 
@@ -525,17 +638,66 @@ struct OverviewDashboardView: View {
         .foregroundColor(.secondary)
     }
 
+    // MARK: - Small pieces
+
+    private func chip(title: String, value: String, tone: ToolkitTone) -> some View {
+        HStack(spacing: 4) {
+            Text(title)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            Text(verbatim: value)
+                .font(.caption2.monospacedDigit().weight(.semibold))
+                .foregroundColor(tone.color)
+        }
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
+                .fill(Color.secondary.opacity(0.1)))
+    }
+
+    private func signalChip(_ network: NetworkModel) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "cellularbars")
+                .font(.system(size: 9, weight: .bold))
+            Text(verbatim: "\(network.signal) dBm")
+                .font(.caption2.monospacedDigit().weight(.semibold))
+        }
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
+                .fill(Color.secondary.opacity(0.1)))
+    }
+
+    private func fact(
+        title: LocalizedStringKey, value: String, detail: String?, tone: ToolkitTone = .neutral
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.caption.monospacedDigit().weight(.medium))
+                .lineLimit(1)
+                .truncationMode(.middle)
+            if let detail, !detail.isEmpty {
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundColor(tone == .neutral ? .secondary : tone.color)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+        }
+    }
+
     // MARK: - Helpers
 
     /// -100…-30 dBm mapped to 0…1 for the compact bar.
     private func levelFraction(for network: NetworkModel) -> Double {
         let clamped = min(max(Double(network.signal), -100), -30)
         return (clamped + 100) / 70
-    }
-
-    private func rateLine(for network: NetworkModel) -> String {
-        guard let rate = network.maxRate, rate > 0 else { return "" }
-        return String(format: "%.0f Mbps", rate)
     }
 
     private func checkedLine(_ date: Date?) -> String {

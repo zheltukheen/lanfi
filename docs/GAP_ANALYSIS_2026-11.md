@@ -1021,6 +1021,30 @@ locales.
 
 ---
 
+## Delivered in the thirty-eighth slice (2026-11-19)
+
+- **P3.7 / P3.4 review.** The duplicated timer, in-flight guard, published
+  sampling flags and event posting moved into `PollingGuard` and
+  `SecurityEvent`; the duplicated `Process` wrapper became `ShellOutput.run`,
+  and `RouteTableOutput` now asks `TunnelInterface` instead of repeating the
+  prefix list. Eighteen guard/network localization keys that no Swift code
+  referenced (old `%1$@` variants and the superseded DNS lines) were removed
+  from all five locales.
+- **P3.9 crash-proof launch.** `TerminalLauncher.open` is `async` and waits for
+  `osascript` in a detached task, so the first Automation consent sheet cannot
+  freeze the window; both call sites surface a refusal, including the LAN
+  Scanner context menu, which had swallowed the result.
+- **Overview without the main window.** `NetworkToolkitView` and
+  `OverviewDashboardView` take the meter explicitly, defaulting to the shared
+  `MenuBarMeterModel`, so previews and the snapshot harness do not need the
+  app's environment objects.
+- **Overview redesigned.** Link and internet lead, four equal tiles follow,
+  then live throughput / uptime, bands / channels, and a uniform quick-action
+  grid; gateway, DNS and MAC sit under the connection. Buttons fill their grid
+  cells instead of sizing to their labels.
+- 635 app tests green (1 skipped); lint clean, Debug build and `./build.sh`
+  succeed.
+
 ## Delivered in the thirty-seventh slice (2026-11-19)
 
 - **Header sorting on four more tables.** Whois events, Path Check ports, the

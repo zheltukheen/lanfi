@@ -4,7 +4,6 @@
 "NETWORK" = "СЕТЬ";
 "Interfaces" = "Интерфейсы";
 "Network interfaces" = "Сетевые интерфейсы";
-"Every BSD interface on this Mac — physical, virtual, VPN, bridge and loopback." = "Все BSD-интерфейсы Mac: физические, виртуальные, VPN, мосты и loopback.";
 "Auto-refresh" = "Автообновление";
 "Primary" = "Основной";
 "Router" = "Шлюз";
@@ -557,7 +556,6 @@
 "HTTP / HTTPS" = "HTTP / HTTPS";
 "Idle latency" = "Задержка в простое";
 "Inspect" = "Осмотреть";
-"Interfaces, addresses, gateway, DNS and VPN tunnels already live in the main window. The toolkit opens that screen instead of keeping a second copy." = "Интерфейсы, адреса, шлюз, DNS и VPN-туннели уже есть в главном окне. Инструменты открывают этот экран, а не хранят его вторую копию.";
 "Internet Check" = "Проверка интернета";
 "iperf3 is not installed. Run `brew install iperf3` and reopen the toolkit." = "iperf3 не установлен. Выполните `brew install iperf3` и снова откройте инструменты.";
 "iperf3 returned no interval samples." = "iperf3 не вернул ни одного интервального замера.";
@@ -591,7 +589,6 @@
 "Open Network Monitor" = "Открыть монитор сети";
 "Open ports" = "Открытые порты";
 "Open the Internet Check verdict" = "Откройте результат проверки интернета";
-"Open the Wi-Fi analyzer" = "Откройте анализатор Wi-Fi";
 "Path Check" = "Проверка маршрута";
 "Planned for a later phase." = "Запланировано на следующем этапе.";
 "Planned for a later phase. The probe layer and the window are in place." = "Запланировано на следующем этапе. Слой проверок и окно уже готовы.";
@@ -693,7 +690,6 @@
 "Scanned" = "Просканировано";
 "Scanning…" = "Идёт сканирование…";
 "Server" = "Сервер";
-"Shows every hop the traffic passes through, with the latency of each router. Uses the system traceroute binary." = "Показывает каждый узел, через который проходит трафик, и задержку каждого роутера. Использует системный traceroute.";
 "Target" = "Цель";
 "TCP connect scan with a bounded number of concurrent probes. Open, closed and filtered states are reported separately." = "Сканирование подключением по TCP с ограниченным числом одновременных запросов. Состояния «открыт», «закрыт» и «отфильтрован» показываются отдельно.";
 "Tests this Mac, the router, the internet, DNS and the web, then says where the problem most likely is." = "Проверяет этот Mac, роутер, интернет, DNS и веб, а затем показывает, где, скорее всего, проблема.";
@@ -716,10 +712,8 @@
 "Web" = "Веб";
 
 /* Network Toolkit Wi-Fi workspace */
-"No active Wi-Fi association" = "Нет активного Wi-Fi-подключения";
 "Not connected" = "Не подключено";
 "Open full analyzer" = "Открыть полный анализатор";
-"Scan, quality, channels and the Wi-Fi tools that used to sit in the Tools menu." = "Сканирование, качество, каналы и Wi-Fi-инструменты, которые раньше были в меню «Инструменты».";
 "Select a connected network" = "Выберите подключённую сеть";
 "Show Internet Check" = "Открыть проверку интернета";
 "Show Network Monitor" = "Открыть монитор сети";
@@ -733,7 +727,6 @@
 /* Network Toolkit Wi-Fi workspace labels */
 "Connected" = "Подключено";
 "5 GHz advice" = "Совет для 5 ГГц";
-"Wi-Fi tools" = "Инструменты Wi-Fi";
 "Site Survey" = "Обследование площадки";
 "Floor plan, samples and heatmap" = "План помещения, замеры и тепловая карта";
 "Hardware Spectrum" = "Аппаратный спектр";
@@ -831,8 +824,6 @@
 "Probes: %lld" = "Проб: %lld";
 "Timeout: %lld s" = "Тайм-аут: %lld с";
 "Resolve names" = "Определять имена";
-"Latency by hop" = "Задержка по хопам";
-"No latency samples yet." = "Пока нет замеров задержки.";
 "443 — HTTPS" = "443 — HTTPS";
 "80 — HTTP" = "80 — HTTP";
 "22 — SSH" = "22 — SSH";
@@ -1457,11 +1448,7 @@
 "Watch gateway and DNS integrity" = "Следить за целостностью шлюза и DNS";
 "Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local." = "Каждые 2 минуты перечитывает MAC шлюза по умолчанию из таблицы ARP и каждые 10 минут сравнивает тестовый DNS-запрос с ответом Cloudflare. Наружу уходит только этот запрос; результаты остаются на Mac.";
 "Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver." = "Ниже уровня Wi-Fi: MAC шлюза перечитывается из таблицы ARP каждые 2 минуты, а каждые 10 минут ответ системного резолвера для контрольного хоста сравнивается с прямым ответом Cloudflare. Это предупреждения, а не доказательство: CDN законно отвечает по-разному.";
-"Gateway %1$@ uses %2$@." = "Шлюз %1$@ использует %2$@.";
-"Gateway %1$@ changed its hardware address from %2$@ to %3$@ while the IP stayed the same." = "У шлюза %1$@ изменился аппаратный адрес с %2$@ на %3$@, а IP остался прежним.";
-"Gateway %1$@ is no longer the default route." = "Шлюз %1$@ больше не маршрут по умолчанию.";
 "The system resolver and the public resolver agree." = "Системный и публичный резолверы отвечают одинаково.";
-"The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "Системный резолвер вернул для %@ другой адрес, чем публичный. Это предупреждение: CDN отвечают по-разному, но перехват или фильтрующий DNS выглядит так же.";
 "Not enough answers to compare." = "Недостаточно ответов для сравнения.";
 
 /* VPN state and leak indicators (P3.4) */
@@ -1476,10 +1463,8 @@
 "The default route goes through %@." = "Маршрут по умолчанию идёт через %@.";
 "A tunnel interface is up but it does not carry the default route." = "Туннельный интерфейс активен, но не несёт маршрут по умолчанию.";
 "The resolver in use belongs to the tunnel." = "Используемый резолвер принадлежит туннелю.";
-"The tunnel pushes %1$@ but the system resolver is %2$@. Lookups may leave the tunnel. Indicator only: split DNS does this legitimately." = "Туннель предлагает %1$@, а системный резолвер — %2$@. Запросы могут уходить мимо туннеля. Это индикатор: split DNS делает так законно.";
 "Not enough resolver information to judge." = "Недостаточно данных о резолверах.";
 "No IPv6 default route escapes the tunnel." = "Маршрут IPv6 по умолчанию не выходит из туннеля.";
-"A global IPv6 default route leaves through %@ while the tunnel is up, so IPv6 traffic may bypass it." = "Глобальный маршрут IPv6 по умолчанию идёт через %@, пока туннель активен, поэтому IPv6-трафик может обходить его.";
 "No tunnel to check IPv6 against." = "Нет туннеля для проверки IPv6.";
 "The VPN tunnel went down unexpectedly." = "VPN-туннель неожиданно отключился.";
 "Watch VPN state and leaks" = "Следить за VPN и утечками";
@@ -1559,9 +1544,6 @@
 "Open Internet Check" = "Открыть проверку интернета";
 "VPN" = "VPN";
 "Traffic today" = "Трафик за сегодня";
-"DNS matches the public resolver" = "DNS совпадает с публичным резолвером";
-"DNS answers differ" = "Ответы DNS отличаются";
-"DNS not checked yet" = "DNS ещё не проверялся";
 "Leak reported" = "Обнаружена утечка";
 "No tunnel in use" = "Туннель не используется";
 "No leaks" = "Утечек нет";
@@ -1591,3 +1573,8 @@
 "Off. Enable it in Settings → General to turn Wi-Fi off while a cable is up." = "Выключено. Включите в Настройки → Основные, чтобы Wi-Fi отключался при подключённом кабеле.";
 "Whois & GeoIP" = "Whois и GeoIP";
 "No target yet" = "Цель ещё не задана";
+"Public resolver agrees" = "Публичный резолвер совпадает";
+"Answers differ" = "Ответы различаются";
+"Public IP" = "Внешний IP";
+"Automation" = "Автоматизация";
+"Analyzer" = "Анализатор";

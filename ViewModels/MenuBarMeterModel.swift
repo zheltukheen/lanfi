@@ -6,6 +6,11 @@ import Foundation
 /// optional public-IP lookup.
 @MainActor
 final class MenuBarMeterModel: ObservableObject {
+    /// The one meter the app samples with. Views that can be built outside the
+    /// main window (previews, snapshots, smoke tests) read it too, so the
+    /// dashboard never needs a second sampler just to show a number.
+    static let shared = MenuBarMeterModel()
+
     static let sampleCapacity = 60
 
     @Published private(set) var samples: [Double] = []

@@ -4,6 +4,10 @@ import SwiftUI
 
 struct NetworkToolkitView: View {
     @ObservedObject var toolkit: ToolkitViewModel
+    /// Passed explicitly instead of read from the environment: previews, the
+    /// snapshot harness and the smoke test build this view without the app's
+    /// environment, and the dashboard must still have a meter to read.
+    @ObservedObject var meter: MenuBarMeterModel = .shared
     @EnvironmentObject private var diagnostics: DiagnosticsViewModel
     @EnvironmentObject private var interfaces: InterfacesViewModel
     @EnvironmentObject private var uptime: UptimeMonitor
@@ -190,7 +194,7 @@ struct NetworkToolkitView: View {
     private var detail: some View {
         switch toolkit.selection.screen {
         case .overview:
-            OverviewDashboardView(toolkit: toolkit)
+            OverviewDashboardView(toolkit: toolkit, meter: meter)
         case .internetCheck:
             InternetCheckToolView(diagnostics: diagnostics, speedTest: toolkit.speedTest)
         case .ping:
