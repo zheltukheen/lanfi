@@ -1021,6 +1021,20 @@ locales.
 
 ---
 
+## Delivered in the fortieth slice (2026-11-19)
+
+- **Header sorting, batch 2:** Speed Test history, Roaming, DNS Propagation,
+  Device Shelf, Client Analytics (AP load and captured clients), Controllers,
+  Remote Sensors, Live Client Discovery and LAN Scanner. `AppTable` selection
+  and per-row menus carried the interactive cases; LAN Scanner reuses
+  `LANSort` for both the header and the values.
+- **Overview:** gateway, its MAC and the DNS verdict are outside the Wi-Fi
+  branch, so they stay visible on Ethernet; metric tiles do not repeat them.
+- **Remaining:** Offline Capture (two of its three tables live in sheets),
+  Connections / Process Traffic (hierarchical rows need a tree-capable table)
+  and the Multi-Network Comparison panels.
+- 635 tests green (1 skipped), lint clean, Debug and universal builds succeed.
+
 ## Delivered in the thirty-ninth slice (2026-11-19)
 
 - **Project sources are folder-based.** `project.yml` lost the

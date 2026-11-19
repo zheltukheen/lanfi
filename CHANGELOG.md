@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Changed (tables, batch 2)
+- **Eight more screens sort from their headers.** Speed Test history, Roaming
+  transitions, DNS propagation, Device Shelf, Client Analytics (both tables),
+  Controller access points, Remote Sensor scans, Live Client Discovery and the
+  LAN Scanner device list lost their `TableSortControl` menus and local
+  comparators. The LAN Scanner derives its columns from `LANSort`, so the header
+  and the sort values stay one list; the shelf keeps favourite, selection and
+  the per-row menu through `AppTable`'s selection and context-menu hooks.
+- **The overview shows gateway, MAC and DNS on every link.** Those facts sat
+  inside the Wi-Fi branch of the Connection card, so they disappeared when
+  Ethernet carried traffic; they now sit below it, always visible, and are not
+  repeated in the metric tiles.
+
 ### Changed (sources and tables)
 - **project.yml no longer lists shared files by hand.** The application, the
   `lanfi-cli` tool and the test bundle all take `Models`, `Services`, `Utils`

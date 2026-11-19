@@ -102,13 +102,15 @@ because `Services/UpdaterController.swift` lives in the shared folder.
   need a native `Table` for interactivity. Whois events, Path Check, the TLS
   chain, DNS answers, Ping, MTR, Port Scan (TCP and UDP), HTTP Traffic, iperf3
   history, Uptime checks, Network Monitor routes and the comparison panels use
-  it. Still on native `Table` +
-  `TableSortControl`: Speed Test history, Connections / Process Traffic, Device
-  Shelf, LAN Scanner, Roaming, Client Analytics, DNS Propagation, Offline
-  Capture, Remote Sensors, Controllers and Live Client Discovery (the Wi-Fi
-  analyzer keeps its own sort/filter UI by design). Connections and Process
-  Traffic are hierarchical — their rows expand per process — so they need a
-  tree-capable `AppTable` before they can move. Columns are
+  it. The Device Shelf, LAN Scanner and Client Analytics derive their
+  `AppTable` columns from an existing sort list where one exists, so the header
+  and the sort values cannot drift.
+  Still on native `Table`: Offline Capture (three tables, two of them inside
+  sheets), Connections / Process Traffic (hierarchical, expandable rows) and the
+  Multi-Network Comparison panels. Connections and Process Traffic need a
+  tree-capable `AppTable`; Offline Capture's sheets need the column set moved
+  before their tables can follow. The Wi-Fi analyzer keeps its own sort/filter
+  UI by design. Columns are
   declared with the `@ViewBuilder` initializer, so a cell is written as a
   normal view instead of a hand-wrapped `AnyView`.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,
