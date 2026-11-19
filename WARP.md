@@ -34,6 +34,14 @@ Outputs:
 If you add/move/delete files, run `xcodegen generate` and commit the regenerated
 `LanFi.xcodeproj/project.pbxproj` and `Info.plist`.
 
+Sources are declared once, as folders: `LanFi`, `LanFiTests` and `lanfi-cli`
+all take `Models`, `Services`, `Utils` (and `CLI`) rather than per-file lists.
+A new shared file therefore reaches the app, the CLI and the tests without any
+`project.yml` edit; do not reintroduce a template or a hand-written source
+list, which is what used to drift (`SharedToolchainSources` was removed for
+that reason). The CLI and the test bundle also declare the Sparkle package
+because `Services/UpdaterController.swift` lives in the shared folder.
+
 ## Architecture
 
 - `LanFiApp.swift` — `@main`, single `AnalyzerViewModel` and
@@ -89,13 +97,18 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   channels, uniform quick-action grid), and every button in a row fills its
   cell, so control sizes no longer shift with the text.
 - `Views/AppTable.swift` — the shared SwiftUI table builder; its column
-  headers sort on click. Whois events, Path Check, the TLS chain, DNS answers,
-  Ping, MTR and the comparison panels use it. Still on native `Table` +
-  `TableSortControl`: Speed Test history, HTTP Traffic, Connections / Process
-  Traffic, Device Shelf, LAN Scanner, Roaming, Uptime, Client Analytics, DNS
-  Propagation, Network Monitor, Offline Capture, Remote Sensors, Controllers,
-  Live Client Discovery and Multi-Network Comparison (the Wi-Fi analyzer keeps
-  its own sort/filter UI by design). Columns are
+  headers sort on click, and rows can carry a selection binding and a context
+  menu (`init(columns:rows:initialKey:selection:rowMenu:)`) so a screen does not
+  need a native `Table` for interactivity. Whois events, Path Check, the TLS
+  chain, DNS answers, Ping, MTR, Port Scan (TCP and UDP), HTTP Traffic, iperf3
+  history, Uptime checks, Network Monitor routes and the comparison panels use
+  it. Still on native `Table` +
+  `TableSortControl`: Speed Test history, Connections / Process Traffic, Device
+  Shelf, LAN Scanner, Roaming, Client Analytics, DNS Propagation, Offline
+  Capture, Remote Sensors, Controllers and Live Client Discovery (the Wi-Fi
+  analyzer keeps its own sort/filter UI by design). Connections and Process
+  Traffic are hierarchical — their rows expand per process — so they need a
+  tree-capable `AppTable` before they can move. Columns are
   declared with the `@ViewBuilder` initializer, so a cell is written as a
   normal view instead of a hand-wrapped `AnyView`.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,

@@ -4,46 +4,50 @@ import SwiftUI
 struct PortScanToolView: View {
     @ObservedObject var model: PortScanToolModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case port, service, state, response, detail
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .port: return String(localized: "Port")
-            case .service: return String(localized: "Service")
-            case .state: return String(localized: "State")
-            case .response: return String(localized: "Response")
-            case .detail: return String(localized: "Detail")
-            }
-        }
-    }
-
-    @State private var tcpSortKey: SortKey = .port
-    @State private var tcpAscending = true
-    @State private var udpSortKey: SortKey = .port
-    @State private var udpAscending = true
-
-    private func sorted(
-        _ rows: [PortScanResult], key: SortKey, ascending: Bool
-    ) -> [PortScanResult] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch key {
-            case .port: return lhs.port < rhs.port
-            case .service:
-                return (lhs.service ?? "").localizedStandardCompare(rhs.service ?? "")
-                    == .orderedAscending
-            case .state:
-                return lhs.state.label.localizedStandardCompare(rhs.state.label)
-                    == .orderedAscending
-            case .response:
-                return (lhs.responseMilliseconds ?? .infinity)
-                    < (rhs.responseMilliseconds ?? .infinity)
-            case .detail:
-                return (lhs.detail ?? "").localizedStandardCompare(rhs.detail ?? "")
-                    == .orderedAscending
-            }
-        }
-        return ascending ? ordered : ordered.reversed()
+    private func portColumns(suffix: String) -> [AppTableColumn<PortScanResult>] {
+        [
+            AppTableColumn(
+                id: "port", title: "Port", minWidth: 76,
+                value: { .number(Int($0.port)) }
+            ) { result in
+                Text("\(result.port)/\(suffix)")
+                    .font(.caption.monospacedDigit())
+            },
+            AppTableColumn(
+                id: "service", title: "Service", minWidth: 90,
+                value: { .text($0.service) }
+            ) { result in
+                Text(result.service ?? "—")
+                    .font(.caption)
+            },
+            AppTableColumn(
+                id: "state", title: "State", minWidth: 80,
+                value: { .text($0.state.label) }
+            ) { result in
+                HStack(spacing: 5) {
+                    ToolkitStateDot(state: result.state)
+                    Text(result.state.label)
+                        .font(.caption)
+                }
+            },
+            AppTableColumn(
+                id: "response", title: "Response", minWidth: 80,
+                value: { .number($0.responseMilliseconds) }
+            ) { result in
+                Text(ToolkitFormat.milliseconds(result.responseMilliseconds))
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+            },
+            AppTableColumn(
+                id: "detail", title: "Detail", minWidth: 160,
+                value: { .text($0.detail) }
+            ) { result in
+                Text(result.detail ?? "")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            },
+        ]
     }
 
     var body: some View {
@@ -196,9 +200,6 @@ struct PortScanToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Ports")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $tcpSortKey, ascending: $tcpAscending)
                     Spacer()
                     Text(model.portSpec)
                         .font(.caption2.monospaced())
@@ -209,37 +210,10 @@ struct PortScanToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sorted(model.results, key: tcpSortKey, ascending: tcpAscending)) {
-                    TableColumn("Port") { result in
-                        Text("\(result.port)/tcp")
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(76)
-                    TableColumn("Service") { result in
-                        Text(result.service ?? "—")
-                            .font(.caption)
-                    }
-                    TableColumn("State") { result in
-                        HStack(spacing: 5) {
-                            ToolkitStateDot(state: result.state)
-                            Text(result.state.label)
-                                .font(.caption)
-                        }
-                    }
-                    .width(80)
-                    TableColumn("Response") { result in
-                        Text(ToolkitFormat.milliseconds(result.responseMilliseconds))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Detail") { result in
-                        Text(result.detail ?? "")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                }
+                AppTable(
+                    columns: portColumns(suffix: "tcp"), rows: model.results,
+                    initialKey: "port"
+                )
                 .frame(
                     height: ToolkitTableHeight.rows(
                         model.results.count, row: 28, header: 42, minimum: 220,
@@ -297,9 +271,6 @@ struct PortScanToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "UDP")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $udpSortKey, ascending: $udpAscending)
                     Spacer()
                     Text("Best-effort: no response = open|filtered")
                         .font(.caption2)
@@ -308,30 +279,10 @@ struct PortScanToolView: View {
                 .padding(.horizontal, DesignToken.Spacing.card)
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
-                Table(sorted(model.udpResults, key: udpSortKey, ascending: udpAscending)) {
-                    TableColumn("Port") { result in
-                        Text("\(result.port)/udp")
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(76)
-                    TableColumn("Service") { result in
-                        Text(result.service ?? "—")
-                            .font(.caption)
-                    }
-                    TableColumn("State") { result in
-                        HStack(spacing: 5) {
-                            ToolkitStateDot(state: result.state)
-                            Text(result.state.label)
-                                .font(.caption)
-                        }
-                    }
-                    .width(80)
-                    TableColumn("Detail") { result in
-                        Text(result.detail ?? "")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
+                AppTable(
+                    columns: portColumns(suffix: "udp"), rows: model.udpResults,
+                    initialKey: "port"
+                )
                 .frame(
                     height: ToolkitTableHeight.rows(
                         model.udpResults.count, row: 28, header: 42, minimum: 170,

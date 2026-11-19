@@ -221,50 +221,11 @@ struct Iperf3ToolView: View {
         }
     }
 
-    private enum HistorySortKey: String, CaseIterable, Identifiable {
-        case when, server, direction, mbps
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .when: return String(localized: "When")
-            case .server: return String(localized: "Server")
-            case .direction: return String(localized: "Direction")
-            case .mbps: return String(localized: "Mbps")
-            }
-        }
-    }
-
-    @State private var sortKey: HistorySortKey = .when
-    @State private var sortAscending = false
-
-    private func sortedHistory(_ rows: [Iperf3Measurement]) -> [Iperf3Measurement] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .when: return lhs.testedAt < rhs.testedAt
-            case .server:
-                return "\(lhs.host):\(lhs.port)".localizedStandardCompare(
-                    "\(rhs.host):\(rhs.port)") == .orderedAscending
-            case .direction:
-                return lhs.direction.title.localizedStandardCompare(rhs.direction.title)
-                    == .orderedAscending
-            case .mbps:
-                return (lhs.headlineMegabitsPerSecond ?? .infinity)
-                    < (rhs.headlineMegabitsPerSecond ?? .infinity)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     private var historySection: some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "History")
-                    if !model.history.isEmpty {
-                        TableSortControl(
-                            options: HistorySortKey.allCases.map { ($0, $0.title) },
-                            selection: $sortKey, ascending: $sortAscending)
-                    }
                     Spacer()
                     AppButton("Clear history", tone: .quiet) { model.clearHistory() }
                         .font(.caption2)
@@ -273,33 +234,46 @@ struct Iperf3ToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedHistory(model.history)) {
-                    TableColumn("When") { measurement in
-                        Text(
-                            measurement.testedAt.formatted(
-                                date: .abbreviated, time: .shortened)
-                        )
-                        .font(.caption2)
-                    }
-                    TableColumn("Server") { measurement in
-                        Text("\(measurement.host):\(measurement.port)")
-                            .font(.caption.monospaced())
-                    }
-                    TableColumn("Direction") { measurement in
-                        Text(measurement.direction.title)
-                            .font(.caption)
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Mbps") { measurement in
-                        Text(
-                            measurement.headlineMegabitsPerSecond.map {
-                                String(format: "%.0f", $0)
-                            } ?? "—"
-                        )
-                        .font(.caption.monospacedDigit())
-                    }
-                    .width(70)
-                }
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "when", title: "When", minWidth: 120,
+                            value: { .number($0.testedAt.timeIntervalSince1970) }
+                        ) { measurement in
+                            Text(
+                                measurement.testedAt.formatted(
+                                    date: .abbreviated, time: .shortened)
+                            )
+                            .font(.caption2)
+                        },
+                        AppTableColumn(
+                            id: "server", title: "Server", minWidth: 150,
+                            value: { .text($0.host) }
+                        ) { measurement in
+                            Text("\(measurement.host):\(measurement.port)")
+                                .font(.caption.monospaced())
+                        },
+                        AppTableColumn(
+                            id: "direction", title: "Direction", minWidth: 90,
+                            value: { .text($0.direction.title) }
+                        ) { measurement in
+                            Text(measurement.direction.title)
+                                .font(.caption)
+                        },
+                        AppTableColumn(
+                            id: "mbps", title: "Mbps", minWidth: 70,
+                            value: { .number($0.headlineMegabitsPerSecond) }
+                        ) { measurement in
+                            Text(
+                                measurement.headlineMegabitsPerSecond.map {
+                                    String(format: "%.0f", $0)
+                                } ?? "—"
+                            )
+                            .font(.caption.monospacedDigit())
+                        },
+                    ],
+                    rows: model.history, initialKey: "when", ascending: false
+                )
                 .frame(height: min(CGFloat(model.history.count) * 26 + 40, 240))
             }
         }

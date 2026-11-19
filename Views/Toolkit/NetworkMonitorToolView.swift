@@ -139,40 +139,54 @@ struct NetworkMonitorToolView: View {
         return defaults.first
     }
 
-    private enum RouteSortKey: String, CaseIterable, Identifiable {
-        case destination, gateway, flags, interface, expire
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .destination: return String(localized: "Destination")
-            case .gateway: return String(localized: "Gateway")
-            case .flags: return String(localized: "Flags")
-            case .interface: return String(localized: "Interface")
-            case .expire: return String(localized: "Expire")
-            }
-        }
-    }
-
-    @State private var routeSortKey: RouteSortKey = .destination
-    @State private var routeAscending = true
-
-    private func sortedRoutes(_ rows: [NetworkRoute]) -> [NetworkRoute] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch routeSortKey {
-            case .destination:
-                return lhs.destination.compare(rhs.destination, options: .numeric)
-                    == .orderedAscending
-            case .gateway:
-                return lhs.gateway.localizedStandardCompare(rhs.gateway) == .orderedAscending
-            case .flags: return lhs.flags.localizedStandardCompare(rhs.flags) == .orderedAscending
-            case .interface:
-                return lhs.interface.localizedStandardCompare(rhs.interface) == .orderedAscending
-            case .expire:
-                return (lhs.expire ?? "").localizedStandardCompare(rhs.expire ?? "")
-                    == .orderedAscending
-            }
-        }
-        return routeAscending ? ordered : ordered.reversed()
+    private var routeColumns: [AppTableColumn<NetworkRoute>] {
+        [
+            AppTableColumn(
+                id: "destination", title: "Destination", minWidth: 150,
+                value: { .text($0.destination) }
+            ) { route in
+                HStack(spacing: 5) {
+                    if route.isDefault {
+                        Image(systemName: "arrow.turn.down.right")
+                            .font(.caption2)
+                            .foregroundColor(.accentColor)
+                    }
+                    Text(route.destination)
+                        .font(.caption.monospaced())
+                }
+            },
+            AppTableColumn(
+                id: "gateway", title: "Gateway", minWidth: 120,
+                value: { .text($0.gateway) }
+            ) { route in
+                Text(route.gateway)
+                    .font(.caption.monospaced())
+                    .foregroundColor(.secondary)
+            },
+            AppTableColumn(
+                id: "flags", title: "Flags", minWidth: 70,
+                value: { .text($0.flags) }
+            ) { route in
+                Text(route.flags)
+                    .font(.caption.monospaced())
+                    .foregroundColor(.secondary)
+            },
+            AppTableColumn(
+                id: "interface", title: "Interface", minWidth: 70,
+                value: { .text($0.interface) }
+            ) { route in
+                Text(route.interface)
+                    .font(.caption.monospaced())
+            },
+            AppTableColumn(
+                id: "expire", title: "Expire", minWidth: 70,
+                value: { .text($0.expire) }
+            ) { route in
+                Text(route.expire ?? "—")
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+            },
+        ]
     }
 
     private var routesTable: some View {
@@ -180,11 +194,6 @@ struct NetworkMonitorToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Routing table")
-                    if !routes.isEmpty {
-                        TableSortControl(
-                            options: RouteSortKey.allCases.map { ($0, $0.title) },
-                            selection: $routeSortKey, ascending: $routeAscending)
-                    }
                     Spacer()
                     Text("IPv4 · netstat -rn -f inet")
                         .font(.caption2.monospaced())
@@ -194,42 +203,8 @@ struct NetworkMonitorToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedRoutes(routes)) {
-                    TableColumn("Destination") { route in
-                        HStack(spacing: 5) {
-                            if route.isDefault {
-                                Image(systemName: "arrow.turn.down.right")
-                                    .font(.caption2)
-                                    .foregroundColor(.accentColor)
-                            }
-                            Text(route.destination)
-                                .font(.caption.monospaced())
-                        }
-                    }
-                    TableColumn("Gateway") { route in
-                        Text(route.gateway)
-                            .font(.caption.monospaced())
-                            .foregroundColor(.secondary)
-                    }
-                    TableColumn("Flags") { route in
-                        Text(route.flags)
-                            .font(.caption.monospaced())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Interface") { route in
-                        Text(route.interface)
-                            .font(.caption.monospaced())
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Expire") { route in
-                        Text(route.expire ?? "—")
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(70)
-                }
-                .frame(height: min(CGFloat(routes.count) * 24 + 44, 540))
+                AppTable(columns: routeColumns, rows: routes, initialKey: "destination")
+                    .frame(height: min(CGFloat(routes.count) * 24 + 44, 540))
             }
         }
     }

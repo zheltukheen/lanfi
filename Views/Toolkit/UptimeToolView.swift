@@ -7,37 +7,6 @@ struct UptimeToolView: View {
     @State private var showingAdd = false
     @State private var period: UptimePeriod = .day
 
-    private enum CheckSortKey: String, CaseIterable, Identifiable {
-        case when, status, latency, detail
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .when: return String(localized: "When")
-            case .status: return String(localized: "Status")
-            case .latency: return String(localized: "Latency")
-            case .detail: return String(localized: "Detail")
-            }
-        }
-    }
-
-    @State private var checkSortKey: CheckSortKey = .when
-    @State private var checkAscending = false
-
-    private func sortedChecks(_ checks: [UptimeCheck]) -> [UptimeCheck] {
-        let ordered = checks.sorted { lhs, rhs in
-            switch checkSortKey {
-            case .when: return lhs.at < rhs.at
-            case .status: return (lhs.isUp ? 1 : 0) < (rhs.isUp ? 1 : 0)
-            case .latency:
-                return (lhs.latencyMilliseconds ?? .infinity) < (rhs.latencyMilliseconds ?? .infinity)
-            case .detail:
-                return (lhs.detail ?? "").localizedStandardCompare(rhs.detail ?? "")
-                    == .orderedAscending
-            }
-        }
-        return checkAscending ? ordered : ordered.reversed()
-    }
-
     private var selectedTarget: UptimeTarget? {
         if let selectedID, let target = monitor.targets.first(where: { $0.id == selectedID }) {
             return target
@@ -306,11 +275,6 @@ struct UptimeToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Recent checks")
-                    if !state.checks.isEmpty {
-                        TableSortControl(
-                            options: CheckSortKey.allCases.map { ($0, $0.title) },
-                            selection: $checkSortKey, ascending: $checkAscending)
-                    }
                     Spacer()
                     Button(role: .destructive) {
                         monitor.remove(state.target)
@@ -332,33 +296,52 @@ struct UptimeToolView: View {
                         .padding(.horizontal, DesignToken.Spacing.card)
                         .padding(.bottom, DesignToken.Spacing.card)
                 } else {
-                    Table(sortedChecks(Array(state.checks.suffix(20)))) {
-                        TableColumn("When") { check in
-                            Text(check.at.formatted(date: .abbreviated, time: .shortened))
+                    AppTable(
+                        columns: [
+                            AppTableColumn(
+                                id: "when", title: "When", minWidth: 120,
+                                value: { .number($0.at.timeIntervalSince1970) }
+                            ) { check in
+                                Text(
+                                    check.at.formatted(date: .abbreviated, time: .shortened)
+                                )
                                 .font(.caption2)
-                        }
-                        TableColumn("Status") { check in
-                            HStack(spacing: 5) {
-                                Circle()
-                                    .fill(check.isUp ? Color.green : Color.red)
-                                    .frame(width: 6, height: 6)
-                                Text(check.isUp ? String(localized: "Up") : String(localized: "Down"))
+                            },
+                            AppTableColumn(
+                                id: "status", title: "Status", minWidth: 70,
+                                value: { .flag($0.isUp) }
+                            ) { check in
+                                HStack(spacing: 5) {
+                                    Circle()
+                                        .fill(check.isUp ? Color.green : Color.red)
+                                        .frame(width: 6, height: 6)
+                                    Text(
+                                        check.isUp
+                                            ? String(localized: "Up") : String(localized: "Down")
+                                    )
                                     .font(.caption)
-                            }
-                        }
-                        .width(70)
-                        TableColumn("Latency") { check in
-                            Text(ToolkitFormat.milliseconds(check.latencyMilliseconds))
-                                .font(.caption.monospacedDigit())
-                        }
-                        .width(80)
-                        TableColumn("Detail") { check in
-                            Text(check.detail ?? "")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        }
-                    }
+                                }
+                            },
+                            AppTableColumn(
+                                id: "latency", title: "Latency", minWidth: 80,
+                                value: { .number($0.latencyMilliseconds) }
+                            ) { check in
+                                Text(ToolkitFormat.milliseconds(check.latencyMilliseconds))
+                                    .font(.caption.monospacedDigit())
+                            },
+                            AppTableColumn(
+                                id: "detail", title: "Detail", minWidth: 160,
+                                value: { .text($0.detail) }
+                            ) { check in
+                                Text(check.detail ?? "")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            },
+                        ],
+                        rows: Array(state.checks.suffix(20)), initialKey: "when",
+                        ascending: false
+                    )
                     .frame(
                         height: ToolkitTableHeight.rows(
                             min(state.checks.count, 20), row: 26, header: 40,

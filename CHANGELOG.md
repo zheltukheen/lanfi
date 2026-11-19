@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Changed (sources and tables)
+- **project.yml no longer lists shared files by hand.** The application, the
+  `lanfi-cli` tool and the test bundle all take `Models`, `Services`, `Utils`
+  (and `CLI` where relevant) as folders, so a new shared file is picked up by
+  all three after `xcodegen generate` and cannot desynchronise them. The
+  `SharedToolchainSources` template and the ~90-line test source list are gone;
+  both targets now also declare the Sparkle package they already imported.
+- **Header sorting reached five more screens.** Port Scan (TCP and UDP), HTTP
+  Traffic, iperf3 history, Uptime checks and the Network Monitor routing table
+  moved to `AppTable`; their `TableSortControl` menus, local sort enums and
+  comparator functions are gone. `AppTable` gained a row selection binding and a
+  context-menu initializer, so HTTP Traffic keeps its inspector and row choice.
+
 ### Changed (overview and guards)
 - **The overview is a dashboard, not a stack of equal boxes.** It leads with the
   link and the internet verdict side by side (signal, quality, channel and

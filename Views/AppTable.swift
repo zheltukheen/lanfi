@@ -37,14 +37,47 @@ struct AppTableColumn<Row> {
 struct AppTable<Row: Identifiable>: View {
     let columns: [AppTableColumn<Row>]
     let rows: [Row]
+    private let selection: Binding<Row.ID?>?
+    private let rowMenu: ((Row) -> AnyView)?
     @StateObject private var sorter: TableSorter<Row>
     @Environment(\.appTableDensity) private var density
 
     init(
         columns: [AppTableColumn<Row>], rows: [Row], initialKey: String, ascending: Bool = true
     ) {
+        self.init(
+            columns: columns, rows: rows, initialKey: initialKey, ascending: ascending,
+            selection: nil, rowMenu: nil)
+    }
+
+    /// A table whose rows can be selected and opened with a context menu.
+    init(
+        columns: [AppTableColumn<Row>], rows: [Row], initialKey: String, ascending: Bool = true,
+        selection: Binding<Row.ID?>?
+    ) {
+        self.init(
+            columns: columns, rows: rows, initialKey: initialKey, ascending: ascending,
+            selection: selection, rowMenu: nil)
+    }
+
+    init<Menu: View>(
+        columns: [AppTableColumn<Row>], rows: [Row], initialKey: String, ascending: Bool = true,
+        selection: Binding<Row.ID?>? = nil,
+        @ViewBuilder rowMenu: @escaping (Row) -> Menu
+    ) {
+        self.init(
+            columns: columns, rows: rows, initialKey: initialKey, ascending: ascending,
+            selection: selection, rowMenu: { AnyView(rowMenu($0)) })
+    }
+
+    private init(
+        columns: [AppTableColumn<Row>], rows: [Row], initialKey: String, ascending: Bool,
+        selection: Binding<Row.ID?>?, rowMenu: ((Row) -> AnyView)?
+    ) {
         self.columns = columns
         self.rows = rows
+        self.selection = selection
+        self.rowMenu = rowMenu
         _sorter = StateObject(
             wrappedValue: TableSorter(
                 columns: columns.map {
@@ -113,7 +146,8 @@ struct AppTable<Row: Identifiable>: View {
     }
 
     private func rowView(_ row: Row, striped: Bool) -> some View {
-        HStack(alignment: .center, spacing: DesignToken.Spacing.medium) {
+        let isSelected = selection?.wrappedValue == row.id
+        return HStack(alignment: .center, spacing: DesignToken.Spacing.medium) {
             ForEach(columns, id: \.id) { column in
                 column.cell(row)
                     .frame(minWidth: column.minWidth, alignment: alignment(for: column))
@@ -121,8 +155,18 @@ struct AppTable<Row: Identifiable>: View {
             Spacer(minLength: 0)
         }
         .padding(.vertical, max(1, (density.rowHeight - 16) / 2))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard let selection else { return }
+            selection.wrappedValue = row.id
+        }
+        .contextMenu {
+            if let rowMenu { rowMenu(row) }
+        }
         .background(
-            striped ? Color.secondary.opacity(0.05) : Color.clear,
+            isSelected
+                ? Color.accentColor.opacity(0.16)
+                : (striped ? Color.secondary.opacity(0.05) : Color.clear),
             in: RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
         )
     }

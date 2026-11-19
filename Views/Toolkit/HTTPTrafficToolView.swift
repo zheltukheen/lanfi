@@ -133,95 +133,73 @@ struct HTTPTrafficToolView: View {
 
     // MARK: - Requests
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case status, method, host, path, type, size, time
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .status: return String(localized: "Status")
-            case .method: return String(localized: "Method")
-            case .host: return String(localized: "Host")
-            case .path: return String(localized: "Path")
-            case .type: return String(localized: "Type")
-            case .size: return String(localized: "Size")
-            case .time: return String(localized: "Time")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .time
-    @State private var sortAscending = false
-
-    private func sortedEntries(_ rows: [HAREntry]) -> [HAREntry] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .status: return lhs.response.status < rhs.response.status
-            case .method:
-                return lhs.request.method.localizedStandardCompare(rhs.request.method)
-                    == .orderedAscending
-            case .host: return lhs.host.localizedStandardCompare(rhs.host) == .orderedAscending
-            case .path: return lhs.path.localizedStandardCompare(rhs.path) == .orderedAscending
-            case .type:
-                return lhs.response.mimeType.localizedStandardCompare(rhs.response.mimeType)
-                    == .orderedAscending
-            case .size: return lhs.sizeBytes < rhs.sizeBytes
-            case .time: return lhs.duration < rhs.duration
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     private var requestTable: some View {
         ToolkitCard(padding: 0) {
-            HStack {
-                TableSortControl(
-                    options: SortKey.allCases.map { ($0, $0.title) },
-                    selection: $sortKey, ascending: $sortAscending)
-                Spacer()
-            }
-            .padding(.horizontal, DesignToken.Spacing.card)
-            .padding(.top, DesignToken.Spacing.medium)
-            Table(sortedEntries(model.entries), selection: $model.selectedEntryID) {
-                TableColumn("Status") { entry in
-                    Text(entry.statusLabel)
-                        .font(.caption.monospaced())
-                        .foregroundColor(statusColor(entry))
-                        .frame(width: 44, alignment: .leading)
-                }
-                .width(56)
-                TableColumn("Method") { entry in
-                    Text(entry.request.method)
-                        .font(.caption.monospaced())
-                        .foregroundColor(.secondary)
-                }
-                .width(64)
-                TableColumn("Host", value: \.host)
-                TableColumn("Service") { entry in
-                    let description = descriptions.description(forDomain: entry.host)
-                    Text(description.title)
-                        .font(.caption2)
-                        .lineLimit(1)
-                        .foregroundColor(description.source == .unknown ? .secondary : .primary)
-                        .help("\(description.category) · \(entry.host)")
-                }
-                .width(AppColumnWidth.medium)
-                TableColumn("Path") { entry in
-                    Text(entry.path).lineLimit(1).help(entry.request.url)
-                }
-                TableColumn("Type") { entry in
-                    Text(entry.response.mimeType).lineLimit(1)
-                }
-                .width(AppColumnWidth.medium)
-                TableColumn("Size") { entry in
-                    Text(HARTrafficAnalyzer.bytes(entry.sizeBytes))
-                }
-                .width(70)
-                TableColumn("Time") { entry in
-                    Text(entry.durationLabel)
-                }
-                .width(70)
-            }
-            .tableStyle(.inset)
+            AppTable(
+                columns: [
+                    AppTableColumn(
+                        id: "status", title: "Status", minWidth: 56,
+                        value: { .number($0.response.status) }
+                    ) { entry in
+                        Text(entry.statusLabel)
+                            .font(.caption.monospaced())
+                            .foregroundColor(statusColor(entry))
+                    },
+                    AppTableColumn(
+                        id: "method", title: "Method", minWidth: 64,
+                        value: { .text($0.request.method) }
+                    ) { entry in
+                        Text(entry.request.method)
+                            .font(.caption.monospaced())
+                            .foregroundColor(.secondary)
+                    },
+                    AppTableColumn(
+                        id: "host", title: "Host", minWidth: 120,
+                        value: { .text($0.host) }
+                    ) { entry in
+                        Text(entry.host).lineLimit(1)
+                    },
+                    AppTableColumn(
+                        id: "service", title: "Service", minWidth: 110,
+                        value: { .text(descriptions.description(forDomain: $0.host).title) }
+                    ) { entry in
+                        let description = descriptions.description(forDomain: entry.host)
+                        Text(description.title)
+                            .font(.caption2)
+                            .lineLimit(1)
+                            .foregroundColor(
+                                description.source == .unknown ? .secondary : .primary
+                            )
+                            .help("\(description.category) · \(entry.host)")
+                    },
+                    AppTableColumn(
+                        id: "path", title: "Path", minWidth: 160,
+                        value: { .text($0.path) }
+                    ) { entry in
+                        Text(entry.path).lineLimit(1).help(entry.request.url)
+                    },
+                    AppTableColumn(
+                        id: "type", title: "Type", minWidth: 110,
+                        value: { .text($0.response.mimeType) }
+                    ) { entry in
+                        Text(entry.response.mimeType).lineLimit(1)
+                    },
+                    AppTableColumn(
+                        id: "size", title: "Size", minWidth: 70,
+                        value: { .number(Double($0.sizeBytes)) }
+                    ) { entry in
+                        Text(HARTrafficAnalyzer.bytes(entry.sizeBytes))
+                    },
+                    AppTableColumn(
+                        id: "time", title: "Time", minWidth: 70,
+                        value: { .number($0.duration) }
+                    ) { entry in
+                        Text(entry.durationLabel)
+                    },
+                ],
+                rows: model.entries, initialKey: "time",
+                selection: $model.selectedEntryID
+            )
             .frame(minWidth: 520, minHeight: 320)
         }
     }

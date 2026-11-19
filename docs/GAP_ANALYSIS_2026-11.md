@@ -1021,6 +1021,25 @@ locales.
 
 ---
 
+## Delivered in the thirty-ninth slice (2026-11-19)
+
+- **Project sources are folder-based.** `project.yml` lost the
+  `SharedToolchainSources` template and the test target's per-file list; app,
+  CLI and tests now share `Models`, `Services`, `Utils` and `CLI` as folders.
+  Adding `DNSBenchmarkService.swift` no longer needs any project edit — the
+  exact problem that started this thread. Verified by building `lanfi-cli` and
+  running the 635-test suite from the same sources.
+- **Header sorting on five more screens:** Port Scan TCP/UDP, HTTP Traffic,
+  iperf3 history, Uptime checks, Network Monitor routes. `AppTable` now supports
+  row selection and a per-row context menu, so interactive tables no longer
+  need SwiftUI's `Table`.
+- **Still on native `Table`:** Connections / Process Traffic (hierarchical,
+  expandable rows), LAN Scanner (custom `LANSort` column model), Speed Test
+  history, Roaming, Client Analytics, DNS Propagation, Device Shelf, Offline
+  Capture, Remote Sensors, Controllers and Live Client Discovery. These are the
+  next slice; the Wi-Fi analyzer keeps its own sort/filter UI by design.
+- 635 app tests green (1 skipped); lint, Debug build and `./build.sh` succeed.
+
 ## Delivered in the thirty-eighth slice (2026-11-19)
 
 - **P3.7 / P3.4 review.** The duplicated timer, in-flight guard, published
