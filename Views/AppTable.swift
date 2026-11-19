@@ -9,6 +9,24 @@ struct AppTableColumn<Row> {
     var alignment: HorizontalAlignment = .leading
     let value: (Row) -> SortValue
     let cell: (Row) -> AnyView
+
+    /// Builds a column from a plain view builder, so call sites do not wrap
+    /// every cell in `AnyView` by hand.
+    init<Cell: View>(
+        id: String,
+        title: String,
+        minWidth: CGFloat = 70,
+        alignment: HorizontalAlignment = .leading,
+        value: @escaping (Row) -> SortValue,
+        @ViewBuilder cell: @escaping (Row) -> Cell
+    ) {
+        self.id = id
+        self.title = title
+        self.minWidth = minWidth
+        self.alignment = alignment
+        self.value = value
+        self.cell = { AnyView(cell($0)) }
+    }
 }
 
 /// The app's single SwiftUI table builder.
