@@ -14,6 +14,9 @@ struct GeneralSettingsPage: View {
     @StateObject private var linkAutomation = LinkAutomation.shared
     @State private var settings = AppSettingsStore.shared.settings
     @State private var settingsMessage: String?
+    /// Set when the notification prompt is refused, so the automation card can
+    /// say why the Wi-Fi switches would be silent instead of just doing nothing.
+    @State private var notificationDenied = false
     @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false
 
     private var version: String {
@@ -246,11 +249,21 @@ struct GeneralSettingsPage: View {
         SettingsCard(title: "Ethernet and Wi-Fi", icon: "cable.connector") {
             Toggle(
                 "Turn Wi-Fi off while Ethernet is connected",
-                isOn: binding(\.automation.linkAutomation))
+                isOn: linkAutomationBinding)
             Text(
-                "Writes the Wi-Fi power state with networksetup: when a physical Ethernet link comes up LanFi turns Wi-Fi off once, and when the cable goes away it turns Wi-Fi back on once. A manual Wi-Fi change always wins: if you switch Wi-Fi back on while docked, LanFi leaves it alone. Off by default."
+                "Turning this on asks macOS for notification permission: each switch is announced as a banner, and without permission it would change silently. Writes the Wi-Fi power state with networksetup: when a physical Ethernet link comes up LanFi turns Wi-Fi off once, and when the cable goes away it turns Wi-Fi back on once. A manual Wi-Fi change always wins: if you switch Wi-Fi back on while docked, LanFi leaves it alone. Off by default."
             )
             .settingsHint()
+            if notificationDenied && settings.automation.linkAutomation {
+                HStack(alignment: .firstTextBaseline, spacing: DesignToken.Spacing.small) {
+                    Text("Notifications are off for LanFi, so the Wi-Fi switches stay silent.")
+                        .font(.caption2)
+                        .foregroundColor(AppPalette.warning)
+                    Spacer()
+                    Button("Open Notification Settings…") { openNotificationSettings() }
+                        .controlSize(.small)
+                }
+            }
             if linkAutomation.isEnabled {
                 Toggle("Pause automation", isOn: $linkAutomation.isPaused)
                 LabeledContent("Ethernet") {
@@ -364,6 +377,37 @@ struct GeneralSettingsPage: View {
                 AppSettingsStore.shared.save(settings)
             }
         )
+    }
+
+    /// Turning the automation on is the only moment LanFi may ask for
+    /// notification permission: the feature's whole output is a banner, and
+    /// `UNUserNotificationCenter` silently drops posts until it is granted.
+    ///
+    /// The permission is requested only when the switch goes off → on, never on
+    /// every view appearance, and the request result drives the inline warning.
+    private var linkAutomationBinding: Binding<Bool> {
+        Binding(
+            get: { settings.automation.linkAutomation },
+            set: { newValue in
+                let wasOn = settings.automation.linkAutomation
+                settings.automation.linkAutomation = newValue
+                AppSettingsStore.shared.save(settings)
+                guard newValue, !wasOn else { return }
+                Task { @MainActor in
+                    let granted = await MonitorNotifier.shared.requestAuthorization()
+                    notificationDenied = !granted
+                    if granted { await LinkAutomation.shared.sampleNow() }
+                }
+            }
+        )
+    }
+
+    private func openNotificationSettings() {
+        guard
+            let url = URL(
+                string: "x-apple.systempreferences:com.apple.preference.notifications")
+        else { return }
+        NSWorkspace.shared.open(url)
     }
 
     /// Resolve the palette cache before the defaults change, so the redraw that

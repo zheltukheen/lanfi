@@ -677,6 +677,7 @@
 		F4B2F4CD35B47D5F78296312 /* WorkspaceProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BCA72D82C2713F7B3D5662 /* WorkspaceProfileTests.swift */; };
 		F4E56876A99F3BCA3B288785 /* WorkspaceProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0210E421B752F2AADB894B /* WorkspaceProfile.swift */; };
 		F59F0CC420D276D7736C905A /* AnalyzerViewModel+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF9625F34AB1FEFA8565A15 /* AnalyzerViewModel+Persistence.swift */; };
+		F5BAD0D895AE1E64ECAE5836 /* OverviewDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BDED097B33FE5FF296DD71 /* OverviewDashboardView.swift */; };
 		F6171FAA2A1901BEA51127A5 /* GatewayIntegrity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3893B4FD816CC41E8376E0E0 /* GatewayIntegrity.swift */; };
 		F6C50551FFE17346EA40C10A /* UptimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 204AFE2256A942A9A25527E4 /* UptimeModels.swift */; };
 		F6F4BF78701E643589784EC2 /* ExpressionColumnsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8CC55FD96FA73ACBD0E5C4 /* ExpressionColumnsSettingsView.swift */; };
@@ -955,6 +956,7 @@
 		92FD024E1089A2D2FC17D7DE /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		930CBC808AA855B912B998FF /* SurveyReportSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyReportSettingsView.swift; sourceTree = "<group>"; };
 		93B8AC09D74E69499697D7D1 /* WorkspaceToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceToolbar.swift; sourceTree = "<group>"; };
+		93BDED097B33FE5FF296DD71 /* OverviewDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewDashboardView.swift; sourceTree = "<group>"; };
 		93F5E6D98A6D5A272ADD4790 /* MCPToolkit+Arguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MCPToolkit+Arguments.swift"; sourceTree = "<group>"; };
 		940A429CB546B3B174C60EBF /* ControllerAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerAccount.swift; sourceTree = "<group>"; };
 		949193F893D3DA5BDF9840CA /* HistoryChartMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryChartMode.swift; sourceTree = "<group>"; };
@@ -1425,6 +1427,7 @@
 				EA2422FC591B6EC50A468FC8 /* NetworkMonitorToolView.swift */,
 				878C3D00DCC61F31B58541CF /* NetworkToolkitView.swift */,
 				AC7C29D0DE559587A959AC1A /* OpenConnectionsToolView.swift */,
+				93BDED097B33FE5FF296DD71 /* OverviewDashboardView.swift */,
 				B955D3C8FDC4AB82F57A42EF /* PathCheckToolView.swift */,
 				698DBB6C759F71B1B359E535 /* PingToolView.swift */,
 				A6DC7FAF4FED6B5719F8271F /* PortScanToolView.swift */,
@@ -2482,6 +2485,7 @@
 				0AC4ECD222FDB7737149C5D4 /* OfflineCaptureView.swift in Sources */,
 				A814AC5006E3B9B11D5C4B8E /* OpenConnections.swift in Sources */,
 				84ECE6BF89BE434D8A45348D /* OpenConnectionsToolView.swift in Sources */,
+				F5BAD0D895AE1E64ECAE5836 /* OverviewDashboardView.swift in Sources */,
 				35053E6E446819C59542804C /* PassiveScanEngine.swift in Sources */,
 				8C11BBC098C52ADCC147C52F /* PassiveScanSheet.swift in Sources */,
 				6556B256172DB7B1CB705A10 /* PassiveScanViewModel.swift in Sources */,

@@ -1084,6 +1084,26 @@ locales.
 
 ---
 
+## Delivered in the thirty-sixth slice (2026-11-19)
+
+- **Dashboard first (D2/P1.6 precursor).** `ToolboxTool.overview` is the new
+  first entry and the default selection: `Views/Toolkit/OverviewDashboardView.swift`
+  pairs the connected network with internet reachability, gateway/DNS, VPN and
+  leaks, today's traffic, band distribution, the busiest channels, a throughput
+  sparkline, uptime targets and quick actions. The analyzer moved from "the
+  app" to one card and one sidebar row; the dashboard reads the shared services
+  (`ConnectivityWatchdog`, `GatewayGuard`, `VPNGuard`, `TrafficAccounting`,
+  `MenuBarMeterModel`, `UptimeMonitor`, `LinkAutomation`) so nothing is polled
+  twice.
+- **Interval menu stabilised.** The countdown is a button plus popover instead
+  of a native `Menu`: opening it freezes the 0.5 s `TimelineView`, the label is
+  whole seconds in a fixed-width slot, and a chevron with a hover tint restores
+  the click affordance the hidden menu indicator removed.
+- **Notification permission with link automation.** Turning the automation on
+  requests authorization once; a refusal shows an inline warning and a button to
+  Notification settings, so Wi-Fi switches can no longer fail silently.
+- 633 app tests green (1 skipped); lint and Debug build clean.
+
 ## Delivered in the thirty-fifth slice (2026-11-19)
 
 - **Toolkit control unification (D5).** The remaining raw `Button` calls on the

@@ -88,6 +88,16 @@
   and a Settings card showing the link, the Wi-Fi power state and the last
   action. It is edge-triggered, so a manual Wi-Fi change always wins.
 
+### Added (overview dashboard)
+- **The app opens on an overview, not on the Wi-Fi table.** A new default screen
+  summarises what LanFi already watches: the connected network with signal and
+  quality, internet reachability and latency, gateway and DNS integrity, VPN and
+  leak state, today's traffic, networks per band with a stacked bar, the six
+  busiest channels, a live throughput sparkline, the first uptime targets and
+  quick actions into the analyzer, Ping, DNS, Speed Test, Connections and the LAN
+  Scanner. It reuses the shared services — no second poller, no extra scan — and
+  the Wi-Fi analyzer is now one tool among them.
+
 ### Changed
 - **One button, one header, one list row across the toolkit.** Every tool
   screen now draws its actions with `AppButton` (plus `AppIconButton` for
@@ -107,6 +117,16 @@
   or device names.
 
 ### Fixed
+- **The refresh-interval menu stays open.** The countdown used to re-lay out its
+  label twice a second while the native menu was tracking, which made the list
+  jump and could dismiss it. The control is now a button with an explicit
+  popover: the `TimelineView` stops while the list is open, the figure is whole
+  seconds in a fixed-width monospaced slot, and a chevron plus a hover tint keep
+  the element looking clickable.
+- **Enabling Ethernet/Wi-Fi automation now asks for notification permission.**
+  The feature's only output is a banner, so turning the switch on requests
+  authorization once, and a refused prompt shows an inline warning with a
+  shortcut to Notification settings instead of switching Wi-Fi silently.
 - **Signal and quality bars no longer squeeze their label.** The bar width is
   computed from the measured text width (`SignalBarMetrics`, capped at 60% of
   the column, 12 pt minimum bar) instead of `intrinsicContentSize`, which

@@ -70,6 +70,12 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Views/Toolkit/OverviewDashboardView.swift` — the default screen
+  (`ToolboxTool.overview`). It composes the shared services
+  (`ConnectivityWatchdog`, `GatewayGuard`, `VPNGuard`, `TrafficAccounting`,
+  `MenuBarMeterModel`, `UptimeMonitor`, `LinkAutomation`) into one summary; the
+  Wi-Fi analyzer is one tool in the sidebar, not the root screen. Nothing here
+  starts its own timer: a new card must read an existing service.
 - `Views/AppTable.swift` — the shared SwiftUI table builder; its column
   headers sort on click. New tables use it instead of a separate sort menu, and
   the so-far unmigrated SwiftUI `Table` screens still pass `TableSortControl`
