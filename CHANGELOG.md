@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Connectivity watchdog in the menu bar.** LanFi now checks whether the
+  internet actually works, not just whether Wi-Fi is associated. An
+  `NWPathMonitor` plus a timed probe (default
+  `http://captive.apple.com/hotspot-detect.html`, configurable fallback) report
+  **online**, **captive portal** or **offline**, the menu-bar icon changes when
+  the WAN drops, and the latency metric uses the live sample instead of the last
+  diagnostics run. One failed probe never flips a healthy connection, a captive
+  portal is labelled as such rather than as offline, and transitions notify with
+  per-direction toggles that honour the Wi-Fi Monitor quiet hours. Configure the
+  interval (15 s–5 min), probe URLs and notifications in Settings → General, or
+  ask Shortcuts for the current state.
+
+### Changed
+- `MonitorNotifier` is the single shared notification delegate; the connectivity
+  watchdog posts through it instead of installing a second one.
+
 ## 5.4.0 — 2026-11-18
 
 ### Changed

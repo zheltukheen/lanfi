@@ -1278,3 +1278,29 @@
 "Busiest channel" = "Am stärksten belegter Kanal";
 "Strongest signal" = "Stärkstes Signal";
 "No overlap" = "Keine Überlappung";
+
+/* Connectivity watchdog (P3.3) */
+"Connectivity" = "Konnektivität";
+"Connectivity watchdog" = "Konnektivitätswächter";
+"Watch connectivity" = "Konnektivität überwachen";
+"Check" = "Prüfen";
+"Check every" = "Prüfen alle";
+"Primary probe" = "Erste Abfrage";
+"Fallback probe" = "Ersatzabfrage";
+"Notify when offline" = "Bei Offline benachrichtigen";
+"Notify on a captive portal" = "Bei Captive Portal benachrichtigen";
+"Notify when the connection returns" = "Benachrichtigen, wenn die Verbindung zurückkehrt";
+"Online" = "Online";
+"Offline" = "Offline";
+"Captive portal" = "Captive Portal";
+"Not checked yet" = "Noch nicht geprüft";
+"Connectivity checks are off. Turn them on in Settings → General." = "Konnektivitätsprüfungen sind aus. In Einstellungen → Allgemein einschalten.";
+"Last checked %@" = "Zuletzt geprüft %@";
+"Internet is back." = "Das Internet ist wieder da.";
+"A captive portal is intercepting traffic. Sign in to continue." = "Ein Captive Portal fängt den Datenverkehr ab. Zum Fortfahren anmelden.";
+"The internet is unreachable." = "Das Internet ist nicht erreichbar.";
+"A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded." = "Eine einzelne fehlgeschlagene Abfrage ändert den Zustand nicht; Ruhezeiten stammen aus den Warnungen des Wi-Fi-Monitors. Die Abfragen sind einfache HTTP-GETs an die Captive-Portal-Endpunkte; es wird nichts hochgeladen.";
+"Checks the internet every few seconds and flips the menu-bar state when it drops." = "Prüft das Internet alle paar Sekunden und wechselt den Menüleistenstatus bei Ausfall.";
+"URL" = "URL";
+
+"Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Anmerkungen, Sitzungen, Surveys, Einstellungen und Absturzprotokolle bleiben auf diesem Mac. Es gibt keine Telemetrie; die einzige Hintergrundanfrage ist die Captive-Portal-Prüfung des Konnektivitätswächters, die Sie oben abschalten können.";

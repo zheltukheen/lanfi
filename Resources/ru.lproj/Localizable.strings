@@ -1315,3 +1315,29 @@
 "Busiest channel" = "Самый загруженный канал";
 "Strongest signal" = "Сильнейший сигнал";
 "No overlap" = "Без перекрытий";
+
+/* Connectivity watchdog (P3.3) */
+"Connectivity" = "Связь";
+"Connectivity watchdog" = "Контроль связи";
+"Watch connectivity" = "Следить за связью";
+"Check" = "Проверить";
+"Check every" = "Проверять каждые";
+"Primary probe" = "Основной запрос";
+"Fallback probe" = "Резервный запрос";
+"Notify when offline" = "Уведомлять об отсутствии связи";
+"Notify on a captive portal" = "Уведомлять о captive portal";
+"Notify when the connection returns" = "Уведомлять о восстановлении связи";
+"Online" = "В сети";
+"Offline" = "Нет сети";
+"Captive portal" = "Captive portal";
+"Not checked yet" = "Ещё не проверялось";
+"Connectivity checks are off. Turn them on in Settings → General." = "Проверки связи отключены. Включите их в разделе «Настройки → Основные».";
+"Last checked %@" = "Последняя проверка %@";
+"Internet is back." = "Интернет снова работает.";
+"A captive portal is intercepting traffic. Sign in to continue." = "Captive portal перехватывает трафик. Войдите, чтобы продолжить.";
+"The internet is unreachable." = "Интернет недоступен.";
+"A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded." = "Один неудачный запрос не меняет состояние, а тихие часы берутся из уведомлений Wi-Fi Monitor. Запросы — обычные HTTP GET к адресам captive portal; ничего не отправляется.";
+"Checks the internet every few seconds and flips the menu-bar state when it drops." = "Проверяет интернет каждые несколько секунд и меняет состояние в строке меню при обрыве.";
+"URL" = "URL";
+
+"Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Аннотации, сессии, обследования, настройки и логи падений остаются на этом Mac. Телеметрии нет; единственный фоновый запрос — проверка captive portal от контроля связи, её можно отключить выше.";

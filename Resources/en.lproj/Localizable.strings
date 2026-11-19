@@ -1279,3 +1279,29 @@
 "Busiest channel" = "Busiest channel";
 "Strongest signal" = "Strongest signal";
 "No overlap" = "No overlap";
+
+/* Connectivity watchdog (P3.3) */
+"Connectivity" = "Connectivity";
+"Connectivity watchdog" = "Connectivity watchdog";
+"Watch connectivity" = "Watch connectivity";
+"Check" = "Check";
+"Check every" = "Check every";
+"Primary probe" = "Primary probe";
+"Fallback probe" = "Fallback probe";
+"Notify when offline" = "Notify when offline";
+"Notify on a captive portal" = "Notify on a captive portal";
+"Notify when the connection returns" = "Notify when the connection returns";
+"Online" = "Online";
+"Offline" = "Offline";
+"Captive portal" = "Captive portal";
+"Not checked yet" = "Not checked yet";
+"Connectivity checks are off. Turn them on in Settings → General." = "Connectivity checks are off. Turn them on in Settings → General.";
+"Last checked %@" = "Last checked %@";
+"Internet is back." = "Internet is back.";
+"A captive portal is intercepting traffic. Sign in to continue." = "A captive portal is intercepting traffic. Sign in to continue.";
+"The internet is unreachable." = "The internet is unreachable.";
+"A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded." = "A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded.";
+"Checks the internet every few seconds and flips the menu-bar state when it drops." = "Checks the internet every few seconds and flips the menu-bar state when it drops.";
+"URL" = "URL";
+
+"Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above.";

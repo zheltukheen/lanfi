@@ -40,7 +40,7 @@ final class MonitorViewModel: ObservableObject {
     ) {
         self.clock = clock
         self.store = store
-        self.notifier = notifier ?? MonitorNotifier()
+        self.notifier = notifier ?? MonitorNotifier.shared
         let defaults = UserDefaults.standard
         let savedRecording = defaults.object(forKey: Self.recordingKey) as? Bool ?? true
         let savedRetention =

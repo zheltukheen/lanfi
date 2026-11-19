@@ -32,6 +32,11 @@ LanFi makes only these outbound requests:
   (Cloudflare, Google, Quad9, OpenDNS, Level3 and a Cloudflare secondary).
 - **Whois** sends the domain or IP to `rdap.org`; **GeoIP** and the map in
   Visual Traceroute send public hop addresses to `ipwho.is`.
+- **Connectivity watchdog** (on by default, can be turned off in Settings →
+  General) sends one plain HTTP GET to the captive-portal endpoint
+  (`captive.apple.com`, falling back to `www.apple.com`) every 15 s–5 min to
+  tell an online link from a captive portal or a dead WAN. It sends no payload
+  and no identifiers, and the verdict stays on your Mac.
 - **Speed Test** uses Apple's `networkQuality` command. These third-party
   requests are made only when you press the corresponding button; LanFi does
   not attach an account, device identifier or telemetry payload.

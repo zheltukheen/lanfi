@@ -70,6 +70,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/ConnectivityWatchdog.swift` / `Services/ConnectivityWatchdogService.swift` —
+  P3.3: the online / captive-portal / offline verdict, its two-strike
+  hysteresis, the probe classifier and the notification policy, plus the timed
+  `NWPathMonitor` service behind the menu-bar state, the latency metric and the
+  Shortcut intent.
 - `Models/TablePresentation.swift` — table density presets, the signal/quality
   bar values and header decoration, all pure and tested. In-cell visuals are
   allowed in the Signal and Quality columns only, beside the number; every other
@@ -245,6 +250,10 @@ so those values cannot be rolled back; `importData` overwrites them on purpose.
 - `LanFi.scan.dwellMilliseconds` — last passive/directed dwell per channel.
 - `LanFi.menuBar.metric|style|unit` — menu-bar meter metric, label style and
   throughput unit (mirrored from `AppSettings.menuBar`).
+- `LanFi.connectivity.enabled|interval|primaryURL|fallbackURL` and
+  `LanFi.connectivity.notify.offline|captive|restored` — the connectivity
+  watchdog (`AppSettings.connectivity`); quiet hours are read from
+  `LanFi.monitor.alerts`.
 - `LanFi.historyChart.mode` — signal / noise / both for the history chart.
 - `LanFi.hasCompletedFirstRun` — the first-run screen is shown once.
 - `LanFi.settings.section` — the last selected sidebar section in Settings.
@@ -395,5 +404,8 @@ The app uses the same seam style: `WiFiScanning` is injected into
 - Keep scanning/parsing off the main thread; UI state stays `@MainActor`.
 - Pure analysis belongs in `NetworkAnalyzer`/`InformationElementParser` with
   tests.
-- No telemetry or network calls. Location is only for SSID/BSSID visibility.
+- No telemetry. The only outbound requests are the connectivity watchdog's
+  captive-portal probes (on by default, toggleable), the opt-in OUI update and
+  tools the user runs; none upload data. Location is only for SSID/BSSID
+  visibility.
 - Prefer semantic colors; charts must remain legible in dark and light mode.

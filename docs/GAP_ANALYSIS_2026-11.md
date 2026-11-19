@@ -1,10 +1,12 @@
 # Gap analysis — November 2026
 
-Status: **active plan**. Baseline: LanFi 5.3.0 (build 69).
+Status: **active plan**. Baseline: LanFi 5.4.0 (build 71).
 Scope: post-Netutilus parity, compared with WiFi Explorer Pro 3.10, NetSpot 6,
-Airtool 2, the public macOS Wi-Fi APIs, and the menu-bar/utility segment covered
-in [`REFERENCE_APPS_REVIEW_2026-11.md`](REFERENCE_APPS_REVIEW_2026-11.md)
-(NetWorker Pro, AirRadar 8, PeakHour 6 and an Unstore buyer's guide).
+Airtool 2, the public macOS Wi-Fi APIs, the menu-bar/utility segment covered in
+[`REFERENCE_APPS_REVIEW_2026-11.md`](REFERENCE_APPS_REVIEW_2026-11.md)
+(NetWorker Pro, AirRadar 8, PeakHour 6 and an Unstore buyer's guide), and the
+22 listings on the On My Menubar network tag reviewed in
+[`ONMYMENUBAR_NETWORK_REVIEW_2026-11.md`](ONMYMENUBAR_NETWORK_REVIEW_2026-11.md).
 
 This document intentionally goes beyond
 [`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) and
@@ -52,6 +54,16 @@ because the delivered analysis depth is currently invisible in a screenshot.
 | P2.3 | Sandboxed MAS build split | Distribution | Medium | L |
 | P2.4 | 802.11-2024/802.11bn decoder readiness | Future | Low | S |
 | P2.6 | Connected-link telemetry: rate, MCS/NSS, PHY, noise chart | Analyzer depth | Medium | S |
+| P3.1 | Listener watch: UDP, exposure class, port-change alerts | Security / workflow | Medium | S |
+| P3.2 | Continuous route monitor with per-hop heatmap | New surface | Medium | M |
+| P3.3 | Connectivity watchdog: online state, captive portal, Shortcut | Menu bar | High | S/M |
+| P3.4 | VPN status and DNS/IPv6 leak checks | Security | Medium | M |
+| P3.5 | DNS resolver benchmark and opt-in switching | Toolkit | Medium | S/M |
+| P3.6 | Per-app traffic history and domain attribution | Monitoring | Medium | M |
+| P3.7 | Gateway ARP and DNS-hijack detection | Security | High | M |
+| P3.8 | Wired/Wi-Fi link automation | Automation | Low | S |
+| P3.9 | SSH quick launch from saved sensors | Workflow | Low | S |
+| P3.10 | Plain-language service descriptions | Presentation | Low | S/M |
 | D1 | Design tokens and shared components | Presentation | High | M |
 | D2 | Hero RF overview, first run and empty states | Presentation | High | S/M |
 | D3 | Table presentation: density, bars, relative time, wording | Presentation | High | S/M |
@@ -278,8 +290,9 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       live presence and a guest QR. Read-only: LanFi never edits or reads saved
       Wi-Fi passwords.
 - [x] **Connections** — open TCP connections with process, PID, user, endpoints
-      and state, grouped by process, from read-only `lsof` (never elevated,
-      never kills a connection).
+      and state, grouped by process, from read-only `lsof` (never elevated;
+      terminating the owning process is a separate explicit action, and no
+      socket is closed from outside).
 - [x] **Per-process traffic** — per-PID received/sent deltas over a rolling
       window with the app's own traffic excluded and a privacy note in the
       screen; parsed locally, nothing leaves the machine.
@@ -324,7 +337,9 @@ product does not need.
       Link inspector can show rate, PHY, width, streams and MCS/NSS over time.
       CoreWLAN does not expose MCS or NSS for the live link; derive NSS from the
       HT/VHT/HE capability IEs of the connected BSSID and label the value as
-      capability, not measurement.
+      capability, not measurement. An optional 4 Hz live mode for physical
+      placement (WhyFi Radar) can ride the same sampler later, but only after
+      the 5 s store is in place.
 - [ ] Noise in the history chart: `SignalHistoryView` plots RSSI only. Add the
       AirRadar-style mode switch (signal / noise / both) using the noise value
       already carried by `NetworkModel`.
@@ -335,6 +350,229 @@ product does not need.
       v2c GET of standard interface counters plus SSDP discovery, with a strict
       timeout and no credential storage. Later bucket; only if the menu-bar
       meter proves useful.
+
+## P3 — Menu-bar network utilities (On My Menubar, 2026-11-18)
+
+Source: [`ONMYMENUBAR_NETWORK_REVIEW_2026-11.md`](ONMYMENUBAR_NETWORK_REVIEW_2026-11.md).
+The tag has 22 listings; twelve are relevant and ten are non-goals recorded at
+the bottom of this document. These items extend the shipped Connections console
+(P1.8) and menu-bar meter (P0.6); they do not reopen them.
+
+### P3.1 — Listener watch
+
+Doorry watches listening sockets, separates loopback from LAN-reachable
+services, kills the owner and notifies when the set changes. Connections is a
+manual snapshot over `lsof -nP -iTCP`, so UDP servers, exposure and change
+events are missing.
+
+Tasks:
+
+- [ ] Add UDP listeners (`lsof -nP -iUDP`) to the same table with a protocol
+      column; keep the TCP pass as the fast default.
+- [ ] Classify every socket from its local endpoint: loopback only
+      (`127.0.0.1`/`::1`), all interfaces (`0.0.0.0`/`::`), or one specific
+      address. Label the last two "LAN-reachable", not "public": without a
+      router table LanFi cannot claim internet exposure.
+- [ ] Sample on a timer while the Connections screen or a "Watch listeners"
+      toggle is on, diff the set and post one notification per new or closed
+      listener.
+- [ ] Optional user-recorded global hotkey that opens Connections; one owner,
+      no default.
+
+Acceptance: starting `python3 -m http.server` produces a LAN-reachable row and
+one notification within an interval; a loopback-only server is labelled local;
+UDP listeners show the owning process.
+
+### P3.2 — Continuous route monitor
+
+TraceBar keeps a traceroute running and draws per-hop latency and loss as a
+scrolling heatmap. LanFi runs traceroute, MTR and Visual Traceroute only on
+demand, so route flaps and evening congestion have no history.
+
+Tasks:
+
+- [ ] One continuous target at a time, reusing `MTRService` with a rolling
+      window; slower cadence while the panel is closed.
+- [ ] Per-hop heatmap (time on x, hop on y, latency and loss colour) plus a
+      destination sparkline in the menu bar.
+- [ ] Configurable latency/loss thresholds, route-change events, and the shared
+      analysis target as the default destination.
+- [ ] Never more than one continuous monitor; state it in the UI.
+
+Acceptance: a ten-minute run shows per-hop bands, emits one event when the path
+changes, and keeps probe traffic below one round per second while idle.
+
+### P3.3 — Connectivity watchdog
+
+Online Check, Online Indicator, WhyFi and SimplePing all answer "is the
+internet working right now?" in the menu bar. LanFi's dot and latency metric
+only reflect the last diagnostics run, so a working link with a dead WAN looks
+healthy until the user remembers to press Run.
+
+Tasks:
+
+- [x] `NWPathMonitor` for link changes plus two probes on a configurable
+      interval (15 s–5 min), with configurable primary and fallback URLs; the
+      cadence drops to `interval × 4` (capped at five minutes) while the app is
+      inactive, like the throughput sampler.
+- [x] Tri-state verdict: online, captive portal, offline. A captive portal is
+      not "offline": a redirect, a 3xx or a 2xx HTML page without the
+      `Success` marker is reported as a portal, and only a transport failure or
+      a non-2xx/3xx status counts towards offline.
+- [x] Transition notifications with per-direction toggles, a cooldown and the
+      existing Monitor quiet hours; a single failed probe never flips a working
+      connection to offline (two-strike hysteresis), and a lost network path is
+      immediate.
+- [x] A Shortcut/App Intent that probes and returns the current state; the
+      menu-bar latency metric reads the watchdog's last sample instead of the
+      diagnostics run, and the menu-bar icon follows the verdict.
+
+Delivered 2026-11-19: `Models/ConnectivityWatchdog.swift` (verdict, classifier,
+`ConnectivityWatchdogMachine`, `ConnectivityAlertPolicy`),
+`Services/ConnectivityWatchdogService.swift` (NWPathMonitor, probe transport, timer),
+Settings → General → Connectivity watchdog, and `Tests/ConnectivityWatchdogTests.swift`.
+
+Acceptance: pulling the WAN cable flips the menu-bar state and posts exactly one
+notification; a captive portal is labelled as such; a Shortcut can branch on the
+state.
+
+### P3.4 — VPN status and leak checks
+
+VPN Peek shows whether a tunnel is up and whether DNS or IPv6 escapes it. LanFi
+lists tunnel interfaces and resolves the public IP, but never checks the leak
+path.
+
+Tasks:
+
+- [ ] Detect an active VPN from the default route and `utun`/`ipsec`
+      interfaces; show provider-agnostic state (up, interface, since).
+- [ ] DNS indicator: resolve a canary name through the system resolver and
+      compare the resolver actually used with the one pushed by the tunnel;
+      flag a LAN/ISP resolver while a VPN is up.
+- [ ] IPv6 indicator: flag a global IPv6 default route that does not belong to
+      the tunnel while the tunnel is up.
+- [ ] Notify on an unexpected drop; never query a VPN provider's API and never
+      store credentials. Label both checks as indicators, not proof.
+
+Acceptance: with a VPN up and no leak, both indicators are green; a test seam
+that swaps the resolver or adds an IPv6 default route turns the matching
+indicator red.
+
+### P3.5 — DNS resolver benchmark and opt-in switching
+
+DNS Easy Switcher ranks providers and switches the system resolver; WhyFi
+offers two presets. LanFi can query any resolver but cannot compare them or
+change the system setting.
+
+Tasks:
+
+- [ ] Benchmark: median lookup time for a fixed name set against the system,
+      Cloudflare, Google, Quad9 and custom resolvers (IPv4 and IPv6 where
+      available), three rounds, ranked.
+- [ ] Opt-in switching through `networksetup -setdnsservers` behind an admin or
+      Touch ID prompt, with a one-click revert and a cache flush
+      (`dscacheutil -flushcache` and `killall -HUP mDNSResponder`).
+- [ ] Show the current resolver and the pending change before authorizing;
+      never switch silently, never ship a preset as the default.
+
+Acceptance: the benchmark ranks resolvers in under five seconds; switching
+requires authorization, persists across a restart, and revert restores the DHCP
+resolver.
+
+### P3.6 — Per-app traffic history and domain attribution
+
+FireWally shows per-app inbound/outbound counters, contacted domains and
+hour/day history. Process Traffic shows only "since the previous sample" and
+no domains.
+
+Tasks:
+
+- [ ] Persist nettop deltas per app per hour and per day next to traffic
+      accounting; retention 7 or 30 days, CSV export.
+- [ ] Attribute contacted domains from HTTP capture and cached reverse DNS, not
+      payload; show the top domains per app.
+- [ ] Exclude LanFi's own traffic, keep the privacy note and drop query strings
+      from captured URLs.
+
+Acceptance: after one day the screen shows today's bytes per app and its top
+domains; no payload, cookies or full URLs are stored.
+
+### P3.7 — Gateway ARP and DNS-hijack detection
+
+Mojo Pulse flags ARP spoofing and DNS hijacking. Security Watch covers evil
+twins, downgrades, randomized BSSIDs and deauth bursts, but nothing below the
+Wi-Fi layer.
+
+Tasks:
+
+- [ ] Watch the default gateway's MAC in the ARP table and raise a high-severity
+      Security Watch event when it changes while the gateway IP stays the same.
+- [ ] Compare the configured resolver with the one actually used for a canary
+      lookup; flag a mismatch on a known network or under a VPN.
+- [ ] Feed both events into the Monitor event log and the existing notification
+      rules, with a per-kind toggle.
+
+Acceptance: a test seam that changes the gateway MAC produces one event and one
+notification; an unchanged MAC produces none; a resolver mismatch is labelled as
+a warning, not an attack.
+
+### P3.8 — Wired/Wi-Fi link automation
+
+LanGuard disables Wi-Fi while a physical Ethernet link is up and restores it on
+unplug, edge-triggered and wake-aware. LanFi only reads interface state.
+
+Tasks:
+
+- [ ] Observe physical Ethernet transitions; when a wired link is primary,
+      optionally power Wi-Fi off, and restore it on unplug.
+- [ ] Edge-triggered only: never override a manual Wi-Fi change between events;
+      re-apply the correct state after wake.
+- [ ] Adapter allow-list that excludes VPN, VM and bridge interfaces; a master
+      pause; off by default with a first-run explanation of the write action.
+
+Acceptance: plugging Ethernet disables Wi-Fi once, unplugging restores it, a
+manual disable while docked survives a re-plug, and pause stops all toggling.
+
+### P3.9 — SSH quick launch from saved sensors
+
+Shuttle turns a JSON host list into one-click Terminal sessions. Remote Sensors
+already store host, user, port and identity file but only run probes.
+
+Tasks:
+
+- [ ] Context action on a saved sensor and on an SSH-capable LAN device that
+      opens Terminal with `ssh -p <port> -i <identity> user@host`, fully quoted.
+- [ ] A copy-command alternative for users who keep their own terminal.
+- [ ] No password storage and no key generation.
+
+Acceptance: the action opens Terminal pre-filled for a saved sensor and the
+command contains no password.
+
+### P3.10 — Plain-language service descriptions
+
+FireWally translates domains and processes into plain language, with Apple
+Intelligence for unknown ones. Connections shows raw process names and
+endpoints.
+
+Tasks:
+
+- [ ] Bundle an offline map of common domains and processes to a one-line
+      description (for example `gateway.icloud.com` → Apple push service), so
+      the feature works on macOS 13 without a model.
+- [ ] When Foundation Models is available (macOS 26+), generate a description for
+      unknown domains on device; opt-in, no upload, and a model-unavailable
+      fallback to the bundled map.
+- [ ] Show the description in Connections and the HTTP traffic screen, with the
+      raw identifier one click away.
+
+Acceptance: known domains explain themselves offline; unknown domains read
+"Unknown service" unless the on-device model is enabled.
+
+Not planned from this source: packet-filter enforcement, ad blocking with a
+root certificate, VPN clients, share automounting, cross-device file transfer,
+CI/commute monitors and a system posture audit. The reasons are in
+[`ONMYMENUBAR_NETWORK_REVIEW_2026-11.md`](ONMYMENUBAR_NETWORK_REVIEW_2026-11.md)
+and in the non-goals below.
 
 ## Design and presentation (оформление)
 
@@ -562,6 +800,24 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-third slice (2026-11-19)
+
+- **P3.3 connectivity watchdog.** The menu bar now answers "is the internet
+  working right now?" instead of only echoing the last diagnostics run. A
+  `NWPathMonitor` plus a timed probe (`http://captive.apple.com/hotspot-detect.html`
+  with a configurable fallback) produce an online / captive-portal / offline
+  verdict; a redirect or a portal page is labelled as a portal, not as offline,
+  and one failed probe never flips a healthy link. Transition notifications
+  reuse the Monitor quiet hours with per-direction toggles and a cooldown, the
+  label icon turns into `wifi.slash` when the WAN is dead, and the latency
+  metric reads the watchdog's live sample. Settings → General gained the
+  watchdog card (interval, probe URLs, toggles), and the state is exposed to
+  Shortcuts. 13 pure tests cover the machine, classifier, policy and settings.
+- **One notification delegate.** `MonitorNotifier` is now the single shared
+  `UNUserNotificationCenter` delegate, with a generic `post` used by the
+  watchdog; the monitor reuses the shared instance instead of installing a
+  second delegate.
 
 ## Delivered in the twenty-second slice (2026-11-17)
 
@@ -950,10 +1206,11 @@ locales.
    history stats; P0.3 MVP; **D1 tokens, D3 relative time and density**.
 2. **Next (3–6 weeks):** P1.10 + D2 all-band overview and first run; P0.6
    menu-bar meter; P0.2 passive scan; P1 Security Watch and Roaming Test;
-   combined report; Shortcuts/App Intents; MCP actions; D4–D6.
+   combined report; Shortcuts/App Intents; MCP actions; **P3.3 connectivity
+   watchdog and P3.1 listener watch** (small and menu-bar visible); D4–D6.
 3. **Later (quarter):** P1.8 connections and per-process traffic; P1.9 GPS map;
-   P2.6 link telemetry; Survey Planning 2.0; spectrum hub; client analytics;
-   sandbox/MAS split; BLE/Zigbee; 802.11bn readiness; D7–D8.
+   P2.6 link telemetry; P3.2, P3.4–P3.10; Survey Planning 2.0; spectrum hub;
+   client analytics; sandbox/MAS split; BLE/Zigbee; 802.11bn readiness; D7–D8.
 
 If the product stays a free home analyzer, stop after step 1 plus Security
 Watch/Roaming. If it targets WiFi Explorer Pro, passive scan, history and
@@ -966,11 +1223,24 @@ spectrum are required.
   not a reason to build an enterprise RF planner.
 - Cloud accounts, mandatory telemetry or a hosted dashboard.
 - Windows/Linux ports before macOS signing and distribution are trustworthy.
+- Packet-filter enforcement and content/ad blocking (LuLu, AdGuard). A network
+  extension or root helper plus a TLS-intercepting proxy is a different trust
+  surface; block rules keep terminating the owning process and say so.
+- VPN clients and router-specific VPN peer management (Tunnelblick, Glinet
+  Wireguard), network-share automounting (AutoMounter) and cross-device file
+  transfer or KDE Connect features (Blip, Soduto).
+- CI, commute and download managers from the same tag (Octowatch, TimeToGo,
+  Transloader): they are not network tools.
+- System posture audit for FileVault, SIP and Gatekeeper (Mojo Pulse): macOS
+  already reports these, and only the network-layer hijack checks are planned
+  (P3.7).
 
 ## Sources
 
 - [Reference apps review, November 2026](REFERENCE_APPS_REVIEW_2026-11.md)
   (Unstore buyer's guide, NetWorker Pro, AirRadar 8, PeakHour 6)
+- [On My Menubar network tag review, November 2026](ONMYMENUBAR_NETWORK_REVIEW_2026-11.md)
+  (22 menu-bar listings, 12 relevant, 10 non-goals)
 - [WiFi Explorer Pro 3](https://www.intuitibits.com/products/wifiexplorerpro3/),
   [documentation](https://docs.intuitibits.com/wifiexplorerpro3/),
   [release notes](https://www.intuitibits.com/release-notes/wifiexplorerpro3/)

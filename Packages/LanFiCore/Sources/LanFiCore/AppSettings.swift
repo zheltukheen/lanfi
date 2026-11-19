@@ -144,6 +144,20 @@ public struct AppSettings: Codable, Equatable, Sendable {
         public init() {}
     }
 
+    /// P3.3 connectivity watchdog: interval, probe endpoints and alerts.
+    public struct ConnectivitySettings: Codable, Equatable, Sendable {
+        public var enabled = true
+        public var intervalSeconds: Double = 30
+        public var primaryProbeURL = "http://captive.apple.com/hotspot-detect.html"
+        public var fallbackProbeURL = "http://www.apple.com/library/test/success.html"
+        public var notifyOffline = true
+        public var notifyCaptivePortal = true
+        public var notifyRestored = true
+        public var cooldownMinutes = 5
+
+        public init() {}
+    }
+
     public struct CaptureSettings: Codable, Equatable, Sendable {
         public var autoOpenWireshark = false
 
@@ -231,6 +245,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var scan = ScanSettings()
     public var alerts = AlertSettings()
     public var monitor = MonitorSettings()
+    public var connectivity = ConnectivitySettings()
     public var capture = CaptureSettings()
     public var survey = SurveySettings()
     public var reports = ReportSettings()
@@ -268,6 +283,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
             && lhs.scan == rhs.scan
             && lhs.alerts == rhs.alerts
             && lhs.monitor == rhs.monitor
+            && lhs.connectivity == rhs.connectivity
             && lhs.capture == rhs.capture
             && lhs.survey == rhs.survey
             && lhs.reports == rhs.reports
@@ -309,6 +325,9 @@ public struct AppSettings: Codable, Equatable, Sendable {
         monitor =
             try container.decodeIfPresent(MonitorSettings.self, forKey: .monitor)
             ?? MonitorSettings()
+        connectivity =
+            try container.decodeIfPresent(ConnectivitySettings.self, forKey: .connectivity)
+            ?? ConnectivitySettings()
         capture =
             try container.decodeIfPresent(CaptureSettings.self, forKey: .capture)
             ?? CaptureSettings()
@@ -348,6 +367,18 @@ public struct AppSettings: Codable, Equatable, Sendable {
         }
         if ![60.0, 120, 300, 600].contains(scan.removeAfter) {
             scan.removeAfter = 120
+        }
+        if !(15...300).contains(connectivity.intervalSeconds) {
+            connectivity.intervalSeconds = 30
+        }
+        if !(0...120).contains(connectivity.cooldownMinutes) {
+            connectivity.cooldownMinutes = 5
+        }
+        if URL(string: connectivity.primaryProbeURL)?.scheme == nil {
+            connectivity.primaryProbeURL = ConnectivitySettings().primaryProbeURL
+        }
+        if URL(string: connectivity.fallbackProbeURL)?.scheme == nil {
+            connectivity.fallbackProbeURL = ConnectivitySettings().fallbackProbeURL
         }
         reports.minutes = max(reports.minutes, 5)
         layout.inspectorWidth = min(max(layout.inspectorWidth, 220), 520)

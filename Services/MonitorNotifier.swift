@@ -9,8 +9,22 @@ protocol MonitorNotifying: AnyObject {
     func requestAuthorization() async -> Bool
 }
 
+/// Plain banner posting for surfaces outside the monitor (the connectivity
+/// watchdog). The notifier is the one `UNUserNotificationCenter` delegate, so
+/// every screen posts through it instead of installing a second one.
 @MainActor
-final class MonitorNotifier: NSObject, MonitorNotifying, UNUserNotificationCenterDelegate {
+protocol ConnectivityNotifying: AnyObject {
+    func post(title: String, body: String, identifier: String)
+}
+
+@MainActor
+final class MonitorNotifier: NSObject, MonitorNotifying, ConnectivityNotifying,
+    UNUserNotificationCenterDelegate
+{
+    /// Shared so the monitor and the connectivity watchdog do not each install
+    /// a delegate on the notification center.
+    static let shared = MonitorNotifier()
+
     private let center = UNUserNotificationCenter.current()
     private var policy = MonitorAlertPolicy()
 
@@ -34,6 +48,17 @@ final class MonitorNotifier: NSObject, MonitorNotifying, UNUserNotificationCente
         } catch {
             return false
         }
+    }
+
+    func post(title: String, body: String, identifier: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: identifier, content: content, trigger: nil)
+        Task { try? await center.add(request) }
     }
 
     func notify(_ event: MonitorEvent, settings: MonitorAlertSettings) {

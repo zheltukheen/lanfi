@@ -1278,3 +1278,29 @@
 "Busiest channel" = "Canal le plus chargé";
 "Strongest signal" = "Signal le plus fort";
 "No overlap" = "Aucun chevauchement";
+
+/* Connectivity watchdog (P3.3) */
+"Connectivity" = "Connectivité";
+"Connectivity watchdog" = "Surveillance de la connexion";
+"Watch connectivity" = "Surveiller la connexion";
+"Check" = "Vérifier";
+"Check every" = "Vérifier toutes les";
+"Primary probe" = "Requête principale";
+"Fallback probe" = "Requête de secours";
+"Notify when offline" = "Notifier hors ligne";
+"Notify on a captive portal" = "Notifier un portail captif";
+"Notify when the connection returns" = "Notifier le retour de la connexion";
+"Online" = "En ligne";
+"Offline" = "Hors ligne";
+"Captive portal" = "Portail captif";
+"Not checked yet" = "Pas encore vérifié";
+"Connectivity checks are off. Turn them on in Settings → General." = "Les vérifications de connexion sont désactivées. Activez-les dans Réglages → Général.";
+"Last checked %@" = "Dernière vérification %@";
+"Internet is back." = "Internet est de retour.";
+"A captive portal is intercepting traffic. Sign in to continue." = "Un portail captif intercepte le trafic. Connectez-vous pour continuer.";
+"The internet is unreachable." = "Internet est injoignable.";
+"A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded." = "Une seule requête échouée ne change pas l’état, et les heures calmes viennent des alertes du moniteur Wi-Fi. Les requêtes sont de simples GET HTTP vers les points de détection de portail captif ; rien n’est envoyé.";
+"Checks the internet every few seconds and flips the menu-bar state when it drops." = "Vérifie Internet toutes les quelques secondes et change l’état de la barre des menus en cas de coupure.";
+"URL" = "URL";
+
+"Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "Les annotations, sessions, relevés, réglages et journaux de plantage restent sur ce Mac. Aucune télémétrie ; la seule requête en arrière-plan est la détection de portail captif, désactivable ci-dessus.";

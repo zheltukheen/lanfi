@@ -1278,3 +1278,29 @@
 "Busiest channel" = "最繁忙的信道";
 "Strongest signal" = "最强信号";
 "No overlap" = "无重叠";
+
+/* Connectivity watchdog (P3.3) */
+"Connectivity" = "连接状态";
+"Connectivity watchdog" = "连接监控";
+"Watch connectivity" = "监控连接";
+"Check" = "检查";
+"Check every" = "检查间隔";
+"Primary probe" = "主检测地址";
+"Fallback probe" = "备用检测地址";
+"Notify when offline" = "离线时通知";
+"Notify on a captive portal" = "强制门户时通知";
+"Notify when the connection returns" = "连接恢复时通知";
+"Online" = "在线";
+"Offline" = "离线";
+"Captive portal" = "强制门户";
+"Not checked yet" = "尚未检查";
+"Connectivity checks are off. Turn them on in Settings → General." = "连接检查已关闭。请在“设置 → 通用”中开启。";
+"Last checked %@" = "上次检查 %@";
+"Internet is back." = "网络已恢复。";
+"A captive portal is intercepting traffic. Sign in to continue." = "强制门户正在拦截流量。请登录后继续。";
+"The internet is unreachable." = "无法访问互联网。";
+"A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded." = "单次检测失败不会切换状态，静音时段沿用 Wi-Fi 监控的提醒设置。检测仅为发往强制门户探测地址的普通 HTTP GET，不会上传任何内容。";
+"Checks the internet every few seconds and flips the menu-bar state when it drops." = "每隔几秒检查互联网，断网时更新菜单栏状态。";
+"URL" = "URL";
+
+"Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above." = "标注、会话、勘测、设置与崩溃日志都保留在这台 Mac 上。LanFi 没有遥测；唯一的后台请求是连接监控的强制门户检测，可在上方关闭。";

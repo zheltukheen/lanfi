@@ -35,6 +35,7 @@ struct LanFiApp: App {
     @StateObject private var toolkit = ToolkitViewModel()
     @StateObject private var uptime = UptimeMonitor()
     @StateObject private var meter = MenuBarMeterModel()
+    @StateObject private var connectivity = ConnectivityWatchdog.shared
     @AppStorage("LanFi.highContrast") private var highContrast = false
     @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false
     @AppStorage("LanFi.appearance") private var appearance = "system"
@@ -70,7 +71,10 @@ struct LanFiApp: App {
                 .environmentObject(toolkit)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
-                .onAppear { meter.start() }
+                .onAppear {
+                    meter.start()
+                    connectivity.start()
+                }
                 .sheet(
                     isPresented: Binding(
                         get: { !hasCompletedFirstRun },
@@ -128,6 +132,7 @@ struct LanFiApp: App {
                         Task { await OUIUpdater.runScheduledUpdateIfNeeded() }
                     }
                     meter.setApplicationActive(newPhase == .active)
+                    connectivity.setApplicationActive(newPhase == .active)
                 }
         }
         .commands {
@@ -175,13 +180,15 @@ struct LanFiApp: App {
 
         MenuBarExtra {
             MenuBarView(
-                viewModel: viewModel, diagnostics: diagnostics, uptime: uptime, meter: meter
+                viewModel: viewModel, diagnostics: diagnostics, uptime: uptime, meter: meter,
+                connectivity: connectivity
             )
             .environmentObject(uiState)
             .environmentObject(toolkit)
         } label: {
             MenuBarLabel(
-                meter: meter, viewModel: viewModel, diagnostics: diagnostics, uptime: uptime)
+                meter: meter, viewModel: viewModel, diagnostics: diagnostics, uptime: uptime,
+                connectivity: connectivity)
         }
         .menuBarExtraStyle(.window)
     }

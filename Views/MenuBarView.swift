@@ -7,6 +7,7 @@ struct MenuBarView: View {
     @ObservedObject var diagnostics: DiagnosticsViewModel
     @ObservedObject var uptime: UptimeMonitor
     @ObservedObject var meter: MenuBarMeterModel
+    @ObservedObject var connectivity: ConnectivityWatchdog
     @EnvironmentObject private var uiState: AppUIState
     @EnvironmentObject private var toolkit: ToolkitViewModel
     @Environment(\.openWindow) private var openWindow
@@ -44,6 +45,7 @@ struct MenuBarView: View {
 
             throughputCard
             linkCard
+            connectivityCard
             latencyCard
             publicIPRow
 
@@ -105,7 +107,10 @@ struct MenuBarView: View {
         }
         .padding(DesignToken.Spacing.medium)
         .frame(width: 320)
-        .onAppear { meter.start() }
+        .onAppear {
+            meter.start()
+            connectivity.start()
+        }
     }
 
     // MARK: - Blocks
@@ -250,6 +255,62 @@ struct MenuBarView: View {
                     }
                 }
             }
+        }
+    }
+
+    private var connectivityCard: some View {
+        AppCard(padding: DesignToken.Spacing.small) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(connectivityColor)
+                        .frame(width: 7, height: 7)
+                    SectionLabel(text: "Connectivity")
+                    Spacer()
+                    if connectivity.isChecking {
+                        ProgressView().controlSize(.mini)
+                    } else {
+                        Text(connectivity.verdict.title)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Button("Check") {
+                        Task { await connectivity.checkNow() }
+                    }
+                    .controlSize(.mini)
+                    .disabled(connectivity.isChecking || !connectivity.isEnabled)
+                }
+                if !connectivity.isEnabled {
+                    Text("Connectivity checks are off. Turn them on in Settings → General.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else if let latency = connectivity.latencyMilliseconds,
+                    connectivity.verdict.isOnline
+                {
+                    Text("\(latency) ms · checked \(checkedAtText)")
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(.secondary)
+                } else if let checkedAtText {
+                    Text("Last checked \(checkedAtText)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+
+    private var checkedAtText: String? {
+        connectivity.lastCheckedAt.map {
+            $0.formatted(date: .omitted, time: .standard)
+        }
+    }
+
+    private var connectivityColor: Color {
+        switch connectivity.verdict {
+        case .online: return AppPalette.ok
+        case .captivePortal: return AppPalette.warning
+        case .offline: return AppPalette.danger
+        case .unknown: return AppPalette.muted
         }
     }
 

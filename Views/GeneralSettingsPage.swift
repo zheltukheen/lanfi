@@ -30,6 +30,7 @@ struct GeneralSettingsPage: View {
                 startupCard
                 updatesCard
                 menuBarCard
+                connectivityCard
                 displayCard
                 dataCard
                 helpCard
@@ -204,6 +205,41 @@ struct GeneralSettingsPage: View {
         }
     }
 
+    private var connectivityCard: some View {
+        SettingsCard(title: "Connectivity watchdog", icon: "network") {
+            Toggle("Watch connectivity", isOn: connectivityBinding(\.enabled))
+                .help("Checks the internet every few seconds and flips the menu-bar state when it drops.")
+            LabeledContent("Check every") {
+                Picker("Check every", selection: connectivityBinding(\.intervalSeconds)) {
+                    Text("15 s").tag(15.0)
+                    Text("30 s").tag(30.0)
+                    Text("1 min").tag(60.0)
+                    Text("2 min").tag(120.0)
+                    Text("5 min").tag(300.0)
+                }
+                .labelsHidden()
+                .frame(width: 110)
+            }
+            LabeledContent("Primary probe") {
+                TextField("URL", text: connectivityBinding(\.primaryProbeURL))
+                    .labelsHidden()
+                    .textFieldStyle(.roundedBorder)
+            }
+            LabeledContent("Fallback probe") {
+                TextField("URL", text: connectivityBinding(\.fallbackProbeURL))
+                    .labelsHidden()
+                    .textFieldStyle(.roundedBorder)
+            }
+            Toggle("Notify when offline", isOn: connectivityBinding(\.notifyOffline))
+            Toggle("Notify on a captive portal", isOn: connectivityBinding(\.notifyCaptivePortal))
+            Toggle("Notify when the connection returns", isOn: connectivityBinding(\.notifyRestored))
+            Text(
+                "A single failed probe never flips the state, and quiet hours come from the Wi-Fi Monitor alerts. Probes are plain HTTP GETs to the captive-portal endpoints; nothing is uploaded."
+            )
+            .settingsHint()
+        }
+    }
+
     private var displayCard: some View {
         SettingsCard(title: "Display", icon: "rectangle.3.group") {
             Toggle("Hide empty graphs", isOn: binding(\.hideEmptyGraphs))
@@ -232,7 +268,7 @@ struct GeneralSettingsPage: View {
                 Text(settingsMessage).settingsHint()
             }
             Text(
-                "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry and makes no background network calls."
+                "Annotations, sessions, surveys, settings and crash logs stay on this Mac. LanFi has no telemetry; the only background request is the connectivity watchdog's captive-portal probe, which you can turn off above."
             )
             .settingsHint()
         }
@@ -285,6 +321,20 @@ struct GeneralSettingsPage: View {
             set: { newValue in
                 var updated = settings
                 updated.menuBar[keyPath: keyPath] = newValue
+                settings = updated
+                AppSettingsStore.shared.save(updated)
+            }
+        )
+    }
+
+    private func connectivityBinding<T>(
+        _ keyPath: WritableKeyPath<AppSettings.ConnectivitySettings, T>
+    ) -> Binding<T> {
+        Binding(
+            get: { settings.connectivity[keyPath: keyPath] },
+            set: { newValue in
+                var updated = settings
+                updated.connectivity[keyPath: keyPath] = newValue
                 settings = updated
                 AppSettingsStore.shared.save(updated)
             }

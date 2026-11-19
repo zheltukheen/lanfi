@@ -229,6 +229,20 @@ public final class AppSettingsStore: @unchecked Sendable {
                 rawValue: string(.monitorRetention, settings.monitor.retention.rawValue))
             ?? settings.monitor.retention
 
+        settings.connectivity.enabled = bool(.connectivityEnabled, settings.connectivity.enabled)
+        settings.connectivity.intervalSeconds = double(
+            .connectivityInterval, settings.connectivity.intervalSeconds)
+        settings.connectivity.primaryProbeURL = string(
+            .connectivityPrimaryURL, settings.connectivity.primaryProbeURL)
+        settings.connectivity.fallbackProbeURL = string(
+            .connectivityFallbackURL, settings.connectivity.fallbackProbeURL)
+        settings.connectivity.notifyOffline = bool(
+            .connectivityNotifyOffline, settings.connectivity.notifyOffline)
+        settings.connectivity.notifyCaptivePortal = bool(
+            .connectivityNotifyCaptive, settings.connectivity.notifyCaptivePortal)
+        settings.connectivity.notifyRestored = bool(
+            .connectivityNotifyRestored, settings.connectivity.notifyRestored)
+
         settings.capture.autoOpenWireshark = bool(
             .captureAutoWireshark, settings.capture.autoOpenWireshark)
 
@@ -314,6 +328,26 @@ public final class AppSettingsStore: @unchecked Sendable {
         storage.set(settings.monitor.recording, forKey: AppSettingsKey.monitorRecording.rawValue)
         storage.set(
             settings.monitor.retention.rawValue, forKey: AppSettingsKey.monitorRetention.rawValue)
+
+        storage.set(
+            settings.connectivity.enabled, forKey: AppSettingsKey.connectivityEnabled.rawValue)
+        storage.set(
+            settings.connectivity.intervalSeconds, forKey: AppSettingsKey.connectivityInterval.rawValue)
+        storage.set(
+            settings.connectivity.primaryProbeURL,
+            forKey: AppSettingsKey.connectivityPrimaryURL.rawValue)
+        storage.set(
+            settings.connectivity.fallbackProbeURL,
+            forKey: AppSettingsKey.connectivityFallbackURL.rawValue)
+        storage.set(
+            settings.connectivity.notifyOffline,
+            forKey: AppSettingsKey.connectivityNotifyOffline.rawValue)
+        storage.set(
+            settings.connectivity.notifyCaptivePortal,
+            forKey: AppSettingsKey.connectivityNotifyCaptive.rawValue)
+        storage.set(
+            settings.connectivity.notifyRestored,
+            forKey: AppSettingsKey.connectivityNotifyRestored.rawValue)
 
         storage.set(
             settings.capture.autoOpenWireshark, forKey: AppSettingsKey.captureAutoWireshark.rawValue)

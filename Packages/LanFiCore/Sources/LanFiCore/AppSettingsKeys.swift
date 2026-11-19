@@ -69,6 +69,16 @@ public enum AppSettingsKey: String, CaseIterable, Sendable {
     case monitorRetention = "LanFi.monitor.retention"
     case monitorAlerts = "LanFi.monitor.alerts"
 
+    // MARK: Connectivity watchdog
+
+    case connectivityEnabled = "LanFi.connectivity.enabled"
+    case connectivityInterval = "LanFi.connectivity.interval"
+    case connectivityPrimaryURL = "LanFi.connectivity.primaryURL"
+    case connectivityFallbackURL = "LanFi.connectivity.fallbackURL"
+    case connectivityNotifyOffline = "LanFi.connectivity.notify.offline"
+    case connectivityNotifyCaptive = "LanFi.connectivity.notify.captive"
+    case connectivityNotifyRestored = "LanFi.connectivity.notify.restored"
+
     // MARK: Capture, survey and reports
 
     case captureAutoWireshark = "LanFi.capture.autoWireshark"

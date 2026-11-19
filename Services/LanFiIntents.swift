@@ -2,6 +2,7 @@
     import AppIntents
     import CoreWLAN
     import Foundation
+    import LanFiCore
 
     /// App Intents keep LanFi usable from Shortcuts without a visible window.
     /// They only read the radio, exactly like the app; nothing is uploaded.
@@ -63,6 +64,28 @@
         }
     }
 
+    /// P3.3: a Shortcut can branch on the current connectivity state.
+    @available(macOS 13.0, *)
+    struct LanFiConnectivityStateIntent: AppIntent {
+        static var title: LocalizedStringResource = "Check the internet connection"
+        static var description = IntentDescription(
+            "Probes the internet and reports online, captive portal or offline.")
+        static var openAppWhenRun: Bool = false
+
+        func perform() async throws -> some IntentResult & ProvidesDialog {
+            let settings = AppSettingsStore.shared.settings.connectivity
+            let probe = ConnectivityHTTPProbe()
+            var outcome = await probe.probe(urlString: settings.primaryProbeURL)
+            if outcome.didFail {
+                outcome = await probe.probe(urlString: settings.fallbackProbeURL)
+            }
+            let verdict = ConnectivityProbeClassifier.classify(outcome)
+            let latency = outcome.latencyMilliseconds.map { " \($0) ms" } ?? ""
+            return .result(
+                dialog: IntentDialog(stringLiteral: verdict.title + latency))
+        }
+    }
+
     @available(macOS 13.0, *)
     struct LanFiAppShortcuts: AppShortcutsProvider {
         static var appShortcuts: [AppShortcut] {
@@ -77,6 +100,12 @@
                 phrases: ["What network am I on in \(.applicationName)"],
                 shortTitle: "Connected network",
                 systemImageName: "wifi.circle"
+            )
+            AppShortcut(
+                intent: LanFiConnectivityStateIntent(),
+                phrases: ["Check the internet in \(.applicationName)"],
+                shortTitle: "Connectivity",
+                systemImageName: "network"
             )
             AppShortcut(
                 intent: LanFiSpeedTestIntent(),

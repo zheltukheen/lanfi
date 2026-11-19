@@ -45,6 +45,7 @@ struct MenuBarLabel: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     @ObservedObject var diagnostics: DiagnosticsViewModel
     @ObservedObject var uptime: UptimeMonitor
+    @ObservedObject var connectivity: ConnectivityWatchdog
 
     @AppStorage(AppSettingsKey.menuBarStyle.rawValue) private var styleRaw = AppSettings.MenuBarMeterSettings.LabelStyle
         .iconAndGraph
@@ -94,8 +95,23 @@ struct MenuBarLabel: View {
             guard let connected, let metrics = viewModel.metrics(for: connected) else { return "—" }
             return "\\(metrics.qualityScore)"
         case .latency:
-            guard let latency = diagnostics.publicLatencyMilliseconds else { return "—" }
+            // The watchdog samples every few seconds, so the label reflects the
+            // link now instead of the last manual diagnostics run.
+            let latency =
+                connectivity.latencyMilliseconds ?? diagnostics.publicLatencyMilliseconds
+            guard let latency else { return "—" }
             return "\\(latency)"
+        }
+    }
+
+    /// The menu-bar icon follows the watchdog verdict, so a dead WAN looks
+    /// different from a healthy Wi-Fi link.
+    private var statusSymbol: String {
+        switch connectivity.verdict {
+        case .offline: return "wifi.slash"
+        case .captivePortal: return "lock.fill"
+        case .online, .unknown:
+            return uptime.downCount > 0 ? "exclamationmark.triangle" : "wifi"
         }
     }
 
@@ -108,13 +124,15 @@ struct MenuBarLabel: View {
         case .quality:
             return "Quality " + metricText
         case .latency:
-            return "Latency " + metricText
+            let verdict = connectivity.verdict
+            let state = verdict == .unknown ? "" : ", \(verdict.title)"
+            return "Latency " + metricText + state
         }
     }
 
     var body: some View {
         HStack(spacing: DesignToken.Spacing.tight) {
-            Image(systemName: uptime.downCount > 0 ? "exclamationmark.triangle" : "wifi")
+            Image(systemName: statusSymbol)
                 .symbolRenderingMode(.monochrome)
             if showsGraph {
                 MenuBarSparkline(values: meter.samples, tint: .primary)
