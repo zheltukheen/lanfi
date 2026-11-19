@@ -255,6 +255,7 @@ targets:
       - path: Models/ThroughputSample.swift
       - path: Services/SurveyHeatmap.swift
       - path: Models/DNSBenchmark.swift
+      - path: Models/SignalBarMetrics.swift
       - path: Services/DNSBenchmarkService.swift
       - path: Services/ScanCSVExporter.swift
       - path: Services/ScanJSONExporter.swift

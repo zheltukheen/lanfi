@@ -180,16 +180,23 @@ final class WiFiTableCellView: NSTableCellView {
         }
 
         if let columnWidth {
-            // The bar fills every point the number does not need, so widening
-            // the column widens the bar instead of leaving a dead gutter, and
-            // a 6 pt gap always separates the bar from the figure.
-            let textWidth = ceil(textFieldLabel.intrinsicContentSize.width)
-            let measured = textWidth > 0 ? textWidth : columnWidth * 0.3
-            let available = columnWidth - measured - 5 - 6 - 6
-            barWidthConstraint?.constant = max(12, available)
+            // Measure the drawn text, not `intrinsicContentSize`: that property
+            // returns -1 or the untruncated width for a constrained label, which
+            // collapsed the bar or let it run under the number.
+            let measured = Self.textWidth(of: textFieldLabel.stringValue, font: textFieldLabel.font)
+            let width = SignalBarMetrics.barWidth(
+                columnWidth: Double(columnWidth), textWidth: Double(measured))
+            barWidthConstraint?.constant = CGFloat(width)
         }
 
         apply(visual: visual)
+    }
+
+    /// Width of the string as AppKit will draw it, rounded up to whole points.
+    private static func textWidth(of string: String, font: NSFont?) -> CGFloat {
+        guard !string.isEmpty, let font else { return 0 }
+        let width = (string as NSString).size(withAttributes: [.font: font]).width
+        return width.isFinite ? ceil(width) : 0
     }
 
     /// Exactly one leading rule is active at a time so a reused cell never
