@@ -1426,3 +1426,25 @@
 "The system resolver and the public resolver agree." = "System- und öffentlicher Resolver stimmen überein.";
 "The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "Der System-Resolver lieferte für %@ eine andere Adresse als der öffentliche Resolver. Das ist eine Warnung: CDNs variieren je nach Resolver, aber ein Hijack oder ein filternder DNS sieht genauso aus.";
 "Not enough answers to compare." = "Nicht genug Antworten zum Vergleichen.";
+
+/* VPN state and leak indicators (P3.4) */
+"VPN dropped" = "VPN getrennt";
+"Possible VPN leak" = "Mögliches VPN-Leck";
+"VPN and leaks" = "VPN und Lecks";
+"Tunnel" = "Tunnel";
+"Up" = "Aktiv";
+"Clear" = "Sauber";
+"Possible leak" = "Mögliches Leck";
+"No VPN tunnel detected." = "Kein VPN-Tunnel erkannt.";
+"The default route goes through %@." = "Die Standardroute läuft über %@.";
+"A tunnel interface is up but it does not carry the default route." = "Eine Tunnelschnittstelle ist aktiv, trägt aber nicht die Standardroute.";
+"The resolver in use belongs to the tunnel." = "Der verwendete Resolver gehört zum Tunnel.";
+"The tunnel pushes %1$@ but the system resolver is %2$@. Lookups may leave the tunnel. Indicator only: split DNS does this legitimately." = "Der Tunnel gibt %1$@ vor, der System-Resolver ist aber %2$@. Abfragen können den Tunnel verlassen. Nur ein Hinweis: Split-DNS tut das legitim.";
+"Not enough resolver information to judge." = "Zu wenig Resolver-Informationen.";
+"No IPv6 default route escapes the tunnel." = "Keine IPv6-Standardroute verlässt den Tunnel.";
+"A global IPv6 default route leaves through %@ while the tunnel is up, so IPv6 traffic may bypass it." = "Eine globale IPv6-Standardroute verlässt den Tunnel über %@, während der Tunnel aktiv ist; IPv6-Verkehr kann ihn umgehen.";
+"No tunnel to check IPv6 against." = "Kein Tunnel für die IPv6-Prüfung.";
+"The VPN tunnel went down unexpectedly." = "Der VPN-Tunnel wurde unerwartet getrennt.";
+"Watch VPN state and leaks" = "VPN-Status und Lecks überwachen";
+"Shows whether a tunnel is up and flags a resolver or IPv6 default route that looks like it bypasses it. Local reads only: no provider API and no credentials." = "Zeigt, ob ein Tunnel aktiv ist, und markiert einen Resolver oder eine IPv6-Standardroute, die ihn zu umgehen scheint. Nur lokale Lesezugriffe: keine Provider-API, keine Zugangsdaten.";
+"VPN: the tunnel is detected from the default route and up `utun`/`ipsec`/`ppp` interfaces; a DNS leak is reported when the resolver actually in use is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default route leaves through a non-tunnel interface. Both are indicators, not proof — split DNS and split-default tunnels do this legitimately." = "VPN: Der Tunnel wird an der Standardroute und aktiven `utun`/`ipsec`/`ppp`-Schnittstellen erkannt; ein DNS-Leck, wenn der genutzte Resolver nicht vom Tunnel kommt, ein IPv6-Leck, wenn eine globale IPv6-Standardroute über eine Nicht-Tunnelschnittstelle läuft. Beides sind Hinweise, kein Beweis: Split-DNS und Split-Default-Tunnel tun das legitim.";

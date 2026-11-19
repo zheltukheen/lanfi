@@ -361,6 +361,8 @@ struct MonitorView: View {
         case .roamingFailure: return "arrow.triangle.2.circlepath.circle"
         case .gatewayChanged: return "exclamationmark.shield"
         case .dnsMismatch: return "questionmark.circle"
+        case .vpnDropped: return "lock.slash"
+        case .vpnLeak: return "lock.trianglebadge.exclamationmark"
         }
     }
 
@@ -376,6 +378,8 @@ struct MonitorView: View {
         case .roamingFailure: return .orange
         case .gatewayChanged: return .red
         case .dnsMismatch: return .orange
+        case .vpnDropped: return .red
+        case .vpnLeak: return .orange
         }
     }
 

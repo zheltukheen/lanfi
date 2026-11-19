@@ -278,6 +278,7 @@ public final class AppSettingsStore: @unchecked Sendable {
             .serviceDescriptions, settings.automation.serviceDescriptions)
         settings.automation.gatewayGuard = bool(
             .gatewayGuard, settings.automation.gatewayGuard)
+        settings.automation.vpnGuard = bool(.vpnGuard, settings.automation.vpnGuard)
         settings.automation.autoUpdateOUI = bool(
             .autoUpdateOUI, settings.automation.autoUpdateOUI)
 
@@ -385,6 +386,7 @@ public final class AppSettingsStore: @unchecked Sendable {
             settings.automation.serviceDescriptions,
             forKey: AppSettingsKey.serviceDescriptions.rawValue)
         storage.set(settings.automation.gatewayGuard, forKey: AppSettingsKey.gatewayGuard.rawValue)
+        storage.set(settings.automation.vpnGuard, forKey: AppSettingsKey.vpnGuard.rawValue)
         storage.set(settings.automation.autoUpdateOUI, forKey: AppSettingsKey.autoUpdateOUI.rawValue)
 
         storage.set(

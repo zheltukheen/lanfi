@@ -50,6 +50,10 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
     case gatewayChanged
     /// P3.7: the system resolver disagreed with a public resolver.
     case dnsMismatch
+    /// P3.4: a tunnel that was up is gone.
+    case vpnDropped
+    /// P3.4: DNS or IPv6 appears to bypass the tunnel.
+    case vpnLeak
 
     var title: String {
         switch self {
@@ -63,6 +67,8 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
         case .roamingFailure: return String(localized: "Roaming failure")
         case .gatewayChanged: return String(localized: "Gateway MAC changed")
         case .dnsMismatch: return String(localized: "DNS answer mismatch")
+        case .vpnDropped: return String(localized: "VPN dropped")
+        case .vpnLeak: return String(localized: "Possible VPN leak")
         }
     }
 }

@@ -53,6 +53,16 @@
   Security Watch screen, each with its own alert toggle; the guard is on by
   default and can be switched off in Settings → General.
 
+### Added (VPN and leak indicators)
+- **VPN state and leak indicators.** LanFi now detects an active tunnel from the
+  local route table and up `utun`/`ipsec`/`ppp` interfaces, and shows two
+  indicators on the Security Watch screen: a DNS leak when the resolver in use
+  is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default
+  route leaves through a non-tunnel interface. An unexpected drop and a new leak
+  raise "VPN dropped" / "Possible VPN leak" Monitor events, each with its own
+  alert toggle. Everything is a local read — no provider API, no credentials —
+  and both indicators are explicitly labelled as indicators, not proof.
+
 ### Changed
 - `MonitorNotifier` is the single shared notification delegate; the connectivity
   watchdog posts through it instead of installing a second one.

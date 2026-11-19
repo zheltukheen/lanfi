@@ -1463,3 +1463,25 @@
 "The system resolver and the public resolver agree." = "Системный и публичный резолверы отвечают одинаково.";
 "The system resolver returned a different address than the public resolver for %@. This is a warning: CDNs vary by resolver, but a hijack or a filtering DNS looks the same." = "Системный резолвер вернул для %@ другой адрес, чем публичный. Это предупреждение: CDN отвечают по-разному, но перехват или фильтрующий DNS выглядит так же.";
 "Not enough answers to compare." = "Недостаточно ответов для сравнения.";
+
+/* VPN state and leak indicators (P3.4) */
+"VPN dropped" = "VPN отключился";
+"Possible VPN leak" = "Возможная утечка VPN";
+"VPN and leaks" = "VPN и утечки";
+"Tunnel" = "Туннель";
+"Up" = "Активен";
+"Clear" = "Чисто";
+"Possible leak" = "Возможная утечка";
+"No VPN tunnel detected." = "VPN-туннель не обнаружен.";
+"The default route goes through %@." = "Маршрут по умолчанию идёт через %@.";
+"A tunnel interface is up but it does not carry the default route." = "Туннельный интерфейс активен, но не несёт маршрут по умолчанию.";
+"The resolver in use belongs to the tunnel." = "Используемый резолвер принадлежит туннелю.";
+"The tunnel pushes %1$@ but the system resolver is %2$@. Lookups may leave the tunnel. Indicator only: split DNS does this legitimately." = "Туннель предлагает %1$@, а системный резолвер — %2$@. Запросы могут уходить мимо туннеля. Это индикатор: split DNS делает так законно.";
+"Not enough resolver information to judge." = "Недостаточно данных о резолверах.";
+"No IPv6 default route escapes the tunnel." = "Маршрут IPv6 по умолчанию не выходит из туннеля.";
+"A global IPv6 default route leaves through %@ while the tunnel is up, so IPv6 traffic may bypass it." = "Глобальный маршрут IPv6 по умолчанию идёт через %@, пока туннель активен, поэтому IPv6-трафик может обходить его.";
+"No tunnel to check IPv6 against." = "Нет туннеля для проверки IPv6.";
+"The VPN tunnel went down unexpectedly." = "VPN-туннель неожиданно отключился.";
+"Watch VPN state and leaks" = "Следить за VPN и утечками";
+"Shows whether a tunnel is up and flags a resolver or IPv6 default route that looks like it bypasses it. Local reads only: no provider API and no credentials." = "Показывает, активен ли туннель, и отмечает резолвер или маршрут IPv6 по умолчанию, которые выглядят как обход туннеля. Только локальное чтение: без API провайдера и без учётных данных.";
+"VPN: the tunnel is detected from the default route and up `utun`/`ipsec`/`ppp` interfaces; a DNS leak is reported when the resolver actually in use is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default route leaves through a non-tunnel interface. Both are indicators, not proof — split DNS and split-default tunnels do this legitimately." = "VPN: туннель определяется по маршруту по умолчанию и активным интерфейсам `utun`/`ipsec`/`ppp`; утечка DNS — когда используемый резолвер не из тех, что предложил туннель; утечка IPv6 — когда глобальный маршрут IPv6 по умолчанию идёт через нетуннельный интерфейс. Это индикаторы, а не доказательство: split DNS и split-default туннели делают так законно.";

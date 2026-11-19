@@ -11,6 +11,9 @@ struct MonitorAlertSettings: Codable, Equatable {
     /// P3.7
     var gatewayChange: Bool = true
     var dnsMismatch: Bool = true
+    /// P3.4
+    var vpnDrop: Bool = true
+    var vpnLeak: Bool = true
 
     var quietHoursEnabled: Bool = false
     var quietStartHour: Int = 22
@@ -21,7 +24,7 @@ struct MonitorAlertSettings: Codable, Equatable {
 
     var anyEnabled: Bool {
         weakSignal || disconnect || roam || channelChange || securityChange || deauthBurst
-            || roamingFailure || gatewayChange || dnsMismatch
+            || roamingFailure || gatewayChange || dnsMismatch || vpnDrop || vpnLeak
     }
 
     func isEnabled(for kind: MonitorEventKind) -> Bool {
@@ -35,13 +38,15 @@ struct MonitorAlertSettings: Codable, Equatable {
         case .roamingFailure: return roamingFailure
         case .gatewayChanged: return gatewayChange
         case .dnsMismatch: return dnsMismatch
+        case .vpnDropped: return vpnDrop
+        case .vpnLeak: return vpnLeak
         case .connected: return false
         }
     }
 
     private enum CodingKeys: String, CodingKey {
         case weakSignal, disconnect, roam, channelChange, securityChange, deauthBurst,
-            roamingFailure, gatewayChange, dnsMismatch
+            roamingFailure, gatewayChange, dnsMismatch, vpnDrop, vpnLeak
         case quietHoursEnabled, quietStartHour, quietEndHour, cooldownMinutes
     }
 
@@ -59,6 +64,8 @@ struct MonitorAlertSettings: Codable, Equatable {
             try container.decodeIfPresent(Bool.self, forKey: .roamingFailure) ?? true
         gatewayChange = try container.decodeIfPresent(Bool.self, forKey: .gatewayChange) ?? true
         dnsMismatch = try container.decodeIfPresent(Bool.self, forKey: .dnsMismatch) ?? true
+        vpnDrop = try container.decodeIfPresent(Bool.self, forKey: .vpnDrop) ?? true
+        vpnLeak = try container.decodeIfPresent(Bool.self, forKey: .vpnLeak) ?? true
         quietHoursEnabled =
             try container.decodeIfPresent(Bool.self, forKey: .quietHoursEnabled) ?? false
         quietStartHour = try container.decodeIfPresent(Int.self, forKey: .quietStartHour) ?? 22

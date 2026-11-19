@@ -16,6 +16,11 @@ reporting, advertising, accounts, or any network telemetry.
 - **UserDefaults** to remember window layout, column configuration, refresh
   interval, filters and display preferences on your Mac.
 
+- **Route table and resolver configuration** (`netstat`, `scutil --dns`) to show
+  whether a VPN is up and whether DNS or IPv6 appears to bypass it. These are
+  local reads only: LanFi never contacts a VPN provider and never reads or stores
+  credentials.
+
 ## Network requests
 
 LanFi makes only these outbound requests:

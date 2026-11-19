@@ -198,6 +198,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         public var serviceDescriptions = false
         /// P3.7: watch the gateway ARP entry and the resolver answer.
         public var gatewayGuard = true
+        /// P3.4: show VPN state and DNS/IPv6 leak indicators.
+        public var vpnGuard = true
         public var autoUpdateOUI = true
 
         public init() {}

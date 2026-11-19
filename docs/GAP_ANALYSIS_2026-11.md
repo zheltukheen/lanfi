@@ -454,15 +454,23 @@ path.
 
 Tasks:
 
-- [ ] Detect an active VPN from the default route and `utun`/`ipsec`
-      interfaces; show provider-agnostic state (up, interface, since).
-- [ ] DNS indicator: resolve a canary name through the system resolver and
-      compare the resolver actually used with the one pushed by the tunnel;
-      flag a LAN/ISP resolver while a VPN is up.
-- [ ] IPv6 indicator: flag a global IPv6 default route that does not belong to
-      the tunnel while the tunnel is up.
-- [ ] Notify on an unexpected drop; never query a VPN provider's API and never
-      store credentials. Label both checks as indicators, not proof.
+- [x] Detect an active VPN from the default route and `utun`/`ipsec`
+      interfaces (`VPNDetector`, full and split tunnels); show provider-agnostic
+      state (up, interface).
+- [x] DNS indicator: parse `scutil --dns` resolver blocks, compare the resolver
+      actually in use with the one the tunnel pushed, and flag a resolver
+      outside the tunnel (`VPNDNSIntegrity`).
+- [x] IPv6 indicator: flag a global IPv6 default route that does not belong to
+      the tunnel while the tunnel is up (`VPNIPv6Integrity`).
+- [x] Notify on an unexpected drop via a `vpnDropped` Monitor event and a
+      `vpnLeak` warning; no provider API, no credentials. Both checks are
+      labelled as indicators, not proof.
+
+Delivered 2026-11-19: `Models/VPNGuard.swift` (detector, `scutil --dns` and
+`netstat` parsers, both verdicts), `Services/VPNGuardService.swift` (20 s poll,
+published `VPNGuardReport`, drop/leak events through `.lanFiSecurityEvent`),
+two new `MonitorEventKind` cases with toggles, the Security Watch VPN card and
+`Tests/VPNGuardTests.swift` (13 tests).
 
 Acceptance: with a VPN up and no leak, both indicators are green; a test seam
 that swaps the resolver or adds an IPv6 default route turns the matching
@@ -836,6 +844,19 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the twenty-eighth slice (2026-11-19)
+
+- **P3.4 VPN status and leak indicators.** `VPNGuard` polls the local route
+  tables and `scutil --dns` every 20 seconds: a tunnel is detected from the
+  default route or an up `utun`/`ipsec`/`ppp` interface, a DNS indicator reports
+  when the resolver in use is not one the tunnel pushed, and an IPv6 indicator
+  reports a global IPv6 default route leaving through a non-tunnel interface.
+  Both are worded as indicators, not proof. An unexpected tunnel drop and a new
+  leak raise `VPN dropped` / `Possible VPN leak` Monitor events with their own
+  alert toggles, the Security Watch screen gained a "VPN and leaks" card with
+  the tunnel, DNS and IPv6 state, and the guard is on by default with a switch
+  in Settings → General. No provider API is queried and no credential is read.
 
 ## Delivered in the twenty-seventh slice (2026-11-19)
 

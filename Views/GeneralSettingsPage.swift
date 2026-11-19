@@ -272,6 +272,11 @@ struct GeneralSettingsPage: View {
                 "Re-reads the default gateway's MAC from the ARP table every 2 minutes and compares a canary DNS lookup with Cloudflare every 10 minutes. Only that lookup leaves the Mac; findings stay local."
             )
             .settingsHint()
+            Toggle("Watch VPN state and leaks", isOn: binding(\.automation.vpnGuard))
+            Text(
+                "Shows whether a tunnel is up and flags a resolver or IPv6 default route that looks like it bypasses it. Local reads only: no provider API and no credentials."
+            )
+            .settingsHint()
             if ServiceDescriptionResolver.isModelAvailable {
                 Toggle(
                     "Describe unknown services with the on-device model",

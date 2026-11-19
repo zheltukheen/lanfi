@@ -6,6 +6,7 @@ struct SecurityWatchToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
     @ObservedObject var monitor: MonitorViewModel
     @StateObject private var gatewayGuard = GatewayGuard.shared
+    @StateObject private var vpnGuard = VPNGuard.shared
 
     private var report: SecurityWatchReport {
         SecurityWatchEvaluator.evaluate(networks: analyzer.networks, events: monitor.events)
@@ -23,6 +24,7 @@ struct SecurityWatchToolView: View {
             VStack(alignment: .leading, spacing: 14) {
                 summary
                 integrityCard
+                vpnCard
                 if report.alerts.isEmpty {
                     cleanState
                 } else {
@@ -104,6 +106,70 @@ struct SecurityWatchToolView: View {
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    /// P3.4: tunnel state and the two leak indicators.
+    private var vpnCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "VPN and leaks")
+                    if vpnGuard.isSampling { ProgressView().controlSize(.mini) }
+                    Spacer()
+                    Button("Check now") {
+                        Task { await vpnGuard.sampleNow() }
+                    }
+                    .controlSize(.small)
+                    .disabled(vpnGuard.isSampling)
+                }
+                HStack(spacing: 24) {
+                    ToolkitMetric(
+                        title: "Tunnel",
+                        value: vpnGuard.report.vpn.isUp
+                            ? vpnGuard.report.vpn.interfaceLabel ?? "Up" : "None",
+                        tint: vpnGuard.report.vpn.isUp ? AppPalette.ok : .secondary)
+                    ToolkitMetric(
+                        title: "DNS", value: leakLabel(vpnGuard.report.dns.status),
+                        tint: leakTint(vpnGuard.report.dns.status))
+                    ToolkitMetric(
+                        title: "IPv6", value: leakLabel(vpnGuard.report.ipv6.status),
+                        tint: leakTint(vpnGuard.report.ipv6.status))
+                    Spacer()
+                }
+                Text(vpnGuard.report.vpn.detail)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if vpnGuard.report.dns.status == .leak {
+                    Text(vpnGuard.report.dns.detail)
+                        .font(.caption2)
+                        .foregroundColor(AppPalette.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if vpnGuard.report.ipv6.status == .leak {
+                    Text(vpnGuard.report.ipv6.detail)
+                        .font(.caption2)
+                        .foregroundColor(AppPalette.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func leakLabel(_ status: LeakStatus) -> String {
+        switch status {
+        case .ok: return String(localized: "Clear")
+        case .leak: return String(localized: "Possible leak")
+        case .unknown: return String(localized: "Not checked yet")
+        }
+    }
+
+    private func leakTint(_ status: LeakStatus) -> Color {
+        switch status {
+        case .ok: return AppPalette.ok
+        case .leak: return AppPalette.warning
+        case .unknown: return .secondary
         }
     }
 
@@ -260,6 +326,12 @@ struct SecurityWatchToolView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 Text(
                     "Below Wi-Fi: the default gateway's MAC is re-read from the ARP table every 2 minutes, and every 10 minutes the system resolver's answer for a canary host is compared with Cloudflare's direct answer. Both are warnings, not proof: a CDN legitimately varies by resolver."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                Text(
+                    "VPN: the tunnel is detected from the default route and up `utun`/`ipsec`/`ppp` interfaces; a DNS leak is reported when the resolver actually in use is not one the tunnel pushed, and an IPv6 leak when a global IPv6 default route leaves through a non-tunnel interface. Both are indicators, not proof — split DNS and split-default tunnels do this legitimately."
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)

@@ -70,6 +70,9 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Models/VPNGuard.swift` / `Services/VPNGuardService.swift` — P3.4: VPN
+  detection, the `scutil --dns` / `netstat` parsers, the DNS and IPv6 leak
+  verdicts, and the poller that posts `vpnDropped` / `vpnLeak` events.
 - `Models/GatewayIntegrity.swift` / `Services/GatewayGuardService.swift` — P3.7:
   the gateway ARP watch, the DNS-answer comparison, and the guard that posts
   `gatewayChanged` / `dnsMismatch` Monitor events through `.lanFiSecurityEvent`.
@@ -270,6 +273,8 @@ so those values cannot be rolled back; `importData` overwrites them on purpose.
   (`AppSettings.automation.serviceDescriptions`).
 - `LanFi.gatewayGuard.enabled` — gateway ARP / DNS integrity guard
   (`AppSettings.automation.gatewayGuard`).
+- `LanFi.vpnGuard.enabled` — VPN state and leak indicators
+  (`AppSettings.automation.vpnGuard`).
 - `LanFi.connectivity.enabled|interval|primaryURL|fallbackURL` and
   `LanFi.connectivity.notify.offline|captive|restored` — the connectivity
   watchdog (`AppSettings.connectivity`); quiet hours are read from

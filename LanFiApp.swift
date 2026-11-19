@@ -75,6 +75,7 @@ struct LanFiApp: App {
                     meter.start()
                     connectivity.start()
                     GatewayGuard.shared.start()
+                    VPNGuard.shared.start()
                 }
                 .sheet(
                     isPresented: Binding(

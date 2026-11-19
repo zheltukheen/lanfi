@@ -27,6 +27,8 @@ struct MonitorAlertSettingsView: View {
                     Toggle("Roaming failure", isOn: $monitor.alerts.roamingFailure)
                     Toggle("Gateway MAC changed", isOn: $monitor.alerts.gatewayChange)
                     Toggle("DNS answer mismatch", isOn: $monitor.alerts.dnsMismatch)
+                    Toggle("VPN dropped", isOn: $monitor.alerts.vpnDrop)
+                    Toggle("Possible VPN leak", isOn: $monitor.alerts.vpnLeak)
                 }
 
                 Section("Quiet hours") {
