@@ -3,6 +3,10 @@
 ## 5.5.0 — 2026-11-19
 
 ### Fixed
+- **The standalone CLI no longer links Sparkle.** `lanfi-cli` excluded
+  `Services/UpdaterController.swift`, so `lanfi-cli help` (and the release
+  smoke test) runs from its own binary instead of aborting on a missing
+  `Sparkle.framework`.
 - **The Device Shelf no longer crashes on launch.** `AppTable`'s generic
   context-menu initializer delegated to a designated initializer with the same
   `selection:rowMenu:` labels, so overload resolution picked the generic

@@ -39,8 +39,10 @@ all take `Models`, `Services`, `Utils` (and `CLI`) rather than per-file lists.
 A new shared file therefore reaches the app, the CLI and the tests without any
 `project.yml` edit; do not reintroduce a template or a hand-written source
 list, which is what used to drift (`SharedToolchainSources` was removed for
-that reason). The CLI and the test bundle also declare the Sparkle package
-because `Services/UpdaterController.swift` lives in the shared folder.
+that reason). The test bundle declares the Sparkle package because
+`Services/UpdaterController.swift` lives in the shared folder; the CLI excludes
+that one file and does not link Sparkle, so the standalone binary runs without
+an app bundle.
 
 ## Architecture
 

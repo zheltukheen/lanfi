@@ -236,7 +236,6 @@
 		46E9EA2B7BCCEFAD2E51639A /* TracerouteToolModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0F2649D6577D3E8E4613E5 /* TracerouteToolModel.swift */; };
 		46F4043ABE3CF8FF871C0A72 /* LocalNetworkAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1935527BA11697AF21ED58C9 /* LocalNetworkAccess.swift */; };
 		4792F0CD2EA9D16ECCC2A901 /* CombinedReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3045D02A75AFF7820E66A41 /* CombinedReport.swift */; };
-		47B4C8B493C5508317F12967 /* UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D738C591A8707E4A7316C0 /* UpdaterController.swift */; };
 		47C4200E8457AE85C7346160 /* ScanHardwareProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD91277F79ED1C280C66008 /* ScanHardwareProbe.swift */; };
 		47CBA4D0B45087B984AA3F0E /* DNSBenchmarkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC257D632900C53CE7D3FB5 /* DNSBenchmarkService.swift */; };
 		47D7727F551FCAF589CE1216 /* HTTPTrafficToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBFE9DB84CF6899D3E42A80 /* HTTPTrafficToolView.swift */; };
@@ -436,7 +435,6 @@
 		82B6D544B090971F715E6704 /* LinkAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE43F23C48DB987EFF9EFF4 /* LinkAutomation.swift */; };
 		82FD7F039A599A5858524272 /* RemoteCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C7CA890C61A76171212A69 /* RemoteCaptureTests.swift */; };
 		83287A67749A610873A49CCB /* TracerouteRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D92A094B00454CA1759F82 /* TracerouteRunnerTests.swift */; };
-		8408B59122FCAF890CC3A687 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 52213387F94CDDD9072279B0 /* Sparkle */; };
 		844EA3EA9B9B169C2718D68A /* DNSBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4AFB33843E55742D214B40 /* DNSBenchmarkTests.swift */; };
 		84C863C894F8B1A22F27F176 /* WhoisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEC24D260F14DF35C90E1DF /* WhoisClient.swift */; };
 		84ECE6BF89BE434D8A45348D /* OpenConnectionsToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7C29D0DE559587A959AC1A /* OpenConnectionsToolView.swift */; };
@@ -1367,7 +1365,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				89272D1D2691F4C67C303A5C /* LanFiCore in Frameworks */,
-				8408B59122FCAF890CC3A687 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1977,7 +1974,6 @@
 			name = "lanfi-cli";
 			packageProductDependencies = (
 				1D118E994AE52B2DA0A1FEA3 /* LanFiCore */,
-				52213387F94CDDD9072279B0 /* Sparkle */,
 			);
 			productName = "lanfi-cli";
 			productReference = FE8EF199A402009402FF8D9C /* lanfi-cli */;
@@ -2282,7 +2278,6 @@
 				0CCF573A24406338904401D0 /* TracerouteRunner.swift in Sources */,
 				CDCAA71531D889CDE80B9360 /* TrafficAccounting.swift in Sources */,
 				D13F3638A8E9159EF1E890B2 /* TrafficAccountingService.swift in Sources */,
-				47B4C8B493C5508317F12967 /* UpdaterController.swift in Sources */,
 				95066CFADE7DDBCA84313445 /* UptimeModels.swift in Sources */,
 				EACE987DECF90464AB2F042F /* UptimeMonitor.swift in Sources */,
 				C5EA01D6A5E29ED74FE4413E /* UptimeStore.swift in Sources */,
@@ -3291,11 +3286,6 @@
 		1D118E994AE52B2DA0A1FEA3 /* LanFiCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LanFiCore;
-		};
-		52213387F94CDDD9072279B0 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 7D7467D5D11AC55DAF4684A9 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
 		};
 		544BCF73F96E99C5CFCA5728 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;

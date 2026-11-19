@@ -134,11 +134,14 @@ targets:
     sources:
       - CLI
       - Models
-      - Services
+      - path: Services
+        # The CLI never opens the updater; excluding it keeps Sparkle out of
+        # the standalone `lanfi-cli` binary so it runs without an app bundle.
+        excludes:
+          - UpdaterController.swift
       - Utils
     dependencies:
       - package: LanFiCore
-      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.CLI
