@@ -1,43 +1,6 @@
 import SwiftUI
 
 struct RemoteSensorsView: View {
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case ssid, band, channel, width, rssi, snr, phy, security
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .ssid: return String(localized: "SSID")
-            case .band: return String(localized: "Band")
-            case .channel: return String(localized: "Ch")
-            case .width: return String(localized: "Width")
-            case .rssi: return String(localized: "RSSI")
-            case .snr: return String(localized: "SNR")
-            case .phy: return String(localized: "PHY")
-            case .security: return String(localized: "Security")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .rssi
-    @State private var sortAscending = false
-
-    private func sortedResults(_ rows: [RemoteNetwork]) -> [RemoteNetwork] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .ssid: return lhs.ssid.localizedStandardCompare(rhs.ssid) == .orderedAscending
-            case .band: return lhs.band.localizedStandardCompare(rhs.band) == .orderedAscending
-            case .channel: return lhs.channel < rhs.channel
-            case .width: return lhs.widthMHz < rhs.widthMHz
-            case .rssi: return lhs.rssi < rhs.rssi
-            case .snr: return (lhs.snr ?? .min) < (rhs.snr ?? .min)
-            case .phy: return lhs.phy.localizedStandardCompare(rhs.phy) == .orderedAscending
-            case .security:
-                return lhs.security.localizedStandardCompare(rhs.security) == .orderedAscending
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     @Environment(\.dismiss) private var dismiss
     @State private var sensors: [RemoteSensor]
     @State private var selectedID: UUID?
@@ -241,20 +204,42 @@ struct RemoteSensorsView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
-                    Table(sortedResults(results)) {
-                        TableColumn("SSID", value: \.ssid)
-                        TableColumn("Band", value: \.band).width(AppColumnWidth.short)
-                        TableColumn("Ch") { Text("\($0.channel)") }.width(AppColumnWidth.index)
-                        TableColumn("Width") { Text("\($0.widthMHz) MHz") }.width(60)
-                        TableColumn("RSSI") { Text("\($0.rssi)").foregroundColor(rssiColor($0.rssi)) }.width(48)
-                        TableColumn("SNR") { Text($0.snr.map(String.init) ?? "—") }.width(AppColumnWidth.index)
-                        TableColumn("PHY", value: \.phy)
-                        TableColumn("Security", value: \.security)
-                    }
-                    .tableStyle(.inset)
+                    AppTable(
+                        columns: [
+                            AppTableColumn(
+                                id: "ssid", title: "SSID", minWidth: 130,
+                                value: { .text($0.ssid) }
+                            ) { Text($0.ssid) },
+                            AppTableColumn(
+                                id: "band", title: "Band", minWidth: 50,
+                                value: { .text($0.band) }
+                            ) { Text($0.band) },
+                            AppTableColumn(
+                                id: "channel", title: "Ch", minWidth: 36,
+                                value: { .number($0.channel) }
+                            ) { Text("\($0.channel)").monospacedDigit() },
+                            AppTableColumn(
+                                id: "width", title: "Width", minWidth: 60,
+                                value: { .number($0.widthMHz) }
+                            ) { Text("\($0.widthMHz) MHz") },
+                            AppTableColumn(
+                                id: "rssi", title: "RSSI", minWidth: 48,
+                                value: { .number($0.rssi) }
+                            ) { Text("\($0.rssi)").foregroundColor(rssiColor($0.rssi)) },
+                            AppTableColumn(
+                                id: "snr", title: "SNR", minWidth: 36,
+                                value: { .number($0.snr) }
+                            ) { Text($0.snr.map(String.init) ?? "—") },
+                            AppTableColumn(
+                                id: "phy", title: "PHY", minWidth: 80,
+                                value: { .text($0.phy) }
+                            ) { Text($0.phy) },
+                            AppTableColumn(
+                                id: "security", title: "Security", minWidth: 90,
+                                value: { .text($0.security) }
+                            ) { Text($0.security) },
+                        ],
+                        rows: results, initialKey: "rssi", ascending: false)
                 }
             }
         } else {

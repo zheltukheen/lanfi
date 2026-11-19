@@ -1,45 +1,6 @@
 import SwiftUI
 
 struct ControllersSettingsView: View {
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case name, mac, model, ip, channel, clients, txPower, utilization, channels
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .name: return String(localized: "Name")
-            case .mac: return String(localized: "MAC")
-            case .model: return String(localized: "Model")
-            case .ip: return String(localized: "IP")
-            case .channel: return String(localized: "Ch")
-            case .clients: return String(localized: "Clients")
-            case .txPower: return String(localized: "TX")
-            case .utilization: return String(localized: "Util.")
-            case .channels: return String(localized: "Channels")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .name
-    @State private var sortAscending = true
-
-    private func sortedAccessPoints(_ rows: [ControllerAccessPoint]) -> [ControllerAccessPoint] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .name: return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
-            case .model: return lhs.model.localizedStandardCompare(rhs.model) == .orderedAscending
-            case .ip: return lhs.ip.compare(rhs.ip, options: .numeric) == .orderedAscending
-            case .channel: return (lhs.channel ?? .min) < (rhs.channel ?? .min)
-            case .clients: return (lhs.clients ?? .min) < (rhs.clients ?? .min)
-            case .txPower: return (lhs.txPower ?? .min) < (rhs.txPower ?? .min)
-            case .utilization: return (lhs.utilization ?? .min) < (rhs.utilization ?? .min)
-            case .channels:
-                return lhs.supportedChannels.count < rhs.supportedChannels.count
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     @State private var accounts: [ControllerAccount] = ControllerAccountStore().load()
     @State private var selectedID: UUID?
     @State private var aps: [ControllerAccessPoint] = []
@@ -102,25 +63,52 @@ struct ControllersSettingsView: View {
                         Text(errorMessage).font(.caption).foregroundColor(.red).textSelection(.enabled)
                     }
                     HStack {
-                        TableSortControl(
-                            options: SortKey.allCases.map { ($0, $0.title) },
-                            selection: $sortKey, ascending: $sortAscending)
                         Spacer()
                     }
-                    Table(sortedAccessPoints(aps)) {
-                        TableColumn("Name", value: \.name)
-                        TableColumn("MAC", value: \.mac)
-                        TableColumn("Model", value: \.model)
-                        TableColumn("IP", value: \.ip)
-                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(AppColumnWidth.index)
-                        TableColumn("Clients") { Text($0.clients.map(String.init) ?? "—") }.width(AppColumnWidth.small)
-                        TableColumn("TX") { Text($0.txPower.map { "\($0) dBm" } ?? "—") }.width(AppColumnWidth.short)
-                        TableColumn("Util.") { Text($0.utilization.map { "\($0)%" } ?? "—") }.width(
-                            AppColumnWidth.small)
-                        TableColumn("Channels") {
-                            Text($0.supportedChannels.isEmpty ? "—" : "\($0.supportedChannels.count)")
-                        }.width(AppColumnWidth.short)
-                    }
+                    AppTable(
+                        columns: [
+                            AppTableColumn(
+                                id: "name", title: "Name", minWidth: 120,
+                                value: { .text($0.name) }
+                            ) { Text($0.name) },
+                            AppTableColumn(
+                                id: "mac", title: "MAC", minWidth: 120,
+                                value: { .text($0.mac) }
+                            ) { Text($0.mac).font(.caption.monospaced()) },
+                            AppTableColumn(
+                                id: "model", title: "Model", minWidth: 110,
+                                value: { .text($0.model) }
+                            ) { Text($0.model) },
+                            AppTableColumn(
+                                id: "ip", title: "IP", minWidth: 100,
+                                value: { .text($0.ip) }
+                            ) { Text($0.ip).font(.caption.monospaced()) },
+                            AppTableColumn(
+                                id: "channel", title: "Ch", minWidth: 36,
+                                value: { .number($0.channel) }
+                            ) { Text($0.channel.map(String.init) ?? "—") },
+                            AppTableColumn(
+                                id: "clients", title: "Clients", minWidth: 50,
+                                value: { .number($0.clients) }
+                            ) { Text($0.clients.map(String.init) ?? "—") },
+                            AppTableColumn(
+                                id: "tx", title: "TX", minWidth: 60,
+                                value: { .number($0.txPower) }
+                            ) { Text($0.txPower.map { "\($0) dBm" } ?? "—") },
+                            AppTableColumn(
+                                id: "utilization", title: "Util.", minWidth: 50,
+                                value: { .number($0.utilization) }
+                            ) { Text($0.utilization.map { "\($0)%" } ?? "—") },
+                            AppTableColumn(
+                                id: "channels", title: "Channels", minWidth: 60,
+                                value: { .number($0.supportedChannels.count) }
+                            ) { ap in
+                                Text(
+                                    ap.supportedChannels.isEmpty
+                                        ? "—" : "\(ap.supportedChannels.count)")
+                            },
+                        ],
+                        rows: aps, initialKey: "name")
                 } else {
                     Text("Add a UniFi or Meraki controller account.")
                         .foregroundColor(.secondary)

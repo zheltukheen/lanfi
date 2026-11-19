@@ -1,49 +1,6 @@
 import SwiftUI
 
 struct LiveClientDiscoveryView: View {
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case mac, vendor, bssid, frames, management, rssi, eapol, probes
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .mac: return String(localized: "MAC")
-            case .vendor: return String(localized: "Vendor")
-            case .bssid: return String(localized: "BSSID")
-            case .frames: return String(localized: "Frames")
-            case .management: return String(localized: "Mgmt/Data")
-            case .rssi: return String(localized: "RSSI")
-            case .eapol: return String(localized: "EAPOL")
-            case .probes: return String(localized: "Probes")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .frames
-    @State private var sortAscending = false
-
-    private func sortedClients(_ rows: [CapturedClient]) -> [CapturedClient] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
-            case .vendor:
-                return OUIParser.vendor(for: lhs.mac).localizedStandardCompare(
-                    OUIParser.vendor(for: rhs.mac)) == .orderedAscending
-            case .bssid:
-                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .frames: return lhs.frameCount < rhs.frameCount
-            case .management:
-                return lhs.managementFrames < rhs.managementFrames
-            case .rssi: return (lhs.rssi ?? .min) < (rhs.rssi ?? .min)
-            case .eapol: return lhs.eapolFrames < rhs.eapolFrames
-            case .probes:
-                return lhs.probeSSIDs.joined(separator: ", ")
-                    .localizedStandardCompare(rhs.probeSSIDs.joined(separator: ", "))
-                    == .orderedAscending
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     @Environment(\.dismiss) private var dismiss
     @State private var interfaces: [String] = []
     @State private var selectedInterface = "en0"
@@ -93,31 +50,52 @@ struct LiveClientDiscoveryView: View {
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                TableSortControl(
-                    options: SortKey.allCases.map { ($0, $0.title) },
-                    selection: $sortKey, ascending: $sortAscending)
-                Table(sortedClients(filteredClients)) {
-                    TableColumn("MAC", value: \.mac)
-                    TableColumn("Vendor") { client in
-                        Text(OUIParser.vendor(for: client.mac)).lineLimit(1)
-                    }
-                    .width(AppColumnWidth.wide)
-                    TableColumn("BSSID", value: \.bssid)
-                    TableColumn("Frames") { Text("\($0.frameCount)") }
-                        .width(AppColumnWidth.short)
-                    TableColumn("Mgmt/Data") { Text("\($0.managementFrames)/\($0.dataFrames)") }
-                        .width(AppColumnWidth.compact)
-                    TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }
-                        .width(AppColumnWidth.short)
-                    TableColumn("EAPOL") { Text($0.eapolFrames == 0 ? "—" : "\($0.eapolFrames)") }
-                        .width(AppColumnWidth.short)
-                    TableColumn("Probes") { client in
-                        Text(client.probeSSIDs.isEmpty ? "—" : client.probeSSIDs.joined(separator: ", "))
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "mac", title: "MAC", minWidth: 120,
+                            value: { .text($0.mac) }
+                        ) { Text($0.mac).font(.caption.monospaced()) },
+                        AppTableColumn(
+                            id: "vendor", title: "Vendor", minWidth: 140,
+                            value: { .text(OUIParser.vendor(for: $0.mac)) }
+                        ) { client in
+                            Text(OUIParser.vendor(for: client.mac)).lineLimit(1)
+                        },
+                        AppTableColumn(
+                            id: "bssid", title: "BSSID", minWidth: 130,
+                            value: { .text($0.bssid) }
+                        ) { Text($0.bssid).font(.caption.monospaced()) },
+                        AppTableColumn(
+                            id: "frames", title: "Frames", minWidth: 60,
+                            value: { .number($0.frameCount) }
+                        ) { Text("\($0.frameCount)") },
+                        AppTableColumn(
+                            id: "mgmtData", title: "Mgmt/Data", minWidth: 80,
+                            value: { .number($0.dataFrames) }
+                        ) { Text("\($0.managementFrames)/\($0.dataFrames)") },
+                        AppTableColumn(
+                            id: "rssi", title: "RSSI", minWidth: 60,
+                            value: { .number($0.rssi) }
+                        ) { Text($0.rssi.map { "\($0) dBm" } ?? "—") },
+                        AppTableColumn(
+                            id: "eapol", title: "EAPOL", minWidth: 60,
+                            value: { .number($0.eapolFrames) }
+                        ) { Text($0.eapolFrames == 0 ? "—" : "\($0.eapolFrames)") },
+                        AppTableColumn(
+                            id: "probes", title: "Probes", minWidth: 160,
+                            value: { .text($0.probeSSIDs.joined(separator: ", ")) }
+                        ) { client in
+                            Text(
+                                client.probeSSIDs.isEmpty
+                                    ? "—" : client.probeSSIDs.joined(separator: ", ")
+                            )
                             .lineLimit(1)
                             .help(client.probeSSIDs.joined(separator: "\n"))
-                    }
-                    .width(AppColumnWidth.flexibleMin)
-                }
+                        },
+                    ],
+                    rows: filteredClients, initialKey: "frames", ascending: false
+                )
                 .appTableSurface()
             }
         }
