@@ -11,14 +11,11 @@ enum ToolScreen: String, CaseIterable, Sendable {
     case overview
     case internetCheck
     case ping
-    case traceroute
-    case mtr
     case visualTraceroute
     case speedTest
 
     case dnsLookup
-    case whois
-    case geoIP
+    case whoisGeoIP
     case sslCertificate
 
     case portScan

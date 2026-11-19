@@ -99,6 +99,14 @@
   the Wi-Fi analyzer is now one tool among them.
 
 ### Changed
+- **Whois and GeoIP are one screen.** Both answer questions about the same
+  target, so they share a tab strip, one input (typed in either tab and mirrored
+  to the other) and one sidebar row; a `lanfi://tool/geoip` deep link still
+  opens the GeoIP tab.
+- **MTR is the Continuous tab of Traceroute.** The map and hop table keep the
+  Route tab, MTR moved next to them instead of a separate sidebar entry, and a
+  deep link to MTR still lands on its tab. The now-unused classic
+  `TracerouteToolView` was deleted.
 - **One button, one header, one list row across the toolkit.** Every tool
   screen now draws its actions with `AppButton` (plus `AppIconButton` for
   icon-only controls) and its header strip with `ToolkitHeaderBar`, so DNS,
@@ -117,6 +125,10 @@
   or device names.
 
 ### Fixed
+- **Whois events, Path Check ports, the TLS chain and DNS answers sort from the
+  column header.** Those four tables moved from `Table` + a separate
+  `TableSortControl` menu to `AppTable`, so the sort menu is gone and the header
+  behaves like the rest of the app.
 - **The refresh-interval menu stays open.** The countdown used to re-lay out its
   label twice a second while the native menu was tracking, which made the list
   jump and could dismiss it. The control is now a button with an explicit

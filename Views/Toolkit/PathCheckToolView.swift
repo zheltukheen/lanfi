@@ -3,37 +3,6 @@ import SwiftUI
 struct PathCheckToolView: View {
     @ObservedObject var model: PathCheckToolModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case port, state, response, detail
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .port: return String(localized: "Port")
-            case .state: return String(localized: "State")
-            case .response: return String(localized: "Response")
-            case .detail: return String(localized: "Detail")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .port
-    @State private var sortAscending = true
-
-    private func sortedResults(_ rows: [PathCheckResult]) -> [PathCheckResult] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .port: return lhs.port < rhs.port
-            case .state:
-                return stateTitle(lhs).localizedStandardCompare(stateTitle(rhs)) == .orderedAscending
-            case .response:
-                return (milliseconds(lhs) ?? .infinity) < (milliseconds(rhs) ?? .infinity)
-            case .detail:
-                return detail(lhs).localizedStandardCompare(detail(rhs)) == .orderedAscending
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -125,9 +94,6 @@ struct PathCheckToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Ports")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text(model.portsText)
                         .font(.caption2.monospaced())
@@ -137,35 +103,47 @@ struct PathCheckToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedResults(model.results)) {
-                    TableColumn("Port") { result in
-                        Text("\(result.port)/tcp")
-                            .font(.caption.monospacedDigit())
-                    }
-                    .width(76)
-                    TableColumn("State") { result in
-                        HStack(spacing: 5) {
-                            Circle()
-                                .fill(stateColor(result))
-                                .frame(width: 7, height: 7)
-                            Text(stateTitle(result))
-                                .font(.caption)
-                        }
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Response") { result in
-                        Text(ToolkitFormat.milliseconds(milliseconds(result)))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(95)
-                    TableColumn("Detail") { result in
-                        Text(detail(result))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                    }
-                }
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "port", title: "Port", minWidth: 76,
+                            value: { .number(Int($0.port)) }
+                        ) { result in
+                            Text("\(result.port)/tcp")
+                                .font(.caption.monospacedDigit())
+                        },
+                        AppTableColumn(
+                            id: "state", title: "State", minWidth: 90,
+                            value: { .text(stateTitle($0)) }
+                        ) { result in
+                            HStack(spacing: 5) {
+                                Circle()
+                                    .fill(stateColor(result))
+                                    .frame(width: 7, height: 7)
+                                Text(stateTitle(result))
+                                    .font(.caption)
+                            }
+                        },
+                        AppTableColumn(
+                            id: "response", title: "Response", minWidth: 95,
+                            value: { .number(milliseconds($0)) }
+                        ) { result in
+                            Text(ToolkitFormat.milliseconds(milliseconds(result)))
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        },
+                        AppTableColumn(
+                            id: "detail", title: "Detail", minWidth: 160,
+                            value: { .text(detail($0)) }
+                        ) { result in
+                            Text(detail(result))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .lineLimit(2)
+                        },
+                    ],
+                    rows: model.results, initialKey: "port"
+                )
                 .frame(height: min(CGFloat(model.results.count) * 30 + 42, 420))
             }
         }

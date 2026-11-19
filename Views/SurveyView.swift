@@ -22,7 +22,6 @@ struct SurveyView: View {
     @State private var showingPlanning = false
     @State private var showingMap = false
     @State private var heatGrid: HeatGridCache.Grid?
-    @State private var heatGridRequestKey = ""
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -690,7 +689,6 @@ struct SurveyView: View {
                         }.value
                         guard !Task.isCancelled else { return }
                         heatGrid = built
-                        heatGridRequestKey = request.key
                     }
                     .accessibilityLabel(String(localized: "Floor plan heatmap"))
                     .accessibilityValue(

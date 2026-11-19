@@ -70,6 +70,11 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   menu-bar live meter: pure rate/smoothing/formatting values, the `getifaddrs`
   counter reader, the 60-sample rolling model (2 s active, 30 s background) and
   the `Canvas` sparkline used by the `MenuBarExtra` label.
+- `Views/Toolkit/WhoisGeoIPToolView.swift` and
+  `Views/Toolkit/TracerouteTabsView.swift` — the two merged screens. Tools
+  that answer the same question share a `ToolScreen` and a tab strip; their
+  `ToolDescriptor.showsInSidebar` is false so the sidebar lists the host once,
+  while the deep link still selects the tab.
 - `Views/Toolkit/OverviewDashboardView.swift` — the default screen
   (`ToolboxTool.overview`). It composes the shared services
   (`ConnectivityWatchdog`, `GatewayGuard`, `VPNGuard`, `TrafficAccounting`,
@@ -77,9 +82,13 @@ If you add/move/delete files, run `xcodegen generate` and commit the regenerated
   Wi-Fi analyzer is one tool in the sidebar, not the root screen. Nothing here
   starts its own timer: a new card must read an existing service.
 - `Views/AppTable.swift` — the shared SwiftUI table builder; its column
-  headers sort on click. New tables use it instead of a separate sort menu, and
-  the so-far unmigrated SwiftUI `Table` screens still pass `TableSortControl`
-  (the Wi-Fi analyzer keeps its own sort/filter UI by design). Columns are
+  headers sort on click. Whois events, Path Check, the TLS chain, DNS answers,
+  Ping, MTR and the comparison panels use it. Still on native `Table` +
+  `TableSortControl`: Speed Test history, HTTP Traffic, Connections / Process
+  Traffic, Device Shelf, LAN Scanner, Roaming, Uptime, Client Analytics, DNS
+  Propagation, Network Monitor, Offline Capture, Remote Sensors, Controllers,
+  Live Client Discovery and Multi-Network Comparison (the Wi-Fi analyzer keeps
+  its own sort/filter UI by design). Columns are
   declared with the `@ViewBuilder` initializer, so a cell is written as a
   normal view instead of a hand-wrapped `AnyView`.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,

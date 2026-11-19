@@ -62,9 +62,12 @@ enum ToolRegistry {
             // Merged into Visual Traceroute: the map plus the sortable hop table.
             showsInSidebar: false),
         ToolDescriptor(
-            tool: .mtr, screen: .mtr, mcpTools: ["lanfi_mtr"], title: String(localized: "MTR"),
+            tool: .mtr, screen: .visualTraceroute, mcpTools: ["lanfi_mtr"],
+            title: String(localized: "MTR"),
             icon: "chart.line.uptrend.xyaxis", section: .diagnostics,
-            plannedDetail: String(localized: "Continuous per-hop loss and jitter.")),
+            plannedDetail: String(localized: "Continuous per-hop loss and jitter."),
+            // The Continuous tab of the merged Traceroute screen.
+            showsInSidebar: false),
         ToolDescriptor(
             tool: .visualTraceroute, screen: .visualTraceroute, title: String(localized: "Visual Traceroute"),
             icon: "map", section: .diagnostics),
@@ -83,13 +86,17 @@ enum ToolRegistry {
             // Rendered as the Propagation tab of the DNS tool.
             showsInSidebar: false),
         ToolDescriptor(
-            tool: .whois, screen: .whois, mcpTools: ["lanfi_whois"], title: String(localized: "Whois"),
-            icon: "doc.text.magnifyingglass", section: .dnsDomains,
+            tool: .whois, screen: .whoisGeoIP, mcpTools: ["lanfi_whois"],
+            title: String(localized: "Whois & GeoIP"),
+            icon: "globe", section: .dnsDomains,
             plannedDetail: String(localized: "Domain, IP and AS registration data.")),
         ToolDescriptor(
-            tool: .geoIP, screen: .geoIP, mcpTools: ["lanfi_geoip"], title: String(localized: "GeoIP"),
+            tool: .geoIP, screen: .whoisGeoIP, mcpTools: ["lanfi_geoip"],
+            title: String(localized: "GeoIP"),
             icon: "mappin.and.ellipse", section: .dnsDomains,
-            plannedDetail: String(localized: "City, country, provider and AS for an address.")),
+            plannedDetail: String(localized: "City, country, provider and AS for an address."),
+            // The GeoIP tab of the Whois screen.
+            showsInSidebar: false),
         ToolDescriptor(
             tool: .sslCertificate, screen: .sslCertificate, mcpTools: ["lanfi_tls"],
             title: String(localized: "SSL Certificate"),

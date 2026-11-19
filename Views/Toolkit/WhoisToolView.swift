@@ -4,31 +4,6 @@ import SwiftUI
 struct WhoisToolView: View {
     @ObservedObject var model: WhoisToolModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case event, date
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .event: return String(localized: "Event")
-            case .date: return String(localized: "Date")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .event
-    @State private var sortAscending = true
-
-    private func sortedEvents(_ rows: [WhoisEvent]) -> [WhoisEvent] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .event:
-                return lhs.action.localizedStandardCompare(rhs.action) == .orderedAscending
-            case .date: return (lhs.date ?? .distantPast) < (rhs.date ?? .distantPast)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -152,30 +127,34 @@ struct WhoisToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Events")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                 }
                 .padding(.horizontal, DesignToken.Spacing.card)
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
-                Table(sortedEvents(report.events)) {
-                    TableColumn("Event") { event in
-                        Text(event.action)
-                            .font(.caption)
-                    }
-                    TableColumn("Date") { event in
-                        Text(
-                            event.date.map {
-                                $0.formatted(date: .abbreviated, time: .omitted)
-                            } ?? "—"
-                        )
-                        .font(.caption.monospacedDigit())
-                        .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.wide)
-                }
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "event", title: "Event", minWidth: 180,
+                            value: { .text($0.action) }
+                        ) { event in
+                            Text(event.action).font(.caption)
+                        },
+                        AppTableColumn(
+                            id: "date", title: "Date", minWidth: 120,
+                            value: { .number($0.date?.timeIntervalSince1970) }
+                        ) { event in
+                            Text(
+                                event.date.map {
+                                    $0.formatted(date: .abbreviated, time: .omitted)
+                                } ?? "—"
+                            )
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(.secondary)
+                        },
+                    ],
+                    rows: report.events, initialKey: "date"
+                )
                 .frame(height: min(CGFloat(report.events.count) * 26 + 40, 260))
             }
         }

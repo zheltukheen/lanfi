@@ -69,10 +69,6 @@ because the delivered analysis depth is currently invisible in a screenshot.
 | P4.3 | DNS console: record types, DoH/DoT/DoQ, compare mode | Toolkit | High | S/M |
 | P4.4 | NAT type and STUN reachability test | Toolkit | Medium | M |
 | P4.5 | Command palette over tools and settings | Workflow | High | S/M |
-| P4.6 | Per-tool input history with pins | Workflow | Low | S |
-| P4.7 | Quick control: hotkey, widgets, launch at login | Integrations | Medium | M |
-| P4.8 | Validated settings import with a dry-run diff | Trust / workflow | Medium | S |
-| P4.9 | Accent colour and icon-set personalization | Presentation | Low | S |
 | D1 | Design tokens and shared components | Presentation | High | M |
 | D2 | Hero RF overview, first run and empty states | Presentation | High | S/M |
 | D3 | Table presentation: density, bars, relative time, wording | Presentation | High | S/M |
@@ -781,68 +777,9 @@ category, action), a `.searchable`/sheet palette in `Views/`, opened by ⌘K and
 from the toolbar, with every settings page and `ToolboxTool` registering an
 entry. Tests cover ranking (exact title before keyword) and the empty state.
 
-### P4.6 — Per-tool input history with pins
 
-*What Bettbox does.* Every tool page mixes in `ToolHistoryMixin` with its own
-`historyKey`, persists the last successful inputs and renders a horizontal
-history bar above the results with one-tap re-run, plus a clear action; recent
-items are shared per tool, not globally.
 
-*Why it matters for LanFi.* `ToolTargetField` remembers one shared list for all
-tools. That is right for a single target but wrong for "the three switches I keep
-testing" — DNS names, iperf servers and STUN hosts want separate lists.
 
-*Where it would live.* Extend `ToolHistoryStore` with a per-tool key and a
-pinned flag, show it as chips under the target field, and keep the shared list
-as the default for one-off probes.
-
-### P4.7 — Quick control: hotkey, widgets, launch at login
-
-*What Bettbox does.* Desktop builds ship a tray menu (start/stop, mode switch,
-quick settings), global hotkeys (`lib/views/hotkey.dart`), launch-at-login as a
-first-class setting, and home-screen widgets (Android `home_widget_wide.xml`)
-that read the running state without opening the app. Mobile builds adapt to
-Doze by suspending work when the OS freezes the process.
-
-*Why it matters for LanFi.* P1.6 covers App Intents and widgets in outline only;
-the concrete gaps are a global hotkey to open the menu-bar meter, a WidgetKit
-widget (signal, throughput, watchdog state) and launch-at-login exposed in
-Settings rather than hidden.
-
-*Where it would live.* A `WidgetKit` extension target in `project.yml`, an
-`AppIntent` that returns the watchdog snapshot, a `KeyboardShortcuts`-free
-`NSEvent` global monitor or a menu command, and a launch-at-login toggle via
-`SMAppService.mainApp`.
-
-### P4.8 — Validated settings import with a dry-run diff
-
-*What Bettbox does.* Its visual config editor writes only overrides, never the
-whole file, so a UI change cannot damage unrelated configuration; the app also
-advertises "dual configuration verification" — the config is parsed and then
-semantically checked before it is applied, and a failed apply leaves the previous
-runtime untouched.
-
-*Why it matters for LanFi.* Settings export/import is on the list ("Advanced:
-full settings export/import") but as a blind overwrite. Importing a JSON blob
-that carries an unknown key or an out-of-range interval should not half-apply.
-
-*Where it would live.* `SettingsTransfer` gains `validate(_:) ->
-[SettingsIssue]` (unknown key, type mismatch, range, removed key) and the import
-sheet shows a diff of changed keys with a confirm step; applying writes the same
-`AppSettingsKey` catalogue and never raw `UserDefaults` keys.
-
-### P4.9 — Accent colour and icon-set personalization
-
-*What Bettbox does.* `lib/views/theme.dart` exposes colour-scheme seeds
-(Material You style), icon sets (`lib/views/icon_sets.dart`), custom menu titles
-and thirty speed-test animations.
-
-*What to take.* Only the accent-colour seed and an icon-set switch: LanFi's
-`DesignToken`/`AppPalette` already centralise colour, so a user-chosen accent
-flows through every screen for free. Chart palettes must stay
-colour-blind-safe (D7) — a free colour picker would break that, so the choice is
-a curated set of accents, not a full picker. The animation collection is not
-worth the maintenance and conflicts with Reduce Motion.
 
 ### Not planned from this source
 
@@ -1083,6 +1020,30 @@ locales.
 - Automation: launch at login, Shortcuts, MCP autostart.
 
 ---
+
+## Delivered in the thirty-seventh slice (2026-11-19)
+
+- **Header sorting on four more tables.** Whois events, Path Check ports, the
+  TLS chain and DNS answers use `AppTable`; their `TableSortControl` menus and
+  local sort state are gone. The Wi-Fi analyzer keeps its own sort/filter UI by
+  design; the remaining `Table` screens are listed in WARP.md.
+- **Whois + GeoIP merged.** One screen, one target mirrored between the tabs,
+  one sidebar row (`Whois & GeoIP`); the GeoIP row stays as a hidden deep link.
+- **MTR folded into Traceroute.** The Route tab keeps the map and hop table and
+  MTR is the Continuous tab; the dead `TracerouteToolView` and the
+  `ToolScreen.traceroute` route were removed, and `ToolRoutingTests` now cover
+  both merges.
+- **Dead survey code removed.** `heatGridRequestKey` was written and never
+  read; the old heatmap request stream is gone entirely (the grid is built once
+  per request key in a detached task).
+- **P4.6–P4.9 dropped from the plan** at the maintainer's request: per-tool
+  history, quick-control surfaces, import dry-run and accent personalization are
+  no longer planned work.
+- **project.yml de-duplicated.** `DiagnosticsHistoryStore.swift` and
+  `UptimeStore.swift` were listed twice in the shared template; the template is
+  the single list the CLI and the test target inherit.
+- 635 app tests green (1 skipped, 2 new routing tests); lint and Debug build
+  clean.
 
 ## Delivered in the thirty-sixth slice (2026-11-19)
 

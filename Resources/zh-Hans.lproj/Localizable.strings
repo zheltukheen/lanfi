@@ -1552,3 +1552,5 @@
 "Open Notification Settings…" = "打开通知设置…";
 "Turning this on asks macOS for notification permission: each switch is announced as a banner, and without permission it would change silently. Writes the Wi-Fi power state with networksetup: when a physical Ethernet link comes up LanFi turns Wi-Fi off once, and when the cable goes away it turns Wi-Fi back on once. A manual Wi-Fi change always wins: if you switch Wi-Fi back on while docked, LanFi leaves it alone. Off by default." = "开启时会向 macOS 请求通知权限：每次切换都会以横幅提示，未授权则会静默完成。Wi‑Fi 状态通过 networksetup 写入：物理以太网接入时 LanFi 关闭一次 Wi‑Fi，网线断开时再开启一次。手动修改 Wi‑Fi 始终优先：若在扩展坞上重新打开 Wi‑Fi，LanFi 不再干预。默认关闭。";
 "Off. Enable it in Settings → General to turn Wi-Fi off while a cable is up." = "已关闭。在 设置 → 通用 中开启后，插入网线时会关闭 Wi‑Fi。";
+"Whois & GeoIP" = "Whois 与 GeoIP";
+"No target yet" = "尚未设置目标";

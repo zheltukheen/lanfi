@@ -4,38 +4,6 @@ import SwiftUI
 struct SSLToolView: View {
     @ObservedObject var model: SSLToolModel
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case subject, issuer, notBefore, notAfter
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .subject: return String(localized: "Subject")
-            case .issuer: return String(localized: "Issuer")
-            case .notBefore: return String(localized: "Not before")
-            case .notAfter: return String(localized: "Not after")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .subject
-    @State private var sortAscending = true
-
-    private func sortedCertificates(_ rows: [TLSCertificate]) -> [TLSCertificate] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .subject:
-                return lhs.subject.localizedStandardCompare(rhs.subject) == .orderedAscending
-            case .issuer:
-                return lhs.issuer.localizedStandardCompare(rhs.issuer) == .orderedAscending
-            case .notBefore:
-                return (lhs.notBefore ?? .distantPast) < (rhs.notBefore ?? .distantPast)
-            case .notAfter:
-                return (lhs.notAfter ?? .distantPast) < (rhs.notAfter ?? .distantPast)
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -122,9 +90,6 @@ struct SSLToolView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     ToolkitSectionLabel(text: "Chain")
-                    TableSortControl(
-                        options: SortKey.allCases.map { ($0, $0.title) },
-                        selection: $sortKey, ascending: $sortAscending)
                     Spacer()
                     Text("Checked \(report.checkedAt.formatted(date: .omitted, time: .standard))")
                         .font(.caption2)
@@ -134,31 +99,44 @@ struct SSLToolView: View {
                 .padding(.top, DesignToken.Spacing.medium)
                 .padding(.bottom, DesignToken.Spacing.tight)
 
-                Table(sortedCertificates(report.certificates)) {
-                    TableColumn("Subject") { certificate in
-                        Text(certificate.subject)
-                            .font(.caption)
-                            .lineLimit(1)
-                    }
-                    TableColumn("Issuer") { certificate in
-                        Text(certificate.issuer)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    TableColumn("Not before") { certificate in
-                        Text(ToolkitFormat.date(certificate.notBefore))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.compact)
-                    TableColumn("Not after") { certificate in
-                        Text(ToolkitFormat.date(certificate.notAfter))
-                            .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .width(AppColumnWidth.compact)
-                }
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "subject", title: "Subject", minWidth: 160,
+                            value: { .text($0.subject) }
+                        ) { certificate in
+                            Text(certificate.subject)
+                                .font(.caption)
+                                .lineLimit(1)
+                        },
+                        AppTableColumn(
+                            id: "issuer", title: "Issuer", minWidth: 140,
+                            value: { .text($0.issuer) }
+                        ) { certificate in
+                            Text(certificate.issuer)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        },
+                        AppTableColumn(
+                            id: "notBefore", title: "Not before", minWidth: 90,
+                            value: { .number($0.notBefore?.timeIntervalSince1970) }
+                        ) { certificate in
+                            Text(ToolkitFormat.date(certificate.notBefore))
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        },
+                        AppTableColumn(
+                            id: "notAfter", title: "Not after", minWidth: 90,
+                            value: { .number($0.notAfter?.timeIntervalSince1970) }
+                        ) { certificate in
+                            Text(ToolkitFormat.date(certificate.notAfter))
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        },
+                    ],
+                    rows: report.certificates, initialKey: "notAfter"
+                )
                 .frame(height: min(CGFloat(report.certificates.count) * 26 + 28, 360))
             }
         }

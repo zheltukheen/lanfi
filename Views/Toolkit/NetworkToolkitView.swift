@@ -195,20 +195,15 @@ struct NetworkToolkitView: View {
             InternetCheckToolView(diagnostics: diagnostics, speedTest: toolkit.speedTest)
         case .ping:
             PingToolView(model: toolkit.ping)
-        case .traceroute:
-            TracerouteToolView(model: toolkit.traceroute)
-        case .mtr:
-            MTRToolView(model: toolkit.mtr)
         case .visualTraceroute:
-            VisualTracerouteToolView(model: toolkit.visualTraceroute)
+            TracerouteTabsView(
+                visual: toolkit.visualTraceroute, mtr: toolkit.mtr, toolkit: toolkit)
         case .speedTest:
             SpeedTestToolView(model: toolkit.speedTest)
         case .dnsLookup:
             DNSToolView(model: toolkit.dns, propagation: toolkit.dnsPropagation)
-        case .whois:
-            WhoisToolView(model: toolkit.whois)
-        case .geoIP:
-            GeoIPToolView(model: toolkit.geoIP)
+        case .whoisGeoIP:
+            WhoisGeoIPToolView(whois: toolkit.whois, geo: toolkit.geoIP, toolkit: toolkit)
         case .sslCertificate:
             SSLToolView(model: toolkit.ssl)
         case .portScan:

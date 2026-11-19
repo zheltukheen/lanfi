@@ -17,12 +17,12 @@ final class ToolRoutingTests: XCTestCase {
     }
 
     func testEveryScreenIsReachable() {
-        // `traceroute` is merged into `visualTraceroute`: one screen holds the map
-        // and the sortable hop table, so it is not routed on its own.
-        let merged: Set<ToolScreen> = [.traceroute]
+        // Every screen in the enum is reachable from at least one tool; the
+        // merged screens (.visualTraceroute, .whoisGeoIP) are routes other
+        // tools share rather than separate destinations.
         let routed = Set(ToolboxTool.allCases.map(\.screen))
-        XCTAssertEqual(routed.count, ToolScreen.allCases.count - merged.count)
-        for screen in ToolScreen.allCases where !merged.contains(screen) {
+        XCTAssertEqual(routed.count, ToolScreen.allCases.count)
+        for screen in ToolScreen.allCases {
             XCTAssertTrue(routed.contains(screen), "No tool routes to \(screen.rawValue)")
         }
     }
@@ -31,6 +31,19 @@ final class ToolRoutingTests: XCTestCase {
         XCTAssertEqual(ToolboxTool.traceroute.screen, .visualTraceroute)
         XCTAssertFalse(ToolboxTool.traceroute.showsInSidebar)
         XCTAssertTrue(ToolboxTool.visualTraceroute.showsInSidebar)
+    }
+
+    func testMTRIsTheContinuousTabOfTraceroute() {
+        XCTAssertEqual(ToolboxTool.mtr.screen, .visualTraceroute)
+        XCTAssertFalse(ToolboxTool.mtr.showsInSidebar)
+        XCTAssertTrue(ToolboxTool.visualTraceroute.showsInSidebar)
+    }
+
+    func testWhoisAndGeoIPShareOneScreen() {
+        XCTAssertEqual(ToolboxTool.whois.screen, .whoisGeoIP)
+        XCTAssertEqual(ToolboxTool.geoIP.screen, .whoisGeoIP)
+        XCTAssertTrue(ToolboxTool.whois.showsInSidebar)
+        XCTAssertFalse(ToolboxTool.geoIP.showsInSidebar)
     }
 
     func testSidebarToolsHaveDistinctScreensOrASharedHost() {
