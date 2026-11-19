@@ -866,10 +866,13 @@ locales.
   tool screens were migrated to `AppButton`/`AppIconButton` — DNS (run and
   resolver benchmark), LAN Scanner (permission gate), GeoIP, Internet Check,
   Client Analytics, iperf3, Known Networks, Roaming, Uptime, Connections,
-  Process Traffic, Connection Rules and Coming Soon. The LAN Scanner and Known
-  Networks header strips now use `ToolkitHeaderBar` instead of their own padded
-  `HStack` + `Divider`. Menus, context menus and confirmation dialogs keep
-  native buttons by design.
+  Process Traffic, Connection Rules and Coming Soon, plus the export, refresh,
+  "check now", inspector and expand/collapse actions on HTTP Traffic, Network
+  Monitor, Security Watch, Advanced Tools, Known Networks and the LAN Scanner.
+  The LAN Scanner and Known Networks header strips now use `ToolkitHeaderBar`
+  instead of their own padded `HStack` + `Divider`. Menus, context menus and
+  confirmation dialogs keep native buttons by design; row-level destructive
+  icons stay native because the kit has no destructive tone yet.
 - **DMG packaging.** The image is a drag-to-install folder (app, Applications
   alias, bilingual read-me pages with the Gatekeeper steps for an unsigned
   build) built from a read-write image with an AppleScript layout.

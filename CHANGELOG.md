@@ -93,9 +93,10 @@
   screen now draws its actions with `AppButton` (plus `AppIconButton` for
   icon-only controls) and its header strip with `ToolkitHeaderBar`, so DNS,
   Ping, GeoIP, iperf3, the LAN Scanner, Uptime, Roaming and the connections
-  screens share one control height, radius, stroke and padding. Menus, context
-  menus and confirmation dialogs keep native buttons, because a custom button
-  style does not render inside them.
+  screens share one control height, radius, stroke and padding, including the
+  export, refresh, "check now", inspector and expand/collapse actions. Menus,
+  context menus and confirmation dialogs keep native buttons, because a custom
+  button style does not render inside them.
 - **The DMG opens a folder instead of an installer.** The disk image mounts a
   window with `LanFi.app` next to an Applications alias and two read-me pages,
   English and Russian, that explain dragging the app in and opening it despite

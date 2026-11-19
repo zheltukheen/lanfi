@@ -94,10 +94,8 @@ struct NetworkMonitorToolView: View {
                 HStack(spacing: DesignToken.Spacing.small) {
                     ToolkitSectionLabel(text: "Data usage")
                     Spacer()
-                    Button("Export CSV…") { accounting.exportCSV() }
-                        .controlSize(.small)
-                    Button("Reset") { accounting.reset() }
-                        .controlSize(.small)
+                    AppButton("Export CSV…") { accounting.exportCSV() }
+                    AppButton("Reset", tone: .quiet) { accounting.reset() }
                 }
                 HStack(spacing: 24) {
                     ForEach(TrafficRange.allCases) { range in

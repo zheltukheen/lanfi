@@ -50,23 +50,18 @@ struct AdvancedToolsToolView: View {
             VStack(alignment: .leading, spacing: 8) {
                 ToolkitSectionLabel(text: "External tools")
                 HStack(spacing: 14) {
-                    Button {
+                    AppButton(
+                        "LinkLiar — MAC address spoofer…", systemImage: "link", tone: .quiet
+                    ) {
                         NSWorkspace.shared.open(
                             URL(string: "https://github.com/halo/LinkLiar/releases")!)
-                    } label: {
-                        Label("LinkLiar — MAC address spoofer…", systemImage: "link")
                     }
-                    .buttonStyle(.borderless)
-                    Button {
+                    AppButton("Wireshark…", systemImage: "waveform.path.ecg", tone: .quiet) {
                         NSWorkspace.shared.open(
                             URL(string: "https://www.wireshark.org/download.html")!)
-                    } label: {
-                        Label("Wireshark…", systemImage: "waveform.path.ecg")
                     }
-                    .buttonStyle(.borderless)
                     Spacer()
                 }
-                .font(.caption)
             }
         }
     }

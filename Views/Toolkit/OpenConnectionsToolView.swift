@@ -224,19 +224,17 @@ struct OpenConnectionsToolView: View {
             TableSortControl(
                 options: SortKey.allCases.map { ($0, $0.title) },
                 selection: $sortKey, ascending: $sortAscending)
-            Button {
+            AppIconButton(
+                systemImage: expanded.count == groups.count
+                    ? "rectangle.compress.vertical" : "rectangle.expand.vertical",
+                label: "Expand or collapse every group"
+            ) {
                 if expanded.count == groups.count {
                     expanded.removeAll()
                 } else {
                     expanded = Set(groups.map(\.id))
                 }
-            } label: {
-                Image(
-                    systemName: expanded.count == groups.count
-                        ? "rectangle.compress.vertical" : "rectangle.expand.vertical")
             }
-            .buttonStyle(.borderless)
-            .help("Expand or collapse every group")
             .disabled(groups.isEmpty)
             Spacer()
             AppButton("Copy", tone: .quiet) { copy() }
@@ -576,14 +574,17 @@ struct OpenConnectionsToolView: View {
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
-                        Button("Sample now") {
+                        AppButton(
+                            "Sample now", isBusy: watcher.isSampling,
+                            isEnabled: !watcher.isSampling
+                        ) {
                             Task { await watcher.sampleNow() }
                         }
-                        .controlSize(.mini)
-                        .disabled(watcher.isSampling)
-                        Button("Clear") { watcher.clearChanges() }
-                            .controlSize(.mini)
-                            .disabled(watcher.changes.isEmpty)
+                        AppButton(
+                            "Clear", tone: .quiet, isEnabled: !watcher.changes.isEmpty
+                        ) {
+                            watcher.clearChanges()
+                        }
                     }
 
                     if let error = watcher.errorMessage {

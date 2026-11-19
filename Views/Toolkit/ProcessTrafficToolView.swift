@@ -230,16 +230,16 @@ struct ProcessTrafficToolView: View {
             TableSortControl(
                 options: SortKey.allCases.map { ($0, $0.title) },
                 selection: $sortKey, ascending: $sortAscending)
-            Button {
+            AppIconButton(
+                systemImage: expanded.count == groups.count
+                    ? "rectangle.compress.vertical" : "rectangle.expand.vertical",
+                label: "Expand or collapse every group"
+            ) {
                 if expanded.count == groups.count {
                     expanded.removeAll()
                 } else {
                     expanded = Set(groups.map(\.id))
                 }
-            } label: {
-                Image(
-                    systemName: expanded.count == groups.count
-                        ? "rectangle.compress.vertical" : "rectangle.expand.vertical")
             }
             .buttonStyle(.borderless)
             .help("Expand or collapse every group")

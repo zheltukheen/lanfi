@@ -69,10 +69,10 @@ struct HTTPTrafficToolView: View {
                             .truncationMode(.middle)
                     }
                     Spacer()
-                    Button("Markdown Report…") { exportMarkdown() }
-                        .disabled(model.traffic == nil)
-                    Button("CSV…") { exportCSV() }
-                        .disabled(model.traffic == nil)
+                    AppButton("Markdown Report…", isEnabled: model.traffic != nil) {
+                        exportMarkdown()
+                    }
+                    AppButton("CSV…", isEnabled: model.traffic != nil) { exportCSV() }
                     AppButton("Clear", tone: .quiet) { model.clear() }
                         .disabled(model.traffic == nil)
                 }
@@ -256,8 +256,7 @@ struct HTTPTrafficToolView: View {
                             .font(.headline)
                             .foregroundColor(statusColor(entry))
                         Spacer()
-                        Button("Copy cURL") { copyCurl(entry) }
-                            .controlSize(.small)
+                        AppButton("Copy cURL", tone: .quiet) { copyCurl(entry) }
                     }
                     Text(entry.request.url)
                         .font(.caption.monospaced())
@@ -339,14 +338,15 @@ struct HTTPTrafficToolView: View {
             }
             Spacer()
             if description.source == .unknown, descriptions.canGenerate(domain: host) {
-                Button("Describe") {
+                AppButton(
+                    "Describe", tone: .quiet,
+                    isBusy: descriptions.pending.contains(host),
+                    isEnabled: !descriptions.pending.contains(host)
+                ) {
                     Task { await descriptions.generate(domain: host) }
                 }
-                .controlSize(.mini)
-                .disabled(descriptions.pending.contains(host))
             }
-            Button("Copy host") { copyText(host) }
-                .controlSize(.mini)
+            AppButton("Copy host", tone: .quiet) { copyText(host) }
         }
     }
 

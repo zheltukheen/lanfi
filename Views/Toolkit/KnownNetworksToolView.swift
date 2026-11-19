@@ -301,13 +301,14 @@ private struct KnownNetworkQRSheet: View {
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                    Button(didCopy ? "Copied" : "Copy payload") {
+                    AppButton(
+                        didCopy ? "Copied" : "Copy payload",
+                        isEnabled: security == .open || !password.isEmpty
+                    ) {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(payload, forType: .string)
                         didCopy = true
                     }
-                    .controlSize(.small)
-                    .disabled(security != .open && password.isEmpty)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 

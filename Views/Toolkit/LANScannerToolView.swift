@@ -434,18 +434,13 @@ struct LANScannerToolView: View {
                             }
                         }
                         if !device.openPorts.isEmpty {
-                            Button {
+                            AppButton(
+                                "Detect versions", systemImage: "tag", tone: .quiet,
+                                isBusy: detectingDeviceID == device.id,
+                                isEnabled: detectingDeviceID == nil
+                            ) {
                                 detectVersions(for: device)
-                            } label: {
-                                if detectingDeviceID == device.id {
-                                    ProgressView().controlSize(.small)
-                                } else {
-                                    Label("Detect versions", systemImage: "tag")
-                                }
                             }
-                            .buttonStyle(.borderless)
-                            .font(.caption)
-                            .disabled(detectingDeviceID != nil)
                         }
                     }
                 } else {
@@ -454,13 +449,11 @@ struct LANScannerToolView: View {
                         .foregroundColor(.secondary)
                 }
                 Divider()
-                Button {
+                AppButton(
+                    "Discover Wi-Fi clients…", systemImage: "person.3", tone: .quiet
+                ) {
                     showingDiscover = true
-                } label: {
-                    Label("Discover Wi-Fi clients…", systemImage: "person.3")
-                        .font(.caption)
                 }
-                .buttonStyle(.borderless)
                 Text("Frame-level Wi-Fi clients use monitor capture; this scanner uses ARP, Bonjour and TCP.")
                     .font(.caption2)
                     .foregroundColor(.secondary)

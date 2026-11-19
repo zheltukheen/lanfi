@@ -85,11 +85,12 @@ struct SecurityWatchToolView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
-                    Button("Check now") {
+                    AppButton(
+                        "Check now", isBusy: gatewayGuard.isSampling,
+                        isEnabled: !gatewayGuard.isSampling
+                    ) {
                         Task { await gatewayGuard.sampleNow() }
                     }
-                    .controlSize(.small)
-                    .disabled(gatewayGuard.isSampling)
                 }
                 HStack(spacing: 24) {
                     ToolkitMetric(
@@ -117,11 +118,12 @@ struct SecurityWatchToolView: View {
                     ToolkitSectionLabel(text: "VPN and leaks")
                     if vpnGuard.isSampling { ProgressView().controlSize(.mini) }
                     Spacer()
-                    Button("Check now") {
+                    AppButton(
+                        "Check now", isBusy: vpnGuard.isSampling,
+                        isEnabled: !vpnGuard.isSampling
+                    ) {
                         Task { await vpnGuard.sampleNow() }
                     }
-                    .controlSize(.small)
-                    .disabled(vpnGuard.isSampling)
                 }
                 HStack(spacing: 24) {
                     ToolkitMetric(
@@ -246,10 +248,9 @@ struct SecurityWatchToolView: View {
                 if let network = analyzer.networks.first(where: {
                     $0.bssid.caseInsensitiveCompare(alert.bssid) == .orderedSame
                 }) {
-                    Button("Show") {
+                    AppButton("Show") {
                         analyzer.selectedNetworkId = network.id
                     }
-                    .controlSize(.small)
                 }
             }
         }
@@ -277,16 +278,13 @@ struct SecurityWatchToolView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                        Button {
+                        AppButton("Open Capture", systemImage: "record.circle") {
                             NotificationCenter.default.post(
                                 name: .lanfiShowToolkit, object: nil,
                                 userInfo: ["tool": ToolboxTool.wifiAnalyzer.rawValue])
                             NotificationCenter.default.post(
                                 name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": 7])
-                        } label: {
-                            Label("Open Capture", systemImage: "record.circle")
                         }
-                        .controlSize(.small)
                     }
                     .padding(.horizontal, DesignToken.Spacing.card)
                     .padding(.bottom, DesignToken.Spacing.card)
