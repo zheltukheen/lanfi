@@ -1,6 +1,7 @@
 import Foundation
 
 enum ToolboxSection: String, CaseIterable, Identifiable, Sendable {
+    case overview
     case wifi
     case monitoring
     case diagnostics
@@ -11,6 +12,7 @@ enum ToolboxSection: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
+        case .overview: return String(localized: "Overview")
         case .wifi: return String(localized: "Wi-Fi")
         case .diagnostics: return String(localized: "Diagnostics")
         case .dnsDomains: return String(localized: "DNS & Domains")
@@ -21,6 +23,7 @@ enum ToolboxSection: String, CaseIterable, Identifiable, Sendable {
 }
 
 enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
+    case overview
     case internetCheck
     case ping
     case traceroute

@@ -8,6 +8,7 @@ import Foundation
 /// the sidebar, deep links, the detail switch and the MCP catalogue all read the
 /// same table instead of each keeping its own switch over raw tool ids.
 enum ToolScreen: String, CaseIterable, Sendable {
+    case overview
     case internetCheck
     case ping
     case traceroute

@@ -44,6 +44,10 @@ struct ToolDescriptor: Identifiable, Sendable {
 enum ToolRegistry {
     static let all: [ToolDescriptor] = [
         ToolDescriptor(
+            tool: .overview, screen: .overview, title: String(localized: "Overview"),
+            icon: "square.grid.2x2", section: .overview,
+            plannedDetail: String(localized: "Everything LanFi watches, at a glance.")),
+        ToolDescriptor(
             tool: .internetCheck, screen: .internetCheck, mcpTools: ["lanfi_diagnostics"],
             title: String(localized: "Internet Check"),
             icon: "stethoscope", section: .diagnostics),

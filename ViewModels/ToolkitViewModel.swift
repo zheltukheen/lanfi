@@ -4,7 +4,7 @@ import SwiftUI
 
 @MainActor
 final class ToolkitViewModel: ObservableObject {
-    @Published var selection: ToolboxTool = .wifiAnalyzer {
+    @Published var selection: ToolboxTool = .overview {
         didSet { UserDefaults.standard.set(selection.rawValue, forKey: Self.selectionKey) }
     }
 

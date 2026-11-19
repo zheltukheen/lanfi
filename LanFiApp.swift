@@ -72,6 +72,7 @@ struct LanFiApp: App {
                 .environmentObject(survey)
                 .environmentObject(uptime)
                 .environmentObject(toolkit)
+                .environmentObject(meter)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
                 .onAppear {

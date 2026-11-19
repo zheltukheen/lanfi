@@ -189,6 +189,8 @@ struct NetworkToolkitView: View {
     @ViewBuilder
     private var detail: some View {
         switch toolkit.selection.screen {
+        case .overview:
+            OverviewDashboardView(toolkit: toolkit)
         case .internetCheck:
             InternetCheckToolView(diagnostics: diagnostics, speedTest: toolkit.speedTest)
         case .ping:
