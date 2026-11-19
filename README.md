@@ -193,6 +193,11 @@ menu-bar meter) that decides how the analysis above actually looks. The review
 that fed it — NetWorker Pro, AirRadar 8, PeakHour 6 and an Unstore buyer's
 notes — is in
 [`docs/REFERENCE_APPS_REVIEW_2026-11.md`](docs/REFERENCE_APPS_REVIEW_2026-11.md).
+The 22 menu-bar listings on the On My Menubar network tag are triaged in
+[`docs/ONMYMENUBAR_NETWORK_REVIEW_2026-11.md`](docs/ONMYMENUBAR_NETWORK_REVIEW_2026-11.md),
+which adds the P3 items (listener watch, route monitor, connectivity watchdog,
+VPN leak checks, DNS benchmark, per-app history, ARP/DNS hijack, link
+automation, SSH launch, plain-language services).
 
 Delivered through 4.12.1: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column
