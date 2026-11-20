@@ -1,5 +1,22 @@
 # Changelog
 
+## 5.6.0 — 2026-11-20
+
+### Added
+- **NAT Test (P4.4).** A new Network Tools screen sends STUN binding requests
+  from a single UDP socket to two public servers, so the router's mapping can be
+  compared: two probes to the first server prove the mapping is stable, the
+  third destination shows whether the router reuses it. It reports the local and
+  external endpoints, whether the source port survived, latency per probe, and a
+  verdict — no NAT, cone NAT, symmetric NAT or no answer — with a copyable
+  report.
+- RFC 5389 binding request/response codec (XOR-MAPPED-ADDRESS and the legacy
+  MAPPED-ADDRESS, IPv4 and IPv6) and a pure classification model, both covered
+  by `Tests/NATProfileTests`.
+- Filtering behaviour is reported as "not probed" rather than guessed: proving
+  it needs a server that sends back to the mapped address, which public STUN
+  servers do not do.
+
 ## 5.5.9 — 2026-11-20
 
 ### Fixed
