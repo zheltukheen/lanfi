@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.6.1 — 2026-11-20
+
+### Added
+- **DNS over TLS (P4.3).** The resolver comparison now includes Cloudflare and
+  Google over DoT (RFC 7858) next to the UDP and DoH rows, so a network that
+  rewrites port 53 can be told apart from one that also blocks the encrypted
+  transports. TLS runs on port 853 with SNI set to the resolver's name, and the
+  answers are parsed by the same wire parser the UDP path uses.
+- `DoTFraming` length-prefix helpers with partial-read and multi-frame tests, an
+  opt-in live probe (`LANFI_LIVE_TESTS=1`) and `DoTResolver.custom` for
+  `tls://host`, `host` and `host:port`.
+
+### Fixed
+- The DoT exchange could be deallocated before its TLS handshake finished,
+  leaking the continuation and hanging the lookup indefinitely. The session is
+  now held for the duration of the request and its state handler is released
+  when the answer arrives.
+
 ## 5.6.0 — 2026-11-20
 
 ### Added
