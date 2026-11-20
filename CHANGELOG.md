@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.5.1 — 2026-11-20
+
+### Changed
+- **Offline Capture sorts from its headers.** The beacon table and the two
+  tables inside its sheets (captured clients and management-frame counters)
+  moved to `AppTable`. The three local sort enums, their comparators and the
+  `TableSortControl` menus are gone, so each column's title, sort value and
+  cell come from one declaration and the header affordance matches the rest of
+  the app. Connections and Process Traffic stay on native `Table`: their
+  hierarchical rows need a tree-capable table that keeps a group next to its
+  children while a column sorts.
+
 ## 5.5.0 — 2026-11-19
 
 ### Fixed

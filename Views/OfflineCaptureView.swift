@@ -21,136 +21,6 @@ struct OfflineCaptureView: View {
     @State private var searchText = ""
     @State private var currentURL: URL?
 
-    private enum BeaconSortKey: String, CaseIterable, Identifiable {
-        case ssid, bssid, channel, rssi, security, handshake, deauth, ies, clients, eht
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .ssid: return String(localized: "SSID")
-            case .bssid: return String(localized: "BSSID")
-            case .channel: return String(localized: "Ch")
-            case .rssi: return String(localized: "RSSI")
-            case .security: return String(localized: "Security")
-            case .handshake: return String(localized: "Handshake")
-            case .deauth: return String(localized: "Deauth")
-            case .ies: return String(localized: "IEs")
-            case .clients: return String(localized: "Clients")
-            case .eht: return String(localized: "EHT")
-            }
-        }
-    }
-
-    private enum ClientSortKey: String, CaseIterable, Identifiable {
-        case mac, vendor, bssid, frames, management, rssi, lastSeen, probes, shelf
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .mac: return String(localized: "MAC")
-            case .vendor: return String(localized: "Vendor")
-            case .bssid: return String(localized: "BSSID")
-            case .frames: return String(localized: "Frames")
-            case .management: return String(localized: "Mgmt/Data")
-            case .rssi: return String(localized: "RSSI")
-            case .lastSeen: return String(localized: "Last seen")
-            case .probes: return String(localized: "Probes")
-            case .shelf: return String(localized: "Device Shelf")
-            }
-        }
-    }
-
-    @State private var beaconSortKey: BeaconSortKey = .rssi
-    @State private var beaconAscending = false
-    @State private var clientSortKey: ClientSortKey = .frames
-    @State private var clientAscending = false
-
-    private enum ManagementSortKey: String, CaseIterable, Identifiable {
-        case bssid, beacons, probeResponses, deauth, disassoc, burst, reasons
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .bssid: return String(localized: "BSSID")
-            case .beacons: return String(localized: "Beacons")
-            case .probeResponses: return String(localized: "Probe resp.")
-            case .deauth: return String(localized: "Deauth")
-            case .disassoc: return String(localized: "Disassoc")
-            case .burst: return String(localized: "Burst")
-            case .reasons: return String(localized: "Reasons")
-            }
-        }
-    }
-
-    @State private var managementSortKey: ManagementSortKey = .bssid
-    @State private var managementAscending = true
-
-    private func sortedManagement(_ rows: [ManagementCounters]) -> [ManagementCounters] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch managementSortKey {
-            case .bssid:
-                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .beacons: return lhs.beacons < rhs.beacons
-            case .probeResponses: return lhs.probeResponses < rhs.probeResponses
-            case .deauth: return lhs.deauth < rhs.deauth
-            case .disassoc: return lhs.disassoc < rhs.disassoc
-            case .burst: return (lhs.burst ? 1 : 0) < (rhs.burst ? 1 : 0)
-            case .reasons:
-                return lhs.reasons.map(\.count).reduce(0, +) < rhs.reasons.map(\.count).reduce(0, +)
-            }
-        }
-        return managementAscending ? ordered : ordered.reversed()
-    }
-
-    private func sortedBeacons(_ rows: [CapturedBeacon]) -> [CapturedBeacon] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch beaconSortKey {
-            case .ssid: return lhs.ssid.localizedStandardCompare(rhs.ssid) == .orderedAscending
-            case .bssid: return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .channel: return (lhs.channel ?? Int.max) < (rhs.channel ?? Int.max)
-            case .rssi: return (lhs.rssi ?? Int.min) < (rhs.rssi ?? Int.min)
-            case .security:
-                return lhs.security.localizedStandardCompare(rhs.security) == .orderedAscending
-            case .handshake:
-                return handshakeStatus(for: lhs).text.localizedStandardCompare(
-                    handshakeStatus(for: rhs).text) == .orderedAscending
-            case .deauth:
-                return (security.counters(for: lhs.bssid)?.disruptionCount ?? 0)
-                    < (security.counters(for: rhs.bssid)?.disruptionCount ?? 0)
-            case .ies:
-                return lhs.informationElements.count < rhs.informationElements.count
-            case .clients:
-                return (lhs.clientCount ?? Int.max) < (rhs.clientCount ?? Int.max)
-            case .eht: return (lhs.isEHT ? 1 : 0) < (rhs.isEHT ? 1 : 0)
-            }
-        }
-        return beaconAscending ? ordered : ordered.reversed()
-    }
-
-    private func sortedClients(_ rows: [CapturedClient]) -> [CapturedClient] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch clientSortKey {
-            case .mac: return lhs.mac.localizedStandardCompare(rhs.mac) == .orderedAscending
-            case .vendor:
-                return OUIParser.vendor(for: lhs.mac).localizedStandardCompare(
-                    OUIParser.vendor(for: rhs.mac)) == .orderedAscending
-            case .bssid:
-                return lhs.bssid.localizedStandardCompare(rhs.bssid) == .orderedAscending
-            case .frames: return lhs.frameCount < rhs.frameCount
-            case .management:
-                return lhs.managementFrames < rhs.managementFrames
-            case .rssi: return (lhs.rssi ?? .min) < (rhs.rssi ?? .min)
-            case .lastSeen: return lhs.lastSeen < rhs.lastSeen
-            case .probes:
-                return lhs.probeSSIDs.joined(separator: ", ")
-                    .localizedStandardCompare(rhs.probeSSIDs.joined(separator: ", "))
-                    == .orderedAscending
-            case .shelf:
-                return (shelfDevices[lhs.mac.uppercased()]?.displayName ?? "")
-                    .localizedStandardCompare(shelfDevices[rhs.mac.uppercased()]?.displayName ?? "")
-                    == .orderedAscending
-            }
-        }
-        return clientAscending ? ordered : ordered.reversed()
-    }
-
     init(
         initialURL: URL? = nil, embedded: Bool = false,
         monitor: MonitorViewModel? = nil
@@ -247,39 +117,65 @@ struct OfflineCaptureView: View {
                         .fixedSize()
                     }
                     .padding(DesignToken.Spacing.compact)
-                    HStack {
-                        TableSortControl(
-                            options: BeaconSortKey.allCases.map { ($0, $0.title) },
-                            selection: $beaconSortKey, ascending: $beaconAscending)
-                        Spacer()
-                    }
-                    .padding(.horizontal, DesignToken.Spacing.compact)
-                    Table(sortedBeacons(filteredBeacons), selection: $selectedBeaconId) {
-                        TableColumn("SSID", value: \.ssid)
-                        TableColumn("BSSID", value: \.bssid)
-                        TableColumn("Ch") { Text($0.channel.map(String.init) ?? "—") }.width(AppColumnWidth.index)
-                        TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(70)
-                        TableColumn("Security", value: \.security)
-                        TableColumn("Handshake") { beacon in
-                            let status = handshakeStatus(for: beacon)
-                            Text(status.text)
-                                .foregroundColor(status.color)
-                                .help(status.help)
-                        }
-                        .width(AppColumnWidth.compact)
-                        TableColumn("Deauth") { beacon in
-                            let count = security.counters(for: beacon.bssid)?.disruptionCount ?? 0
-                            Text(count == 0 ? "—" : "\(count)")
-                                .foregroundColor(count >= CaptureSecurityAnalyzer.burstThreshold ? .red : .secondary)
-                        }
-                        .width(AppColumnWidth.small)
-                        TableColumn("IEs") { Text("\($0.informationElements.count)") }.width(AppColumnWidth.index)
-                        TableColumn("Clients") { Text($0.clientCount.map(String.init) ?? "—") }.width(
-                            AppColumnWidth.small)
-                        TableColumn("EHT") { Text($0.isEHT ? "Yes" : "—") }.width(AppColumnWidth.index)
-                    }
-                    .tableStyle(.inset)
+                    AppTable(
+                        columns: [
+                            AppTableColumn(
+                                id: "ssid", title: "SSID", minWidth: 130,
+                                value: { .text($0.ssid) }
+                            ) { Text($0.ssid) },
+                            AppTableColumn(
+                                id: "bssid", title: "BSSID", minWidth: 140,
+                                value: { .text($0.bssid) }
+                            ) { Text($0.bssid).font(.caption.monospaced()) },
+                            AppTableColumn(
+                                id: "channel", title: "Ch", minWidth: AppColumnWidth.index,
+                                value: { .number($0.channel) }
+                            ) { Text($0.channel.map(String.init) ?? "—") },
+                            AppTableColumn(
+                                id: "rssi", title: "RSSI", minWidth: 70,
+                                value: { .number($0.rssi) }
+                            ) { Text($0.rssi.map { "\($0) dBm" } ?? "—") },
+                            AppTableColumn(
+                                id: "security", title: "Security", minWidth: 120,
+                                value: { .text($0.security) }
+                            ) { Text($0.security) },
+                            AppTableColumn(
+                                id: "handshake", title: "Handshake", minWidth: AppColumnWidth.compact,
+                                value: { .text(handshakeStatus(for: $0).text) }
+                            ) { beacon in
+                                let status = handshakeStatus(for: beacon)
+                                Text(status.text)
+                                    .foregroundColor(status.color)
+                                    .help(status.help)
+                            },
+                            AppTableColumn(
+                                id: "deauth", title: "Deauth", minWidth: AppColumnWidth.small,
+                                value: { .number(security.counters(for: $0.bssid)?.disruptionCount) }
+                            ) { beacon in
+                                let count = security.counters(for: beacon.bssid)?.disruptionCount ?? 0
+                                Text(count == 0 ? "—" : "\(count)")
+                                    .foregroundColor(
+                                        count >= CaptureSecurityAnalyzer.burstThreshold ? .red : .secondary)
+                            },
+                            AppTableColumn(
+                                id: "ies", title: "IEs", minWidth: AppColumnWidth.index,
+                                value: { .number($0.informationElements.count) }
+                            ) { Text("\($0.informationElements.count)") },
+                            AppTableColumn(
+                                id: "clients", title: "Clients", minWidth: AppColumnWidth.small,
+                                value: { .number($0.clientCount) }
+                            ) { Text($0.clientCount.map(String.init) ?? "—") },
+                            AppTableColumn(
+                                id: "eht", title: "EHT", minWidth: AppColumnWidth.index,
+                                value: { .flag($0.isEHT) }
+                            ) { Text($0.isEHT ? "Yes" : "—") },
+                        ],
+                        rows: filteredBeacons, initialKey: "rssi", ascending: false,
+                        selection: $selectedBeaconId
+                    )
                     .frame(minHeight: 150, maxHeight: .infinity)
+                    .padding(.horizontal, DesignToken.Spacing.tight)
+                    .padding(.top, DesignToken.Spacing.tight)
 
                     if let selectedBeacon {
                         Divider()
@@ -349,39 +245,58 @@ struct OfflineCaptureView: View {
                 Toggle("Only \(selectedBeacon?.ssid ?? "selected network")", isOn: $clientsOnlySelectedNetwork)
                     .toggleStyle(.checkbox)
                     .disabled(selectedBeacon == nil)
-                TableSortControl(
-                    options: ClientSortKey.allCases.map { ($0, $0.title) },
-                    selection: $clientSortKey, ascending: $clientAscending)
                 Button("Close") { showingClients = false }
             }
-            Table(sortedClients(filteredClients)) {
-                TableColumn("MAC", value: \.mac)
-                TableColumn("Vendor") { client in
-                    Text(OUIParser.vendor(for: client.mac)).lineLimit(1)
-                }
-                .width(AppColumnWidth.wide)
-                TableColumn("BSSID", value: \.bssid)
-                TableColumn("Frames") { Text("\($0.frameCount)") }.width(AppColumnWidth.small)
-                TableColumn("Mgmt/Data") { Text("\($0.managementFrames)/\($0.dataFrames)") }.width(80)
-                TableColumn("RSSI") { Text($0.rssi.map { "\($0) dBm" } ?? "—") }.width(AppColumnWidth.short)
-                TableColumn("Last seen") { client in
-                    Text(Self.timeLabel(client.lastSeen))
-                }
-                .width(80)
-                TableColumn("Probes") { client in
-                    Text(client.probeSSIDs.isEmpty ? "—" : client.probeSSIDs.joined(separator: ", "))
-                        .lineLimit(1)
-                        .help(client.probeSSIDs.joined(separator: "\n"))
-                }
-                .width(AppColumnWidth.wide)
-                TableColumn("Device Shelf") { client in
-                    let device = shelfDevices[client.mac.uppercased()]
-                    Text(device.map { "\($0.displayName) · \($0.ip)" } ?? "—")
-                        .lineLimit(1)
-                        .foregroundColor(device == nil ? .secondary : .primary)
-                }
-                .width(AppColumnWidth.long)
-            }
+            AppTable(
+                columns: [
+                    AppTableColumn(
+                        id: "mac", title: "MAC", minWidth: 120,
+                        value: { .text($0.mac) }
+                    ) { Text($0.mac).font(.caption.monospaced()) },
+                    AppTableColumn(
+                        id: "vendor", title: "Vendor", minWidth: AppColumnWidth.wide,
+                        value: { .text(OUIParser.vendor(for: $0.mac)) }
+                    ) { Text(OUIParser.vendor(for: $0.mac)).lineLimit(1) },
+                    AppTableColumn(
+                        id: "bssid", title: "BSSID", minWidth: 140,
+                        value: { .text($0.bssid) }
+                    ) { Text($0.bssid).font(.caption.monospaced()) },
+                    AppTableColumn(
+                        id: "frames", title: "Frames", minWidth: AppColumnWidth.small,
+                        value: { .number($0.frameCount) }
+                    ) { Text("\($0.frameCount)").monospacedDigit() },
+                    AppTableColumn(
+                        id: "management", title: "Mgmt/Data", minWidth: 80,
+                        value: { .number($0.managementFrames) }
+                    ) { Text("\($0.managementFrames)/\($0.dataFrames)").monospacedDigit() },
+                    AppTableColumn(
+                        id: "rssi", title: "RSSI", minWidth: AppColumnWidth.short,
+                        value: { .number($0.rssi) }
+                    ) { Text($0.rssi.map { "\($0) dBm" } ?? "—") },
+                    AppTableColumn(
+                        id: "lastSeen", title: "Last seen", minWidth: 80,
+                        value: { .number($0.lastSeen.timeIntervalSinceReferenceDate) }
+                    ) { Text(Self.timeLabel($0.lastSeen)) },
+                    AppTableColumn(
+                        id: "probes", title: "Probes", minWidth: AppColumnWidth.wide,
+                        value: { .text($0.probeSSIDs.joined(separator: ", ")) }
+                    ) { client in
+                        Text(client.probeSSIDs.isEmpty ? "—" : client.probeSSIDs.joined(separator: ", "))
+                            .lineLimit(1)
+                            .help(client.probeSSIDs.joined(separator: "\n"))
+                    },
+                    AppTableColumn(
+                        id: "shelf", title: "Device Shelf", minWidth: AppColumnWidth.long,
+                        value: { .text(shelfDevices[$0.mac.uppercased()]?.displayName) }
+                    ) { client in
+                        let device = shelfDevices[client.mac.uppercased()]
+                        Text(device.map { "\($0.displayName) · \($0.ip)" } ?? "—")
+                            .lineLimit(1)
+                            .foregroundColor(device == nil ? .secondary : .primary)
+                    },
+                ],
+                rows: filteredClients, initialKey: "frames", ascending: false
+            )
         }
         .padding(DesignToken.Spacing.card)
         .frame(width: 940, height: 440)
@@ -457,9 +372,6 @@ struct OfflineCaptureView: View {
 
             HStack {
                 Text("Management frames").font(.caption.bold())
-                TableSortControl(
-                    options: ManagementSortKey.allCases.map { ($0, $0.title) },
-                    selection: $managementSortKey, ascending: $managementAscending)
                 Spacer()
             }
             if security.management.isEmpty {
@@ -467,19 +379,42 @@ struct OfflineCaptureView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else {
-                Table(sortedManagement(security.management)) {
-                    TableColumn("BSSID", value: \.bssid)
-                    TableColumn("Beacons") { Text("\($0.beacons)") }.width(AppColumnWidth.short)
-                    TableColumn("Probe resp.") { Text("\($0.probeResponses)") }.width(80)
-                    TableColumn("Deauth") { Text("\($0.deauth)") }.width(60)
-                    TableColumn("Disassoc") { Text("\($0.disassoc)") }.width(70)
-                    TableColumn("Burst") { Text($0.burst ? "Yes" : "—").foregroundColor($0.burst ? .red : .secondary) }
-                        .width(AppColumnWidth.tiny)
-                    TableColumn("Reasons") { counters in
-                        let text = counters.reasons.map { "\($0.label) ×\($0.count)" }.joined(separator: ", ")
-                        Text(text.isEmpty ? "—" : text).lineLimit(1).help(text)
-                    }
-                }
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "bssid", title: "BSSID", minWidth: 140,
+                            value: { .text($0.bssid) }
+                        ) { Text($0.bssid).font(.caption.monospaced()) },
+                        AppTableColumn(
+                            id: "beacons", title: "Beacons", minWidth: AppColumnWidth.short,
+                            value: { .number($0.beacons) }
+                        ) { Text("\($0.beacons)").monospacedDigit() },
+                        AppTableColumn(
+                            id: "probeResponses", title: "Probe resp.", minWidth: 80,
+                            value: { .number($0.probeResponses) }
+                        ) { Text("\($0.probeResponses)").monospacedDigit() },
+                        AppTableColumn(
+                            id: "deauth", title: "Deauth", minWidth: 60,
+                            value: { .number($0.deauth) }
+                        ) { Text("\($0.deauth)").monospacedDigit() },
+                        AppTableColumn(
+                            id: "disassoc", title: "Disassoc", minWidth: 70,
+                            value: { .number($0.disassoc) }
+                        ) { Text("\($0.disassoc)").monospacedDigit() },
+                        AppTableColumn(
+                            id: "burst", title: "Burst", minWidth: AppColumnWidth.tiny,
+                            value: { .flag($0.burst) }
+                        ) { Text($0.burst ? "Yes" : "—").foregroundColor($0.burst ? .red : .secondary) },
+                        AppTableColumn(
+                            id: "reasons", title: "Reasons", minWidth: 160,
+                            value: { .number($0.reasons.map(\.count).reduce(0, +)) }
+                        ) { counters in
+                            let text = counters.reasons.map { "\($0.label) ×\($0.count)" }.joined(separator: ", ")
+                            Text(text.isEmpty ? "—" : text).lineLimit(1).help(text)
+                        },
+                    ],
+                    rows: security.management, initialKey: "bssid"
+                )
             }
         }
         .padding(DesignToken.Spacing.card)

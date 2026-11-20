@@ -1021,6 +1021,17 @@ locales.
 
 ---
 
+## Delivered in the forty-first slice (2026-11-20)
+
+- **Offline Capture sorts from its headers.** The beacon table and both sheet
+  tables (captured clients, management-frame counters) use `AppTable`. The
+  three local sort enums, their comparators and the `TableSortControl` menus
+  are gone, so a column's title, the value it sorts by and the cell it draws
+  come from one declaration. The obsolete multi-column comment about native
+  tables in WARP.md now lists only the hierarchical Connections screens.
+- **Every non-hierarchical SwiftUI table in the app is on `AppTable`;** the
+  remaining native `Table` views are Connections and Process Traffic.
+
 ## Delivered in the fortieth slice (2026-11-19)
 
 - **Header sorting, batch 2:** Speed Test history, Roaming, DNS Propagation,
@@ -1030,9 +1041,9 @@ locales.
   `LANSort` for both the header and the values.
 - **Overview:** gateway, its MAC and the DNS verdict are outside the Wi-Fi
   branch, so they stay visible on Ethernet; metric tiles do not repeat them.
-- **Remaining:** Offline Capture (two of its three tables live in sheets),
-  Connections / Process Traffic (hierarchical rows need a tree-capable table)
-  and the Multi-Network Comparison panels.
+- **Remaining:** Connections / Process Traffic, whose hierarchical, expandable
+  rows need a tree-capable `AppTable` (a group must stay next to its children
+  while a column sorts).
 - 635 tests green (1 skipped), lint clean, Debug and universal builds succeed.
 
 ## Delivered in the thirty-ninth slice (2026-11-19)

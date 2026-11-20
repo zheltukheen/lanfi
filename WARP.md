@@ -107,11 +107,11 @@ an app bundle.
   it. The Device Shelf, LAN Scanner and Client Analytics derive their
   `AppTable` columns from an existing sort list where one exists, so the header
   and the sort values cannot drift.
-  Still on native `Table`: Offline Capture (three tables, two of them inside
-  sheets), Connections / Process Traffic (hierarchical, expandable rows) and the
-  Multi-Network Comparison panels. Connections and Process Traffic need a
-  tree-capable `AppTable`; Offline Capture's sheets need the column set moved
-  before their tables can follow. The Wi-Fi analyzer keeps its own sort/filter
+  Offline Capture uses it as well (beacons plus the Clients and Security sheet
+  tables).
+  Still on native `Table`: Connections and Process Traffic, whose hierarchical,
+  expandable rows need a tree-capable `AppTable` that keeps a group next to its
+  children while a column sorts. The Wi-Fi analyzer keeps its own sort/filter
   UI by design. Columns are
   declared with the `@ViewBuilder` initializer, so a cell is written as a
   normal view instead of a hand-wrapped `AnyView`.
