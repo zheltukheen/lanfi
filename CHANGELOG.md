@@ -1,5 +1,20 @@
 # Changelog
 
+## 5.6.4 — 2026-11-20
+
+### Changed
+- **Remote helpers run under supervision (P4.2).** The remote capture (`ssh`,
+  `scp`, cleanup) and the remote sensor scan now go through
+  `SupervisedCommand`, so a hung ssh has a hard limit and is stopped with
+  SIGTERM then SIGKILL instead of leaving the screen waiting forever. Both
+  output pipes are drained while the child runs.
+
+### Fixed
+- A short command that finished during the readiness window was reported as a
+  failed launch, hiding its own status and message.
+- Reading stderr to end-of-file before stdout deadlocked once the child filled
+  the unread pipe; a large `system_profiler` answer could hang the scan.
+
 ## 5.6.3 — 2026-11-20
 
 ### Added
