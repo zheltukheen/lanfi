@@ -1,5 +1,18 @@
 # Changelog
 
+## 5.5.3 — 2026-11-20
+
+### Added
+- **⌘K command palette.** Every available tool, every settings page and every
+  Wi-Fi workspace panel is indexed once in `CommandIndex` (title, category,
+  keywords, destination), so a new screen becomes searchable without touching
+  the palette. Ranking prefers an exact title over a prefix, a substring, a
+  keyword, the subtitle and the category, and eight tests pin that order and
+  the coverage. Settings pages are reachable by what they hold rather than
+  only by their tab name — "anonymous statistics" opens Privacy, "resolver
+  benchmark" opens Diagnostics. `SettingsSection` moved to Models so the index
+  and the tests share the sidebar's list instead of copying it.
+
 ## 5.5.2 — 2026-11-20
 
 ### Changed

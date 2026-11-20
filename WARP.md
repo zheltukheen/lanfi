@@ -117,6 +117,13 @@ an app bundle.
   own sort/filter UI by design. Columns are
   declared with the `@ViewBuilder` initializer, so a cell is written as a
   normal view instead of a hand-wrapped `AnyView`.
+- `Models/CommandIndex.swift` + `Views/CommandPaletteView.swift` — the ⌘K
+  palette. `CommandIndex.all` is built from the sidebar's `ToolboxTool` list,
+  `SettingsSection.allCases` and the Wi-Fi workspace panels, so a new screen is
+  searchable as soon as it registers; ranking is exact title, prefix,
+  substring, keyword, subtitle, category, and `Tests/CommandIndexTests` pins it.
+  `perform(_:)` in `NetworkToolkitView` routes a hit to a tool, a bottom tab or
+  the Settings window.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,
   `AppIconButton`, `AppListRow`, `AppSearchField`, `ToolkitHeaderBar`); route
   new buttons, lists and tool headers through it. `AppButton(localized:)`

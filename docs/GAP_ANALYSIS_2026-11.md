@@ -760,6 +760,13 @@ the default set is documented.
 
 ### P4.5 — Command palette over tools and settings
 
+*Delivered in 5.5.3:* `Models/CommandIndex.swift` indexes every available
+tool, every `SettingsSection` and the eight Wi-Fi workspace panels; ranking
+(exact title → prefix → substring → keyword → subtitle → category) and the
+coverage of the index are covered by `Tests/CommandIndexTests`. `⌘K` opens
+`Views/CommandPaletteView.swift` from the View menu; picking a hit selects a
+tool, a bottom tab, or opens the Settings window on the matching page.
+
 *What Bettbox does.* `lib/views/tools.dart` indexes every screen and every
 setting into `_SearchItem` records (title, subtitle, category, destination),
 rebuilds the index only when the navigation set changes, filters with a 300 ms

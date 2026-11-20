@@ -1544,3 +1544,10 @@
 "Method" = "Methode";
 "Size" = "Größe";
 "Time" = "Zeit";
+"Command Palette…" = "Befehlspalette…";
+"Search tools, settings and screens" = "Werkzeuge, Einstellungen und Bildschirme durchsuchen";
+"No matches" = "Keine Treffer";
+"Try a tool name, a setting or a Wi-Fi panel." = "Versuchen Sie einen Werkzeug-, Einstellungs- oder Panelnamen.";
+"Type a tool, setting or panel name" = "Werkzeug, Einstellung oder Panel eingeben";
+"Return opens the best match. Esc closes the palette." = "Return öffnet den besten Treffer. Esc schließt die Palette.";
+"Wi-Fi workspace" = "Wi-Fi-Arbeitsbereich";

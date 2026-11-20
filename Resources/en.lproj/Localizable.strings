@@ -1545,3 +1545,10 @@
 "Method" = "Method";
 "Size" = "Size";
 "Time" = "Time";
+"Command Palette…" = "Command Palette…";
+"Search tools, settings and screens" = "Search tools, settings and screens";
+"No matches" = "No matches";
+"Try a tool name, a setting or a Wi-Fi panel." = "Try a tool name, a setting or a Wi-Fi panel.";
+"Type a tool, setting or panel name" = "Type a tool, setting or panel name";
+"Return opens the best match. Esc closes the palette." = "Return opens the best match. Esc closes the palette.";
+"Wi-Fi workspace" = "Wi-Fi workspace";

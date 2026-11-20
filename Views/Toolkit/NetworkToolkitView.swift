@@ -15,6 +15,7 @@ struct NetworkToolkitView: View {
     @EnvironmentObject private var survey: SurveyViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
+    @State private var showingPalette = false
     @AppStorage(AppSettingsKey.toolkitSidebarWidth.rawValue) private var storedSidebarWidth: Double = 228
     @State private var sidebarDragOffset: CGFloat = 0
 
@@ -51,6 +52,14 @@ struct NetworkToolkitView: View {
         )
         .background(Color(nsColor: .windowBackgroundColor))
         .appTableDensity()
+        .sheet(isPresented: $showingPalette) {
+            CommandPaletteView { item in
+                perform(item)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .lanfiShowCommandPalette)) { _ in
+            showingPalette = true
+        }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowToolkit)) { note in
             if let raw = note.userInfo?["tool"] as? String,
                 let tool = ToolboxTool(rawValue: raw)
@@ -70,6 +79,27 @@ struct NetworkToolkitView: View {
     /// generic tool header above it.
     private var isWorkspaceTool: Bool {
         toolkit.selection.screen == .wifiAnalyzer
+    }
+
+    /// Runs the destination of a palette entry. Settings opens the page the
+    /// system Settings window reads from, because the window itself has no
+    /// programmatic selection API on macOS 13.
+    private func perform(_ item: CommandItem) {
+        switch item.destination {
+        case .tool(let tool):
+            toolkit.select(tool)
+        case .wifiTab(let tab):
+            toolkit.select(.wifiAnalyzer)
+            NotificationCenter.default.post(
+                name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": tab])
+        case .settings(let section):
+            UserDefaults.standard.set(
+                section.rawValue, forKey: AppSettingsKey.settingsSection.rawValue)
+            NSApp.activate(ignoringOtherApps: true)
+            if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
+                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            }
+        }
     }
 
     private var sidebar: some View {

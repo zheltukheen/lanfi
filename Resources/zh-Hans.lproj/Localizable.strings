@@ -1544,3 +1544,10 @@
 "Method" = "方法";
 "Size" = "大小";
 "Time" = "时间";
+"Command Palette…" = "命令面板…";
+"Search tools, settings and screens" = "搜索工具、设置和界面";
+"No matches" = "没有匹配项";
+"Try a tool name, a setting or a Wi-Fi panel." = "请尝试工具、设置或 Wi-Fi 面板名称。";
+"Type a tool, setting or panel name" = "输入工具、设置或面板名称";
+"Return opens the best match. Esc closes the palette." = "回车打开最佳匹配，Esc 关闭命令面板。";
+"Wi-Fi workspace" = "Wi-Fi 工作区";

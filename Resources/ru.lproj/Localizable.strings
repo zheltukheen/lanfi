@@ -1581,3 +1581,10 @@
 "Method" = "Метод";
 "Size" = "Размер";
 "Time" = "Время";
+"Command Palette…" = "Командная палитра…";
+"Search tools, settings and screens" = "Поиск по инструментам, настройкам и экранам";
+"No matches" = "Нет совпадений";
+"Try a tool name, a setting or a Wi-Fi panel." = "Попробуйте название инструмента, настройки или панели Wi-Fi.";
+"Type a tool, setting or panel name" = "Введите название инструмента, настройки или панели";
+"Return opens the best match. Esc closes the palette." = "Return открывает лучшее совпадение. Esc закрывает палитру.";
+"Wi-Fi workspace" = "Рабочее пространство Wi-Fi";

@@ -12,6 +12,13 @@ struct LanFiCommands: Commands {
     @ObservedObject var survey: SurveyViewModel
 
     var body: some Commands {
+        CommandGroup(after: .sidebar) {
+            Button("Command Palette…") {
+                NotificationCenter.default.post(name: .lanfiShowCommandPalette, object: nil)
+            }
+            .keyboardShortcut("k", modifiers: .command)
+        }
+
         CommandGroup(replacing: .appInfo) {
             Button("About LanFi") {
                 openWindow(id: "about")
