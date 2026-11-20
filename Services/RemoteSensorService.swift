@@ -50,25 +50,23 @@ enum RemoteSensorService {
 
     static func scan(_ sensor: RemoteSensor) async throws -> [RemoteNetwork] {
         let arguments = try sshArguments(for: sensor)
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
-        process.arguments = arguments
-        let output = Pipe()
-        let errors = Pipe()
-        process.standardOutput = output
-        process.standardError = errors
-        try process.run()
-        process.waitUntilExit()
-        let errorText = String(
-            decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard process.terminationStatus == 0 else {
-            throw RemoteSensorError.sshFailed(
-                errorText.isEmpty ? "ssh failed with status \(process.terminationStatus)." : errorText
-            )
+        let result: SupervisedCommandResult
+        do {
+            // system_profiler can take a while on a busy sensor; past a minute
+            // something is wrong and the ssh child is stopped instead of left
+            // running with nobody watching it.
+            result = try await SupervisedCommand.run("/usr/bin/ssh", arguments, limit: 60)
+        } catch {
+            throw RemoteSensorError.sshFailed(error.localizedDescription)
         }
-        let data = output.fileHandleForReading.readDataToEndOfFile()
-        return try parse(data)
+        guard result.status == 0 else {
+            if result.timedOut && result.stderr.isEmpty {
+                throw RemoteSensorError.sshFailed("The sensor did not answer in time.")
+            }
+            throw RemoteSensorError.sshFailed(
+                result.stderr.isEmpty ? "ssh failed with status \(result.status)." : result.stderr)
+        }
+        return try parse(result.stdout)
     }
 
     static func parse(_ data: Data) throws -> [RemoteNetwork] {

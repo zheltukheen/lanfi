@@ -7,6 +7,8 @@ struct SupervisedProcessConfiguration {
     var environment: [String: String] = [:]
     /// Stderr sink, when the caller needs the child's message on failure.
     var errorPipe: Pipe?
+    /// Stdout sink, when the caller reads the child's output. Nil discards it.
+    var outputPipe: Pipe?
 
     /// How long the child has to show a real sign of life. A helper that never
     /// answers is killed and the start fails instead of hanging the caller.
@@ -70,7 +72,7 @@ actor SupervisedProcess {
         if !configuration.environment.isEmpty {
             process.environment = configuration.environment
         }
-        process.standardOutput = FileHandle.nullDevice
+        process.standardOutput = configuration.outputPipe ?? FileHandle.nullDevice
         process.standardError = configuration.errorPipe
         process.terminationHandler = { [weak self] finished in
             Task { await self?.childExited(status: finished.terminationStatus) }

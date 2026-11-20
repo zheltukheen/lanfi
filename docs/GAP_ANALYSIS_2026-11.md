@@ -689,8 +689,20 @@ SIGTERM then SIGKILL in an idempotent, serialised path. `Tests/
 SupervisedProcessTests` covers a child that exits immediately (found and fixed
 a real defect: an exit during startup used to be reported as "running"), one
 that never answers, the fresh-argument retry, the automatic restart, the
-crash-loop throttle and the unhealthy-helper refusal. Wiring the capture and
-remote-sensor helpers through it is the remaining step.
+crash-loop throttle and the unhealthy-helper refusal.
+
+*Completed in 5.6.4 (remote helpers):* `Services/SupervisedCommand.swift` runs
+one short-lived child under `SupervisedProcess` and returns its status, stdout
+and stderr, draining both pipes while the child runs. The remote capture
+(`ssh`, `scp`, the cleanup `ssh`) and the remote sensor scan both go through it
+now, so a hung ssh has a hard limit (capture duration + 60 s, sensor 60 s) and is
+stopped with SIGTERM then SIGKILL instead of leaving the screen on "scanning…"
+forever. Two real defects came out of the wiring and are fixed: a one-shot
+command that finished during the readiness window was reported as a failed
+launch, and reading stderr to end-of-file before stdout deadlocked as soon as
+the child filled the unread pipe — which `system_profiler` JSON can do.
+`Tests/RemoteCaptureSupervisionTests` covers success, stderr propagation, the
+timeout, a missing executable, and 400 KB on both streams.
 
 *What Bettbox does.* `lib/clash/service.dart` runs the core as a long-lived
 child and treats its IPC transport as the readiness signal:

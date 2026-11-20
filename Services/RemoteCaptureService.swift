@@ -50,7 +50,11 @@ enum RemoteCaptureService {
         let remotePath = "/tmp/lanfi-\(UUID().uuidString).pcap"
         var sshArguments = try RemoteSensorService.baseArguments(for: request.sensor)
         sshArguments.append("bash -lc \(shellQuote(script(for: request, remotePath: remotePath)))")
-        try run("/usr/bin/ssh", sshArguments)
+        // The remote script sleeps for `duration` and stops its own tcpdump, so
+        // the allowance is that sleep plus a generous handshake margin. Without
+        // the limit a hung ssh would look like a capture that never finishes.
+        try await run(
+            "/usr/bin/ssh", sshArguments, limit: TimeInterval(request.duration) + 60)
 
         var scpArguments = [
             "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new",
@@ -61,26 +65,32 @@ enum RemoteCaptureService {
         }
         let remote = "\(request.sensor.username)@\(request.sensor.host):\(remotePath)"
         scpArguments.append(contentsOf: [remote, localURL.path])
-        try run("/usr/bin/scp", scpArguments)
+        // A large pcap over a slow link is legitimate; a scp that never ends is not.
+        try await run("/usr/bin/scp", scpArguments, limit: 15 * 60)
 
         var cleanup = try RemoteSensorService.baseArguments(for: request.sensor)
         cleanup.append("rm -f \(shellQuote(remotePath)) \(shellQuote(remotePath + ".log"))")
-        try? run("/usr/bin/ssh", cleanup)
+        try? await run("/usr/bin/ssh", cleanup, limit: 20)
     }
 
-    private static func run(_ executable: String, _ arguments: [String]) throws {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: executable)
-        process.arguments = arguments
-        let errors = Pipe()
-        process.standardError = errors
-        process.standardOutput = Pipe()
-        try process.run()
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else {
-            let text = String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            throw RemoteSensorError.sshFailed(text.isEmpty ? "Remote capture failed." : text)
+    /// Runs one remote command under supervision, so ssh cannot hang the
+    /// capture and a stuck child is stopped with SIGTERM then SIGKILL.
+    static func run(
+        _ executable: String, _ arguments: [String], limit: TimeInterval
+    ) async throws {
+        let result: SupervisedCommandResult
+        do {
+            result = try await SupervisedCommand.run(executable, arguments, limit: limit)
+        } catch {
+            throw RemoteSensorError.sshFailed(error.localizedDescription)
+        }
+        guard result.status == 0 else {
+            if result.timedOut && result.stderr.isEmpty {
+                throw RemoteSensorError.sshFailed(
+                    "The remote command did not finish in time and was stopped.")
+            }
+            throw RemoteSensorError.sshFailed(
+                result.stderr.isEmpty ? "Remote capture failed." : result.stderr)
         }
     }
 

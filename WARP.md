@@ -320,7 +320,7 @@ an app bundle.
 - `Models/MTRModels.swift`, `SpeedTestHistory.swift`, `UptimeModels.swift`,
   `LANModels.swift`, `Iperf3Models.swift` — monitoring and toolkit data.
 - `Services/Toolkit/` — native probe layer: `DNSMessage`, `DNSClient`,
-  `DoHDNSClient`, `DNSComparisonService`, `STUNMessage`, `STUNTester`, `DoTDNSClient`, `DNSAddressEnricher`,
+  `DoHDNSClient`, `DNSComparisonService`, `STUNMessage`, `STUNTester`, `DoTDNSClient`, `DNSAddressEnricher`, `SupervisedCommand`,
   `PingService`, `PortScanner`, `TLSCertificateInspector`, `TracerouteRunner`,
   `TracerouteParser`, `MTRService`, `LANScannerService`, `BonjourDiscovery`.
   Pure codecs/parsers must stay testable headless.
