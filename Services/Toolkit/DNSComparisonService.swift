@@ -7,12 +7,14 @@ import Foundation
 struct DNSComparisonService: Sendable {
     var udpClient: any DNSLookuping = UDPDNSClient()
     var dohClient: DoHDNSClient = DoHDNSClient()
+    var dotClient: DoTDNSClient = DoTDNSClient()
 
     func compare(
         host: String,
         type: DNSRecordType,
         udpResolvers: [DNSResolver] = DNSResolver.builtIn,
-        dohResolvers: [DoHResolver] = DoHResolver.builtIn
+        dohResolvers: [DoHResolver] = DoHResolver.builtIn,
+        dotResolvers: [DoTResolver] = DoTResolver.builtIn
     ) async -> DNSComparison {
         await withTaskGroup(of: DNSComparisonEntry.self) { group in
             for resolver in udpResolvers {
@@ -51,12 +53,30 @@ struct DNSComparisonService: Sendable {
                     }
                 }
             }
+            for resolver in dotResolvers {
+                group.addTask {
+                    let started = Date()
+                    do {
+                        let result = try await dotClient.lookup(
+                            host: host, type: type, resolver: resolver, timeout: 6)
+                        return DNSComparisonEntry(
+                            id: "dot:\(resolver.id)", name: resolver.name, transport: .dot,
+                            records: result.records, milliseconds: result.milliseconds,
+                            failure: nil)
+                    } catch {
+                        return DNSComparisonEntry(
+                            id: "dot:\(resolver.id)", name: resolver.name, transport: .dot,
+                            records: [], milliseconds: Int(Date().timeIntervalSince(started) * 1000),
+                            failure: error.localizedDescription)
+                    }
+                }
+            }
             var entries: [DNSComparisonEntry] = []
             for await entry in group {
                 entries.append(entry)
             }
             entries.sort { lhs, rhs in
-                if lhs.transport != rhs.transport { return lhs.transport == .udp }
+                if lhs.transport != rhs.transport { return lhs.transport.rank < rhs.transport.rank }
                 return lhs.name < rhs.name
             }
             return DNSComparison(host: host, type: type, entries: entries)

@@ -4,11 +4,23 @@ import Foundation
 enum DNSComparisonTransport: String, Sendable {
     case udp
     case doh
+    case dot
 
     var label: String {
         switch self {
         case .udp: return "UDP"
         case .doh: return "DoH"
+        case .dot: return "DoT"
+        }
+    }
+
+    /// The order the rows appear in: plain first, then the encrypted transports
+    /// in the order they were added, so a run is easy to scan twice.
+    var rank: Int {
+        switch self {
+        case .udp: return 0
+        case .doh: return 1
+        case .dot: return 2
         }
     }
 }

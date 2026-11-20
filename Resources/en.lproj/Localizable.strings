@@ -1555,7 +1555,7 @@
 
 "Compare" = "Compare";
 "Resolver comparison" = "Resolver comparison";
-"Querying every resolver over UDP and DoH…" = "Querying every resolver over UDP and DoH…";
+"Querying every resolver over UDP and DoH…" = "Querying every resolver over UDP, DoH and DoT…";
 "Resolvers disagree on the answer." = "Resolvers disagree on the answer.";
 "All resolvers agree." = "All resolvers agree.";
 "No resolver answered." = "No resolver answered.";

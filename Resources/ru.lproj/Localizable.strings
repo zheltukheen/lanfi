@@ -1591,7 +1591,7 @@
 
 "Compare" = "Сравнить";
 "Resolver comparison" = "Сравнение резолверов";
-"Querying every resolver over UDP and DoH…" = "Опрос всех резолверов по UDP и DoH…";
+"Querying every resolver over UDP and DoH…" = "Опрос всех резолверов по UDP, DoH и DoT…";
 "Resolvers disagree on the answer." = "Резолверы отвечают по-разному.";
 "All resolvers agree." = "Все резолверы отвечают одинаково.";
 "No resolver answered." = "Ни один резолвер не ответил.";

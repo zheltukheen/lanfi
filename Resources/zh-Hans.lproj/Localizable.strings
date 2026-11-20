@@ -1554,7 +1554,7 @@
 
 "Compare" = "比较";
 "Resolver comparison" = "解析器对比";
-"Querying every resolver over UDP and DoH…" = "正在通过 UDP 和 DoH 查询所有解析器…";
+"Querying every resolver over UDP and DoH…" = "正在通过 UDP、DoH 和 DoT 查询每个解析器…";
 "Resolvers disagree on the answer." = "各解析器的应答不一致。";
 "All resolvers agree." = "所有解析器的应答一致。";
 "No resolver answered." = "没有解析器作出应答。";

@@ -756,9 +756,21 @@ status pill saying whether the answers agree. Agreement is compared on the set
 of answer values, so record order and TTL differences do not produce false
 alarms, while an empty answer next to a populated one does count — that is the
 hijack case. Failed resolvers are reported as rows with their error and
-counted in the footer instead of being dropped. Still open from this item: DoT
-and DoQ transports, the country/ASN annotation for A/AAAA and the route
-explanation note.
+counted in the footer instead of being dropped.
+
+*Delivered in 5.6.1 (DoT):* `Services/Toolkit/DoTDNSClient.swift` resolves over
+DNS-over-TLS (RFC 7858) with `NWConnection`: TLS to the resolver on port 853,
+SNI set to the resolver's name so the certificate check has something to match,
+two-byte length-prefixed framing (`DoTFraming`, tested with partial and doubled
+reads) and the same `DNSMessage.parseResponse` the UDP path uses, so the
+comparison still compares answers rather than encodings. The comparison runs
+Cloudflare and Google over DoT next to the three UDP resolvers and two DoH
+endpoints, with the rows ordered plain → DoH → DoT. A live probe test
+(`LANFI_LIVE_TESTS=1`) resolved `example.com` over TLS in 303 ms and caught a
+real defect on the way: the connection object was deallocated before the
+handshake finished, leaking the continuation and hanging the lookup forever.
+Still open from this item: DoQ (needs QUIC, not just a TLS stream), the
+country/ASN annotation for A/AAAA and the route explanation note.
 
 ### P4.4 — NAT type and STUN reachability test
 

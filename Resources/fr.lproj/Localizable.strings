@@ -1554,7 +1554,7 @@
 
 "Compare" = "Comparer";
 "Resolver comparison" = "Comparaison des résolveurs";
-"Querying every resolver over UDP and DoH…" = "Interrogation de tous les résolveurs en UDP et DoH…";
+"Querying every resolver over UDP and DoH…" = "Interrogation de chaque résolveur en UDP, DoH et DoT…";
 "Resolvers disagree on the answer." = "Les résolveurs donnent des réponses différentes.";
 "All resolvers agree." = "Tous les résolveurs concordent.";
 "No resolver answered." = "Aucun résolveur n’a répondu.";

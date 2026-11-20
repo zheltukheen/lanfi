@@ -363,7 +363,7 @@ struct DNSToolView: View {
                         ) { entry in
                             ToolkitTypeBadge(
                                 text: entry.transport.label,
-                                color: entry.transport == .doh ? AppPalette.info : AppPalette.muted)
+                                color: entry.transport == .udp ? AppPalette.muted : AppPalette.info)
                         },
                         AppTableColumn(
                             id: "answers", title: "Answers", minWidth: 260,
