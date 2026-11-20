@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.6.6 — 2026-11-20
+
+### Added
+- **Global shortcut for Connections (P3.1).** Settings → General can record one
+  shortcut that opens Connections from any app. It needs ⌘, ⌃ or ⌥, refuses
+  combinations macOS or this app already own by name, and reports when another
+  app took the combination — putting the previous shortcut back instead of
+  leaving none. Nothing is registered until the user records one.
+- `Models/GlobalHotKey.swift`, `Services/GlobalHotKeyCenter.swift` and nine
+  tests, including a round trip through the real Carbon registration API.
+
+### Changed
+- The app's notification names moved from `Views/WiFiWorkspace` to
+  `Utils/WorkspaceNotificationNames.swift`, because `Services` posts them and
+  the shared test target compiles `Services` without `Views`.
+
 ## 5.6.5 — 2026-11-20
 
 ### Changed
