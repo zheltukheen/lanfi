@@ -149,6 +149,12 @@ an app bundle.
   `SecurityEvent.post` channel both guards share, and `ShellOutput.run`. Add a
   new guard by subclassing `PollingGuard` and overriding `performSample()`;
   do not add another timer or another `Notification.Name`.
+- `Services/SupervisedProcess.swift` — the supervised long-lived child: a
+  readiness probe with a timeout, one retry with fresh arguments, a
+  rate-limited automatic restart guarded by a health probe, and an idempotent
+  SIGTERM→SIGKILL shutdown. New helpers (capture, remote sensors, spectrum)
+  should be launched through it instead of hand-rolling `Process` lifetime;
+  `Tests/SupervisedProcessTests` is the contract.
 - `Models/VPNGuard.swift` / `Services/VPNGuardService.swift` — P3.4: VPN
   detection, the `scutil --dns` / `netstat` parsers, the DNS and IPv6 leak
   verdicts, and the poller that posts `vpnDropped` / `vpnLeak` events.

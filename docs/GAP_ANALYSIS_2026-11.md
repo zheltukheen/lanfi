@@ -681,6 +681,17 @@ the capture work has a safe shape when it is attempted.
 
 ### P4.2 — Supervised worker lifecycle: readiness, retry, auto-restart
 
+*Delivered in 5.5.5 (core):* `Services/SupervisedProcess.swift` launches a
+long-lived child, treats readiness as a real answer with a timeout, retries
+once with fresh arguments, restarts after an unexpected exit at most once per
+rate-limit window and only while `isHealthy()` agrees, and shuts down with
+SIGTERM then SIGKILL in an idempotent, serialised path. `Tests/
+SupervisedProcessTests` covers a child that exits immediately (found and fixed
+a real defect: an exit during startup used to be reported as "running"), one
+that never answers, the fresh-argument retry, the automatic restart, the
+crash-loop throttle and the unhealthy-helper refusal. Wiring the capture and
+remote-sensor helpers through it is the remaining step.
+
 *What Bettbox does.* `lib/clash/service.dart` runs the core as a long-lived
 child and treats its IPC transport as the readiness signal:
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 5.5.5 — 2026-11-20
+
+### Added
+- **Supervised helper process.** `Services/SupervisedProcess.swift` gives a
+  long-lived child a readiness probe with a timeout (never "the process
+  exists"), one retry with freshly built arguments, a rate-limited automatic
+  restart that only runs while a health probe agrees, and an idempotent
+  SIGTERM→SIGKILL shutdown serialised so two callers cannot start or kill two
+  children. Writing its tests surfaced a real bug — a child that exited during
+  startup was reported as running and its exit was dropped — which the launch
+  path now detects. The capture and remote-sensor helpers still use their own
+  spawning and will move onto it next.
+
 ## 5.5.4 — 2026-11-20
 
 ### Changed
