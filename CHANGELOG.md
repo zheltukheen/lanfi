@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.6.2 — 2026-11-20
+
+### Added
+- **Country and network for DNS answers (P4.3).** An A/AAAA lookup now shows
+  where the returned addresses live and which network announces them, using the
+  GeoIP client the Whois screen already uses. The annotation arrives after the
+  records, is deduplicated, capped at four lookups per answer, and a failed
+  lookup leaves the cell empty rather than hiding the record.
+
 ## 5.6.1 — 2026-11-20
 
 ### Added
