@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.6.3 — 2026-11-20
+
+### Added
+- **Why this answer (P4.3).** The DNS screen now explains the shape of an
+  A/AAAA answer: a fake IP in 198.18.0.0/15, an answer made only of private
+  addresses, a zero TTL, several networks behind one name, and whether the
+  system resolver returns the same addresses. The system comparison is a second
+  query in the background; if it fails the note is simply absent.
+- `DNSAnswerExplanation` with nine rules-level tests over recorded answers.
+
 ## 5.6.2 — 2026-11-20
 
 ### Added
