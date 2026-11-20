@@ -6,21 +6,16 @@ struct ToolkitCard<Content: View>: View {
     private let content: Content
     private let padding: CGFloat
 
-    init(padding: CGFloat = 14, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = Theme.Spacing.card, @ViewBuilder content: () -> Content) {
         self.padding = padding
         self.content = content()
     }
 
+    /// The toolkit card is the app card: one fill, one radius, one hairline.
+    /// Keeping a second recipe here is how the workspace and the toolkit drifted
+    /// apart in the first place.
     var body: some View {
-        content
-            .padding(padding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                    .stroke(Color.primary.opacity(0.06), lineWidth: 1)
-            )
+        AppCard(padding: padding) { content }
     }
 }
 
@@ -29,10 +24,7 @@ struct ToolkitSectionLabel: View {
 
     var body: some View {
         Text(text)
-            .font(.caption2.weight(.semibold))
-            .foregroundColor(.secondary)
-            .textCase(.uppercase)
-            .tracking(0.6)
+            .appSectionLabel()
     }
 }
 

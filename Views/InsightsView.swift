@@ -170,9 +170,7 @@ struct RecommendationCard: View {
         }
         .padding(DesignToken.Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-        .overlay(RoundedRectangle(cornerRadius: DesignToken.Radius.card).stroke(tint.opacity(0.25), lineWidth: 1))
+        .appCardSurface(fill: Theme.Surface.panel)
     }
 }
 

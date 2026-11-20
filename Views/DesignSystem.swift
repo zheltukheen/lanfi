@@ -1,108 +1,5 @@
 import SwiftUI
 
-/// Shared visual contract for the app: spacing, radii, strokes and semantic
-/// colours live here so screens stop inventing their own numbers.
-enum DesignToken {
-    enum Spacing {
-        static let hairline: CGFloat = 2
-        static let tight: CGFloat = 4
-        static let small: CGFloat = 8
-        static let medium: CGFloat = 12
-        static let large: CGFloat = 16
-        static let compact: CGFloat = 10
-        static let card: CGFloat = 14
-        static let sheet: CGFloat = 20
-        static let section: CGFloat = 24
-        static let emptyState: CGFloat = 30
-        static let emptyStateWide: CGFloat = 36
-    }
-
-    enum Radius {
-        static let tiny: CGFloat = 2
-        static let badge: CGFloat = 4
-        static let control: CGFloat = 7
-        static let card: CGFloat = 10
-        static let sheet: CGFloat = 14
-    }
-
-    enum Stroke {
-        static let hairline: CGFloat = 1
-        static let emphasis: CGFloat = 1.5
-    }
-
-    /// Shared geometry. Screens used to hard-code `.padding(20)` and
-    /// `.frame(minWidth: 600, minHeight: 420)` independently; these values keep
-    /// sheets, panels and windows on one rhythm.
-    enum Layout {
-        static let contentPadding: CGFloat = 18
-        static let sheetPadding: CGFloat = 20
-        /// Wide enough for the sidebar, the table with its default columns and
-        /// the 300 pt inspector at once; below this the toolbar wraps and
-        /// controls start overlapping.
-        static let windowMinWidth: CGFloat = 1160
-        static let windowMinHeight: CGFloat = 700
-        static let sheetWidth: CGFloat = 620
-        static let sheetWidthCompact: CGFloat = 470
-        static let sheetWidthWide: CGFloat = 900
-        static let emptyStatePadding: CGFloat = 36
-        static let sheetMinHeight: CGFloat = 430
-        static let settingsWidth: CGFloat = 880
-        static let settingsHeight: CGFloat = 660
-        static let settingsSidebarMin: CGFloat = 180
-        static let settingsSidebarIdeal: CGFloat = 200
-        static let settingsSidebarMax: CGFloat = 240
-        static let inspectorWidth: CGFloat = 268
-        static let controlWidthSmall: CGFloat = 100
-        static let controlWidth: CGFloat = 240
-        static let controlWidthLarge: CGFloat = 320
-        static let formLabelColumn: CGFloat = 120
-    }
-
-    /// One toolbar rhythm for the Wi-Fi workspace and the toolkit header.
-    enum Toolbar {
-        static let height: CGFloat = 28
-        static let iconWidth: CGFloat = 32
-        static let spacing: CGFloat = 8
-        static let strokeOpacity: Double = 0.2
-        static let activeStrokeOpacity: Double = 0.55
-    }
-}
-
-/// Semantic colour roles. System colours adapt to light/dark and to the
-/// increased-contrast setting on their own, so no per-appearance branches.
-enum AppPalette {
-    static var ok: Color { color(.success) ?? .green }
-    static var warning: Color { color(.warning) ?? .orange }
-    static var danger: Color { color(.danger) ?? .red }
-    static let info: Color = .blue
-    static let muted: Color = .secondary
-
-    static func band(_ band: WiFiBand) -> Color {
-        switch band {
-        case .band24: return color(.band24) ?? .blue
-        case .band5: return color(.band5) ?? .purple
-        case .band6: return color(.band6) ?? .teal
-        case .unknown: return .gray
-        }
-    }
-
-    static func quality(_ score: Int) -> Color {
-        switch QualityGrade(score: score) {
-        case .excellent: return color(.excellent) ?? .green
-        case .good: return color(.good) ?? .mint
-        case .fair: return color(.fair) ?? .orange
-        case .poor: return color(.poor) ?? .red
-        }
-    }
-
-    /// `nil` unless the user opted into the colour-blind-safe palette.
-    private static func color(_ role: AccessibilityPalette.Role) -> Color? {
-        guard AccessibilityPalette.isEnabled else { return nil }
-        let rgb = AccessibilityPalette.safeColor(for: role)
-        return Color(.sRGB, red: rgb.red, green: rgb.green, blue: rgb.blue, opacity: 1)
-    }
-}
-
 // MARK: - Surfaces
 
 struct AppCard<Content: View>: View {
@@ -118,15 +15,7 @@ struct AppCard<Content: View>: View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                Color(nsColor: .textBackgroundColor),
-                in: RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                    .strokeBorder(
-                        Color.primary.opacity(0.08), lineWidth: DesignToken.Stroke.hairline)
-            )
+            .appCardSurface()
     }
 }
 
@@ -135,10 +24,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(verbatim: text)
-            .font(.caption2.weight(.semibold))
-            .foregroundColor(.secondary)
-            .textCase(.uppercase)
-            .tracking(0.6)
+            .appSectionLabel()
     }
 }
 
@@ -171,7 +57,7 @@ struct StatusPill: View {
         HStack(spacing: DesignToken.Spacing.hairline + 2) {
             if let icon {
                 Image(systemName: icon)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(Theme.Typography.badge)
                     .foregroundColor(tone.color)
             } else {
                 Circle()
@@ -198,7 +84,7 @@ struct StatTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.hairline) {
             Text(verbatim: value)
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .font(Theme.Typography.metric)
                 .foregroundColor(tint)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -301,19 +187,19 @@ struct AppMenuLabel: View {
         HStack(spacing: DesignToken.Spacing.tight) {
             if let systemImage {
                 Image(systemName: systemImage)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(Theme.Typography.menuIcon)
             }
             Text(LocalizedStringKey(title))
                 .font(.caption)
                 .lineLimit(1)
             if showsChevron {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(Theme.Typography.chevron)
                     .foregroundColor(.secondary)
             }
         }
         .foregroundColor(isActive ? .accentColor : .primary)
-        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.horizontal, Theme.Control.horizontalPadding)
         .appToolbarChrome(isActive: isActive)
         .accessibilityHidden(true)
     }

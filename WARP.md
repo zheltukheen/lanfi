@@ -272,10 +272,17 @@ an app bundle.
 - `Views/TableStyle.swift` — `appTableDensity()`: reads `LanFi.rowDensity` live
   and injects `appTableDensity`, `defaultMinListRowHeight` and `controlSize` so
   lists/tables follow Settings without a relaunch.
-- `Views/DesignSystem.swift` — `DesignToken` (spacing/radius/stroke),
-  `AppPalette` (semantic and band colours) and the shared `AppCard`,
-  `SectionLabel`, `StatusPill`, `StatTile` and `BandChip`. New screens use
-  these instead of literal radii and tints.
+- `Views/Theme.swift` — the app's only design contract: `Theme.Spacing`,
+  `.Radius`, `.Stroke`, `.Layout`, `.Toolbar`, `.Typography` (semantic fonts),
+  `.Surface` (card/panel fills, borders, banner fills), `.Control` (control
+  height, icon width, padding) and `.Palette` (semantic, band and quality
+  colours). `DesignToken` and `AppPalette` are aliases, so no call site had to
+  change and no value is written twice. The file also owns `.appCardSurface`,
+  `.appPanelBorder` and `.appSectionLabel`.
+- `Views/DesignSystem.swift` — the components that consume the theme:
+  `AppCard`, `SectionLabel`, `StatusPill`, `StatTile` and `BandChip`. A screen
+  that needs a card, a section header or a status pill uses one of these (or
+  `.appCardSurface`) instead of drawing its own fill, radius, stroke and font.
 - `Views/SignalHistoryView.swift` — Swift Charts signal history with cursor and a
   signal / noise / both mode. `Views/ChartStyle.swift` holds the shared axis,
   grid, cursor and tooltip tokens for every Swift Charts surface.

@@ -1,5 +1,20 @@
 # Changelog
 
+## 5.5.4 — 2026-11-20
+
+### Changed
+- **One theme file.** `Views/Theme.swift` is the single definition of spacing,
+  radii, strokes, layout geometry, semantic typography, surface and border
+  colours, control metrics and the palette. `DesignToken` and `AppPalette` are
+  now aliases of it, so the values exist once while every existing call site
+  keeps working; a new screen has nowhere else to look.
+- **Panels stop drawing their own card.** `ToolkitCard` is a facade over
+  `AppCard`, both section-label types share one style modifier, and buttons,
+  icon buttons and menu labels take their height, padding, icon size and
+  chevron from the theme. The toolkit's separate fill/radius/stroke recipe —
+  the one that made toolkit cards and workspace cards look like two apps — is
+  deleted, and the Recommendation card in Insights uses the shared surface.
+
 ## 5.5.3 — 2026-11-20
 
 ### Added

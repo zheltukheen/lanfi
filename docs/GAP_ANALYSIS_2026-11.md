@@ -822,12 +822,23 @@ stat/hero component, and no density option for the AppKit table.
             `warn`, `bad`, `info`, `muted`, band colours for 2.4/5/6 GHz,
             quality scale green→amber→red) defined once with light/dark and
             increased-contrast variants.
-      - [ ] Promote the toolkit components into shared ones (`AppCard`,
-            `SectionLabel`, `StatusPill`, `StatTile`, `MetricRow`, `PillButton`,
-            `EmptyState`, `Banner`) and migrate every screen to them; delete the
-            per-view copies. `AppCard`, `SectionLabel`, `StatusPill`, `StatTile`
-            and `BandChip` exist and the RF overview uses them; every other
-            screen still hand-rolls its cards.
+      - [x] **One theme file.** `Views/Theme.swift` now holds spacing, radii,
+            strokes, layout geometry, semantic typography (`Typography`),
+            surfaces (`Surface.card`, `.panel`, `.cardStroke`, `.border`),
+            control metrics (`Control.height`, `.iconWidth`, `.horizontalPadding`)
+            and the palette. `DesignToken` and `AppPalette` are aliases of it, so
+            the definitions exist once while 800+ call sites keep working.
+      - [x] **One card and one section label.** `ToolkitCard` delegates to
+            `AppCard`, and both label types share `.appSectionLabel()`; the
+            toolkit's second fill/radius/stroke recipe is gone. Buttons and icon
+            buttons read their height, padding and icon size from
+            `Theme.Control`/`Theme.Typography`. Panels that need a tinted or
+            material card still draw it, but from theme values and
+            `.appCardSurface(fill:)`.
+      - [ ] Remaining long tail: the bespoke cards that tint their own border or
+            use a material background (selection cards,
+            material overlays in survey and traceroute) can take
+            `.appCardSurface` with a tint parameter in a later pass.
       - [ ] Tests: a snapshot-free unit test that every registered tool renders a
             `SectionLabel`+`AppCard` root (pure view-model assertions), and a
             lint rule of thumb in `CONTRIBUTING.md`: no new literal `cornerRadius`
