@@ -70,4 +70,72 @@ final class CommandIndexTests: XCTestCase {
     func testNoMatchReturnsNothing() {
         XCTAssertTrue(CommandIndex.results(for: "zzzzzz").isEmpty)
     }
+
+    // MARK: - Localized keywords
+
+    private static let locales = ["en", "ru", "de", "fr", "zh-Hans"]
+
+    /// Reads the shipped strings file directly, because the test bundle runs
+    /// in the host's language and a Russian query can only be checked against
+    /// the Russian table.
+    private func strings(for locale: String) throws -> [String: String] {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Resources/\(locale).lproj/Localizable.strings")
+        let data = try Data(contentsOf: url)
+        let plist = try PropertyListSerialization.propertyList(from: data, format: nil)
+        return plist as? [String: String] ?? [:]
+    }
+
+    func testEverySettingsPageHasKeywordsInEveryLocale() throws {
+        for locale in Self.locales {
+            let table = try strings(for: locale)
+            for section in SettingsSection.allCases {
+                let key = "settings.keywords.\(section.rawValue)"
+                let value = try XCTUnwrap(table[key], "missing \(key) in \(locale)")
+                XCTAssertFalse(
+                    value.trimmingCharacters(in: .whitespaces).isEmpty,
+                    "empty \(key) in \(locale)")
+            }
+        }
+    }
+
+    func testRussianKeywordsFindPrivacyAndDiagnostics() throws {
+        let table = try strings(for: "ru")
+        let privacy = try XCTUnwrap(table["settings.keywords.privacy"])
+        let privacyKeywords = privacy.split(separator: ",").map(
+            { $0.trimmingCharacters(in: .whitespaces) })
+        XCTAssertTrue(
+            privacyKeywords.contains { $0.lowercased().contains("анонимная статистика") },
+            "Russian Privacy keywords must include «анонимная статистика», got \(privacyKeywords)")
+
+        let diagnostics = try XCTUnwrap(table["settings.keywords.diagnostics"])
+        XCTAssertTrue(
+            diagnostics.lowercased().contains("бенчмарк резолверов"),
+            "Russian Diagnostics keywords must include «бенчмарк резолверов»")
+    }
+
+    func testLocalizedKeywordsAreSearchable() throws {
+        let russianItem = CommandItem(
+            id: "settings.privacy-russian", title: "Конфиденциальность", subtitle: "",
+            category: "Настройки", keywords: ["анонимная статистика", "телеметрия"],
+            destination: .settings(.privacy))
+        let englishItem = CommandItem(
+            id: "settings.privacy-english", title: "Privacy", subtitle: "",
+            category: "Settings", keywords: ["anonymous statistics"],
+            destination: .settings(.privacy))
+
+        XCTAssertEqual(
+            CommandIndex.rank(russianItem, query: "анонимная статистика"), 3)
+        XCTAssertNil(CommandIndex.rank(englishItem, query: "анонимная статистика"))
+        XCTAssertEqual(CommandIndex.rank(englishItem, query: "anonymous statistics"), 3)
+    }
+
+    func testKeywordsAreSplitIntoWholePhrases() {
+        let keywords = CommandIndex.keywords(for: .privacy)
+        XCTAssertFalse(keywords.isEmpty)
+        XCTAssertTrue(keywords.contains { $0.lowercased().contains("anonymous statistics") })
+        XCTAssertTrue(keywords.allSatisfy { !$0.hasPrefix(" ") && !$0.hasSuffix(" ") })
+    }
 }

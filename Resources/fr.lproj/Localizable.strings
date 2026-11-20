@@ -1561,3 +1561,22 @@
 "No resolvers were queried." = "Aucun résolveur n’a été interrogé.";
 "DoH" = "DoH";
 "%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld résolveurs sur %lld n’ont pas répondu ; c’est signalé, pas masqué.";
+
+"settings.keywords.general" = "apparence, densité, langue, mises à jour, lancer à l’ouverture";
+"settings.keywords.alerts" = "notifications, seuil, heures calmes";
+"settings.keywords.wifi" = "intervalle d’analyse, interface, localisation, rssi";
+"settings.keywords.vendors" = "oui, base des fabricants, fabricant, mise à jour oui";
+"settings.keywords.colors" = "règles de couleur, teinte, palette";
+"settings.keywords.columns" = "colonnes d’expression, colonnes personnalisées, colonnes de tableau";
+"settings.keywords.diagnostics" = "benchmark des résolveurs, benchmark dns, exporter le diagnostic";
+"settings.keywords.hardware" = "spectre, adaptateur externe, radio";
+"settings.keywords.automation" = "raccourcis, schéma url, intents, lien profond";
+"settings.keywords.controllers" = "unifi, points d’accès, contrôleur sans fil";
+"settings.keywords.mcp" = "serveur mcp, agents, api d’automatisation";
+"settings.keywords.privacy" = "statistiques anonymes, télémétrie, rapports de plantage, caviardage";
+"settings.keywords.toolkit" = "cible par défaut, cible d’analyse, réglages des outils";
+"↑↓ moves the highlight, Return opens it, Esc closes the palette." = "↑↓ déplace la sélection, Return l’ouvre, Esc ferme la palette.";
+
+"Application" = "Application";
+"Analysis" = "Analyse";
+"Integrations" = "Intégrations";

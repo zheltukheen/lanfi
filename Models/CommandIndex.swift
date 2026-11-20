@@ -84,7 +84,7 @@ enum CommandIndex {
                 title: section.title,
                 subtitle: String(localized: "Settings"),
                 category: String(localized: "Settings"),
-                keywords: settingsKeywords[section] ?? [],
+                keywords: keywords(for: section),
                 destination: .settings(section))
         }
     }
@@ -114,19 +114,72 @@ enum CommandIndex {
     /// Words that are not in a page's title but describe what it holds, so
     /// "anonymous statistics" finds Privacy and "resolver benchmark" finds
     /// Diagnostics.
-    private static let settingsKeywords: [SettingsSection: [String]] = [
-        .general: ["appearance", "density", "language", "updates", "launch at login"],
-        .alerts: ["notifications", "threshold", "quiet hours"],
-        .wifi: ["scan interval", "interface", "location", "rssi"],
-        .vendors: ["oui", "vendor database", "manufacturer", "oui update"],
-        .colors: ["colour rules", "tint", "palette"],
-        .columns: ["expression columns", "custom columns", "table columns"],
-        .diagnostics: ["resolver benchmark", "dns benchmark", "export bundle"],
-        .hardware: ["spectrum", "external adapter", "radio"],
-        .automation: ["shortcuts", "url scheme", "intents", "deep link"],
-        .controllers: ["unifi", "access points", "wireless controller"],
-        .mcp: ["mcp server", "agents", "automation api"],
-        .privacy: ["anonymous statistics", "telemetry", "crash reports", "redaction"],
-        .toolkit: ["default target", "analysis target", "toolkit settings"],
-    ]
+    ///
+    /// Each page's words are one localized, comma-separated string, so a
+    /// Russian user can type «анонимная статистика» and a German user
+    /// «anonyme Statistik». The English list is the fallback value in code, so
+    /// a missing translation never leaves a page unfindable.
+    static func keywords(for section: SettingsSection) -> [String] {
+        keywordText(for: section)
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
+    private static func keywordText(for section: SettingsSection) -> String {
+        switch section {
+        case .general:
+            return String(
+                localized: "settings.keywords.general",
+                defaultValue: "appearance, density, language, updates, launch at login")
+        case .alerts:
+            return String(
+                localized: "settings.keywords.alerts",
+                defaultValue: "notifications, threshold, quiet hours")
+        case .wifi:
+            return String(
+                localized: "settings.keywords.wifi",
+                defaultValue: "scan interval, interface, location, rssi")
+        case .vendors:
+            return String(
+                localized: "settings.keywords.vendors",
+                defaultValue: "oui, vendor database, manufacturer, oui update")
+        case .colors:
+            return String(
+                localized: "settings.keywords.colors",
+                defaultValue: "colour rules, tint, palette")
+        case .columns:
+            return String(
+                localized: "settings.keywords.columns",
+                defaultValue: "expression columns, custom columns, table columns")
+        case .diagnostics:
+            return String(
+                localized: "settings.keywords.diagnostics",
+                defaultValue: "resolver benchmark, dns benchmark, export bundle")
+        case .hardware:
+            return String(
+                localized: "settings.keywords.hardware",
+                defaultValue: "spectrum, external adapter, radio")
+        case .automation:
+            return String(
+                localized: "settings.keywords.automation",
+                defaultValue: "shortcuts, url scheme, intents, deep link")
+        case .controllers:
+            return String(
+                localized: "settings.keywords.controllers",
+                defaultValue: "unifi, access points, wireless controller")
+        case .mcp:
+            return String(
+                localized: "settings.keywords.mcp",
+                defaultValue: "mcp server, agents, automation api")
+        case .privacy:
+            return String(
+                localized: "settings.keywords.privacy",
+                defaultValue: "anonymous statistics, telemetry, crash reports, redaction")
+        case .toolkit:
+            return String(
+                localized: "settings.keywords.toolkit",
+                defaultValue: "default target, analysis target, toolkit settings")
+        }
+    }
 }

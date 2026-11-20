@@ -1,5 +1,30 @@
 # Changelog
 
+## 5.5.7 — 2026-11-20
+
+### Added
+- **Keyboard navigation in the ⌘K palette.** ↑↓ move a highlighted row (with
+  wrap-around), Return opens it, Esc closes; hovering moves the highlight so
+  the mouse and keyboard agree, and clicking a row still opens it. The arrow
+  keys are intercepted with a local event monitor because the search field
+  would otherwise move the caret.
+- **Localized palette keywords.** Settings keywords are now one localized
+  string per page in all five locales, so «анонимная статистика» finds Privacy
+  and «бенчмарк резолверов» finds Diagnostics instead of only English terms
+  matching. The English list stays in code as the fallback.
+
+### Fixed
+- The Settings sidebar's group headers ("Application", "Analysis",
+  "Integrations") stayed English in a translated app; they are now localized in
+  all five locales.
+
+### Changed
+- **Settings navigation from the palette no longer depends on a string
+  selector.** `SettingsRouter` carries the requested page and `SettingsView`
+  consumes it, so the page is selected even if the window was already open;
+  macOS 14+ opens the window through SwiftUI's own `openSettings` action, and
+  the old selector remains only as the macOS 13 fallback.
+
 ## 5.5.6 — 2026-11-20
 
 ### Added

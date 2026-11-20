@@ -122,8 +122,21 @@ an app bundle.
   `SettingsSection.allCases` and the Wi-Fi workspace panels, so a new screen is
   searchable as soon as it registers; ranking is exact title, prefix,
   substring, keyword, subtitle, category, and `Tests/CommandIndexTests` pins it.
-  `perform(_:)` in `NetworkToolkitView` routes a hit to a tool, a bottom tab or
-  the Settings window.
+  Settings keywords are one localized, comma-separated string per page
+  (`settings.keywords.<section>` in every `.lproj`), so «анонимная статистика»
+  finds Privacy in Russian and «anonyme Statistik» in German; the English list
+  is the `defaultValue` in code, so a missing translation never hides a page.
+  The palette keeps its highlight in `CommandPaletteSelection` (arrows wrap,
+  Return opens, Esc closes, hovering follows the mouse, clicking still opens),
+  and a local `NSEvent` monitor intercepts the arrow keys the search field would
+  otherwise consume.
+- `Models/SettingsRouter.swift` — the only path from anywhere to a Settings
+  page: `open(_:)` stores the page, activates the app and asks SwiftUI's
+  `openSettings` (registered by `Views/SettingsOpenerRegistration.swift` on
+  macOS 14+) to show the window; `SettingsView` consumes the pending page in
+  `onAppear`/`onChange`. Do not call `NSApp.sendAction` with a settings
+  selector from a new screen — the string selector is only the macOS 13
+  fallback inside the router.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,
   `AppIconButton`, `AppListRow`, `AppSearchField`, `ToolkitHeaderBar`); route
   new buttons, lists and tool headers through it. `AppButton(localized:)`

@@ -5,10 +5,14 @@ import SwiftUI
 ///
 /// The entries come from `CommandIndex`, so a new screen is discoverable as
 /// soon as it registers a destination; this view only renders and dispatches.
+/// Arrow keys move a highlighted row, Return opens it, Escape closes; clicking
+/// a row still opens it directly.
 struct CommandPaletteView: View {
     let perform: (CommandItem) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
+    @State private var selection = CommandPaletteSelection()
+    @State private var keyMonitor: Any?
     @FocusState private var isSearchFocused: Bool
 
     private var results: [CommandItem] {
@@ -33,7 +37,17 @@ struct CommandPaletteView: View {
         }
         .frame(width: 560, height: 420)
         .background(Color(nsColor: .windowBackgroundColor))
-        .onAppear { isSearchFocused = true }
+        .onAppear {
+            isSearchFocused = true
+            selection.reset(to: results)
+            installKeyMonitor()
+        }
+        .onDisappear(perform: removeKeyMonitor)
+        .onChange(of: query) { _ in
+            // The result set changed under the cursor; keep the row if it is
+            // still there, otherwise highlight the new best match.
+            selection.reset(to: results)
+        }
         .onExitCommand { dismiss() }
     }
 
@@ -45,7 +59,6 @@ struct CommandPaletteView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 15))
                 .focused($isSearchFocused)
-                .onSubmit { open(results.first) }
             if !query.isEmpty {
                 Button {
                     query = ""
@@ -56,7 +69,7 @@ struct CommandPaletteView: View {
                 .buttonStyle(.plain)
                 .help("Clear")
             }
-            Text("esc")
+            Text(verbatim: "↑↓ · return · esc")
                 .font(.caption2.monospaced())
                 .foregroundColor(.secondary)
         }
@@ -81,22 +94,31 @@ struct CommandPaletteView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(groups, id: \.category) { group in
-                        Text(group.category.uppercased())
-                            .font(.system(size: 9, weight: .semibold))
-                            .tracking(0.8)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, DesignToken.Spacing.medium)
-                            .padding(.top, DesignToken.Spacing.small)
-                            .padding(.bottom, 2)
-                        ForEach(group.items) { item in
-                            row(item)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        ForEach(groups, id: \.category) { group in
+                            Text(group.category.uppercased())
+                                .font(.system(size: 9, weight: .semibold))
+                                .tracking(0.8)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, DesignToken.Spacing.medium)
+                                .padding(.top, DesignToken.Spacing.small)
+                                .padding(.bottom, 2)
+                            ForEach(group.items) { item in
+                                row(item)
+                                    .id(item.id)
+                            }
                         }
                     }
+                    .padding(.bottom, DesignToken.Spacing.small)
                 }
-                .padding(.bottom, DesignToken.Spacing.small)
+                .onChange(of: selection.id) { id in
+                    guard let id else { return }
+                    withAnimation(.easeOut(duration: 0.1)) {
+                        proxy.scrollTo(id, anchor: .center)
+                    }
+                }
             }
         }
     }
@@ -108,7 +130,7 @@ struct CommandPaletteView: View {
                 .foregroundColor(.secondary.opacity(0.4))
             Text("Type a tool, setting or panel name")
                 .font(.headline)
-            Text("Return opens the best match. Esc closes the palette.")
+            Text("↑↓ moves the highlight, Return opens it, Esc closes the palette.")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -116,7 +138,8 @@ struct CommandPaletteView: View {
     }
 
     private func row(_ item: CommandItem) -> some View {
-        Button {
+        let isSelected = selection.id == item.id
+        return Button {
             open(item)
         } label: {
             HStack(spacing: DesignToken.Spacing.small) {
@@ -134,15 +157,30 @@ struct CommandPaletteView: View {
                     }
                 }
                 Spacer(minLength: DesignToken.Spacing.small)
+                if isSelected {
+                    Text("↩")
+                        .font(.caption2.monospaced())
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(.horizontal, DesignToken.Spacing.medium)
             .padding(.vertical, 5)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                    .fill(isSelected ? Theme.Surface.selectionFill : Color.clear)
+                    .padding(.horizontal, DesignToken.Spacing.tight)
+            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .help(item.subtitle.isEmpty ? item.title : item.subtitle)
         .accessibilityLabel(item.title)
         .accessibilityHint(item.subtitle)
+        .onHover { hovering in
+            // Hovering previews the keyboard target, so the mouse and the
+            // keyboard never disagree about what Return will open.
+            if hovering { selection = CommandPaletteSelection(id: item.id) }
+        }
     }
 
     private func icon(for item: CommandItem) -> String {
@@ -153,8 +191,53 @@ struct CommandPaletteView: View {
         }
     }
 
+    // MARK: - Keyboard
+
+    /// A local monitor is used because the search field owns the arrow keys:
+    /// SwiftUI would otherwise move the caret instead of the highlight.
+    private func installKeyMonitor() {
+        guard keyMonitor == nil else { return }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            guard
+                event.modifierFlags.intersection([.command, .option, .control]).isEmpty
+            else { return event }
+            switch event.keyCode {
+            case 126:  // ↑
+                move(-1)
+                return nil
+            case 125:  // ↓
+                move(1)
+                return nil
+            case 36, 76:  // Return, keypad Enter
+                openSelected()
+                return nil
+            case 53:  // Esc
+                dismiss()
+                return nil
+            default:
+                return event
+            }
+        }
+    }
+
+    private func removeKeyMonitor() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+            self.keyMonitor = nil
+        }
+    }
+
+    private func move(_ step: Int) {
+        selection.move(by: step, in: results)
+    }
+
+    private func openSelected() {
+        open(selection.item(in: results) ?? results.first)
+    }
+
     private func open(_ item: CommandItem?) {
         guard let item else { return }
+        removeKeyMonitor()
         perform(item)
         dismiss()
     }

@@ -1598,3 +1598,22 @@
 "No resolvers were queried." = "Запросов к резолверам не было.";
 "DoH" = "DoH";
 "%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld из %lld резолверов не ответили — это показано, а не скрыто.";
+
+"settings.keywords.general" = "оформление, плотность, язык, обновления, автозапуск";
+"settings.keywords.alerts" = "уведомления, порог, тихие часы";
+"settings.keywords.wifi" = "интервал сканирования, интерфейс, геолокация, rssi";
+"settings.keywords.vendors" = "oui, база производителей, производитель, обновление oui";
+"settings.keywords.colors" = "правила цвета, оттенок, палитра";
+"settings.keywords.columns" = "выражения, свои столбцы, столбцы таблиц";
+"settings.keywords.diagnostics" = "бенчмарк резолверов, dns бенчмарк, экспорт диагностики";
+"settings.keywords.hardware" = "спектр, внешний адаптер, радио";
+"settings.keywords.automation" = "ярлыки, url схема, intents, deep link";
+"settings.keywords.controllers" = "unifi, точки доступа, контроллер";
+"settings.keywords.mcp" = "mcp сервер, агенты, api автоматизации";
+"settings.keywords.privacy" = "анонимная статистика, телеметрия, отчёты о падениях, редактирование";
+"settings.keywords.toolkit" = "цель по умолчанию, цель анализа, настройки инструментов";
+"↑↓ moves the highlight, Return opens it, Esc closes the palette." = "↑↓ перемещают подсветку, Return открывает, Esc закрывает палитру.";
+
+"Application" = "Приложение";
+"Analysis" = "Анализ";
+"Integrations" = "Интеграции";

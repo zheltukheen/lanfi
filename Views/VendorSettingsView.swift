@@ -11,6 +11,7 @@ struct SettingsView: View {
     @EnvironmentObject private var analyzer: AnalyzerViewModel
 
     @AppStorage(AppSettingsKey.settingsSection.rawValue) private var storedSection = SettingsSection.general.rawValue
+    @ObservedObject private var router = SettingsRouter.shared
 
     private var selection: Binding<String> { $storedSection }
 
@@ -45,6 +46,15 @@ struct SettingsView: View {
             height: DesignToken.Layout.settingsHeight
         )
         .appTableDensity()
+        .onAppear { applyPendingSection() }
+        .onChange(of: router.pending) { _ in applyPendingSection() }
+    }
+
+    /// Opens the page a palette entry asked for. The request is consumed once,
+    /// so reopening Settings later does not jump back to an old page.
+    private func applyPendingSection() {
+        guard let section = router.takePending() else { return }
+        storedSection = section.rawValue
     }
 
     private func rows(_ sections: [SettingsSection]) -> some View {

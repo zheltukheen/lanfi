@@ -52,6 +52,11 @@ struct NetworkToolkitView: View {
         )
         .background(Color(nsColor: .windowBackgroundColor))
         .appTableDensity()
+        .background {
+            if #available(macOS 14.0, *) {
+                SettingsOpenerRegistration()
+            }
+        }
         .sheet(isPresented: $showingPalette) {
             CommandPaletteView { item in
                 perform(item)
@@ -93,12 +98,7 @@ struct NetworkToolkitView: View {
             NotificationCenter.default.post(
                 name: .lanfiSelectBottomTab, object: nil, userInfo: ["tab": tab])
         case .settings(let section):
-            UserDefaults.standard.set(
-                section.rawValue, forKey: AppSettingsKey.settingsSection.rawValue)
-            NSApp.activate(ignoringOtherApps: true)
-            if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
-                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-            }
+            SettingsRouter.shared.open(section)
         }
     }
 

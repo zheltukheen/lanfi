@@ -793,6 +793,21 @@ coverage of the index are covered by `Tests/CommandIndexTests`. `⌘K` opens
 `Views/CommandPaletteView.swift` from the View menu; picking a hit selects a
 tool, a bottom tab, or opens the Settings window on the matching page.
 
+*Completed in 5.5.7:* keyboard navigation (↑↓ with wrap-around, Return opens
+the highlighted row, Esc closes; hover follows the mouse and clicking still
+opens the row), covered by `Tests/CommandPaletteSelectionTests` over
+`CommandPaletteSelection`. Settings keywords are localized in all five locales
+(`settings.keywords.<section>`, one comma-separated string per page), so
+«анонимная статистика» finds Privacy and «бенчмарк резолверов» finds
+Diagnostics; `Tests/CommandIndexTests` reads the shipped `.strings` tables and
+asserts every page has keywords everywhere. The Settings hop no longer uses a
+string selector from the palette: `Models/SettingsRouter.swift` carries the
+requested page, `Views/SettingsOpenerRegistration.swift` registers SwiftUI's
+own `openSettings` action on macOS 14+, and `SettingsView` applies the pending
+page on appear or change, consuming it once so reopening Settings does not jump
+back. `Tests/SettingsRouterTests` pins the request/consume semantics; the
+window-open itself still falls back to the selector on macOS 13.
+
 *What Bettbox does.* `lib/views/tools.dart` indexes every screen and every
 setting into `_SearchItem` records (title, subtitle, category, destination),
 rebuilds the index only when the navigation set changes, filters with a 300 ms

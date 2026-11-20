@@ -1562,3 +1562,22 @@
 "No resolvers were queried." = "No resolvers were queried.";
 "DoH" = "DoH";
 "%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld of %lld resolvers did not answer; that is reported, not hidden.";
+
+"settings.keywords.general" = "appearance, density, language, updates, launch at login";
+"settings.keywords.alerts" = "notifications, threshold, quiet hours";
+"settings.keywords.wifi" = "scan interval, interface, location, rssi";
+"settings.keywords.vendors" = "oui, vendor database, manufacturer, oui update";
+"settings.keywords.colors" = "colour rules, tint, palette";
+"settings.keywords.columns" = "expression columns, custom columns, table columns";
+"settings.keywords.diagnostics" = "resolver benchmark, dns benchmark, export bundle";
+"settings.keywords.hardware" = "spectrum, external adapter, radio";
+"settings.keywords.automation" = "shortcuts, url scheme, intents, deep link";
+"settings.keywords.controllers" = "unifi, access points, wireless controller";
+"settings.keywords.mcp" = "mcp server, agents, automation api";
+"settings.keywords.privacy" = "anonymous statistics, telemetry, crash reports, redaction";
+"settings.keywords.toolkit" = "default target, analysis target, toolkit settings";
+"↑↓ moves the highlight, Return opens it, Esc closes the palette." = "↑↓ moves the highlight, Return opens it, Esc closes the palette.";
+
+"Application" = "Application";
+"Analysis" = "Analysis";
+"Integrations" = "Integrations";

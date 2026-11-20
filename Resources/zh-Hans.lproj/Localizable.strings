@@ -1561,3 +1561,22 @@
 "No resolvers were queried." = "未查询任何解析器。";
 "DoH" = "DoH";
 "%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld 个（共 %lld 个）解析器未应答；此情况会显示，不会被隐藏。";
+
+"settings.keywords.general" = "外观, 密度, 语言, 更新, 登录时启动";
+"settings.keywords.alerts" = "通知, 阈值, 免打扰时段";
+"settings.keywords.wifi" = "扫描间隔, 接口, 定位, rssi";
+"settings.keywords.vendors" = "oui, 厂商数据库, 厂商, oui 更新";
+"settings.keywords.colors" = "颜色规则, 色调, 调色板";
+"settings.keywords.columns" = "表达式列, 自定义列, 表格列";
+"settings.keywords.diagnostics" = "解析器基准测试, dns 基准测试, 导出诊断";
+"settings.keywords.hardware" = "频谱, 外置适配器, 无线";
+"settings.keywords.automation" = "快捷指令, url scheme, intents, 深度链接";
+"settings.keywords.controllers" = "unifi, 接入点, 无线控制器";
+"settings.keywords.mcp" = "mcp 服务器, 智能体, 自动化 api";
+"settings.keywords.privacy" = "匿名统计, 遥测, 崩溃报告, 脱敏";
+"settings.keywords.toolkit" = "默认目标, 分析目标, 工具设置";
+"↑↓ moves the highlight, Return opens it, Esc closes the palette." = "↑↓ 移动高亮，Return 打开，Esc 关闭面板。";
+
+"Application" = "应用";
+"Analysis" = "分析";
+"Integrations" = "集成";
