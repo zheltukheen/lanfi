@@ -769,8 +769,21 @@ endpoints, with the rows ordered plain → DoH → DoT. A live probe test
 (`LANFI_LIVE_TESTS=1`) resolved `example.com` over TLS in 303 ms and caught a
 real defect on the way: the connection object was deallocated before the
 handshake finished, leaking the continuation and hanging the lookup forever.
-Still open from this item: DoQ (needs QUIC, not just a TLS stream), the
-country/ASN annotation for A/AAAA and the route explanation note.
+*Delivered in 5.6.2 (address annotation):* `Services/Toolkit/DNSAddressEnricher.swift`
+annotates the addresses of an A/AAAA answer with country, ASN and network
+through the GeoIP client the Whois screen already uses. It runs after the
+records appear, so a slow lookup never delays the table; it deduplicates the
+addresses (a CDN name often returns the same address twice), caps itself at
+four lookups per answer, ignores values that are not addresses, and a failed
+lookup leaves that cell empty instead of hiding the record.
+`Models/DNSAddressAnnotation.swift` holds the formatting ("🇺🇸 US · AS15169 ·
+Google LLC") and is covered by `Tests/DNSAddressAnnotationTests` together with
+the enricher's dedupe, limit and failure behaviour. The annotation sends the
+resolved addresses to a third-party GeoIP service, which is why it is limited
+and only runs for address records.
+
+Still open from this item: DoQ (needs QUIC, not just a TLS stream) and the
+route explanation note.
 
 ### P4.4 — NAT type and STUN reachability test
 

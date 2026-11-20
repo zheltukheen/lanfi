@@ -404,6 +404,26 @@ struct DNSToolView: View {
         }
     }
 
+    /// Country and network for the resolved addresses. Absent until the
+    /// annotation arrives, so the table never shows an empty column.
+    private var locationColumn: [AppTableColumn<DNSRecord>] {
+        guard !model.annotations.isEmpty else { return [] }
+        let annotations = model.annotations
+        return [
+            AppTableColumn(
+                id: "location", title: String(localized: "Location"), minWidth: 190,
+                value: { .text(annotations[$0.value]?.summary ?? "") }
+            ) { record in
+                Text(annotations[record.value]?.summary ?? "—")
+                    .font(.caption2)
+                    .foregroundColor(
+                        annotations[record.value] == nil ? AppPalette.muted : .primary
+                    )
+                    .lineLimit(1)
+            }
+        ]
+    }
+
     private func recordsTable(_ result: DNSLookupResult) -> some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
@@ -459,7 +479,7 @@ struct DNSToolView: View {
                                 .font(.caption.monospaced())
                                 .textSelection(.enabled)
                         },
-                    ],
+                    ] + locationColumn,
                     rows: result.records, initialKey: "type"
                 )
                 .frame(

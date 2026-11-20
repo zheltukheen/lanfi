@@ -16,8 +16,12 @@ final class DNSToolModel: ObservableObject {
     @Published private(set) var comparison: DNSComparison?
     @Published private(set) var isComparing = false
     @Published var errorMessage: String?
+    /// Country and network per resolved A/AAAA address, filled after the answer
+    /// arrives so a slow lookup never delays the records themselves.
+    @Published private(set) var annotations: [String: DNSAddressAnnotation] = [:]
 
     private var task: Task<Void, Never>?
+    private var enrichTask: Task<Void, Never>?
     private var comparisonTask: Task<Void, Never>?
 
     var resolver: DNSResolver {
@@ -50,6 +54,8 @@ final class DNSToolModel: ObservableObject {
         }
         errorMessage = nil
         result = nil
+        annotations = [:]
+        enrichTask?.cancel()
         isRunning = true
         let selectedType = type
         let selectedResolver = resolver
@@ -59,11 +65,25 @@ final class DNSToolModel: ObservableObject {
                 let lookup = try await UDPDNSClient().lookup(
                     host: target.host, type: selectedType, resolver: selectedResolver)
                 self.result = lookup
+                self.enrich(lookup, type: selectedType)
             } catch {
                 self.errorMessage = error.localizedDescription
             }
             self.isRunning = false
             self.task = nil
+        }
+    }
+
+    /// Annotates the resolved addresses with country and network. Runs apart
+    /// from the lookup so the table appears immediately.
+    private func enrich(_ lookup: DNSLookupResult, type: DNSRecordType) {
+        guard type == .a || type == .aaaa else { return }
+        enrichTask?.cancel()
+        enrichTask = Task { [weak self] in
+            let annotations = await DNSAddressEnricher().annotations(for: lookup.records)
+            guard let self, !Task.isCancelled else { return }
+            self.annotations = annotations
+            self.enrichTask = nil
         }
     }
 
@@ -97,6 +117,9 @@ final class DNSToolModel: ObservableObject {
     func clear() {
         task?.cancel()
         task = nil
+        enrichTask?.cancel()
+        enrichTask = nil
+        annotations = [:]
         comparisonTask?.cancel()
         comparisonTask = nil
         result = nil
