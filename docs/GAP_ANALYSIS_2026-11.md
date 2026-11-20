@@ -782,8 +782,17 @@ the enricher's dedupe, limit and failure behaviour. The annotation sends the
 resolved addresses to a third-party GeoIP service, which is why it is limited
 and only runs for address records.
 
-Still open from this item: DoQ (needs QUIC, not just a TLS stream) and the
-route explanation note.
+*Delivered in 5.6.3 (why this answer):* `Models/DNSAnswerExplanation.swift`
+turns the shape of an answer into short notes under the table, using only what
+LanFi can see. It flags an address in 198.18.0.0/15 (the fake-IP range proxy
+tools borrow) and an answer made entirely of private addresses, explains a zero
+TTL, compares the answer with the same question asked of the system resolver —
+the honest local equivalent of Bettbox's hosts/fake-ip/outbound note — and says
+when the addresses belong to several networks, which is what a content network
+looks like. Every rule is pure and covered by `Tests/DNSAnswerExplanationTests`;
+the second query runs in the background with a 3 s timeout and its failure is
+silence, not an error row. Still open from this item: DoQ (needs QUIC, not just
+a TLS stream).
 
 ### P4.4 — NAT type and STUN reachability test
 

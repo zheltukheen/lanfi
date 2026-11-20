@@ -1606,3 +1606,11 @@
 "No mapping" = "无映射";
 "Mapped to" = "映射为";
 "Only public STUN servers are contacted; nothing is sent anywhere else." = "只联系公共 STUN 服务器，不会发送到其他地方。";
+
+"Why this answer" = "为什么是这个答案";
+"%@ is in 198.18.0.0/15, the range proxy tools use for fake IPs, so a transparent proxy is answering this name." = "%@ 位于 198.18.0.0/15，这是代理工具用于伪 IP 的网段，说明有透明代理解析该名称。";
+"Every address is private, so a local or split-horizon resolver answers this name." = "所有地址都是私有地址，说明由本地或分离解析（split-horizon）解析器应答。";
+"The TTL is 0, so nothing downstream may cache this answer." = "TTL 为 0，下游不得缓存该应答。";
+"The system resolver answers differently: %@." = "系统解析器返回不同结果：%@。";
+"The system resolver returns the same addresses." = "系统解析器返回相同地址。";
+"The addresses belong to %lld different networks, which is normal for a content network." = "这些地址分属 %lld 个不同网络，这对内容分发网络来说是正常的。";

@@ -1643,3 +1643,11 @@
 "No mapping" = "Нет маппинга";
 "Mapped to" = "Внешний адрес";
 "Only public STUN servers are contacted; nothing is sent anywhere else." = "Запросы идут только к публичным STUN-серверам, больше никуда.";
+
+"Why this answer" = "Почему такой ответ";
+"%@ is in 198.18.0.0/15, the range proxy tools use for fake IPs, so a transparent proxy is answering this name." = "%@ в диапазоне 198.18.0.0/15 — его прокси-инструменты используют для подменных адресов, значит имя отвечает прозрачный прокси.";
+"Every address is private, so a local or split-horizon resolver answers this name." = "Все адреса приватные — имя разрешает локальный резолвер или резолвер split-horizon.";
+"The TTL is 0, so nothing downstream may cache this answer." = "TTL равен 0 — кэшировать этот ответ нельзя.";
+"The system resolver answers differently: %@." = "Системный резолвер отвечает иначе: %@.";
+"The system resolver returns the same addresses." = "Системный резолвер возвращает те же адреса.";
+"The addresses belong to %lld different networks, which is normal for a content network." = "Адреса принадлежат %lld разным сетям — это обычное дело для сетей доставки контента.";

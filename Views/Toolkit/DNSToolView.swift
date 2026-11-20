@@ -320,6 +320,9 @@ struct DNSToolView: View {
                     summary(result)
                         .frame(width: 230)
                 }
+                if !model.notes.isEmpty {
+                    notesCard
+                }
             }
         } else if !model.isRunning {
             ToolkitEmptyState(
@@ -328,6 +331,31 @@ struct DNSToolView: View {
                 message:
                     "Query A, AAAA, MX, TXT, NS, SOA, CNAME, SRV and CAA records from the system resolver or a public one."
             )
+        }
+    }
+
+    /// Explains the shape of the answer instead of leaving the user to guess
+    /// whether a private or fake address is normal.
+    private var notesCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                ToolkitSectionLabel(text: "Why this answer")
+                ForEach(model.notes) { note in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Image(
+                            systemName: note.kind == .warning
+                                ? "exclamationmark.triangle.fill" : "info.circle"
+                        )
+                        .font(.caption2)
+                        .foregroundColor(note.kind == .warning ? AppPalette.warning : AppPalette.muted)
+                        Text(note.text)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

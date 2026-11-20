@@ -19,6 +19,8 @@ final class DNSToolModel: ObservableObject {
     /// Country and network per resolved A/AAAA address, filled after the answer
     /// arrives so a slow lookup never delays the records themselves.
     @Published private(set) var annotations: [String: DNSAddressAnnotation] = [:]
+    /// Short lines under the answers that explain their shape.
+    @Published private(set) var notes: [DNSAnswerNote] = []
 
     private var task: Task<Void, Never>?
     private var enrichTask: Task<Void, Never>?
@@ -55,6 +57,7 @@ final class DNSToolModel: ObservableObject {
         errorMessage = nil
         result = nil
         annotations = [:]
+        notes = []
         enrichTask?.cancel()
         isRunning = true
         let selectedType = type
@@ -65,7 +68,7 @@ final class DNSToolModel: ObservableObject {
                 let lookup = try await UDPDNSClient().lookup(
                     host: target.host, type: selectedType, resolver: selectedResolver)
                 self.result = lookup
-                self.enrich(lookup, type: selectedType)
+                self.annotate(lookup, type: selectedType, resolver: selectedResolver)
             } catch {
                 self.errorMessage = error.localizedDescription
             }
@@ -76,15 +79,37 @@ final class DNSToolModel: ObservableObject {
 
     /// Annotates the resolved addresses with country and network. Runs apart
     /// from the lookup so the table appears immediately.
-    private func enrich(_ lookup: DNSLookupResult, type: DNSRecordType) {
+    private func annotate(
+        _ lookup: DNSLookupResult, type: DNSRecordType, resolver: DNSResolver
+    ) {
+        notes = []
         guard type == .a || type == .aaaa else { return }
         enrichTask?.cancel()
+        let host = lookup.host
         enrichTask = Task { [weak self] in
-            let annotations = await DNSAddressEnricher().annotations(for: lookup.records)
+            async let annotations = DNSAddressEnricher().annotations(for: lookup.records)
+            async let systemRecords = Self.systemAnswer(
+                host: host, type: type, askedResolver: resolver)
+            let (filled, system) = await (annotations, systemRecords)
             guard let self, !Task.isCancelled else { return }
-            self.annotations = annotations
+            self.annotations = filled
+            self.notes = DNSAnswerExplanation.notes(
+                records: lookup.records, systemRecords: system,
+                organizations: filled.values.map(\.organization))
             self.enrichTask = nil
         }
+    }
+
+    /// Asks the system resolver the same question, unless that is what the
+    /// user already used. A failure here is silence, not an error row: the
+    /// answer above is still valid.
+    private static func systemAnswer(
+        host: String, type: DNSRecordType, askedResolver: DNSResolver
+    ) async -> [DNSRecord]? {
+        guard askedResolver.id != DNSResolver.system.id else { return nil }
+        return try? await UDPDNSClient().lookup(
+            host: host, type: type, resolver: .system, timeout: 3
+        ).records
     }
 
     private func runMail() {
@@ -120,6 +145,7 @@ final class DNSToolModel: ObservableObject {
         enrichTask?.cancel()
         enrichTask = nil
         annotations = [:]
+        notes = []
         comparisonTask?.cancel()
         comparisonTask = nil
         result = nil

@@ -1606,3 +1606,11 @@
 "No mapping" = "Kein Mapping";
 "Mapped to" = "Zugeordnet zu";
 "Only public STUN servers are contacted; nothing is sent anywhere else." = "Es werden nur öffentliche STUN-Server kontaktiert, sonst nichts.";
+
+"Why this answer" = "Warum diese Antwort";
+"%@ is in 198.18.0.0/15, the range proxy tools use for fake IPs, so a transparent proxy is answering this name." = "%@ liegt in 198.18.0.0/15, dem Bereich, den Proxy-Werkzeuge für Fake-IPs nutzen; also antwortet ein transparenter Proxy.";
+"Every address is private, so a local or split-horizon resolver answers this name." = "Alle Adressen sind privat, also antwortet ein lokaler oder Split-Horizon-Resolver.";
+"The TTL is 0, so nothing downstream may cache this answer." = "Die TTL ist 0, daher darf das Ergebnis nicht zwischengespeichert werden.";
+"The system resolver answers differently: %@." = "Der System-Resolver antwortet anders: %@.";
+"The system resolver returns the same addresses." = "Der System-Resolver liefert dieselben Adressen.";
+"The addresses belong to %lld different networks, which is normal for a content network." = "Die Adressen gehören zu %lld verschiedenen Netzen, was für Content-Netze normal ist.";
