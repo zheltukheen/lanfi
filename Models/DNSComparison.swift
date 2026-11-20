@@ -49,6 +49,27 @@ struct DNSComparison: Equatable, Sendable {
 
     var failedCount: Int { entries.filter { $0.failure != nil }.count }
 
+    /// Plain text for the Copy button and for pasting into a ticket. One row
+    /// per resolver, failed resolvers kept and marked, then the verdict.
+    var exportText: String {
+        var lines = ["LanFi DNS comparison \(host) · \(type.label)", ""]
+        for entry in entries {
+            if let failure = entry.failure {
+                lines.append("\(entry.name)\t\(entry.transport.label)\t! \(failure)")
+            } else {
+                lines.append(
+                    "\(entry.name)\t\(entry.transport.label)\t\(entry.answerText)\t\(entry.milliseconds) ms"
+                )
+            }
+        }
+        lines.append("")
+        lines.append(summary)
+        if failedCount > 0 {
+            lines.append("\(failedCount) of \(entries.count) did not answer")
+        }
+        return lines.joined(separator: "\n")
+    }
+
     var summary: String {
         if entries.isEmpty { return String(localized: "No resolvers were queried.") }
         if answeredEntries.isEmpty { return String(localized: "No resolver answered.") }

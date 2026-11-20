@@ -83,6 +83,31 @@ final class DNSComparisonTests: XCTestCase {
         XCTAssertFalse(comparison.answersDisagree)
     }
 
+    func testExportTextListsEveryResolverAndTheVerdict() {
+        let answered = entry(name: "System", transport: .udp, values: ["10.0.0.1"])
+        let doh = entry(name: "Cloudflare DoH", transport: .doh, values: ["93.184.216.34"])
+        let failed = DNSComparisonEntry(
+            id: "doh:google", name: "Google DoH", transport: .doh, records: [],
+            milliseconds: 4000, failure: "timed out")
+        let text = DNSComparison(host: "example.com", type: .a, entries: [answered, doh, failed])
+            .exportText
+
+        XCTAssertTrue(text.contains("LanFi DNS comparison example.com · A"))
+        XCTAssertTrue(text.contains("System\tUDP\t10.0.0.1"))
+        XCTAssertTrue(text.contains("Cloudflare DoH\tDoH\t93.184.216.34"))
+        XCTAssertTrue(text.contains("Google DoH\tDoH\t! timed out"), "failures stay in the copy")
+        XCTAssertTrue(text.contains("Resolvers disagree on the answer."))
+        XCTAssertTrue(text.contains("1 of 3 did not answer"))
+    }
+
+    func testExportTextOfAgreeingResolversSaysSo() {
+        let first = entry(name: "System", transport: .udp, values: ["10.0.0.1"])
+        let second = entry(name: "Cloudflare DoH", transport: .doh, values: ["10.0.0.1"])
+        let text = DNSComparison(host: "example.com", type: .a, entries: [first, second]).exportText
+        XCTAssertTrue(text.contains("All resolvers agree."))
+        XCTAssertFalse(text.contains("did not answer"))
+    }
+
     private func entry(
         name: String, transport: DNSComparisonTransport, values: [String], ttl: UInt32 = 60
     ) -> DNSComparisonEntry {

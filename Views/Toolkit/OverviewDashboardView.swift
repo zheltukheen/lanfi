@@ -45,8 +45,8 @@ struct OverviewDashboardView: View {
 
     private var heroRow: some View {
         HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-            connectionCard
-            internetCard
+            connectionCard.dashboardLink { toolkit.select(.wifiAnalyzer) }
+            internetCard.dashboardLink { toolkit.select(.internetCheck) }
         }
     }
 
@@ -201,24 +201,29 @@ struct OverviewDashboardView: View {
         ) {
             metricTile(
                 title: "VPN", value: vpnValue, detail: leakLine, icon: "lock.shield",
-                tone: vpn.report.hasLeak ? .bad : (vpn.report.vpn.isUp ? .good : .neutral))
+                tone: vpn.report.hasLeak ? .bad : (vpn.report.vpn.isUp ? .good : .neutral)
+            ) { toolkit.select(.securityWatch) }
             metricTile(
                 title: "Wi-Fi", value: "\(analyzer.networks.count) networks",
                 detail: scanLine, icon: "wifi",
-                tone: connected == nil ? .warning : .good)
+                tone: connected == nil ? .warning : .good
+            ) { toolkit.select(.wifiAnalyzer) }
             metricTile(
                 title: "Traffic today",
                 value: TrafficByteFormat.string(accounting.volume(.today).total),
-                detail: rateText, icon: "arrow.up.arrow.down", tone: .neutral)
+                detail: rateText, icon: "arrow.up.arrow.down", tone: .neutral
+            ) { toolkit.select(.processTraffic) }
             metricTile(
                 title: "Automation", value: automation.isEnabled ? onOff(true) : onOff(false),
                 detail: wifiAutomationLine, icon: "wand.and.stars",
-                tone: automationTone)
+                tone: automationTone
+            ) { SettingsRouter.shared.open(.general) }
         }
     }
 
     private func metricTile(
-        title: LocalizedStringKey, value: String, detail: String, icon: String, tone: ToolkitTone
+        title: LocalizedStringKey, value: String, detail: String, icon: String, tone: ToolkitTone,
+        action: @escaping () -> Void
     ) -> some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
@@ -245,6 +250,7 @@ struct OverviewDashboardView: View {
             .frame(maxWidth: .infinity, minHeight: 62, alignment: .topLeading)
         }
         .frame(maxWidth: .infinity)
+        .dashboardLink(action)
     }
 
     private func onOff(_ value: Bool) -> String {
@@ -306,8 +312,8 @@ struct OverviewDashboardView: View {
 
     private var liveRow: some View {
         HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-            throughputCard
-            uptimeCard
+            throughputCard.dashboardLink { toolkit.select(.speedTest) }
+            uptimeCard.dashboardLink { toolkit.select(.uptimeMonitor) }
         }
     }
 
@@ -537,8 +543,8 @@ struct OverviewDashboardView: View {
 
     private var wifiRow: some View {
         HStack(alignment: .top, spacing: DesignToken.Spacing.card) {
-            bandCard
-            channelCard
+            bandCard.dashboardLink { toolkit.select(.wifiAnalyzer) }
+            channelCard.dashboardLink { toolkit.select(.wifiAnalyzer) }
         }
     }
 
@@ -580,9 +586,11 @@ struct OverviewDashboardView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             .frame(maxWidth: .infinity)
+            .dashboardLink { toolkit.select(.advancedTools) }
 
             linkCard
                 .frame(maxWidth: .infinity)
+                .dashboardLink { SettingsRouter.shared.open(.general) }
         }
     }
 
@@ -750,5 +758,38 @@ private struct DashboardSparkline: View {
             .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
         }
         .accessibilityHidden(true)
+    }
+}
+
+// MARK: - Whole-card hit target
+
+/// Makes a dashboard card the navigation target itself: the whole card reacts
+/// on hover and opens the tool on a click, instead of only the button in its
+/// corner.
+private struct DashboardLink: ViewModifier {
+    let action: () -> Void
+    @State private var isHovering = false
+
+    func body(content: Content) -> some View {
+        content
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .onTapGesture(perform: action)
+            .onHover { isHovering = $0 }
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.card)
+                    .strokeBorder(
+                        isHovering ? Theme.Surface.tintStroke(.accentColor) : .clear,
+                        lineWidth: 1.5
+                    )
+                    .allowsHitTesting(false)
+            )
+            .animation(.easeOut(duration: 0.12), value: isHovering)
+            .accessibilityAddTraits(.isButton)
+    }
+}
+
+extension View {
+    func dashboardLink(_ action: @escaping () -> Void) -> some View {
+        modifier(DashboardLink(action: action))
     }
 }

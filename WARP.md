@@ -299,7 +299,11 @@ an app bundle.
   height, icon width, padding) and `.Palette` (semantic, band and quality
   colours). `DesignToken` and `AppPalette` are aliases, so no call site had to
   change and no value is written twice. The file also owns `.appCardSurface`,
-  `.appPanelBorder` and `.appSectionLabel`. `appCardSurface(tint:)` gives a
+  `.appPanelBorder` and `.appSectionLabel`. Dashboard cards use
+  `dashboardLink { }` so the whole card is the hit area with a hover outline;
+  do not add a bare corner button for navigation. `AppTable` measures its
+  container and stretches to it, so a table does not need `.frame(maxWidth:)`.
+  `appCardSurface(tint:)` gives a
   coloured card (band, status, category) the same radius and hairline as a
   neutral one; do not draw a card's fill, radius and stroke by hand. The QR
   canvas is the only intentional white surface.

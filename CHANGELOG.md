@@ -1,5 +1,22 @@
 # Changelog
 
+## 5.5.9 — 2026-11-20
+
+### Fixed
+- **Copy in the DNS tool copies what is on screen.** With the resolver
+  comparison open, Copy writes that comparison — every resolver, its transport,
+  answer and time, failed resolvers included, then the verdict — instead of the
+  previous single-lookup answer. Copy and Clear stay enabled in compare mode.
+- **Tables use the full width of their card again.** `AppTable` gives its
+  content a width floor from its container, so rows no longer collapse to their
+  intrinsic size; horizontal scrolling still appears when the columns need it.
+
+### Changed
+- **Every dashboard block is clickable.** The whole card reacts on hover and
+  opens its tool on a click — connection, internet, VPN/Wi-Fi/traffic/automation
+  tiles, throughput, uptime, bands, channels and link automation — instead of
+  only the button or corner link inside it.
+
 ## 5.5.8 — 2026-11-20
 
 ### Changed

@@ -258,7 +258,7 @@ struct DNSToolView: View {
 
     private var hasResult: Bool {
         switch model.tab {
-        case .records: return model.result != nil
+        case .records: return model.result != nil || model.comparison != nil
         case .mail, .reports: return model.mailReport != nil
         }
     }
@@ -693,6 +693,10 @@ struct DNSToolView: View {
     private func copy() {
         switch model.tab {
         case .records:
+            if let comparison = model.comparison {
+                copyComparison(comparison)
+                return
+            }
             guard let result = model.result else { return }
             var lines = [
                 "LanFi DNS \(result.host) · \(result.resolver) · \(result.milliseconds) ms", "",
@@ -721,5 +725,11 @@ struct DNSToolView: View {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(lines.joined(separator: "\n"), forType: .string)
         }
+    }
+
+    /// Copies the resolver comparison that is on screen.
+    private func copyComparison(_ comparison: DNSComparison) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(comparison.exportText, forType: .string)
     }
 }

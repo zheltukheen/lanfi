@@ -129,22 +129,33 @@ struct AppTable<Row: Identifiable>: View {
     }
 
     var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            VStack(alignment: .leading, spacing: 0) {
-                header
-                Divider()
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(sortedRows.enumerated()), id: \.element.id) { index, row in
-                        rowView(row, striped: index.isMultiple(of: 2))
-                        Divider().opacity(0.35)
-                    }
-                }
+        // The table fills its card. A plain ScrollView proposes nil width to
+        // its content, which made every row shrink to its intrinsic size and
+        // left the card half empty; the reader supplies the width floor and
+        // the ScrollView still takes over when the columns need more.
+        GeometryReader { proxy in
+            ScrollView([.horizontal, .vertical]) {
+                content
+                    .frame(minWidth: proxy.size.width, alignment: .leading)
             }
-            .padding(.horizontal, DesignToken.Spacing.tight)
-            .padding(.bottom, DesignToken.Spacing.tight)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Sortable table")
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header
+            Divider()
+            LazyVStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(sortedRows.enumerated()), id: \.element.id) { index, row in
+                    rowView(row, striped: index.isMultiple(of: 2))
+                    Divider().opacity(0.35)
+                }
+            }
+        }
+        .padding(.horizontal, DesignToken.Spacing.tight)
+        .padding(.bottom, DesignToken.Spacing.tight)
     }
 
     private var sortedRows: [Row] {

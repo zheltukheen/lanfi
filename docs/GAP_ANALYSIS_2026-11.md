@@ -1191,6 +1191,25 @@ locales.
 - 635 app tests green (1 skipped, 2 new routing tests); lint and Debug build
   clean.
 
+## Delivered in the thirty-seventh slice (2026-11-20)
+
+- **Copy follows the DNS screen.** With a resolver comparison open, Copy now
+  writes the comparison (`DNSComparison.exportText`: one row per resolver with
+  transport, answer, time and failures marked, then the verdict and the failed
+  count) instead of the stale single-lookup answer, and Copy/Clear stay enabled
+  because `hasResult` counts the comparison. The export text lives in the model
+  so it is unit-tested.
+- **Dashboard cards are the navigation target.** `dashboardLink(_:)` wraps a
+  card in a whole-card hit area with a hover outline; connection, internet, the
+  four metric tiles, throughput, uptime, band and channel cards and the link
+  automation card all open their tool (or the matching Settings page) from
+  anywhere in the card, not only from the button in the corner.
+- **Tables fill their card again.** `AppTable` measures its container and gives
+  the content a `minWidth` floor, so rows stretch across the card (the previous
+  `ScrollView` proposed nil width and every table collapsed to its intrinsic
+  size) while horizontal scrolling still appears when columns need more room.
+- 679 app tests green (1 skipped); lint and the universal bundle clean.
+
 ## Delivered in the thirty-sixth slice (2026-11-19)
 
 - **Dashboard first (D2/P1.6 precursor).** `ToolboxTool.overview` is the new
