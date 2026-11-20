@@ -1,5 +1,29 @@
 # Changelog
 
+## 5.5.8 — 2026-11-20
+
+### Changed
+- **Every card is the same card.** `appCardSurface` now takes `tint:` (fill at
+  12%, hairline at 30%, both from `Theme.Surface`) and `strokeWidth:`. The last
+  bespoke recipes moved onto it — Protocols band/status cards (gradients
+  removed), Interfaces, Insights panels, Visual Traceroute cards, survey chips
+  and window edges, the survey map frame, multi-floor plans, the Help banner,
+  the QR placeholder and both settings rule editors — so no panel draws its own
+  fill, radius and border any more. The QR canvas stays white on purpose.
+- **Live capture runs under `SupervisedProcess`.** The osascript helper counts
+  as started only when tcpdump writes its pcap header (which happens after the
+  admin prompt and after BPF opens the interface), the whole run is killed past
+  `startDelay + duration + 20 s`, and a cancelled prompt is still reported as
+  such. A prompt left open or a wedged tcpdump now ends in an error instead of
+  a frozen window.
+
+### Removed
+- The supervisor's restart policy, health probe, retry-with-fresh-arguments and
+  per-attempt launch counter. The callers are one-shot, so relaunching a
+  capture behind the user's back would duplicate a privileged prompt rather
+  than repair anything; start/readiness/run-limit/kill is all that is left and
+  all that is tested.
+
 ## 5.5.7 — 2026-11-20
 
 ### Added

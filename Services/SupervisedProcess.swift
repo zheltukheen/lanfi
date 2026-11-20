@@ -1,78 +1,56 @@
 import Foundation
 
-/// How a supervised child is launched and when it counts as healthy.
+/// How a supervised child is launched and when it counts as started.
 struct SupervisedProcessConfiguration {
     let executableURL: URL
-    /// Arguments for the nth launch (1-based). A retry gets a fresh set, which
-    /// is how a transport path or token is rebound after a failed start.
-    var arguments: (Int) -> [String] = { _ in [] }
+    let arguments: [String]
     var environment: [String: String] = [:]
+    /// Stderr sink, when the caller needs the child's message on failure.
+    var errorPipe: Pipe?
 
-    /// How long the child may take to answer before the launch is treated as
-    /// failed. Readiness is a real answer from the child, never "the process
-    /// exists".
-    var readinessTimeout: TimeInterval = 6
-    /// How often readiness is polled while waiting for that answer.
-    var readinessPollInterval: TimeInterval = 0.05
-
-    /// Delay before an automatic restart after an unexpected exit.
-    var restartDelay: TimeInterval = 2
-    /// Minimum interval between two automatic restarts, so a crashing helper
-    /// cannot spin.
-    var restartRateLimit: TimeInterval = 60
-    /// Grace period between SIGTERM and SIGKILL.
+    /// How long the child has to show a real sign of life. A helper that never
+    /// answers is killed and the start fails instead of hanging the caller.
+    var readinessTimeout: TimeInterval = 120
+    var readinessPollInterval: TimeInterval = 0.1
+    /// Hard limit for the whole run: past it the child is killed, so a stuck
+    /// capture or a stuck remote command cannot run forever.
+    var runLimit: TimeInterval = 300
+    /// Grace between SIGTERM and SIGKILL.
     var terminationGracePeriod: TimeInterval = 2
 
-    /// True once the child is ready to do work (socket connected, port bound,
-    /// handshake answered).
-    var isReady: () async -> Bool = { true }
-    /// A cheap health probe run before an automatic restart. A helper that is
-    /// not healthy is not restarted: the environment, not the child, is broken.
-    var isHealthy: () async -> Bool = { true }
+    /// The child's own readiness signal (a capture file that grows, a port
+    /// that answers) — never "the process exists".
+    var isReady: @Sendable () async -> Bool = { true }
 }
 
 enum SupervisedProcessError: LocalizedError {
     case launchFailed(String)
     case notReady
-    case stopped
+    case exitedBeforeReady(Int32)
 
     var errorDescription: String? {
         switch self {
         case .launchFailed(let message): return message
-        case .notReady: return "The helper process did not become ready in time."
-        case .stopped: return "The helper process was stopped."
+        case .notReady: return "The helper process did not start in time."
+        case .exitedBeforeReady(let status): return "The helper process exited with status \(status)."
         }
     }
 }
 
-/// A long-lived child process with a readiness probe, one retry on a failed
-/// start, a rate-limited automatic restart and an idempotent shutdown.
+/// A child process the app has to be able to stop: a readiness probe with a
+/// deadline, a hard run limit and a shutdown that escalates from SIGTERM to
+/// SIGKILL.
 ///
-/// The point is that a hung helper stops looking like "no data": launch fails
-/// loudly after `readinessTimeout`, a crash restarts once instead of never, a
-/// crash loop is throttled, and two callers cannot start two children or kill
-/// one twice.
+/// There is no restart policy on purpose. The callers are one-shot by nature
+/// (a capture of N seconds, a remote scan); relaunching them behind the user's
+/// back would duplicate a capture or a privileged prompt, not repair anything.
 actor SupervisedProcess {
-    enum State: Equatable {
-        case stopped
-        case starting
-        case running
-        case restarting
-        case failed
-    }
-
     private let configuration: SupervisedProcessConfiguration
-    private(set) var state: State = .stopped
-    private(set) var launchCount = 0
 
     private var child: Process?
-    private var restartTask: Task<Void, Never>?
-    private var lastRestartAt: Date?
-    private var isStopping = false
-    /// Set when the child dies before it ever answered "ready". The launch path
-    /// reads it so a process that exits during startup fails the start instead
-    /// of being reported as running.
-    private var exitedBeforeReady = false
+    private var exitStatus: Int32?
+    private var waiter: CheckedContinuation<Int32, Never>?
+    private var deadlineTask: Task<Void, Never>?
 
     init(_ configuration: SupervisedProcessConfiguration) {
         self.configuration = configuration
@@ -80,48 +58,20 @@ actor SupervisedProcess {
 
     var isRunning: Bool { child?.isRunning == true }
 
-    /// Launches the child and waits for its readiness answer. Throws when the
-    /// child exits early or does not answer within the timeout; in both cases
-    /// the child is terminated before the error leaves this call.
+    /// Launches the child and waits for its readiness signal. Throws when it
+    /// exits first or does not answer within `readinessTimeout`; in both cases
+    /// the child is already stopped when the error is thrown.
     func start() async throws {
-        guard state != .running, !isRunning else { return }
-        isStopping = false
-        try await launch(attempt: 1)
-    }
+        guard child == nil else { return }
 
-    /// Stops the child and cancels any pending restart. Safe to call twice: the
-    /// second call has nothing left to signal.
-    func stop() async {
-        isStopping = true
-        restartTask?.cancel()
-        restartTask = nil
-        state = .stopped
-        guard let process = child else { return }
-        child = nil
-        await terminate(process)
-    }
-
-    /// Restarts on demand, serialised with the automatic restart so two callers
-    /// share one launch.
-    func restart() async throws {
-        await stop()
-        try await start()
-    }
-
-    // MARK: - Launch
-
-    private func launch(attempt: Int) async throws {
-        state = .starting
-        launchCount += 1
-        exitedBeforeReady = false
         let process = Process()
         process.executableURL = configuration.executableURL
-        process.arguments = configuration.arguments(attempt)
+        process.arguments = configuration.arguments
         if !configuration.environment.isEmpty {
             process.environment = configuration.environment
         }
         process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
+        process.standardError = configuration.errorPipe
         process.terminationHandler = { [weak self] finished in
             Task { await self?.childExited(status: finished.terminationStatus) }
         }
@@ -129,92 +79,82 @@ actor SupervisedProcess {
         do {
             try process.run()
         } catch {
-            state = .failed
             throw SupervisedProcessError.launchFailed(error.localizedDescription)
         }
         child = process
 
-        if await waitForReadiness(process) {
-            state = .running
-            return
+        guard await waitUntilReady(process) else {
+            let earlyStatus = exitStatus
+            await terminate(process)
+            child = nil
+            if let earlyStatus { throw SupervisedProcessError.exitedBeforeReady(earlyStatus) }
+            throw SupervisedProcessError.notReady
         }
-
-        child = nil
-        await terminate(process)
-        if attempt == 1 {
-            // One retry with fresh arguments: the usual failure is a stale
-            // transport path or token, which the next attempt rebuilds.
-            try await launch(attempt: 2)
-            return
-        }
-        state = .failed
-        throw SupervisedProcessError.notReady
+        startDeadline()
     }
 
-    /// Readiness or exit, whichever comes first, within the timeout.
-    private func waitForReadiness(_ process: Process) async -> Bool {
-        let deadline = Date().addingTimeInterval(configuration.readinessTimeout)
-        while Date() < deadline {
-            if exitedBeforeReady || !process.isRunning { return false }
-            if await configuration.isReady() {
-                // A readiness signal can race the child's exit; give the
-                // termination handler one poll window to be observed before
-                // calling this launch successful.
-                try? await Task.sleep(
-                    nanoseconds: UInt64(max(0.001, configuration.readinessPollInterval) * 1_000_000_000))
-                return !exitedBeforeReady && process.isRunning
+    /// Waits for the child to finish and returns its status. The child is
+    /// killed when `runLimit` passes first.
+    func waitUntilExit() async -> Int32 {
+        if let exitStatus { return exitStatus }
+        return await withCheckedContinuation { continuation in
+            if let exitStatus {
+                continuation.resume(returning: exitStatus)
+            } else {
+                waiter = continuation
             }
-            try? await Task.sleep(
-                nanoseconds: UInt64(max(0.001, configuration.readinessPollInterval) * 1_000_000_000))
         }
-        guard !exitedBeforeReady, process.isRunning else { return false }
-        return await configuration.isReady()
     }
 
-    // MARK: - Exit and restart
+    /// Stops the child if it is still running. Safe to call twice and after
+    /// the child has already exited.
+    func stop() async {
+        deadlineTask?.cancel()
+        deadlineTask = nil
+        guard let process = child else { return }
+        await terminate(process)
+    }
+
+    // MARK: - Internals
+
+    private func waitUntilReady(_ process: Process) async -> Bool {
+        let deadline = Date().addingTimeInterval(configuration.readinessTimeout)
+        let poll = UInt64(max(0.01, configuration.readinessPollInterval) * 1_000_000_000)
+        while Date() < deadline {
+            if !process.isRunning { return false }
+            if await configuration.isReady() {
+                // The readiness signal can win the race against an exit; let
+                // the termination handler be observed before trusting it.
+                try? await Task.sleep(nanoseconds: poll)
+                return process.isRunning
+            }
+            try? await Task.sleep(nanoseconds: poll)
+        }
+        return false
+    }
+
+    private func startDeadline() {
+        let limit = configuration.runLimit
+        deadlineTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(max(0, limit) * 1_000_000_000))
+            await self?.deadlineReached()
+        }
+    }
+
+    private func deadlineReached() async {
+        deadlineTask = nil
+        guard let process = child else { return }
+        await terminate(process)
+    }
 
     private func childExited(status: Int32) async {
-        if state == .starting {
-            exitedBeforeReady = true
-            return
-        }
-        guard !isStopping, state == .running else { return }
+        exitStatus = status
         child = nil
-        state = .restarting
-        scheduleRestart()
+        deadlineTask?.cancel()
+        deadlineTask = nil
+        waiter?.resume(returning: status)
+        waiter = nil
     }
-
-    private func scheduleRestart() {
-        // One restart in flight: concurrent exits and callers await the same
-        // attempt instead of starting several children.
-        guard restartTask == nil else { return }
-        if let last = lastRestartAt, Date().timeIntervalSince(last) < configuration.restartRateLimit {
-            state = .failed
-            return
-        }
-        let delay = configuration.restartDelay
-        restartTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(max(0, delay) * 1_000_000_000))
-            await self?.performRestart()
-        }
-    }
-
-    private func performRestart() async {
-        restartTask = nil
-        guard !isStopping else { return }
-        guard await configuration.isHealthy() else {
-            state = .failed
-            return
-        }
-        lastRestartAt = Date()
-        do {
-            try await launch(attempt: 1)
-        } catch {
-            state = .failed
-        }
-    }
-
-    // MARK: - Shutdown
 
     private func terminate(_ process: Process) async {
         if process.isRunning { process.terminate() }

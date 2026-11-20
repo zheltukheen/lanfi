@@ -115,13 +115,13 @@ struct HelpView: View {
     private func topicBanner(_ topic: HelpTopic) -> some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
             ZStack {
-                RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                    .fill(Color.accentColor.opacity(0.10))
                 Image(systemName: topic.icon)
                     .font(.system(size: 34, weight: .light))
                     .foregroundColor(.accentColor)
             }
+            .frame(maxWidth: .infinity)
             .frame(height: 110)
+            .appCardSurface(tint: .accentColor)
             Text(topic.screenshotCaption)
                 .font(.caption2)
                 .foregroundColor(.secondary)

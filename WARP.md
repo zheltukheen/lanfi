@@ -162,12 +162,14 @@ an app bundle.
   `SecurityEvent.post` channel both guards share, and `ShellOutput.run`. Add a
   new guard by subclassing `PollingGuard` and overriding `performSample()`;
   do not add another timer or another `Notification.Name`.
-- `Services/SupervisedProcess.swift` — the supervised long-lived child: a
-  readiness probe with a timeout, one retry with fresh arguments, a
-  rate-limited automatic restart guarded by a health probe, and an idempotent
-  SIGTERM→SIGKILL shutdown. New helpers (capture, remote sensors, spectrum)
-  should be launched through it instead of hand-rolling `Process` lifetime;
-  `Tests/SupervisedProcessTests` is the contract.
+- `Services/SupervisedProcess.swift` — the one way to run a child process the
+  app must be able to stop: the child reports readiness itself (live capture
+  waits for tcpdump's pcap header), a stalled start is killed after
+  `readinessTimeout`, the whole run is killed after `runLimit`, and shutdown
+  escalates SIGTERM→SIGKILL. There is deliberately no restart policy: the
+  callers are one-shot, so relaunching them would repeat a capture or a
+  privileged prompt. `LiveCaptureService` is the first consumer; new helpers
+  should use it instead of hand-rolling `Process` lifetime.
 - `Models/VPNGuard.swift` / `Services/VPNGuardService.swift` — P3.4: VPN
   detection, the `scutil --dns` / `netstat` parsers, the DNS and IPv6 leak
   verdicts, and the poller that posts `vpnDropped` / `vpnLeak` events.
@@ -297,7 +299,10 @@ an app bundle.
   height, icon width, padding) and `.Palette` (semantic, band and quality
   colours). `DesignToken` and `AppPalette` are aliases, so no call site had to
   change and no value is written twice. The file also owns `.appCardSurface`,
-  `.appPanelBorder` and `.appSectionLabel`.
+  `.appPanelBorder` and `.appSectionLabel`. `appCardSurface(tint:)` gives a
+  coloured card (band, status, category) the same radius and hairline as a
+  neutral one; do not draw a card's fill, radius and stroke by hand. The QR
+  canvas is the only intentional white surface.
 - `Views/DesignSystem.swift` — the components that consume the theme:
   `AppCard`, `SectionLabel`, `StatusPill`, `StatTile` and `BandChip`. A screen
   that needs a card, a section header or a status pill uses one of these (or

@@ -320,9 +320,9 @@ private struct KnownNetworkQRSheet: View {
                             .frame(width: 220, height: 220)
                             .background(Color.white, in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
                     } else {
-                        RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                            .fill(Color.secondary.opacity(0.1))
+                        Color.clear
                             .frame(width: 220, height: 220)
+                            .appCardSurface()
                             .overlay(
                                 Text("QR generation failed")
                                     .font(.caption)

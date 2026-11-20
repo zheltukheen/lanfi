@@ -720,8 +720,7 @@ struct SurveyView: View {
                         }
                     }
                     .padding(DesignToken.Spacing.small)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+                    .appCardSurface(radius: Theme.Radius.control)
                     .padding(DesignToken.Spacing.compact)
 
                     VStack {
@@ -749,7 +748,7 @@ struct SurveyView: View {
                         }
                         .padding(.horizontal, DesignToken.Spacing.large)
                         .padding(.vertical, DesignToken.Spacing.medium)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+                        .appCardSurface()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .allowsHitTesting(false)
                     }
@@ -988,8 +987,7 @@ struct SurveyView: View {
             if predictiveMode { Text("· predictive").font(.caption2).foregroundColor(.purple) }
         }
         .padding(DesignToken.Spacing.small)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .appCardSurface(radius: Theme.Radius.control)
     }
 
     private func fittedRect(in size: CGSize) -> CGRect {

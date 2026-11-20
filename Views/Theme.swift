@@ -119,6 +119,10 @@ enum Theme {
         static let accentFill = Color.accentColor.opacity(0.08)
         /// Fill behind a selected row.
         static let selectionFill = Color.accentColor.opacity(0.16)
+        /// Fill of a card tinted with a band, status or category colour.
+        static func tintFill(_ color: Color) -> Color { color.opacity(0.12) }
+        /// Hairline of a tinted card.
+        static func tintStroke(_ color: Color) -> Color { color.opacity(0.30) }
     }
 
     /// Control metrics. A button, an icon button and a menu label share these
@@ -175,14 +179,21 @@ typealias AppPalette = Theme.Palette
 
 extension View {
     /// The one card surface: fill, rounded corners and a hairline border.
+    /// The one card surface. `tint` replaces the neutral fill and hairline with
+    /// the tint at panel strength, so a band- or status-coloured card is still
+    /// the same object with the same radius and stroke width.
     func appCardSurface(
         radius: CGFloat = Theme.Radius.card,
-        fill: Color = Theme.Surface.card
+        fill: Color = Theme.Surface.card,
+        tint: Color? = nil,
+        strokeWidth: CGFloat = Theme.Stroke.hairline
     ) -> some View {
-        background(fill, in: RoundedRectangle(cornerRadius: radius))
+        let surface = tint.map(Theme.Surface.tintFill) ?? fill
+        let stroke = tint.map(Theme.Surface.tintStroke) ?? Theme.Surface.cardStroke
+        return background(surface, in: RoundedRectangle(cornerRadius: radius))
             .overlay(
                 RoundedRectangle(cornerRadius: radius)
-                    .strokeBorder(Theme.Surface.cardStroke, lineWidth: Theme.Stroke.hairline)
+                    .strokeBorder(stroke, lineWidth: strokeWidth)
             )
     }
 

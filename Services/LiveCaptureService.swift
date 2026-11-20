@@ -101,23 +101,33 @@ enum LiveCaptureService {
         try? FileManager.default.removeItem(at: errorURL)
         let command = shellCommand(for: options)
         let script = "do shell script \(appleScriptQuote(command)) with administrator privileges"
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", script]
-        let errorPipe = Pipe()
-        process.standardError = errorPipe
-        process.standardOutput = FileHandle.nullDevice
 
-        try process.run()
-        process.waitUntilExit()
-        let errorText = String(
-            decoding: errorPipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard process.terminationStatus == 0 else {
-            if errorText.localizedCaseInsensitiveContains("cancel") {
-                throw LiveCaptureError.authorizationCancelled
-            }
-            throw LiveCaptureError.captureFailed(errorText.isEmpty ? "tcpdump failed." : errorText)
+        // The supervisor owns the osascript lifetime: the capture counts as
+        // started once tcpdump has written its pcap header (which happens after
+        // authorization and after BPF opened the interface), and the whole run
+        // is killed past the deadline. A prompt left open or a stuck tcpdump
+        // therefore ends with an error instead of a frozen window.
+        let errorPipe = Pipe()
+        let duration = min(max(options.duration, 5), 120)
+        let startDelay = min(max(options.startDelay, 0), 120)
+        let supervisor = SupervisedProcess(
+            SupervisedProcessConfiguration(
+                executableURL: URL(fileURLWithPath: "/usr/bin/osascript"),
+                arguments: ["-e", script],
+                errorPipe: errorPipe,
+                readinessTimeout: readinessTimeout,
+                runLimit: TimeInterval(startDelay + duration + 20),
+                isReady: { captureHasStarted(at: options.outputURL) }))
+
+        do {
+            try await supervisor.start()
+        } catch {
+            await supervisor.stop()
+            throw captureError(from: errorText(errorPipe))
+        }
+        let status = await supervisor.waitUntilExit()
+        guard status == 0 else {
+            throw captureError(from: errorText(errorPipe))
         }
         let attributes = try? FileManager.default.attributesOfItem(atPath: options.outputURL.path)
         let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
@@ -143,6 +153,36 @@ enum LiveCaptureService {
             return false
         }
         return true
+    }
+
+    /// Time the user has to approve the prompt and for tcpdump to write its
+    /// first bytes before the helper is treated as hung.
+    static let readinessTimeout: TimeInterval = 120
+
+    /// True once tcpdump has written the pcap global header. That only happens
+    /// after authorization succeeded and BPF opened the interface, so it is a
+    /// real readiness signal rather than "the process exists".
+    static func captureHasStarted(at url: URL) -> Bool {
+        let size =
+            (try? FileManager.default.attributesOfItem(atPath: url.path))?[.size]
+            as? NSNumber
+        return (size?.intValue ?? 0) >= 24
+    }
+
+    static func captureError(from text: String) -> LiveCaptureError {
+        if text.localizedCaseInsensitiveContains("cancel") {
+            return .authorizationCancelled
+        }
+        if text.isEmpty {
+            return .captureFailed(
+                "The capture did not start. Check the interface, then try again.")
+        }
+        return .captureFailed(text)
+    }
+
+    private static func errorText(_ pipe: Pipe) -> String {
+        String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static func interfaceNames() -> [String] {

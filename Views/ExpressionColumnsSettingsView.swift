@@ -32,8 +32,8 @@ struct ExpressionColumnsSettingsView: View {
                             .onSubmit { viewModel.updateExpressionColumn(columns[index]) }
                     }
                     .padding(DesignToken.Spacing.tight)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+                    .appCardSurface(
+                        radius: Theme.Radius.control, fill: Theme.Surface.panel)
                 }
                 Button {
                     let column = ExpressionColumn(id: UUID(), name: "Custom", template: "{ssid} · {signal} dBm")

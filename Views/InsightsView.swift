@@ -112,11 +112,7 @@ struct StatCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DesignToken.Spacing.compact)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
-                Color.secondary.opacity(0.15), lineWidth: 1))
+        .appCardSurface(radius: Theme.Radius.control, fill: Theme.Surface.panel)
     }
 }
 
@@ -271,8 +267,7 @@ struct InsightsView: View {
             }
         }
         .padding(DesignToken.Spacing.small)
-        .background(Color.accentColor.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .appCardSurface(radius: Theme.Radius.control, tint: .accentColor)
     }
 
     private var summary: some View {
@@ -338,8 +333,7 @@ struct InsightsView: View {
                 }
                 .padding(DesignToken.Spacing.compact)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.green.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+                .appCardSurface(radius: Theme.Radius.control, tint: .green)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(findingGroups.prefix(5).enumerated()), id: \.element.id) { index, group in
@@ -369,11 +363,8 @@ struct InsightsView: View {
                     }
                 }
                 .padding(.horizontal, DesignToken.Spacing.compact)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
-                        Color.secondary.opacity(0.15), lineWidth: 1))
+                .appCardSurface(
+                    radius: Theme.Radius.control, fill: Theme.Surface.panel)
             }
         }
     }
@@ -483,11 +474,7 @@ struct InsightsView: View {
             }
         }
         .padding(DesignToken.Spacing.compact)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
-                Color.secondary.opacity(0.15), lineWidth: 1))
+        .appCardSurface(radius: Theme.Radius.control, fill: Theme.Surface.panel)
     }
 
     private func bestLabel(for band: WiFiBand) -> String {

@@ -83,8 +83,7 @@ struct ColorRulesSettingsView: View {
             }
         }
         .padding(DesignToken.Spacing.tight)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .appCardSurface(radius: Theme.Radius.control, fill: Theme.Surface.panel)
     }
 
     private func binding<T>(_ index: Int, _ keyPath: WritableKeyPath<ColoringRule, T>) -> Binding<T> {

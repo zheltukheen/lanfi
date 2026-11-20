@@ -37,11 +37,7 @@ struct SurveyMapSheet: View {
                     "\(survey.gpsTrack.count) track points, \(survey.samples.filter { $0.latitude != nil }.count) tagged samples"
                 )
             )
-            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                    .strokeBorder(Color.primary.opacity(0.08))
-            )
+            .appCardSurface(fill: .clear)
 
             HStack(spacing: DesignToken.Spacing.small) {
                 Button {

@@ -82,18 +82,7 @@ struct ProtocolsView: View {
             }
         }
         .padding(DesignToken.Spacing.medium)
-        .background(
-            LinearGradient(
-                colors: [bandColor(profile.band).opacity(0.16), Color(nsColor: .controlBackgroundColor)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                .stroke(bandColor(profile.band).opacity(0.25), lineWidth: 1)
-        )
+        .appCardSurface(tint: bandColor(profile.band))
     }
 
     private func warningsView(_ warnings: [String]) -> some View {
@@ -316,12 +305,7 @@ private struct ProtocolBlockCard: View {
         }
         .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, minHeight: 318, maxHeight: 318, alignment: .topLeading)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                .stroke(statusColor.opacity(0.25), lineWidth: 1)
-        )
+        .appCardSurface(tint: statusColor)
         // One VoiceOver stop per block instead of a dozen unlabelled fact dots.
         .accessibilityElement(children: .combine)
     }

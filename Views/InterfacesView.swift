@@ -235,13 +235,8 @@ private struct PrimaryInterfaceCard: View {
         }
         .padding(DesignToken.Spacing.card)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                .stroke(
-                    Color.blue.opacity(contrast == .increased ? 0.8 : 0.25),
-                    lineWidth: contrast == .increased ? 2 : 1)
+        .appCardSurface(
+            tint: .blue, strokeWidth: contrast == .increased ? 2 : Theme.Stroke.hairline
         )
         .accessibilityElement(children: .combine)
     }

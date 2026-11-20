@@ -188,11 +188,7 @@ struct VisualTracerouteToolView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignToken.Radius.card)
-                .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
-        )
+        .appCardSurface(fill: .clear)
     }
 
     private var progressCard: some View {
@@ -220,7 +216,7 @@ struct VisualTracerouteToolView: View {
         }
         .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: 320, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+        .appCardSurface()
     }
 
     private var headline: String {
@@ -286,7 +282,7 @@ struct VisualTracerouteToolView: View {
                 .foregroundColor(.secondary)
         }
         .appContentPadding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignToken.Radius.sheet))
+        .appCardSurface(radius: Theme.Radius.sheet)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -382,8 +378,7 @@ struct VisualTracerouteToolView: View {
             .padding(DesignToken.Spacing.compact)
         }
         .frame(width: 350)
-        .background(
-            Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+        .appCardSurface()
     }
 
     private var waitingRow: some View {

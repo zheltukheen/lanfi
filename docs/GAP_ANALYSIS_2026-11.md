@@ -876,10 +876,21 @@ stat/hero component, and no density option for the AppKit table.
             `Theme.Control`/`Theme.Typography`. Panels that need a tinted or
             material card still draw it, but from theme values and
             `.appCardSurface(fill:)`.
-      - [ ] Remaining long tail: the bespoke cards that tint their own border or
-            use a material background (selection cards,
-            material overlays in survey and traceroute) can take
-            `.appCardSurface` with a tint parameter in a later pass.
+      - [x] **Tinted and material cards (5.5.8).** `appCardSurface` takes
+            `tint:` and `strokeWidth:`; the tint supplies both the fill
+            (`Theme.Surface.tintFill`, 12%) and the hairline
+            (`Theme.Surface.tintStroke`, 30%), so a band-, status- or
+            category-coloured card is the same object at the same radius. The
+            remaining bespoke recipes moved onto it: the Protocols band and
+            status cards (their gradients are gone), the Interfaces card (its
+            increased-contrast 2 pt stroke is now the `strokeWidth` argument),
+            the Insights nested panels and accent/green blocks, the Visual
+            Traceroute node, progress and detail cards, the Survey coverage
+            chips and the survey window card, the survey map frame, the
+            multi-floor plan cards and badge, the Help topic banner, the QR
+            placeholder and the two settings rule editors. The only literal
+            white fill left is the QR code canvas itself, which has to stay
+            white for scanners to read it.
       - [ ] Tests: a snapshot-free unit test that every registered tool renders a
             `SectionLabel`+`AppCard` root (pure view-model assertions), and a
             lint rule of thumb in `CONTRIBUTING.md`: no new literal `cornerRadius`

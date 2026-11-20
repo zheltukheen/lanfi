@@ -106,8 +106,7 @@ struct MultiFloorSurveyView: View {
                             .font(.caption.bold())
                             .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 3)
-                            .background(.ultraThinMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
+                            .appCardSurface(radius: Theme.Radius.badge)
                             .padding(DesignToken.Spacing.tight)
                     }
                     .overlay {
@@ -131,8 +130,7 @@ struct MultiFloorSurveyView: View {
             .foregroundColor(.secondary)
         }
         .padding(DesignToken.Spacing.small)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.card))
+        .appCardSurface()
         .shadow(color: .black.opacity(0.25), radius: 10, y: 8)
         .rotation3DEffect(.degrees(tilt), axis: (x: 1, y: 0, z: 0), perspective: 0.45)
         .offset(x: offset * 32, y: offset * -spacing)
