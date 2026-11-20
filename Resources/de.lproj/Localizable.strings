@@ -1614,3 +1614,7 @@
 "The system resolver answers differently: %@." = "Der System-Resolver antwortet anders: %@.";
 "The system resolver returns the same addresses." = "Der System-Resolver liefert dieselben Adressen.";
 "The addresses belong to %lld different networks, which is normal for a content network." = "Die Adressen gehören zu %lld verschiedenen Netzen, was für Content-Netze normal ist.";
+
+"Global shortcut" = "Globale Tastenkürzel";
+"Press the keys…" = "Tasten drücken…";
+"Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "Öffnet „Verbindungen“ aus jeder App. Bis Sie ein Kürzel aufnehmen, wird nichts registriert; nötig ist mindestens eines von ⌘, ⌃ oder ⌥.";

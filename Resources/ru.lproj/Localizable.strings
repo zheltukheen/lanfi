@@ -1651,3 +1651,7 @@
 "The system resolver answers differently: %@." = "Системный резолвер отвечает иначе: %@.";
 "The system resolver returns the same addresses." = "Системный резолвер возвращает те же адреса.";
 "The addresses belong to %lld different networks, which is normal for a content network." = "Адреса принадлежат %lld разным сетям — это обычное дело для сетей доставки контента.";
+
+"Global shortcut" = "Глобальное сочетание";
+"Press the keys…" = "Нажмите клавиши…";
+"Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "Открывает «Подключения» из любого приложения. Пока вы не запишете сочетание, ничего не регистрируется; нужен хотя бы один из ⌘, ⌃ или ⌥.";

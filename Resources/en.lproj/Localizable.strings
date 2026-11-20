@@ -1615,3 +1615,7 @@
 "The system resolver answers differently: %@." = "The system resolver answers differently: %@.";
 "The system resolver returns the same addresses." = "The system resolver returns the same addresses.";
 "The addresses belong to %lld different networks, which is normal for a content network." = "The addresses belong to %lld different networks, which is normal for a content network.";
+
+"Global shortcut" = "Global shortcut";
+"Press the keys…" = "Press the keys…";
+"Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥.";

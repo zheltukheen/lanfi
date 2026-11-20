@@ -1614,3 +1614,7 @@
 "The system resolver answers differently: %@." = "系统解析器返回不同结果：%@。";
 "The system resolver returns the same addresses." = "系统解析器返回相同地址。";
 "The addresses belong to %lld different networks, which is normal for a content network." = "这些地址分属 %lld 个不同网络，这对内容分发网络来说是正常的。";
+
+"Global shortcut" = "全局快捷键";
+"Press the keys…" = "请按下按键…";
+"Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "可从任意应用打开“连接”。在你录制快捷键之前不会注册任何内容；至少需要 ⌘、⌃ 或 ⌥ 之一。";

@@ -18,6 +18,10 @@ struct GeneralSettingsPage: View {
     /// say why the Wi-Fi switches would be silent instead of just doing nothing.
     @State private var notificationDenied = false
     @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false
+    @StateObject private var hotKeyCenter = GlobalHotKeyCenter.shared
+    @State private var isRecordingHotKey = false
+    @State private var hotKeyMonitor: Any?
+    @State private var hotKeyMessage: String?
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
@@ -37,6 +41,7 @@ struct GeneralSettingsPage: View {
                 connectivityCard
                 linkAutomationCard
                 displayCard
+                hotKeyCard
                 dataCard
                 helpCard
             }
@@ -52,6 +57,70 @@ struct GeneralSettingsPage: View {
     }
 
     // MARK: - Cards
+
+    /// The one owner of the global shortcut. No default: until the user records
+    /// something, nothing is registered with the system.
+    private var hotKeyCard: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack {
+                    Text("Global shortcut").font(.headline)
+                    Spacer()
+                    Text(hotKeyCenter.hotKey?.display ?? String(localized: "None"))
+                        .font(.body.monospaced())
+                        .foregroundColor(hotKeyCenter.hotKey == nil ? .secondary : .primary)
+                }
+                Text(
+                    "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥."
+                )
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: DesignToken.Spacing.small) {
+                    AppButton(isRecordingHotKey ? "Press the keys…" : "Record", tone: .secondary) {
+                        if isRecordingHotKey { stopRecordingHotKey() } else { startRecordingHotKey() }
+                    }
+                    AppButton("Clear", tone: .quiet) { hotKeyCenter.set(nil) }
+                        .disabled(hotKeyCenter.hotKey == nil)
+                    Spacer()
+                }
+                if let message = hotKeyMessage ?? hotKeyCenter.lastError {
+                    Text(message)
+                        .font(.caption2)
+                        .foregroundColor(AppPalette.warning)
+                }
+            }
+        }
+        .onDisappear { stopRecordingHotKey() }
+    }
+
+    private func startRecordingHotKey() {
+        hotKeyMessage = nil
+        hotKeyCenter.clearError()
+        isRecordingHotKey = true
+        hotKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            // Escape cancels without touching what is registered.
+            if Int(event.keyCode) == 53 {
+                stopRecordingHotKey()
+                return nil
+            }
+            switch GlobalHotKey.record(from: event) {
+            case .success(let hotKey):
+                hotKeyCenter.set(hotKey)
+                hotKeyMessage = hotKeyCenter.lastError
+            case .failure(let error):
+                hotKeyMessage = error.localizedDescription
+            }
+            stopRecordingHotKey()
+            return nil
+        }
+    }
+
+    private func stopRecordingHotKey() {
+        isRecordingHotKey = false
+        if let hotKeyMonitor { NSEvent.removeMonitor(hotKeyMonitor) }
+        hotKeyMonitor = nil
+    }
 
     private var aboutCard: some View {
         AppCard {

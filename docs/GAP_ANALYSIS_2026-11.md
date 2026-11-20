@@ -389,8 +389,24 @@ Tasks:
       local endpoint and post one notification per new or closed listener. The
       first sample after starting is a baseline, so starting the watcher does
       not announce every existing server.
-- [ ] Optional user-recorded global hotkey that opens Connections; one owner,
-      no default. (Still open: needs a hot-key recorder and a conflict rule.)
+- [x] **Optional user-recorded global hotkey that opens Connections; one
+      owner, no default (5.6.6).** `Models/GlobalHotKey.swift` records a real
+      key press (Escape cancels), builds the display string itself, and refuses
+      a bare key or Shift alone, because Shift on its own only types a capital
+      letter. The conflict rule is two-part: a fixed list of combinations the
+      system or this app's menus already own (⌘Q, ⌘W, ⌘TAB, ⌘SPACE, ⌘K, ⌃⌘Q,
+      ⌘⇧3/4/5, ⌘,) is refused by name, and `RegisterEventHotKey` reports
+      `eventHotKeyExistsErr` when another app holds the combination —
+      `Services/GlobalHotKeyCenter.swift` turns that into "Another app already
+      uses that shortcut" and restores the previous shortcut instead of leaving
+      the user with none. Registration uses Carbon rather than an event tap, so
+      it needs no Accessibility permission. The shortcut fires the same
+      `.lanfiShowToolkit` notification the menu bar and Diagnostics post, so the
+      three entry points cannot drift; the notification names moved to
+      `Utils/WorkspaceNotificationNames.swift` because `Services` posts them and
+      the shared test target compiles `Services` without `Views`. Settings →
+      General carries the card (Record / Clear / current combination), and the
+      whole feature is inert until the user records something.
 
 Delivered 2026-11-19: `Models/ListenerWatch.swift` (summary, diff, copy),
 `Services/ListenerWatchService.swift` (`ListenerWatcher`, 30 s sampling through
