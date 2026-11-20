@@ -13,9 +13,12 @@ final class DNSToolModel: ObservableObject {
     @Published private(set) var result: DNSLookupResult?
     @Published private(set) var mailReport: DNSMailReport?
     @Published private(set) var isRunning = false
+    @Published private(set) var comparison: DNSComparison?
+    @Published private(set) var isComparing = false
     @Published var errorMessage: String?
 
     private var task: Task<Void, Never>?
+    private var comparisonTask: Task<Void, Never>?
 
     var resolver: DNSResolver {
         switch resolverChoice {
@@ -94,9 +97,36 @@ final class DNSToolModel: ObservableObject {
     func clear() {
         task?.cancel()
         task = nil
+        comparisonTask?.cancel()
+        comparisonTask = nil
         result = nil
         mailReport = nil
+        comparison = nil
         errorMessage = nil
         isRunning = false
+        isComparing = false
+    }
+
+    /// Sends the current name and type to every built-in resolver over UDP and
+    /// DoH and reports whether the answers agree.
+    func compare() {
+        guard !isComparing else { return }
+        guard let target = ToolTarget.parse(host) else {
+            errorMessage = "Enter a domain name, for example example.com."
+            return
+        }
+        errorMessage = nil
+        comparison = nil
+        isComparing = true
+        let selectedType = type
+        comparisonTask = Task { [weak self] in
+            let report = await DNSComparisonService().compare(
+                host: target.host, type: selectedType)
+            guard let self else { return }
+            if Task.isCancelled { return }
+            self.comparison = report
+            self.isComparing = false
+            self.comparisonTask = nil
+        }
     }
 }

@@ -8,6 +8,9 @@ enum DNSClientError: Error, Equatable, LocalizedError {
     case timeout
     case truncated
     case socket(String)
+    case http(Int)
+    case serverStatus(Int)
+    case invalidResponse(String)
 
     var errorDescription: String? {
         switch self {
@@ -21,6 +24,12 @@ enum DNSClientError: Error, Equatable, LocalizedError {
             return "The DNS answer was truncated; try a smaller record type."
         case .socket(let detail):
             return "DNS transport failed: \(detail)"
+        case .http(let code):
+            return "The DoH endpoint answered HTTP \(code)."
+        case .serverStatus(let code):
+            return "The resolver answered with status \(code)."
+        case .invalidResponse(let detail):
+            return "The resolver answer could not be read: \(detail)"
         }
     }
 }

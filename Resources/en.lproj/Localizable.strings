@@ -1552,3 +1552,13 @@
 "Type a tool, setting or panel name" = "Type a tool, setting or panel name";
 "Return opens the best match. Esc closes the palette." = "Return opens the best match. Esc closes the palette.";
 "Wi-Fi workspace" = "Wi-Fi workspace";
+
+"Compare" = "Compare";
+"Resolver comparison" = "Resolver comparison";
+"Querying every resolver over UDP and DoH…" = "Querying every resolver over UDP and DoH…";
+"Resolvers disagree on the answer." = "Resolvers disagree on the answer.";
+"All resolvers agree." = "All resolvers agree.";
+"No resolver answered." = "No resolver answered.";
+"No resolvers were queried." = "No resolvers were queried.";
+"DoH" = "DoH";
+"%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld of %lld resolvers did not answer; that is reported, not hidden.";

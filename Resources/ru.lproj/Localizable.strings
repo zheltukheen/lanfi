@@ -1588,3 +1588,13 @@
 "Type a tool, setting or panel name" = "Введите название инструмента, настройки или панели";
 "Return opens the best match. Esc closes the palette." = "Return открывает лучшее совпадение. Esc закрывает палитру.";
 "Wi-Fi workspace" = "Рабочее пространство Wi-Fi";
+
+"Compare" = "Сравнить";
+"Resolver comparison" = "Сравнение резолверов";
+"Querying every resolver over UDP and DoH…" = "Опрос всех резолверов по UDP и DoH…";
+"Resolvers disagree on the answer." = "Резолверы отвечают по-разному.";
+"All resolvers agree." = "Все резолверы отвечают одинаково.";
+"No resolver answered." = "Ни один резолвер не ответил.";
+"No resolvers were queried." = "Запросов к резолверам не было.";
+"DoH" = "DoH";
+"%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld из %lld резолверов не ответили — это показано, а не скрыто.";

@@ -1551,3 +1551,13 @@
 "Type a tool, setting or panel name" = "输入工具、设置或面板名称";
 "Return opens the best match. Esc closes the palette." = "回车打开最佳匹配，Esc 关闭命令面板。";
 "Wi-Fi workspace" = "Wi-Fi 工作区";
+
+"Compare" = "比较";
+"Resolver comparison" = "解析器对比";
+"Querying every resolver over UDP and DoH…" = "正在通过 UDP 和 DoH 查询所有解析器…";
+"Resolvers disagree on the answer." = "各解析器的应答不一致。";
+"All resolvers agree." = "所有解析器的应答一致。";
+"No resolver answered." = "没有解析器作出应答。";
+"No resolvers were queried." = "未查询任何解析器。";
+"DoH" = "DoH";
+"%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld 个（共 %lld 个）解析器未应答；此情况会显示，不会被隐藏。";

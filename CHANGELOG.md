@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.5.6 — 2026-11-20
+
+### Added
+- **DNS resolver comparison (P4.3).** The DNS tool has a **Compare** button that
+  asks system, Cloudflare and Google over plain UDP and Cloudflare and Google
+  over DoH at the same time, then shows one table: resolver, transport, answer
+  and time. A status pill says whether the answers agree; agreement ignores
+  record order and TTL, but an empty answer next to a populated one counts as a
+  disagreement, which is how a rewritten port 53 usually shows up. Resolvers
+  that fail are listed with their error and counted, not hidden.
+- DNS-over-HTTPS transport (`DoHDNSClient`) parsing the `application/dns-json`
+  shape into the same records the UDP client returns, with the DoH status code
+  surfaced as an error instead of an empty answer.
+
 ## 5.5.5 — 2026-11-20
 
 ### Added

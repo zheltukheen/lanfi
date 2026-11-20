@@ -745,6 +745,21 @@ interface, gateway and DNS answers instead of proxy outbounds.
 "flush cache" affordance is ever added it stays a documented, admin-prompted
 action, not a one-tap button.
 
+*Delivered in 5.5.6:* `Services/Toolkit/DoHDNSClient.swift` resolves through
+the `application/dns-json` endpoints (Cloudflare, Google, or a custom HTTPS
+endpoint) and maps the JSON answers onto the same `DNSRecord` the UDP path
+produces, so the comparison compares answers rather than encodings. The DNS
+tool gained a **Compare** button: one query goes to system/Cloudflare/Google
+over UDP and to Cloudflare/Google over DoH in parallel, and a single
+`AppTable` card shows resolver, transport, the answer and the time, with a
+status pill saying whether the answers agree. Agreement is compared on the set
+of answer values, so record order and TTL differences do not produce false
+alarms, while an empty answer next to a populated one does count — that is the
+hijack case. Failed resolvers are reported as rows with their error and
+counted in the footer instead of being dropped. Still open from this item: DoT
+and DoQ transports, the country/ASN annotation for A/AAAA and the route
+explanation note.
+
 ### P4.4 — NAT type and STUN reachability test
 
 *What Bettbox does.* `lib/pages/toolbox/nat_test.dart` runs a STUN session

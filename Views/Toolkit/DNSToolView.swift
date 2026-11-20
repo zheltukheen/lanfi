@@ -108,6 +108,10 @@ struct DNSToolView: View {
                     AppButton(localized: runButtonTitle, tone: .primary, isEnabled: !model.isRunning) {
                         model.run()
                     }
+                    if model.tab == .records {
+                        AppButton("Compare", tone: .secondary) { model.compare() }
+                            .disabled(model.isComparing || model.isRunning)
+                    }
                     AppButton("Copy", tone: .secondary) { copy() }
                         .disabled(!hasResult)
                     AppButton("Clear", tone: .quiet) { model.clear() }
@@ -292,7 +296,18 @@ struct DNSToolView: View {
 
     @ViewBuilder
     private var recordsContent: some View {
-        if let result = model.result {
+        if let comparison = model.comparison {
+            comparisonCard(comparison)
+        } else if model.isComparing {
+            ToolkitCard {
+                HStack(spacing: 10) {
+                    ProgressView().controlSize(.small)
+                    Text("Querying every resolver over UDP and DoH…")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        } else if let result = model.result {
             if result.records.isEmpty {
                 ToolkitEmptyState(
                     icon: "tray",
@@ -313,6 +328,79 @@ struct DNSToolView: View {
                 message:
                     "Query A, AAAA, MX, TXT, NS, SOA, CNAME, SRV and CAA records from the system resolver or a public one."
             )
+        }
+    }
+
+    private func comparisonCard(_ comparison: DNSComparison) -> some View {
+        ToolkitCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 8) {
+                    ToolkitSectionLabel(text: "Resolver comparison")
+                    Spacer()
+                    Text("\(comparison.host) · \(comparison.type.label)")
+                        .font(.caption.monospaced())
+                        .foregroundColor(.secondary)
+                    ToolkitStatusPill(
+                        text: comparison.summary,
+                        tone: comparison.answersDisagree ? .warning : .good)
+                }
+                .padding(.horizontal, DesignToken.Spacing.card)
+                .padding(.top, DesignToken.Spacing.medium)
+                .padding(.bottom, DesignToken.Spacing.tight)
+
+                AppTable(
+                    columns: [
+                        AppTableColumn(
+                            id: "resolver", title: "Resolver", minWidth: 150,
+                            value: { .text($0.name) }
+                        ) { entry in
+                            Text(entry.name)
+                                .font(.caption)
+                        },
+                        AppTableColumn(
+                            id: "transport", title: "Transport", minWidth: 90,
+                            value: { .text($0.transport.label) }
+                        ) { entry in
+                            ToolkitTypeBadge(
+                                text: entry.transport.label,
+                                color: entry.transport == .doh ? AppPalette.info : AppPalette.muted)
+                        },
+                        AppTableColumn(
+                            id: "answers", title: "Answers", minWidth: 260,
+                            value: { .text($0.answerText) }
+                        ) { entry in
+                            Text(entry.answerText)
+                                .font(.caption.monospaced())
+                                .foregroundColor(entry.failure == nil ? .primary : .secondary)
+                                .lineLimit(1)
+                                .textSelection(.enabled)
+                        },
+                        AppTableColumn(
+                            id: "time", title: "Time", minWidth: 70,
+                            value: { .number($0.milliseconds) }
+                        ) { entry in
+                            Text("\(entry.milliseconds) ms")
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        },
+                    ],
+                    rows: comparison.entries, initialKey: "resolver"
+                )
+                .frame(
+                    height: ToolkitTableHeight.rows(
+                        comparison.entries.count, row: 26, header: 40, minimum: 210,
+                        maximum: 540))
+
+                if comparison.failedCount > 0 {
+                    Text(
+                        "\(comparison.failedCount) of \(comparison.entries.count) resolvers did not answer; that is reported, not hidden."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, DesignToken.Spacing.card)
+                    .padding(.vertical, DesignToken.Spacing.small)
+                }
+            }
         }
     }
 

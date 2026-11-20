@@ -1551,3 +1551,13 @@
 "Type a tool, setting or panel name" = "Saisissez un outil, un réglage ou un panneau";
 "Return opens the best match. Esc closes the palette." = "Entrée ouvre le meilleur résultat. Échap ferme la palette.";
 "Wi-Fi workspace" = "Espace de travail Wi-Fi";
+
+"Compare" = "Comparer";
+"Resolver comparison" = "Comparaison des résolveurs";
+"Querying every resolver over UDP and DoH…" = "Interrogation de tous les résolveurs en UDP et DoH…";
+"Resolvers disagree on the answer." = "Les résolveurs donnent des réponses différentes.";
+"All resolvers agree." = "Tous les résolveurs concordent.";
+"No resolver answered." = "Aucun résolveur n’a répondu.";
+"No resolvers were queried." = "Aucun résolveur n’a été interrogé.";
+"DoH" = "DoH";
+"%lld of %lld resolvers did not answer; that is reported, not hidden." = "%lld résolveurs sur %lld n’ont pas répondu ; c’est signalé, pas masqué.";
