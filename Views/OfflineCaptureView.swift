@@ -361,7 +361,7 @@ struct OfflineCaptureView: View {
                             }
                             .padding(DesignToken.Spacing.small)
                             .background(Color(nsColor: .controlBackgroundColor))
-                            .cornerRadius(6)
+                            .cornerRadius(DesignToken.Radius.control)
                         }
                     }
                 }

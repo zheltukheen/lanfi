@@ -219,7 +219,7 @@ struct SignalBadge: View {
         }
         .padding(DesignToken.Spacing.small)
         .background(color.opacity(0.1))
-        .cornerRadius(8)
+        .cornerRadius(DesignToken.Radius.control)
     }
 }
 

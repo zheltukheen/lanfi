@@ -45,7 +45,7 @@ struct NetworkInspectorView: View {
                                         .font(.caption).monospaced()
                                         .padding(DesignToken.Spacing.tight)
                                         .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(4)
+                                        .cornerRadius(DesignToken.Radius.badge)
                                         .textSelection(.enabled)
 
                                     if network.bssid == viewModel.currentConnectedBSSID {
@@ -137,7 +137,7 @@ struct NetworkInspectorView: View {
                                 .font(.caption)
                                 .frame(minHeight: 44, maxHeight: 70)
                                 .scrollContentBackground(.hidden)
-                                .background(Color.secondary.opacity(0.06))
+                                .background(DesignToken.Surface.subtleFill)
                                 .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
 
                                 HStack(spacing: 8) {

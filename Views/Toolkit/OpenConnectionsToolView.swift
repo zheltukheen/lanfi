@@ -235,7 +235,9 @@ struct OpenConnectionsToolView: View {
                 .font(.caption2)
         }
         .padding(DesignToken.Spacing.compact)
-        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .background(
+            DesignToken.Surface.accentFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private var ruleBanner: some View {

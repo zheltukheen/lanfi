@@ -638,7 +638,8 @@ struct DeviceShelfView: View {
                         .frame(minHeight: 44, maxHeight: 64)
                         .scrollContentBackground(.hidden)
                         .background(
-                            Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
+                            DesignToken.Surface.subtleFill,
+                            in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
                         )
                         .onChange(of: notesDraft) { value in
                             model.setNotes(value, for: device.id)
@@ -894,7 +895,9 @@ struct LatencySparkline: View {
             }
             .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
         }
-        .background(Color.secondary.opacity(0.05), in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
+        .background(
+            DesignToken.Surface.subtleFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
     }
 }
 

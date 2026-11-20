@@ -215,7 +215,7 @@ struct ScanHealthBanner: View {
         }
         .padding(.horizontal, DesignToken.Spacing.compact)
         .padding(.vertical, DesignToken.Spacing.tight)
-        .background(Color.red.opacity(0.08))
+        .background(DesignToken.Surface.dangerFill)
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color.red.opacity(0.2)), alignment: .bottom)
     }
 }

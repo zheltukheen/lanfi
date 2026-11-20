@@ -228,6 +228,7 @@
 		4089E6B48EFBD7B5625CAD8E /* EHTPuncturing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CC2881EBE1D95FB7399440 /* EHTPuncturing.swift */; };
 		408CE3BA594B08D5965B23BB /* SpectrumCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E7C8B203699976DE7D6399 /* SpectrumCapabilities.swift */; };
 		40AF891D50AD485232DD2E91 /* ColoringRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3EBB0A99807D399E66153C /* ColoringRule.swift */; };
+		40E55973FDD9A65995F7BE4A /* DesignTokenLintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F4F35C0A85C82CE7A51EE0 /* DesignTokenLintTests.swift */; };
 		4103E21DAC779E2BBDD47E68 /* MCPPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D55E6F30CC12C9679A7F6F /* MCPPaths.swift */; };
 		41138DA6E01A984AE5950375 /* MCPSnapshotWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 547357481C8F3E73DD13D920 /* MCPSnapshotWriter.swift */; };
 		4190F8100A9D8F0F2585499E /* ToolkitSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6800B2240D837DDA0CC8BC7 /* ToolkitSettingsPage.swift */; };
@@ -1050,6 +1051,7 @@
 		3E8AD8AE18BE59654726CA6C /* ThroughputReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThroughputReport.swift; sourceTree = "<group>"; };
 		3F4C81F84DACE709D5461629 /* DNSPropagationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSPropagationModels.swift; sourceTree = "<group>"; };
 		4076E97365B55E4579110D29 /* RoamingTestToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamingTestToolView.swift; sourceTree = "<group>"; };
+		40F4F35C0A85C82CE7A51EE0 /* DesignTokenLintTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokenLintTests.swift; sourceTree = "<group>"; };
 		412F17289F5DABDD2989506E /* DNSMailAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSMailAnalyzerTests.swift; sourceTree = "<group>"; };
 		414F03575721ECEED7901DAD /* ToolTargetField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolTargetField.swift; sourceTree = "<group>"; };
 		415F204E0991B069A9BD35EA /* MCPToolkit+ServiceTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MCPToolkit+ServiceTools.swift"; sourceTree = "<group>"; };
@@ -1512,6 +1514,7 @@
 				B8D01BE5B1934356CF44A37C /* ControllerServiceTests.swift */,
 				39C73E82C9496C0462E8ED4F /* CustomFilterTests.swift */,
 				4886D26196780F92820822BA /* DeepLinkTests.swift */,
+				40F4F35C0A85C82CE7A51EE0 /* DesignTokenLintTests.swift */,
 				51D5485E06102840391F9530 /* DeviceShelfTests.swift */,
 				8B28FAB5E9E72BE98EE26B24 /* DiagnosticsBundleTests.swift */,
 				75F4351A08D1255E0E2730AB /* DiagnosticsHistoryTests.swift */,
@@ -2513,6 +2516,7 @@
 				B64BB9067C0AA29AA098BEE4 /* DeepLink.swift in Sources */,
 				A914D191CAFBDB708E28FAB1 /* DeepLinkTests.swift in Sources */,
 				AB49A9A68F90C7B9211F09F6 /* DemoData.swift in Sources */,
+				40E55973FDD9A65995F7BE4A /* DesignTokenLintTests.swift in Sources */,
 				8A18E0F1568AB98C93BD8FA1 /* DeviceLabelPDF.swift in Sources */,
 				4FF193520189F5B5EF88D916 /* DeviceShelfModels.swift in Sources */,
 				7172FD2BA73C71F650C9AABA /* DeviceShelfStore.swift in Sources */,
@@ -3265,13 +3269,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 87;
+				CURRENT_PROJECT_VERSION = 88;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.6.4;
+				MARKETING_VERSION = 5.6.5;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
@@ -3381,13 +3385,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 87;
+				CURRENT_PROJECT_VERSION = 88;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.6.4;
+				MARKETING_VERSION = 5.6.5;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};

@@ -143,7 +143,7 @@ struct MenuBarView: View {
             }
             .padding(DesignToken.Spacing.small)
             .background(
-                AppPalette.warning.opacity(0.08),
+                DesignToken.Surface.warningFill,
                 in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
         }
     }

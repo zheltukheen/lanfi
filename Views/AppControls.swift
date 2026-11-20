@@ -231,7 +231,7 @@ struct AppSearchField: View {
         .padding(.horizontal, DesignToken.Spacing.small)
         .frame(height: DesignToken.Toolbar.height)
         .background(
-            Color.secondary.opacity(0.09),
+            DesignToken.Surface.controlFill,
             in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 }

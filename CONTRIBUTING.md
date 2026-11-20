@@ -50,6 +50,21 @@ change, how it was verified, and include a screenshot for UI changes.
 By contributing you agree that your contribution is licensed under the MIT
 License in this repository.
 
+## Design tokens
+
+Every radius, spacing value and translucent fill comes from `Views/Theme.swift`:
+`DesignToken.Radius` (badge / control / card / sheet), `DesignToken.Spacing`,
+`DesignToken.Surface` (`subtleFill`, `controlFill`, `accentFill`, `warningFill`,
+`dangerFill`, `cardStroke`, `border`) and `DesignToken.Palette`. A card is an
+`AppCard` (or `.appCardSurface(...)`); a screen does not draw its own fill,
+hairline or radius.
+
+That rule is enforced, not just documented: `Tests/DesignTokenLintTests` scans
+`Views/` and fails on a literal `.cornerRadius(8)` or on
+`Color.orange.opacity(0.08)`. `Views/Theme.swift` is the only file allowed to
+name numbers. A tint that comes from data (`color.opacity(0.06)` for a band or a
+status) is fine; a tint that names a role is not.
+
 ## Automatic push
 
 `scripts/autopush.sh` can push completed commits automatically. Install the

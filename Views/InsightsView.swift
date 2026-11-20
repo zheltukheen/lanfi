@@ -433,7 +433,7 @@ struct InsightsView: View {
                         y: .value("Networks", item.networkCount)
                     )
                     .foregroundStyle(color(for: item.band))
-                    .cornerRadius(3)
+                    .cornerRadius(Theme.Radius.badge)
                     .annotation(position: .top) {
                         if item.networkCount > 1 {
                             Text("\(item.networkCount)")

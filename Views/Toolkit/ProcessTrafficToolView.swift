@@ -245,7 +245,7 @@ struct ProcessTrafficToolView: View {
         }
         .padding(DesignToken.Spacing.compact)
         .background(
-            Color.accentColor.opacity(0.08),
+            DesignToken.Surface.accentFill,
             in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 

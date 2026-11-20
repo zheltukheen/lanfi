@@ -102,7 +102,7 @@ struct ProtocolsView: View {
         }
         .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.08))
+        .background(DesignToken.Surface.warningFill)
         .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 

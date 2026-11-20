@@ -113,8 +113,13 @@ enum Theme {
         static let border = Color.secondary.opacity(0.12)
         /// Very light fill behind an alternating row or an inset block.
         static let subtleFill = Color.secondary.opacity(0.06)
-        /// Fill behind a warning banner.
+        /// Fill behind a warning banner or block.
         static let warningFill = Color.orange.opacity(0.10)
+        /// Fill behind a failure banner or block.
+        static let dangerFill = Color.red.opacity(0.10)
+        /// Fill of a control that needs to stand off its bar (search fields,
+        /// inline chips in a toolbar).
+        static let controlFill = Color.secondary.opacity(0.09)
         /// Fill behind an informational banner.
         static let accentFill = Color.accentColor.opacity(0.08)
         /// Fill behind a selected row.

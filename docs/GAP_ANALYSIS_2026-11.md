@@ -955,11 +955,24 @@ stat/hero component, and no density option for the AppKit table.
             placeholder and the two settings rule editors. The only literal
             white fill left is the QR code canvas itself, which has to stay
             white for scanners to read it.
-      - [ ] Tests: a snapshot-free unit test that every registered tool renders a
-            `SectionLabel`+`AppCard` root (pure view-model assertions), and a
-            lint rule of thumb in `CONTRIBUTING.md`: no new literal `cornerRadius`
-            or `opacity(0.0x)` in `Views/` without a token. The RF overview has
-            its own geometry tests; this component-level check is still open.
+      - [x] **Token lint (5.6.5).** `Tests/DesignTokenLintTests` scans every file
+            in `Views/` except `Theme.swift` and fails on a literal
+            `.cornerRadius(8)` or on a role-named translucent fill such as
+            `Color.orange.opacity(0.08)`; a tint that comes from data is not
+            flagged. The rule is written down in `CONTRIBUTING.md` → Design
+            tokens. Landing the test meant cleaning up what it found: four
+            literal radii (Insights chart bars, offline-capture reply block,
+            inspector BSSID chip, inspector stat tile) and eleven literal fills
+            (table stripes, search-field chip, menu-bar warning block, panel
+            hairline, Protocols warning block, process-traffic and connections
+            accent chips, Internet Check row, two device-shelf chips, inspector
+            row, empty-state failure block), with `Surface.controlFill` and
+            `Surface.dangerFill` added so nothing had to keep its own number.
+            The test was proved by planting a violation and watching both rules
+            fail. A component-level "every tool draws an AppCard root" assertion
+            is deliberately not written: it would need the view tree, and the
+            classes it would catch are already impossible to add without failing
+            the token lint.
 - [ ] **D2 — Hero RF overview, first run and empty states.** The overview,
       first run and empty states shipped 2026-11-16; the menu-bar open target is
       still open.

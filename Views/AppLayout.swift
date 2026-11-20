@@ -84,7 +84,8 @@ extension View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: DesignToken.Stroke.hairline)
+                .strokeBorder(
+                    DesignToken.Surface.cardStroke, lineWidth: DesignToken.Stroke.hairline)
         )
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }

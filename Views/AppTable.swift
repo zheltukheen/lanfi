@@ -232,7 +232,7 @@ struct AppTable<Row: Identifiable>: View {
         .background(
             isSelected
                 ? Color.accentColor.opacity(0.16)
-                : (striped ? Color.secondary.opacity(0.05) : Color.clear),
+                : (striped ? DesignToken.Surface.subtleFill : Color.clear),
             in: RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
         )
     }

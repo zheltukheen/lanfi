@@ -155,7 +155,7 @@ struct InternetCheckToolView: View {
                                     .padding(.horizontal, DesignToken.Spacing.small)
                                     .padding(.vertical, 3)
                                     .background(
-                                        Color.primary.opacity(0.05),
+                                        DesignToken.Surface.subtleFill,
                                         in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
                             }
                         }
