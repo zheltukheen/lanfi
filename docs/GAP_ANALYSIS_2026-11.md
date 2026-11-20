@@ -784,6 +784,24 @@ responses), `Views/Toolkit/NATTestToolView.swift`, and a `ToolboxTool` entry.
 All traffic goes to public STUN servers only; the server list stays editable and
 the default set is documented.
 
+*Delivered in 5.6.0 (mapping half):* `Services/Toolkit/STUNMessage.swift` builds
+RFC 5389 binding requests and decodes XOR-MAPPED-ADDRESS and the deprecated
+MAPPED-ADDRESS (IPv4 and IPv6), `Services/Toolkit/STUNTester.swift` probes two
+servers **from one socket** — two requests to the first prove the mapping is
+stable, the third destination shows whether the router reuses it —
+`Models/NATProfile.swift` classifies mapping behaviour and the verdict
+(no NAT / cone / symmetric / blocked) as pure data, and
+`Views/Toolkit/NATToolView.swift` plus a `NAT Test` tool entry show the local
+and external endpoints, port preservation, latency per probe and a copyable
+report. The classification is deliberately narrower than the reference app's:
+filtering behaviour needs a server that sends back to the mapped address, so it
+is reported as "not probed" instead of guessed, and cone NAT is not split into
+full/restricted/port-restricted without that probe. The default servers
+(`stun.l.google.com:19302`, `stun.cloudflare.com:3478`) are listed in
+`STUNEndpoint.builtIn`; both answered a live binding request from this
+machine. `Tests/NATProfileTests` covers the message codec, the mapping
+classification and every verdict.
+
 ### P4.5 — Command palette over tools and settings
 
 *Delivered in 5.5.3:* `Models/CommandIndex.swift` indexes every available

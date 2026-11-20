@@ -105,6 +105,10 @@ enum ToolRegistry {
             tool: .portScan, screen: .portScan, mcpTools: ["lanfi_port_scan"], title: String(localized: "Port Scan"),
             icon: "square.grid.3x3", section: .networkTools),
         ToolDescriptor(
+            tool: .natTest, screen: .natTest, title: String(localized: "NAT Test"),
+            icon: "network", section: .networkTools,
+            plannedDetail: String(localized: "What the router does to this Mac's UDP traffic.")),
+        ToolDescriptor(
             tool: .pathCheck, screen: .pathCheck, mcpTools: ["lanfi_path_check"],
             title: String(localized: "Path Check"),
             icon: "arrow.triangle.branch", section: .networkTools),

@@ -23,6 +23,7 @@ enum ToolScreen: String, CaseIterable, Sendable {
     case subnetCalculator
     case iperf3
     case httpTraffic
+    case natTest
     case connections
     case advancedTools
 

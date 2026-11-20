@@ -42,6 +42,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case subnetCalculator
     case iperf3
     case httpTraffic
+    case natTest
     case openConnections
     case processTraffic
     case advancedTools

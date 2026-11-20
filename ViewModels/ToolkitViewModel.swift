@@ -26,6 +26,7 @@ final class ToolkitViewModel: ObservableObject {
     let iperf3 = Iperf3ToolModel()
     let speedTest = SpeedTestToolModel()
     let httpTraffic = HTTPTrafficToolModel()
+    let nat = NATToolModel()
 
     init() {
         if let raw = UserDefaults.standard.string(forKey: Self.selectionKey) {

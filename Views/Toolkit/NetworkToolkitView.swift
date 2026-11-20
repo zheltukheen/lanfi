@@ -242,6 +242,8 @@ struct NetworkToolkitView: View {
             SSLToolView(model: toolkit.ssl)
         case .portScan:
             PortScanToolView(model: toolkit.portScan)
+        case .natTest:
+            NATToolView(model: toolkit.nat)
         case .pathCheck:
             PathCheckToolView(model: toolkit.pathCheck)
         case .subnetCalculator:
