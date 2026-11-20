@@ -65,6 +65,7 @@
 		128B49C07853178F2C1AD6AD /* PathCheckToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B955D3C8FDC4AB82F57A42EF /* PathCheckToolView.swift */; };
 		128D5E54B1D0929915B2B98F /* CrashLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BE013AC1ED9D3DAC0682A2 /* CrashLogger.swift */; };
 		12DA3C471C6DC42CEB46BC37 /* CombinedReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3045D02A75AFF7820E66A41 /* CombinedReport.swift */; };
+		1311FC6B8FFBE6BE9B570378 /* LiveCaptureWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA406676E54068A2D199505 /* LiveCaptureWiringTests.swift */; };
 		137C3E56B2FDB8635D40BB40 /* GeoIPModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FED3195DD05AC301C5DC465 /* GeoIPModels.swift */; };
 		13A4995D494CC86EE5A5998A /* DeviceShelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16ABE02BDD6A7CCC817DCB91 /* DeviceShelfStore.swift */; };
 		13D45087CC5833F7C658CD7F /* MCPToolkit+Scan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0426FA41134C7E9182F3F6A7 /* MCPToolkit+Scan.swift */; };
@@ -1069,6 +1070,7 @@
 		5D4A182714C038138461289B /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		5DBCA20EA7E89A238911B286 /* LiveCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCaptureService.swift; sourceTree = "<group>"; };
 		5E62ECF5740476082765370A /* SSLToolModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSLToolModel.swift; sourceTree = "<group>"; };
+		5FA406676E54068A2D199505 /* LiveCaptureWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCaptureWiringTests.swift; sourceTree = "<group>"; };
 		617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInterfaceTests.swift; sourceTree = "<group>"; };
 		62F59FFD2201E6DF45E53E7C /* ThroughputSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThroughputSample.swift; sourceTree = "<group>"; };
 		6325C3DDCA19ADC9BEA0533E /* SubnetCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubnetCalculator.swift; sourceTree = "<group>"; };
@@ -1489,6 +1491,7 @@
 				BBA9E7EE85645C41F0B1CCBD /* LinkAutomationTests.swift */,
 				3024B134790EE31F773A818D /* ListenerWatchTests.swift */,
 				CAA3F460EF070FEBEDC26FF9 /* LiveCaptureTests.swift */,
+				5FA406676E54068A2D199505 /* LiveCaptureWiringTests.swift */,
 				03FE82B752FFF9DD0B89D690 /* MCPProtocolTests.swift */,
 				4B2E378036378E58C047B46C /* MenuBarAlertTests.swift */,
 				568A5C9E20FADDF63D837C71 /* MLOGroupTests.swift */,
@@ -2501,6 +2504,7 @@
 				59286F8BC24372B50C4F7DE9 /* ListenerWatchTests.swift in Sources */,
 				78604E7198404854FAFAAC04 /* LiveCaptureService.swift in Sources */,
 				B4D6F48E2D0F1F0E56844497 /* LiveCaptureTests.swift in Sources */,
+				1311FC6B8FFBE6BE9B570378 /* LiveCaptureWiringTests.swift in Sources */,
 				B4649BD048F84ED2C1BCF252 /* LocalNetworkAccess.swift in Sources */,
 				A58B7C81F51BFE3616ADCE11 /* LocationManager.swift in Sources */,
 				1BC617CECFC9CE2989500502 /* MCPPaths.swift in Sources */,
@@ -3169,13 +3173,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 80;
+				CURRENT_PROJECT_VERSION = 81;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.5.7;
+				MARKETING_VERSION = 5.5.8;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
@@ -3285,13 +3289,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 80;
+				CURRENT_PROJECT_VERSION = 81;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 5.5.7;
+				MARKETING_VERSION = 5.5.8;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
