@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.6.5 — 2026-11-20
+
+### Changed
+- **One set of surface values (D1).** Fifteen screens still named their own
+  radius or translucent fill; they now read `DesignToken.Radius` and
+  `DesignToken.Surface`. `Surface.controlFill` and `Surface.dangerFill` were
+  added so the search-field chip and the failure block stop carrying their own
+  numbers.
+
+### Added
+- `Tests/DesignTokenLintTests` fails when a file in `Views/` (other than
+  `Theme.swift`) hard-codes a corner radius or a role-named translucent fill,
+  and `CONTRIBUTING.md` now documents that rule.
+
 ## 5.6.4 — 2026-11-20
 
 ### Changed
