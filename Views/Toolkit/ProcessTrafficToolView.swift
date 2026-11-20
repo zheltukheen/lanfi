@@ -23,24 +23,6 @@ struct ProcessTrafficToolView: View {
     @State private var showKillConfirmation = false
     @State private var ruleDraft: BlockRuleDraft?
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case process, pid, download, upload, transferred
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .process: return String(localized: "Process")
-            case .pid: return String(localized: "PID")
-            case .download: return String(localized: "Download")
-            case .upload: return String(localized: "Upload")
-            case .transferred: return String(localized: "Transferred")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .download
-    @State private var sortAscending = false
-    @State private var selectedRowID: String?
-
     private struct KillTarget: Identifiable {
         let id = UUID()
         let pids: [Int]
@@ -81,31 +63,7 @@ struct ProcessTrafficToolView: View {
         case .process:
             grouped = TrafficGrouping.byProcess(source)
         }
-        let ordered = grouped.sorted { lhs, rhs in
-            switch sortKey {
-            case .process:
-                return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-            case .pid: return (lhs.rows.first?.pid ?? 0) < (rhs.rows.first?.pid ?? 0)
-            case .download: return lhs.receivedBytesPerSecond < rhs.receivedBytesPerSecond
-            case .upload: return lhs.sentBytesPerSecond < rhs.sentBytesPerSecond
-            case .transferred: return lhs.totalBytes < rhs.totalBytes
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
-    private func sortedChildren(_ rows: [ProcessTrafficDelta]) -> [ProcessTrafficDelta] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .process:
-                return lhs.process.localizedStandardCompare(rhs.process) == .orderedAscending
-            case .pid: return lhs.pid < rhs.pid
-            case .download: return lhs.receivedBytesPerSecond < rhs.receivedBytesPerSecond
-            case .upload: return lhs.sentBytesPerSecond < rhs.sentBytesPerSecond
-            case .transferred: return lhs.totalBytes < rhs.totalBytes
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
+        return grouped
     }
 
     private var tableRows: [TableRow] {
@@ -113,7 +71,7 @@ struct ProcessTrafficToolView: View {
         for group in groups {
             result.append(.group(group))
             if expanded.contains(group.id) {
-                result.append(contentsOf: sortedChildren(group.rows).map(TableRow.process))
+                result.append(contentsOf: group.rows.map(TableRow.process))
             }
         }
         return result
@@ -227,9 +185,6 @@ struct ProcessTrafficToolView: View {
             }
             .pickerStyle(.menu)
             .fixedSize()
-            TableSortControl(
-                options: SortKey.allCases.map { ($0, $0.title) },
-                selection: $sortKey, ascending: $sortAscending)
             AppIconButton(
                 systemImage: expanded.count == groups.count
                     ? "rectangle.compress.vertical" : "rectangle.expand.vertical",
@@ -371,71 +326,64 @@ struct ProcessTrafficToolView: View {
     }
 
     private var table: some View {
-        Table(tableRows, selection: $selectedRowID) {
-            TableColumn("Process") { row in
-                switch row {
-                case .group(let group):
-                    HStack(spacing: 6) {
-                        Button {
-                            toggle(group.id)
-                        } label: {
-                            Image(
-                                systemName: expanded.contains(group.id)
-                                    ? "chevron.down" : "chevron.right"
-                            )
-                            .font(.caption2)
-                            .frame(width: 12)
-                        }
-                        .buttonStyle(.plain)
-                        Text(group.name)
-                            .font(.caption.weight(.medium))
-                        Text("\(group.rows.count)")
-                            .font(.caption2.monospacedDigit())
-                            .padding(.horizontal, 5)
-                            .background(Color.secondary.opacity(0.12), in: Capsule())
-                    }
-                case .process(let process):
-                    HStack(spacing: 5) {
-                        if !rules.rules.isEmpty,
-                            ConnectionBlockRuleMatcher.matches(
-                                process: process.process, pid: process.pid, rules: rules.rules)
-                        {
-                            Image(systemName: "shield.fill")
-                                .font(.caption2)
-                                .foregroundColor(AppPalette.warning)
-                                .help("Matches a block rule")
-                        }
-                        Text(process.process)
-                    }
-                    .padding(.leading, 18)
-                }
-            }
-            .width(min: 170, ideal: 230)
-            TableColumn("PID") { row in
+        AppTable(
+            columns: columns,
+            rows: tableRows,
+            initialKey: "download",
+            ascending: false,
+            grouping: AppTableGrouping(isSectionStart: { row in
+                if case .group = row { return true }
+                return false
+            }),
+            onActivate: activate,
+            rowMenu: { trafficRowMenu($0) }
+        )
+        .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
+        .appTableSurface()
+    }
+
+    private var columns: [AppTableColumn<TableRow>] {
+        [
+            AppTableColumn(
+                id: "process", title: "Process", minWidth: 170,
+                value: { .text(processName($0)) }
+            ) { processCell($0) },
+            AppTableColumn(
+                id: "pid", title: "PID", minWidth: AppColumnWidth.short,
+                value: { .number(pidValue($0)) }
+            ) { row in
                 Text(pidLabel(row))
                     .monospacedDigit()
                     .foregroundColor(isGroup(row) ? .secondary : .primary)
-            }
-            .width(AppColumnWidth.short)
-            TableColumn("Download") { row in
+            },
+            AppTableColumn(
+                id: "download", title: "Download", minWidth: AppColumnWidth.compact,
+                value: { .number(download($0)) }
+            ) { row in
                 Text(ProcessTrafficFormat.rate(download(row)))
                     .monospacedDigit()
                     .foregroundColor(AppPalette.info)
-            }
-            .width(AppColumnWidth.compact)
-            TableColumn("Upload") { row in
+            },
+            AppTableColumn(
+                id: "upload", title: "Upload", minWidth: AppColumnWidth.compact,
+                value: { .number(upload($0)) }
+            ) { row in
                 Text(ProcessTrafficFormat.rate(upload(row)))
                     .monospacedDigit()
                     .foregroundColor(AppPalette.warning)
-            }
-            .width(AppColumnWidth.compact)
-            TableColumn("Transferred") { row in
+            },
+            AppTableColumn(
+                id: "transferred", title: "Transferred", minWidth: AppColumnWidth.compact,
+                value: { .number(Double(transferred($0))) }
+            ) { row in
                 Text(ProcessTrafficFormat.bytes(transferred(row)))
                     .monospacedDigit()
                     .foregroundColor(.secondary)
-            }
-            .width(AppColumnWidth.compact)
-            TableColumn("") { row in
+            },
+            AppTableColumn(
+                id: "actions", title: "", minWidth: 58, isSortable: false,
+                value: { _ in .none }
+            ) { row in
                 HStack(spacing: 4) {
                     Button {
                         prepareKill(row)
@@ -447,25 +395,67 @@ struct ProcessTrafficToolView: View {
                     .help("Terminate this process")
                     blockMenu(row)
                 }
+            },
+        ]
+    }
+
+    @ViewBuilder
+    private func processCell(_ row: TableRow) -> some View {
+        switch row {
+        case .group(let group):
+            HStack(spacing: 6) {
+                Button {
+                    toggle(group.id)
+                } label: {
+                    Image(
+                        systemName: expanded.contains(group.id)
+                            ? "chevron.down" : "chevron.right"
+                    )
+                    .font(.caption2)
+                    .frame(width: 12)
+                }
+                .buttonStyle(.plain)
+                Text(group.name)
+                    .font(.caption.weight(.medium))
+                Text("\(group.rows.count)")
+                    .font(.caption2.monospacedDigit())
+                    .padding(.horizontal, 5)
+                    .background(Color.secondary.opacity(0.12), in: Capsule())
             }
-            .width(58)
-        }
-        .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
-        .appTableSurface()
-        .contextMenu {
-            if let id = selectedRowID,
-                let row = tableRows.first(where: { $0.id == id })
-            {
-                trafficRowMenu(row)
+        case .process(let process):
+            HStack(spacing: 5) {
+                if !rules.rules.isEmpty,
+                    ConnectionBlockRuleMatcher.matches(
+                        process: process.process, pid: process.pid, rules: rules.rules)
+                {
+                    Image(systemName: "shield.fill")
+                        .font(.caption2)
+                        .foregroundColor(AppPalette.warning)
+                        .help("Matches a block rule")
+                }
+                Text(process.process)
             }
+            .padding(.leading, 18)
         }
-        .onChange(of: selectedRowID) { id in
-            guard let id,
-                let row = tableRows.first(where: { $0.id == id }),
-                case .group(let group) = row
-            else { return }
-            toggle(group.id)
+    }
+
+    private func processName(_ row: TableRow) -> String {
+        switch row {
+        case .group(let group): return group.name
+        case .process(let process): return process.process
         }
+    }
+
+    private func pidValue(_ row: TableRow) -> Int {
+        switch row {
+        case .group(let group): return group.rows.map(\.pid).min() ?? 0
+        case .process(let process): return process.pid
+        }
+    }
+
+    private func activate(_ row: TableRow) {
+        guard case .group(let group) = row else { return }
+        toggle(group.id)
     }
 
     @ViewBuilder

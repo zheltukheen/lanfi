@@ -108,11 +108,13 @@ an app bundle.
   `AppTable` columns from an existing sort list where one exists, so the header
   and the sort values cannot drift.
   Offline Capture uses it as well (beacons plus the Clients and Security sheet
-  tables).
-  Still on native `Table`: Connections and Process Traffic, whose hierarchical,
-  expandable rows need a tree-capable `AppTable` that keeps a group next to its
-  children while a column sorts. The Wi-Fi analyzer keeps its own sort/filter
-  UI by design. Columns are
+  tables), and so do Connections and Process Traffic. Hierarchical screens pass
+  an `AppTableGrouping`, whose `isSectionStart` marks a group row: the sorter
+  orders sections by their header value and sorts each section's children among
+  themselves, so a group always stays above its own rows. A column can opt out
+  of sorting (`isSortable: false`) for action columns, and `onActivate` runs on
+  a whole-row click, which is how a group expands. The Wi-Fi analyzer keeps its
+  own sort/filter UI by design. Columns are
   declared with the `@ViewBuilder` initializer, so a cell is written as a
   normal view instead of a hand-wrapped `AnyView`.
 - `Views/AppControls.swift` — the single control kit (`AppButton`,

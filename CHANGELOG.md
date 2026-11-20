@@ -1,5 +1,16 @@
 # Changelog
 
+## 5.5.2 — 2026-11-20
+
+### Changed
+- **Connections and Process Traffic sort from their headers, and the last sort
+  menu is gone.** `AppTable` gained hierarchical grouping: a group row marks a
+  section, the sorter orders sections by their header value and sorts each
+  section's children among themselves, so expanding a group and sorting a
+  column no longer interleave unrelated rows. Action columns can opt out of
+  sorting, and a row click still expands or collapses a group. Deleting
+  `TableSortControl` means every SwiftUI table in LanFi now sorts the same way.
+
 ## 5.5.1 — 2026-11-20
 
 ### Changed

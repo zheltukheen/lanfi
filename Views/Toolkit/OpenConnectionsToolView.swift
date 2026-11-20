@@ -24,25 +24,6 @@ struct OpenConnectionsToolView: View {
     @State private var showKillConfirmation = false
     @State private var ruleDraft: BlockRuleDraft?
 
-    private enum SortKey: String, CaseIterable, Identifiable {
-        case process, pid, user, proto, local, remote, state
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .process: return String(localized: "Process")
-            case .pid: return String(localized: "PID")
-            case .user: return String(localized: "User")
-            case .proto: return String(localized: "Proto")
-            case .local: return String(localized: "Local")
-            case .remote: return String(localized: "Remote")
-            case .state: return String(localized: "State")
-            }
-        }
-    }
-
-    @State private var sortKey: SortKey = .process
-    @State private var sortAscending = true
-
     // MARK: Rows
 
     private enum TableRow: Identifiable {
@@ -81,48 +62,7 @@ struct OpenConnectionsToolView: View {
         case .socket: grouped = ConnectionGrouping.bySocket(rows)
         case .process: grouped = ConnectionGrouping.byProcess(rows)
         }
-        let ordered = grouped.sorted { lhs, rhs in
-            let left = lhs.connections.first
-            let right = rhs.connections.first
-            switch sortKey {
-            case .process:
-                return lhs.displayProcess.localizedStandardCompare(rhs.displayProcess)
-                    == .orderedAscending
-            case .pid: return (left?.pid ?? 0) < (right?.pid ?? 0)
-            case .user:
-                return (left?.user ?? "").localizedStandardCompare(right?.user ?? "")
-                    == .orderedAscending
-            case .proto:
-                return (left?.protocolName ?? "").localizedStandardCompare(right?.protocolName ?? "")
-                    == .orderedAscending
-            case .local:
-                return lhs.local.localizedStandardCompare(rhs.local) == .orderedAscending
-            case .remote:
-                return (left?.remote ?? "").localizedStandardCompare(right?.remote ?? "")
-                    == .orderedAscending
-            case .state:
-                return lhs.stateSummary.localizedStandardCompare(rhs.stateSummary) == .orderedAscending
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
-    }
-
-    private func sortedChildren(_ rows: [OpenConnection]) -> [OpenConnection] {
-        let ordered = rows.sorted { lhs, rhs in
-            switch sortKey {
-            case .process:
-                return lhs.process.localizedStandardCompare(rhs.process) == .orderedAscending
-            case .pid: return lhs.pid < rhs.pid
-            case .user: return lhs.user.localizedStandardCompare(rhs.user) == .orderedAscending
-            case .proto:
-                return lhs.protocolName.localizedStandardCompare(rhs.protocolName)
-                    == .orderedAscending
-            case .local: return lhs.local.localizedStandardCompare(rhs.local) == .orderedAscending
-            case .remote: return lhs.remote.localizedStandardCompare(rhs.remote) == .orderedAscending
-            case .state: return lhs.state.localizedStandardCompare(rhs.state) == .orderedAscending
-            }
-        }
-        return sortAscending ? ordered : ordered.reversed()
+        return grouped
     }
 
     private var tableRows: [TableRow] {
@@ -130,7 +70,7 @@ struct OpenConnectionsToolView: View {
         for group in groups {
             rows.append(.group(group))
             if expanded.contains(group.id) {
-                rows.append(contentsOf: sortedChildren(group.connections).map(TableRow.connection))
+                rows.append(contentsOf: group.connections.map(TableRow.connection))
             }
         }
         return rows
@@ -221,9 +161,6 @@ struct OpenConnectionsToolView: View {
             }
             .pickerStyle(.menu)
             .fixedSize()
-            TableSortControl(
-                options: SortKey.allCases.map { ($0, $0.title) },
-                selection: $sortKey, ascending: $sortAscending)
             AppIconButton(
                 systemImage: expanded.count == groups.count
                     ? "rectangle.compress.vertical" : "rectangle.expand.vertical",
@@ -331,56 +268,70 @@ struct OpenConnectionsToolView: View {
     }
 
     private var table: some View {
-        Table(tableRows) {
-            TableColumn("Process") { row in
-                rowCell(row) { processCell(row) }
-            }
-            .width(min: 170, ideal: 230)
-            TableColumn("PID") { row in
-                rowCell(row) {
-                    Text(pidLabel(row)).monospacedDigit()
-                        .foregroundColor(isGroup(row) ? .secondary : .primary)
-                }
-            }
-            .width(AppColumnWidth.short)
-            TableColumn("User") { row in
-                rowCell(row) { Text(primary(row)?.user ?? "—") }
-            }
-            .width(AppColumnWidth.compact)
-            TableColumn("Service") { row in
-                rowCell(row) { serviceLabel(row) }
-            }
-            .width(AppColumnWidth.medium)
-            TableColumn("Proto") { row in
-                rowCell(row) {
-                    Text(protoLabel(row))
-                }
-            }
-            .width(AppColumnWidth.short)
-            TableColumn("Local") { row in
-                rowCell(row) {
-                    Text(isGroup(row) ? localLabel(row) : (primary(row)?.local ?? "—"))
-                        .monospaced()
-                }
-            }
-            .width(AppColumnWidth.long)
-            TableColumn("Exposure") { row in
-                rowCell(row) { exposureLabel(row) }
-            }
-            .width(AppColumnWidth.compact)
-            TableColumn("Remote") { row in
-                rowCell(row) {
-                    Text(remoteLabel(row))
-                        .monospaced()
-                        .foregroundColor(isGroup(row) ? .secondary : .primary)
-                }
-            }
-            .width(AppColumnWidth.long)
-            TableColumn("State") { row in
-                rowCell(row) { stateLabel(row) }
-            }
-            .width(AppColumnWidth.compact)
-            TableColumn("") { row in
+        AppTable(
+            columns: columns,
+            rows: tableRows,
+            initialKey: "process",
+            grouping: AppTableGrouping(isSectionStart: { row in
+                if case .group = row { return true }
+                return false
+            }),
+            onActivate: activate,
+            rowMenu: { rowMenu($0) }
+        )
+        .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
+        .appTableSurface()
+    }
+
+    private var columns: [AppTableColumn<TableRow>] {
+        [
+            AppTableColumn(
+                id: "process", title: "Process", minWidth: 170,
+                value: { .text(processName($0)) }
+            ) { processCell($0) },
+            AppTableColumn(
+                id: "pid", title: "PID", minWidth: AppColumnWidth.short,
+                value: { .number(pidValue($0)) }
+            ) { row in
+                Text(pidLabel(row)).monospacedDigit()
+                    .foregroundColor(isGroup(row) ? .secondary : .primary)
+            },
+            AppTableColumn(
+                id: "user", title: "User", minWidth: AppColumnWidth.compact,
+                value: { .text(primary($0)?.user) }
+            ) { Text(primary($0)?.user ?? "—") },
+            AppTableColumn(
+                id: "service", title: "Service", minWidth: AppColumnWidth.medium,
+                value: { .text(serviceTitle($0)) }
+            ) { serviceLabel($0) },
+            AppTableColumn(
+                id: "proto", title: "Proto", minWidth: AppColumnWidth.short,
+                value: { .text(protoLabel($0)) }
+            ) { Text(protoLabel($0)) },
+            AppTableColumn(
+                id: "local", title: "Local", minWidth: AppColumnWidth.long,
+                value: { .text(localText($0)) }
+            ) { Text(localText($0)).monospaced() },
+            AppTableColumn(
+                id: "exposure", title: "Exposure", minWidth: AppColumnWidth.compact,
+                value: { .text(primary($0)?.exposure.title) }
+            ) { exposureLabel($0) },
+            AppTableColumn(
+                id: "remote", title: "Remote", minWidth: AppColumnWidth.long,
+                value: { .text(remoteLabel($0)) }
+            ) { row in
+                Text(remoteLabel(row))
+                    .monospaced()
+                    .foregroundColor(isGroup(row) ? .secondary : .primary)
+            },
+            AppTableColumn(
+                id: "state", title: "State", minWidth: AppColumnWidth.compact,
+                value: { .text(stateText($0)) }
+            ) { stateLabel($0) },
+            AppTableColumn(
+                id: "actions", title: "", minWidth: 58, isSortable: false,
+                value: { _ in .none }
+            ) { row in
                 HStack(spacing: 4) {
                     Button {
                         prepareKill(row)
@@ -392,25 +343,8 @@ struct OpenConnectionsToolView: View {
                     .help("Terminate the process owning this row")
                     blockMenu(row)
                 }
-                .contextMenu { rowMenu(row) }
-            }
-            .width(58)
-        }
-        .frame(minHeight: ToolkitTableHeight.rows(tableRows.count, maximum: 640))
-        .appTableSurface()
-    }
-
-    /// A whole-row click target: a group row expands from anywhere on the row,
-    /// not only from the disclosure chevron, and a right-click opens the menu
-    /// for that specific group or socket.
-    private func rowCell<Content: View>(
-        _ row: TableRow, @ViewBuilder _ content: () -> Content
-    ) -> some View {
-        content()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .onTapGesture { activate(row) }
-            .contextMenu { rowMenu(row) }
+            },
+        ]
     }
 
     @ViewBuilder
@@ -632,9 +566,37 @@ struct OpenConnectionsToolView: View {
         }
     }
 
-    private func localLabel(_ row: TableRow) -> String {
-        if case .group(let group) = row { return group.local }
-        return "—"
+    private func processName(_ row: TableRow) -> String {
+        switch row {
+        case .group(let group): return group.displayProcess
+        case .connection(let connection): return connection.process
+        }
+    }
+
+    private func pidValue(_ row: TableRow) -> Int {
+        switch row {
+        case .group(let group): return group.connections.map(\.pid).min() ?? 0
+        case .connection(let connection): return connection.pid
+        }
+    }
+
+    private func serviceTitle(_ row: TableRow) -> String {
+        guard let connection = primary(row) else { return "" }
+        return descriptions.description(forProcess: connection.process).title
+    }
+
+    private func localText(_ row: TableRow) -> String {
+        switch row {
+        case .group(let group): return group.local
+        case .connection(let connection): return connection.local
+        }
+    }
+
+    private func stateText(_ row: TableRow) -> String {
+        switch row {
+        case .group(let group): return group.stateSummary
+        case .connection(let connection): return connection.state
+        }
     }
 
     private func remoteLabel(_ row: TableRow) -> String {

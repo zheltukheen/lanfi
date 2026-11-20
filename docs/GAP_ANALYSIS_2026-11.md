@@ -1023,6 +1023,15 @@ locales.
 
 ## Delivered in the forty-first slice (2026-11-20)
 
+- **Hierarchical tables sort from their headers.** `AppTable` learned
+  `AppTableGrouping`: a group row starts a section, the sorter orders sections
+  by their header value and sorts each section's children among themselves, so
+  expanding a group and sorting a column do not interleave unrelated rows.
+  Columns can opt out of sorting (`isSortable: false`) and `onActivate` handles
+  a whole-row click, which is how a group expands. Connections and Process
+  Traffic moved to it, `TableSortControl` is deleted, and every SwiftUI table in
+  the app now sorts from its header. No screen is left on the native `Table`.
+
 - **Offline Capture sorts from its headers.** The beacon table and both sheet
   tables (captured clients, management-frame counters) use `AppTable`. The
   three local sort enums, their comparators and the `TableSortControl` menus
@@ -1041,9 +1050,8 @@ locales.
   `LANSort` for both the header and the values.
 - **Overview:** gateway, its MAC and the DNS verdict are outside the Wi-Fi
   branch, so they stay visible on Ethernet; metric tiles do not repeat them.
-- **Remaining:** Connections / Process Traffic, whose hierarchical, expandable
-  rows need a tree-capable `AppTable` (a group must stay next to its children
-  while a column sorts).
+- **Remaining:** none in this area — with the hierarchical sorter in place every
+  SwiftUI table in the app sorts from its header.
 - 635 tests green (1 skipped), lint clean, Debug and universal builds succeed.
 
 ## Delivered in the thirty-ninth slice (2026-11-19)

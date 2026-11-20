@@ -252,37 +252,3 @@ enum ToolkitFormat {
         return formatter.string(fromByteCount: value)
     }
 }
-
-/// macOS 13 has no sortable `TableColumn` (`value:`/`comparator` are macOS 14),
-/// so toolkit tables sort through this compact control in the card header.
-struct TableSortControl<Key: Hashable>: View {
-    let options: [(key: Key, title: String)]
-    @Binding var selection: Key
-    @Binding var ascending: Bool
-
-    var body: some View {
-        Menu {
-            ForEach(options, id: \.key) { option in
-                Button {
-                    if selection == option.key {
-                        ascending.toggle()
-                    } else {
-                        selection = option.key
-                        ascending = true
-                    }
-                } label: {
-                    Text(option.title)
-                    if selection == option.key {
-                        Image(systemName: ascending ? "chevron.up" : "chevron.down")
-                    }
-                }
-            }
-        } label: {
-            AppMenuLabel(title: "Sort", systemImage: "arrow.up.arrow.down")
-        }
-        .appMenuStyle()
-        .help("Sort the table")
-        .accessibilityLabel("Sort the table")
-        .accessibilityValue(ascending ? "Ascending" : "Descending")
-    }
-}
