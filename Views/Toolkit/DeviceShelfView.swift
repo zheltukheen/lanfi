@@ -109,11 +109,10 @@ struct DeviceShelfView: View {
     private var header: some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 10) {
-                // Filter first, then search: the shelf mode is the coarser
-                // choice and it reads above the query it narrows further.
-                HStack(spacing: 12) {
-                    // The filter used to share the search row and overlapped it
-                    // at narrow widths; it gets its own line and a flexible width.
+                // Filter, search and export share one row: they all narrow or
+                // act on the same list, and stacked on separate lines the filter
+                // looked like a section of its own with a stray divider.
+                HStack(spacing: DesignToken.Spacing.medium) {
                     Picker("Filter", selection: $model.filter) {
                         ForEach(DeviceShelfViewModel.Filter.allCases) { filter in
                             Text(filter.title).tag(filter)
@@ -121,44 +120,15 @@ struct DeviceShelfView: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .frame(minWidth: 320, maxWidth: 460)
-                    Divider().frame(height: 18)
-                }
-
-                HStack(spacing: 12) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        TextField(String(localized: "Search name, IP, vendor, MAC…"), text: $model.searchText)
-                            .textFieldStyle(.plain)
-                            .frame(minWidth: 180, maxWidth: 320)
-                    }
-                    .padding(.horizontal, DesignToken.Spacing.small)
-                    .padding(.vertical, DesignToken.Spacing.tight)
-                    .background(
-                        Color(nsColor: .controlBackgroundColor),
-                        in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
-
-                    Spacer()
-
-                    Menu {
-                        Button(String(localized: "Export CSV…")) { export(.csv) }
-                        Button(String(localized: "Export JSON…")) { export(.json) }
-                        Button(String(localized: "QR labels (PDF)…")) { exportLabels() }
-                        Divider()
-                        Button(String(localized: "Copy as text")) { copyToPasteboard() }
-                        Button(String(localized: "Forget all…"), role: .destructive) { showingClearConfirm = true }
-                    } label: {
-                        Label(String(localized: "Export"), systemImage: "square.and.arrow.up")
-                            .font(.caption)
-                    }
-                    .menuStyle(.borderlessButton)
                     .fixedSize()
+                    .layoutPriority(2)
+                    .help("Which devices the shelf lists")
+
+                    searchField
+
+                    Spacer(minLength: DesignToken.Spacing.small)
+
+                    exportMenu
                 }
 
                 HStack(spacing: 22) {
@@ -189,6 +159,62 @@ struct DeviceShelfView: View {
                 }
             }
         }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: DesignToken.Spacing.hairline + 2) {
+            Image(systemName: "magnifyingglass")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            TextField(
+                String(localized: "Search name, IP, vendor, MAC…"), text: $model.searchText
+            )
+            .textFieldStyle(.plain)
+            .frame(minWidth: 140, maxWidth: .infinity)
+            if !model.searchText.isEmpty {
+                Button {
+                    model.searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Clear search")
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.vertical, DesignToken.Spacing.tight)
+        .frame(minWidth: 180, maxWidth: 320, alignment: .leading)
+        .background(
+            Theme.Surface.controlFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                .stroke(Theme.Surface.border, lineWidth: Theme.Stroke.hairline)
+        )
+        .layoutPriority(1)
+    }
+
+    private var exportMenu: some View {
+        Menu {
+            Button(String(localized: "Export CSV…")) { export(.csv) }
+            Button(String(localized: "Export JSON…")) { export(.json) }
+            Button(String(localized: "QR labels (PDF)…")) { exportLabels() }
+            Divider()
+            Button(String(localized: "Copy as text")) { copyToPasteboard() }
+            Button(String(localized: "Forget all…"), role: .destructive) {
+                showingClearConfirm = true
+            }
+        } label: {
+            Label(String(localized: "Export"), systemImage: "square.and.arrow.up")
+                .font(.caption)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Export the shelf")
     }
 
     // MARK: - Table

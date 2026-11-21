@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.6.9 — 2026-11-21
+
+### Fixed
+- **The device shelf's filter, search and export sit on one row.** The filter
+  picker had been pushed onto its own line with a stray divider and a fixed
+  320–460 pt width, so it read as a separate section above the search it
+  narrows. Filter, search field and the export menu now share a single row: the
+  picker keeps its intrinsic width, the search field flexes between 180 and
+  320 pt, and a clear button appears inside it while a query is typed.
+- The shelf's warranty filter and metric read "Warranty" in Russian; the label
+  is translated in all five locales.
+
 ## 5.6.8 — 2026-11-21
 
 ### Fixed
