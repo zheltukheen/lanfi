@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 /// The table used to give every column its minimum width and let a trailing
 /// `Spacer` take the rest: columns huddled at the left of a half-empty card and
 /// a widened column pushed the last ones out. These checks pin the width rules.

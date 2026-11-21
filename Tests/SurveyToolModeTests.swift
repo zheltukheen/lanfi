@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import LanFi
-
 /// The survey screen used to keep one boolean per tool (wall, room, walk,
 /// predictive), so two tools could be on at once and the click order silently
 /// decided which one ran. These checks keep the single-mode contract honest.
