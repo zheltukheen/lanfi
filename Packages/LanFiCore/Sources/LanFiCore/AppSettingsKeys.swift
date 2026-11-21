@@ -102,6 +102,7 @@ public enum AppSettingsKey: String, CaseIterable, Sendable {
     case lanGuardEnabled = "LanFi.lanGuardEnabled"
     case processTrafficEnabled = "LanFi.processTraffic.enabled"
     case listenerWatch = "LanFi.listeners.watch"
+    case routeMonitor = "LanFi.routeMonitor.settings"
     case serviceDescriptions = "LanFi.descriptions.model"
     case gatewayGuard = "LanFi.gatewayGuard.enabled"
     case vpnGuard = "LanFi.vpnGuard.enabled"

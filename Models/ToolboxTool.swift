@@ -49,6 +49,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     case networkMonitor
     case uptimeMonitor
+    case routeMonitor
     case lanScanner
     case wifiAnalyzer
     case roamingTest

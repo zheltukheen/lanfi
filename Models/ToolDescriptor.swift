@@ -147,6 +147,12 @@ enum ToolRegistry {
             icon: "clock.badge.checkmark", section: .monitoring,
             plannedDetail: String(localized: "Scheduled checks, alerts and outage history.")),
         ToolDescriptor(
+            tool: .routeMonitor, screen: .routeMonitor,
+            title: String(localized: "Route Monitor"),
+            icon: "square.grid.3x3.middle.filled", section: .monitoring,
+            plannedDetail: String(
+                localized: "Per-hop latency and loss over time, with route-change events.")),
+        ToolDescriptor(
             tool: .lanScanner, screen: .lanScanner, mcpTools: ["lanfi_devices", "lanfi_lan_scan"],
             title: String(localized: "LAN Scanner"),
             icon: "desktopcomputer", section: .monitoring,

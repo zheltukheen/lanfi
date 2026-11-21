@@ -8,6 +8,7 @@ struct MenuBarView: View {
     @ObservedObject var uptime: UptimeMonitor
     @ObservedObject var meter: MenuBarMeterModel
     @ObservedObject var connectivity: ConnectivityWatchdog
+    @ObservedObject var route: RouteMonitor
     @EnvironmentObject private var uiState: AppUIState
     @EnvironmentObject private var toolkit: ToolkitViewModel
     @Environment(\.openWindow) private var openWindow
@@ -46,6 +47,7 @@ struct MenuBarView: View {
             throughputCard
             linkCard
             connectivityCard
+            routeCard
             latencyCard
             publicIPRow
 
@@ -292,6 +294,59 @@ struct MenuBarView: View {
                         .foregroundColor(.secondary)
                 } else if let checkedAtText {
                     Text("Last checked \(checkedAtText)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+
+    private var routeCard: some View {
+        AppCard(padding: DesignToken.Spacing.small) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(route.isRunning ? AppPalette.ok : AppPalette.muted)
+                        .frame(width: 7, height: 7)
+                    SectionLabel(text: "Route")
+                    Spacer()
+                    if route.isRunning {
+                        Text(route.target)
+                            .font(.caption2.monospaced())
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        Button("Stop") { route.stop() }
+                            .controlSize(.mini)
+                    } else {
+                        Text("Not monitoring")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Button("Start") {
+                            route.start(
+                                host: route.target.isEmpty
+                                    ? AnalysisTarget.shared.value : route.target)
+                        }
+                        .controlSize(.mini)
+                    }
+                }
+                if route.isRunning {
+                    MenuBarSparkline(
+                        values: route.samples.compactMap(\.destinationLatencyMilliseconds),
+                        tint: AppPalette.ok
+                    )
+                    .frame(height: 24)
+                    HStack(spacing: DesignToken.Spacing.medium) {
+                        StatTile(
+                            value: ToolkitFormat.milliseconds(
+                                route.samples.last?.destinationLatencyMilliseconds),
+                            label: String(localized: "Latest latency"), tint: AppPalette.info)
+                        StatTile(
+                            value: "\(route.samples.count)",
+                            label: String(localized: "Samples"),
+                            tint: AppPalette.muted)
+                    }
+                } else {
+                    Text("Open the Route Monitor tool to choose a destination.")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }

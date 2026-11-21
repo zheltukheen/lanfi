@@ -72,6 +72,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
             case signal
             case quality
             case latency
+            /// P3.2: the continuous route monitor's destination latency.
+            case route
         }
 
         public enum LabelStyle: String, Codable, CaseIterable, Sendable {

@@ -269,6 +269,7 @@ struct GeneralSettingsPage: View {
                 Text("Signal").tag(AppSettings.MenuBarMeterSettings.Metric.signal)
                 Text("Quality").tag(AppSettings.MenuBarMeterSettings.Metric.quality)
                 Text("Latency").tag(AppSettings.MenuBarMeterSettings.Metric.latency)
+                Text("Route").tag(AppSettings.MenuBarMeterSettings.Metric.route)
             }
             Picker("Throughput unit", selection: menuBarBinding(\.unit)) {
                 Text("bit/s").tag(AppSettings.MenuBarMeterSettings.Unit.bits)
@@ -276,6 +277,10 @@ struct GeneralSettingsPage: View {
             }
             Text("Counters are sampled every 2 s, and every 30 s while LanFi is in the background.")
                 .settingsHint()
+            Text(
+                "The menu-bar graph follows the destination latency when the metric is Route."
+            )
+            .settingsHint()
         }
     }
 

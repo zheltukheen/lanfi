@@ -253,6 +253,8 @@ struct NetworkToolkitView: View {
             NetworkMonitorToolView(interfaces: interfaces)
         case .uptimeMonitor:
             UptimeToolView(monitor: uptime)
+        case .routeMonitor:
+            RouteMonitorToolView(monitor: RouteMonitor.shared)
         case .lanScanner:
             LANScannerToolView(model: toolkit.lanScanner)
         case .iperf3:

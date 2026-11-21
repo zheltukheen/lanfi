@@ -36,6 +36,7 @@ struct LanFiApp: App {
     @StateObject private var uptime = UptimeMonitor()
     @StateObject private var meter = MenuBarMeterModel.shared
     @StateObject private var connectivity = ConnectivityWatchdog.shared
+    @StateObject private var route = RouteMonitor.shared
     @AppStorage("LanFi.highContrast") private var highContrast = false
     @AppStorage(AccessibilityPalette.colorBlindSafeKey) private var colorBlindSafe = false
     @AppStorage("LanFi.appearance") private var appearance = "system"
@@ -143,6 +144,7 @@ struct LanFiApp: App {
                     }
                     meter.setApplicationActive(newPhase == .active)
                     connectivity.setApplicationActive(newPhase == .active)
+                    route.setApplicationActive(newPhase == .active)
                 }
         }
         .commands {
@@ -191,14 +193,14 @@ struct LanFiApp: App {
         MenuBarExtra {
             MenuBarView(
                 viewModel: viewModel, diagnostics: diagnostics, uptime: uptime, meter: meter,
-                connectivity: connectivity
+                connectivity: connectivity, route: route
             )
             .environmentObject(uiState)
             .environmentObject(toolkit)
         } label: {
             MenuBarLabel(
                 meter: meter, viewModel: viewModel, diagnostics: diagnostics, uptime: uptime,
-                connectivity: connectivity)
+                connectivity: connectivity, route: route)
         }
         .menuBarExtraStyle(.window)
     }

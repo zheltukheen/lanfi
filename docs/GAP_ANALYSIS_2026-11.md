@@ -425,13 +425,22 @@ demand, so route flaps and evening congestion have no history.
 
 Tasks:
 
-- [ ] One continuous target at a time, reusing `MTRService` with a rolling
+- [x] One continuous target at a time, reusing `MTRService` with a rolling
       window; slower cadence while the panel is closed.
-- [ ] Per-hop heatmap (time on x, hop on y, latency and loss colour) plus a
+- [x] Per-hop heatmap (time on x, hop on y, latency and loss colour) plus a
       destination sparkline in the menu bar.
-- [ ] Configurable latency/loss thresholds, route-change events, and the shared
+- [x] Configurable latency/loss thresholds, route-change events, and the shared
       analysis target as the default destination.
-- [ ] Never more than one continuous monitor; state it in the UI.
+- [x] Never more than one continuous monitor; state it in the UI.
+
+Delivered 2026-11-21: `Models/RouteMonitor.swift` (samples, window statistics,
+`RouteChangeDetector` with a two-sample flap guard, `RouteThresholdTracker` and
+the cadence rule), `Services/RouteMonitorService.swift` (`RouteMonitor.shared`,
+one loop, 180-sample window, 10 s active / 30 s panel closed / 60 s background,
+route-change and threshold notifications), `Views/Toolkit/RouteMonitorToolView.swift`
+(target field, scrolling heatmap, threshold controls, event log), the "Route"
+menu-bar metric and popover card, a Route Monitor sidebar tool, and
+`Tests/RouteMonitorTests.swift`.
 
 Acceptance: a ten-minute run shows per-hop bands, emits one event when the path
 changes, and keeps probe traffic below one round per second while idle.

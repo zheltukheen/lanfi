@@ -46,6 +46,7 @@ struct MenuBarLabel: View {
     @ObservedObject var diagnostics: DiagnosticsViewModel
     @ObservedObject var uptime: UptimeMonitor
     @ObservedObject var connectivity: ConnectivityWatchdog
+    @ObservedObject var route: RouteMonitor
 
     @AppStorage(AppSettingsKey.menuBarStyle.rawValue) private var styleRaw = AppSettings.MenuBarMeterSettings.LabelStyle
         .iconAndGraph
@@ -69,7 +70,9 @@ struct MenuBarLabel: View {
         AppSettings.MenuBarMeterSettings.Unit(rawValue: unitRaw) == .bytes ? .bytes : .bits
     }
 
-    private var showsGraph: Bool { style.showsGraph && metric == .throughput }
+    private var showsGraph: Bool {
+        style.showsGraph && (metric == .throughput || metric == .route)
+    }
 
     private var showsNumber: Bool {
         style.showsNumber || (style.showsGraph && metric != .throughput)
@@ -77,6 +80,11 @@ struct MenuBarLabel: View {
 
     private var signalMode: SignalDisplayMode {
         SignalDisplayMode(rawValue: signalUnitRaw) ?? .dbm
+    }
+
+    private var graphValues: [Double] {
+        metric == .route
+            ? route.samples.compactMap(\.destinationLatencyMilliseconds) : meter.samples
     }
 
     private var connected: NetworkModel? {
@@ -101,6 +109,12 @@ struct MenuBarLabel: View {
                 connectivity.latencyMilliseconds ?? diagnostics.publicLatencyMilliseconds
             guard let latency else { return "—" }
             return "\\(latency)"
+        case .route:
+            // P3.2: the destination hop of the one continuous route monitor.
+            guard let latency = route.samples.last?.destinationLatencyMilliseconds else {
+                return "—"
+            }
+            return "\\(Int(latency.rounded()))"
         }
     }
 
@@ -127,6 +141,8 @@ struct MenuBarLabel: View {
             let verdict = connectivity.verdict
             let state = verdict == .unknown ? "" : ", \(verdict.title)"
             return "Latency " + metricText + state
+        case .route:
+            return "Route latency " + metricText
         }
     }
 
@@ -135,7 +151,7 @@ struct MenuBarLabel: View {
             Image(systemName: statusSymbol)
                 .symbolRenderingMode(.monochrome)
             if showsGraph {
-                MenuBarSparkline(values: meter.samples, tint: .primary)
+                MenuBarSparkline(values: graphValues, tint: .primary)
                     .frame(width: 34, height: 12)
             }
             if showsNumber {

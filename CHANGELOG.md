@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.6.17 — 2026-11-21
+
+### Added
+- **Continuous route monitor.** The new Route Monitor tool keeps one
+traceroute target running through the existing MTR engine and keeps the last
+180 rounds, so route flaps and evening congestion have a history instead of
+being remembered. A scrolling heatmap shows latency and missed replies per hop
+over time, with configurable latency and loss thresholds, edge-triggered
+notifications for threshold crossings, and a route-change event that requires
+the new path to appear twice before it is announced, so one timed-out hop does
+not raise an alert. There is exactly one monitor app-wide: it slows to every
+30 s while the screen is closed and every 60 s in the background, and the
+menu-bar "Route" metric draws the destination latency next to the existing
+throughput, signal, quality and latency metrics. Nothing starts until the user
+presses Start.
+
 ## 5.6.16 — 2026-11-21
 
 ### Added
