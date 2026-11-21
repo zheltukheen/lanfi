@@ -546,7 +546,10 @@ The app uses the same seam style: `WiFiScanning` is injected into
   Release build on macOS 15.
 - Release (`.github/workflows/release.yml`) is triggered by `v*` tags: verifies
   the tag against `project.yml`, tests, builds, packages ZIP + DMG + SHA-256,
-  and publishes notes from `CHANGELOG.md`.
+  and publishes notes from `CHANGELOG.md`. Notes cover everything since the
+  previous published release (`scripts/release_notes.py --since`), so versions
+  that never got a release of their own are folded into the next one instead of
+  being lost.
 - Stable download links: every release also uploads `LanFi.dmg`, `LanFi.zip`,
   `LanFi-CLI.zip`, `LanFi.sha256` and `LanFi.version` under constant names, so
   `https://github.com/zheltukheen/lanfi/releases/latest/download/LanFi.dmg`

@@ -151,7 +151,16 @@ jobs:
           cat LanFi.sha256 LanFi.version
 
       - name: Generate release notes
-        run: python3 scripts/release_notes.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          PREVIOUS="$(gh release list --limit 1 --json tagName --jq '.[0].tagName // ""' 2>/dev/null || true)"
+          if [ -n "$PREVIOUS" ] && [ "$PREVIOUS" != "v${GITHUB_REF_NAME#v}" ]; then
+            export RELEASE_NOTES_SINCE="${PREVIOUS#v}"
+            echo "Folding in every CHANGELOG section since ${PREVIOUS}"
+          fi
+          python3 scripts/release_notes.py
 
       - name: Sign update and generate appcast
         env:
