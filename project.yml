@@ -23,17 +23,29 @@ settings:
     CODE_SIGN_IDENTITY: "-"
     ENABLE_HARDENED_RUNTIME: YES
 
+# Sources compiled by the app, the CLI and the test bundle. They are listed
+# once here instead of being repeated in all three targets; the CLI used to
+# keep its own copy of the list only to exclude the Sparkle updater, which now
+# lives in App/ and is part of the app target alone.
+targetTemplates:
+  shared:
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - Models
+      - Services
+      - Utils
+
 targets:
   LanFi:
     type: application
     platform: macOS
+    templates: [shared]
     sources:
       - LanFiApp.swift
-      - Models
-      - Services
+      - App
       - ViewModels
       - Views
-      - Utils
       # The MCP server ships inside the app binary as well, so agents can point
       # `claude mcp add` at LanFi.app/Contents/MacOS/LanFi --mcp directly.
       - CLI/MCPProtocol.swift
@@ -55,8 +67,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
-        MARKETING_VERSION: "5.6.17"
-        CURRENT_PROJECT_VERSION: "100"
+        MARKETING_VERSION: "5.6.18"
+        CURRENT_PROJECT_VERSION: "101"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -110,11 +122,9 @@ targets:
     type: bundle.unit-test
     platform: macOS
     deploymentTarget: "14.0"
+    templates: [shared]
     sources:
       - Tests
-      - Models
-      - Services
-      - Utils
       - CLI
     dependencies:
       - package: LanFiCore
@@ -123,23 +133,14 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi.Tests
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGNING_ALLOWED: NO
-    dependencies:
-      - package: LanFiCore
-      - package: Sparkle
 
   lanfi-cli:
     type: tool
     platform: macOS
     deploymentTarget: "13.0"
+    templates: [shared]
     sources:
       - CLI
-      - Models
-      - path: Services
-        # The CLI never opens the updater; excluding it keeps Sparkle out of
-        # the standalone `lanfi-cli` binary so it runs without an app bundle.
-        excludes:
-          - UpdaterController.swift
-      - Utils
     dependencies:
       - package: LanFiCore
     settings:

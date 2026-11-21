@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import LanFiCore
 
 struct GeoIPToolView: View {
     @ObservedObject var model: GeoIPToolModel

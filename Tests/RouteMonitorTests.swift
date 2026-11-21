@@ -1,4 +1,5 @@
 import XCTest
+import LanFiCore
 
 final class RouteMonitorTests: XCTestCase {
 

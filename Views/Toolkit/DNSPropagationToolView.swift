@@ -1,4 +1,5 @@
 import SwiftUI
+import LanFiCore
 
 struct DNSPropagationToolView: View {
     @ObservedObject var model: DNSPropagationToolModel

@@ -1,4 +1,5 @@
 import SwiftUI
+import LanFiCore
 
 /// P3.2 — continuous route monitor: pick one destination, keep a rolling window
 /// of rounds and read per-hop latency and loss as a heatmap.

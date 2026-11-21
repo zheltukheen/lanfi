@@ -1,6 +1,7 @@
 import AppKit
 import MapKit
 import SwiftUI
+import LanFiCore
 
 struct VisualTracerouteToolView: View {
     @ObservedObject var model: VisualTracerouteToolModel

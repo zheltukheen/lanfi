@@ -23,7 +23,7 @@ because the delivered analysis depth is currently invisible in a screenshot.
 | Lines in those folders | ~42,000 |
 | Test methods | 385 app + 6 core |
 | Settings tabs | 11 |
-| SwiftPM modules | 1 (`LanFiCore`, settings seed) |
+| SwiftPM modules | 1 (`LanFiCore`: settings, target parsing, probe models) |
 | Distinct preference keys (one `AppSettingsKey` catalogue) | 73 |
 | Key literals outside the catalogue / error domains | 0 / 13 |
 | App targets | 1 app + CLI + tests |
@@ -1129,10 +1129,20 @@ locales.
 - [x] Seed `LanFiCore` as a SwiftPM library with typed settings and its own
       `swift test` target. Models, parsers, analyzers and stores still live in
       the app target.
-- [ ] Extract the rest of `LanFiCore` (models, parsers, analyzers, stores) and
+- [~] Extract the rest of `LanFiCore` (models, parsers, analyzers, stores) and
       `LanFiProbes` (ICMP/TCP/DNS/TLS); this needs a public-API pass.
-- [ ] Stop listing sources three times in `project.yml`; app, tests and CLI
-      depend on packages instead.
+      Delivered 2026-11-21: `ToolTarget`, `MTRHop`/`MTRReport` and the whole
+      route-monitor model layer moved into `LanFiCore` with a public API;
+      `Models/ToolkitModels.swift` now imports the package. What remains is the
+      Wi-Fi model layer (`NetworkModel`, `InformationElement`) and the
+      analyzers/stores, which reach into CoreWLAN, AppKit and the scanner and
+      need a Foundation-only seam before they can move.
+- [x] Stop listing sources three times in `project.yml`; app, tests and CLI
+      depend on packages instead. `targetTemplates.shared` lists `Models`,
+      `Services` and `Utils` once, and the three targets inherit it. The only
+      Sparkle reference (`UpdaterController`) moved to `App/`, so the CLI links
+      the shared sources without the updater framework and the test bundle no
+      longer depends on Sparkle.
 - [x] Split `ToolkitViewModel` (1311 → 44 lines + 15 focused files).
 - [x] Split `MainTableView` (1314 → 252 lines + 6 focused files).
 - [x] Split `AnalyzerViewModel` (1490) and `MCPToolkit` (1280).
@@ -1172,7 +1182,14 @@ locales.
       existed.
 - [x] Make `swift-format` blocking in CI and run `swift test` for the core
       package.
-- [ ] Add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
+- [x] Add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
+      The test job runs the core package plus the app suite on all four images;
+      macOS 13 is `continue-on-error` because the runner image is retired and
+      its Xcode predates the Swift 6 core package. `scripts/ui_smoke.sh` runs the
+      bundle smoke test and captures the workspace and Route Monitor screens.
+      `Tests/PerformanceBudgetTests.swift` holds generous budgets for a
+      300-network analysis, the JSON export and a 180-sample route window, so
+      the same tests run locally and on the runner.
 
 ### Settings
 

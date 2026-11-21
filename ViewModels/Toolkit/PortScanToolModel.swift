@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import LanFiCore
 
 // MARK: - Port scan
 

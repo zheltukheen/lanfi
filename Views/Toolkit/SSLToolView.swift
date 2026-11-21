@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import LanFiCore
 
 struct SSLToolView: View {
     @ObservedObject var model: SSLToolModel

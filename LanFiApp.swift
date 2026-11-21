@@ -1,5 +1,6 @@
 //  LanFiApp.swift
 import SwiftUI
+import LanFiCore
 
 @main
 enum LanFiMain {

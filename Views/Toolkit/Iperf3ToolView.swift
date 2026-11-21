@@ -1,6 +1,7 @@
 import AppKit
 import Charts
 import SwiftUI
+import LanFiCore
 
 struct Iperf3ToolView: View {
     @ObservedObject var model: Iperf3ToolModel

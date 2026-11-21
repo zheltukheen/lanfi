@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import LanFiCore
 
 struct PortScanToolView: View {
     @ObservedObject var model: PortScanToolModel

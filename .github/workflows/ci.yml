@@ -14,10 +14,10 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Test and lint
+  lint:
+    name: Lint Swift
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -43,6 +43,36 @@ jobs:
             $FORMAT lint --recursive --configuration .swift-format --no-color-diagnostics .
           fi
 
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # macOS 13 is the deployment floor, but GitHub has retired that runner
+    # image and its Xcode cannot build the Swift 6 core package. Keep the entry
+    # visible as a best-effort check without letting it gate the workflow.
+    continue-on-error: ${{ matrix.experimental }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            experimental: true
+          - os: macos-14
+            experimental: false
+          - os: macos-15
+            experimental: false
+          - os: macos-26
+            experimental: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
       - name: Run core package tests
         run: swift test --package-path Packages/LanFiCore
 
@@ -56,10 +86,53 @@ jobs:
             -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO
 
+  ui-smoke:
+    name: UI smoke
+    runs-on: macos-15
+    needs: lint
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Run UI smoke
+        run: ./scripts/ui_smoke.sh
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-smoke
+          path: ${{ runner.temp }}/lanfi-ui-smoke
+          if-no-files-found: warn
+          retention-days: 14
+
+  performance:
+    name: Performance budgets
+    runs-on: macos-15
+    needs: lint
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Run performance budgets
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project LanFi.xcodeproj \
+            -scheme LanFi \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            -only-testing:LanFiTests/PerformanceBudgetTests \
+            CODE_SIGNING_ALLOWED=NO
+
   build:
     name: Build universal app
     runs-on: macos-15
-    needs: test
+    needs: [test, ui-smoke]
     timeout-minutes: 45
 
     steps:

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import LanFiCore
 
 struct WhoisToolView: View {
     @ObservedObject var model: WhoisToolModel

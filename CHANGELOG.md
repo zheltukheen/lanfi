@@ -1,5 +1,28 @@
 # Changelog
 
+## 5.6.18 — 2026-11-21
+
+### Changed
+- **One source list for the app, the CLI and the tests.** `project.yml` used to
+repeat `Models`, `Services`, `Utils` and `CLI` in three targets; a shared
+`targetTemplates.shared` entry now lists the common sources once. The Sparkle
+updater moved to `App/`, so the standalone `lanfi-cli` binary still links no
+Sparkle framework and the test bundle no longer depends on it.
+- **Core probe and target models live in `LanFiCore`.** `ToolTarget`,
+`MTRHop`/`MTRReport` and the route-monitor models (samples, window statistics,
+route-change detection, thresholds, cadence) are a SwiftPM library with a
+public API instead of being compiled into the app target. Probe screens import
+the package; the Wi-Fi model layer stays in the app until it has a
+Foundation-only seam.
+
+### Engineering
+- **CI covers the supported systems, the UI and performance.** The test job runs
+on macOS 13/14/15/26 (13 is best-effort because its runner image is retired),
+`scripts/ui_smoke.sh` runs the bundle smoke test and captures the workspace and
+Route Monitor screens, and `Tests/PerformanceBudgetTests.swift` enforces budgets
+for a 300-network analysis, the JSON export and the 180-sample route window;
+those budgets run in the normal suite.
+
 ## 5.6.17 — 2026-11-21
 
 ### Added

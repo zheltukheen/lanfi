@@ -1,6 +1,7 @@
 import AppKit
 import Charts
 import SwiftUI
+import LanFiCore
 
 struct PingToolView: View {
     @ObservedObject var model: PingToolModel

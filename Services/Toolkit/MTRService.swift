@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 /// Repeated traceroute, merged by hop. This is an MTR-style view without a
 /// second privileged engine: each round is one `traceroute -q 1` run, and the

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import LanFiCore
 
 struct DNSToolView: View {
     @ObservedObject var model: DNSToolModel

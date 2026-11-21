@@ -1,4 +1,5 @@
 import SwiftUI
+import LanFiCore
 
 struct PathCheckToolView: View {
     @ObservedObject var model: PathCheckToolModel

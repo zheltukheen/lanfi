@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import LanFiCore
 
 struct MTRToolView: View {
     @ObservedObject var model: MTRToolModel

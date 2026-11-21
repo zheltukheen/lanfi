@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 enum UptimeTargetKind: String, Codable, CaseIterable, Identifiable, Sendable {
     case http

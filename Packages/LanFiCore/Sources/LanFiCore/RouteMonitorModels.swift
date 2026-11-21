@@ -5,38 +5,44 @@ import Foundation
 /// One hop in one continuous-monitor round. `latencyMilliseconds` is nil when
 /// the router did not answer this round, which is what the heatmap draws as a
 /// missed reply.
-struct RouteHopSample: Equatable, Sendable {
-    let hop: Int
-    let address: String?
-    let latencyMilliseconds: Double?
+public struct RouteHopSample: Equatable, Sendable {
+    public let hop: Int
+    public let address: String?
+    public let latencyMilliseconds: Double?
 
-    var didReply: Bool { address != nil }
+    public init(hop: Int, address: String?, latencyMilliseconds: Double?) {
+        self.hop = hop
+        self.address = address
+        self.latencyMilliseconds = latencyMilliseconds
+    }
+
+    public var didReply: Bool { address != nil }
 }
 
 /// One round of the route monitor: the whole path as it looked at one moment.
-struct RouteSample: Identifiable, Equatable, Sendable {
-    let id: UUID
-    let at: Date
-    let hops: [RouteHopSample]
+public struct RouteSample: Identifiable, Equatable, Sendable {
+    public let id: UUID
+    public let at: Date
+    public let hops: [RouteHopSample]
 
-    init(id: UUID = UUID(), at: Date, hops: [RouteHopSample]) {
+    public init(id: UUID = UUID(), at: Date, hops: [RouteHopSample]) {
         self.id = id
         self.at = at
         self.hops = hops
     }
 
-    var destination: RouteHopSample? { hops.last }
-    var destinationLatencyMilliseconds: Double? { hops.last?.latencyMilliseconds }
-    var destinationReached: Bool { hops.last?.didReply == true }
+    public var destination: RouteHopSample? { hops.last }
+    public var destinationLatencyMilliseconds: Double? { hops.last?.latencyMilliseconds }
+    public var destinationReached: Bool { hops.last?.didReply == true }
 
-    func hop(_ ttl: Int) -> RouteHopSample? {
+    public func hop(_ ttl: Int) -> RouteHopSample? {
         hops.first { $0.hop == ttl }
     }
 
     /// `MTRService` with one round per call is the transport: each report is one
     /// sample, so the rolling window is a list of reports rather than a second
     /// probing engine.
-    static func make(from report: MTRReport, at date: Date = Date()) -> RouteSample {
+    public static func make(from report: MTRReport, at date: Date = Date()) -> RouteSample {
         let hops = report.hops.map { hop in
             RouteHopSample(
                 hop: hop.hop,
@@ -49,27 +55,43 @@ struct RouteSample: Identifiable, Equatable, Sendable {
 
 // MARK: - Rolling statistics
 
-struct RouteHopStat: Identifiable, Equatable, Sendable {
-    let hop: Int
-    let address: String?
-    let attempts: Int
-    let replies: Int
-    let averageMilliseconds: Double?
-    let worstMilliseconds: Double?
+public struct RouteHopStat: Identifiable, Equatable, Sendable {
+    public let hop: Int
+    public let address: String?
+    public let attempts: Int
+    public let replies: Int
+    public let averageMilliseconds: Double?
+    public let worstMilliseconds: Double?
 
-    var id: Int { hop }
+    public init(
+        hop: Int,
+        address: String?,
+        attempts: Int,
+        replies: Int,
+        averageMilliseconds: Double?,
+        worstMilliseconds: Double?
+    ) {
+        self.hop = hop
+        self.address = address
+        self.attempts = attempts
+        self.replies = replies
+        self.averageMilliseconds = averageMilliseconds
+        self.worstMilliseconds = worstMilliseconds
+    }
 
-    var lossPercent: Double {
+    public var id: Int { hop }
+
+    public var lossPercent: Double {
         guard attempts > 0 else { return 0 }
         return Double(attempts - replies) / Double(attempts) * 100
     }
 }
 
-enum RouteHopStatistics {
+public enum RouteHopStatistics {
     /// Loss over the whole window, not per round: a single missed reply is a
     /// 100 % loss in a one-round sample, which would make every timeout look
     /// like a dead hop.
-    static func compute(samples: [RouteSample]) -> [RouteHopStat] {
+    public static func compute(samples: [RouteSample]) -> [RouteHopStat] {
         var attempts: [Int: Int] = [:]
         var replies: [Int: Int] = [:]
         var addresses: [Int: String] = [:]
@@ -104,16 +126,16 @@ enum RouteHopStatistics {
 
 // MARK: - Route change
 
-struct RoutePath: Equatable, Sendable {
+public struct RoutePath: Equatable, Sendable {
     /// TTL → address. Hops that did not answer are not part of the path, so a
     /// transient timeout does not read as a route change on its own.
-    let hops: [Int: String]
+    public let hops: [Int: String]
 
-    init(hops: [Int: String]) {
+    public init(hops: [Int: String]) {
         self.hops = hops
     }
 
-    init(sample: RouteSample) {
+    public init(sample: RouteSample) {
         var map: [Int: String] = [:]
         for hop in sample.hops {
             if let address = hop.address { map[hop.hop] = address }
@@ -121,27 +143,33 @@ struct RoutePath: Equatable, Sendable {
         hops = map
     }
 
-    var isEmpty: Bool { hops.isEmpty }
+    public var isEmpty: Bool { hops.isEmpty }
 }
 
-struct RouteHopChange: Equatable, Sendable {
-    enum Kind: Equatable, Sendable {
+public struct RouteHopChange: Equatable, Sendable {
+    public enum Kind: Equatable, Sendable {
         case added
         case removed
         case changed
     }
 
-    let hop: Int
-    let from: String?
-    let to: String?
+    public let hop: Int
+    public let from: String?
+    public let to: String?
 
-    var kind: Kind {
+    public init(hop: Int, from: String?, to: String?) {
+        self.hop = hop
+        self.from = from
+        self.to = to
+    }
+
+    public var kind: Kind {
         if from == nil { return .added }
         if to == nil { return .removed }
         return .changed
     }
 
-    var summary: String {
+    public var summary: String {
         switch kind {
         case .added:
             return String(format: String(localized: "Hop %lld added: %@"), hop, to ?? "*")
@@ -154,31 +182,33 @@ struct RouteHopChange: Equatable, Sendable {
     }
 }
 
-struct RouteChange: Identifiable, Equatable, Sendable {
-    let id: UUID
-    let at: Date
-    let changes: [RouteHopChange]
+public struct RouteChange: Identifiable, Equatable, Sendable {
+    public let id: UUID
+    public let at: Date
+    public let changes: [RouteHopChange]
 
-    init(id: UUID = UUID(), at: Date, changes: [RouteHopChange]) {
+    public init(id: UUID = UUID(), at: Date, changes: [RouteHopChange]) {
         self.id = id
         self.at = at
         self.changes = changes
     }
 
-    var summary: String { changes.map(\.summary).joined(separator: "; ") }
+    public var summary: String { changes.map(\.summary).joined(separator: "; ") }
 }
 
 /// Edge-triggered route detection with a flap guard: a new path has to appear
 /// twice in a row before it is announced, so one timed-out hop does not produce
 /// an event and then another when it answers again.
-struct RouteChangeDetector: Sendable {
-    static let confirmationsRequired = 2
+public struct RouteChangeDetector: Sendable {
+    public static let confirmationsRequired = 2
 
-    private(set) var confirmed: RoutePath?
+    public private(set) var confirmed: RoutePath?
     private var candidate: RoutePath?
     private var candidateCount = 0
 
-    mutating func observe(_ path: RoutePath, at date: Date) -> RouteChange? {
+    public init() {}
+
+    public mutating func observe(_ path: RoutePath, at date: Date) -> RouteChange? {
         guard !path.isEmpty else { return nil }
         if let confirmed, confirmed == path {
             candidate = nil
@@ -207,13 +237,13 @@ struct RouteChangeDetector: Sendable {
         return changes.isEmpty ? nil : RouteChange(at: date, changes: changes)
     }
 
-    mutating func reset() {
+    public mutating func reset() {
         confirmed = nil
         candidate = nil
         candidateCount = 0
     }
 
-    static func diff(from old: RoutePath, to new: RoutePath) -> [RouteHopChange] {
+    public static func diff(from old: RoutePath, to new: RoutePath) -> [RouteHopChange] {
         let ttlValues = Set(old.hops.keys).union(new.hops.keys).sorted()
         return ttlValues.compactMap { ttl in
             let from = old.hops[ttl]
@@ -226,16 +256,28 @@ struct RouteChangeDetector: Sendable {
 
 // MARK: - Thresholds
 
-struct RouteMonitorSettings: Codable, Equatable, Sendable {
-    static let latencyRange: ClosedRange<Double> = 20...1000
-    static let lossRange: ClosedRange<Double> = 5...100
+public struct RouteMonitorSettings: Codable, Equatable, Sendable {
+    public static let latencyRange: ClosedRange<Double> = 20...1000
+    public static let lossRange: ClosedRange<Double> = 5...100
 
-    var latencyThresholdMilliseconds: Double = 120
-    var lossThresholdPercent: Double = 25
-    var notifyOnRouteChange = true
-    var notifyOnThreshold = true
+    public var latencyThresholdMilliseconds: Double
+    public var lossThresholdPercent: Double
+    public var notifyOnRouteChange: Bool
+    public var notifyOnThreshold: Bool
 
-    var normalized: RouteMonitorSettings {
+    public init(
+        latencyThresholdMilliseconds: Double = 120,
+        lossThresholdPercent: Double = 25,
+        notifyOnRouteChange: Bool = true,
+        notifyOnThreshold: Bool = true
+    ) {
+        self.latencyThresholdMilliseconds = latencyThresholdMilliseconds
+        self.lossThresholdPercent = lossThresholdPercent
+        self.notifyOnRouteChange = notifyOnRouteChange
+        self.notifyOnThreshold = notifyOnThreshold
+    }
+
+    public var normalized: RouteMonitorSettings {
         var copy = self
         copy.latencyThresholdMilliseconds = min(
             max(copy.latencyThresholdMilliseconds, Self.latencyRange.lowerBound),
@@ -247,19 +289,19 @@ struct RouteMonitorSettings: Codable, Equatable, Sendable {
     }
 }
 
-struct RouteThresholdCrossing: Identifiable, Equatable, Sendable {
-    enum Kind: String, Equatable, Sendable {
+public struct RouteThresholdCrossing: Identifiable, Equatable, Sendable {
+    public enum Kind: String, Equatable, Sendable {
         case latency
         case loss
     }
 
-    let id: UUID
-    let hop: Int
-    let address: String?
-    let kind: Kind
-    let value: Double
+    public let id: UUID
+    public let hop: Int
+    public let address: String?
+    public let kind: Kind
+    public let value: Double
 
-    init(
+    public init(
         id: UUID = UUID(), hop: Int, address: String?, kind: Kind, value: Double
     ) {
         self.id = id
@@ -269,7 +311,7 @@ struct RouteThresholdCrossing: Identifiable, Equatable, Sendable {
         self.value = value
     }
 
-    var summary: String {
+    public var summary: String {
         let host = address ?? "*"
         switch kind {
         case .latency:
@@ -286,13 +328,15 @@ struct RouteThresholdCrossing: Identifiable, Equatable, Sendable {
 
 /// Reports a hop once when it crosses a threshold and again only after it has
 /// recovered, so a permanently slow hop does not notify on every round.
-struct RouteThresholdTracker: Sendable {
-    static let minimumAttempts = 3
+public struct RouteThresholdTracker: Sendable {
+    public static let minimumAttempts = 3
 
     private var slowHops: Set<Int> = []
     private var lossyHops: Set<Int> = []
 
-    mutating func evaluate(
+    public init() {}
+
+    public mutating func evaluate(
         stats: [RouteHopStat], settings: RouteMonitorSettings
     ) -> [RouteThresholdCrossing] {
         var crossings: [RouteThresholdCrossing] = []
@@ -326,7 +370,7 @@ struct RouteThresholdTracker: Sendable {
         return crossings
     }
 
-    mutating func reset() {
+    public mutating func reset() {
         slowHops = []
         lossyHops = []
     }
@@ -334,15 +378,15 @@ struct RouteThresholdTracker: Sendable {
 
 // MARK: - Cadence
 
-enum RouteMonitorCadence {
-    static let activeInterval: TimeInterval = 10
-    static let panelClosedInterval: TimeInterval = 30
-    static let backgroundInterval: TimeInterval = 60
+public enum RouteMonitorCadence {
+    public static let activeInterval: TimeInterval = 10
+    public static let panelClosedInterval: TimeInterval = 30
+    public static let backgroundInterval: TimeInterval = 60
 
     /// One round every 10 s while the screen is open, 30 s while it is closed
     /// and 60 s while LanFi is in the background. A round is one probe per hop,
     /// so even the active cadence stays below one round per second.
-    static func interval(isApplicationActive: Bool, isPanelVisible: Bool) -> TimeInterval {
+    public static func interval(isApplicationActive: Bool, isPanelVisible: Bool) -> TimeInterval {
         guard isApplicationActive else { return backgroundInterval }
         return isPanelVisible ? activeInterval : panelClosedInterval
     }
