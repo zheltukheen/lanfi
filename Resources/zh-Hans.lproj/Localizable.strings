@@ -1635,3 +1635,5 @@
 "Height (m)" = "高度（米）";
 "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "尚未捕获网络。请先在分析器中扫描 Wi-Fi，然后点击平面图。";
 "Warranty" = "保修";
+"Measuring the route…" = "正在测量路由…";
+"Each round is one traceroute probe per hop. The chart appears after the first round." = "每一轮会为每个跃点发送一次 traceroute 探测。首轮结束后显示图表。";

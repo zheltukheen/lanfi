@@ -1635,3 +1635,5 @@
 "Height (m)" = "Höhe (m)";
 "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "Noch kein Netz erfasst. Starten Sie einen WLAN-Scan im Analysator und klicken Sie dann auf den Plan.";
 "Warranty" = "Garantie";
+"Measuring the route…" = "Route wird gemessen…";
+"Each round is one traceroute probe per hop. The chart appears after the first round." = "Eine Runde ist eine Traceroute-Sonde pro Hop. Das Diagramm erscheint nach der ersten Runde.";

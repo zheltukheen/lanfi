@@ -1672,3 +1672,5 @@
 "Height (m)" = "Высота (м)";
 "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "Сеть ещё не захвачена. Запустите сканирование Wi-Fi в анализаторе и снова нажмите на план.";
 "Warranty" = "Гарантия";
+"Measuring the route…" = "Измеряю маршрут…";
+"Each round is one traceroute probe per hop. The chart appears after the first round." = "Один раунд — один запрос traceroute на узел. График появится после первого раунда.";

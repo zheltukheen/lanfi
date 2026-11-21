@@ -1636,3 +1636,5 @@
 "Height (m)" = "Height (m)";
 "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan.";
 "Warranty" = "Warranty";
+"Measuring the route…" = "Measuring the route…";
+"Each round is one traceroute probe per hop. The chart appears after the first round." = "Each round is one traceroute probe per hop. The chart appears after the first round.";

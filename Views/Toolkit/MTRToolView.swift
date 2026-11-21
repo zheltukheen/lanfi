@@ -15,7 +15,9 @@ struct MTRToolView: View {
                     summary(report)
                     latencyChart(report)
                     hopsTable(report)
-                } else if !model.isRunning {
+                } else if model.isRunning {
+                    measuringCard
+                } else {
                     ToolkitEmptyState(
                         icon: "chart.line.uptrend.xyaxis",
                         title: "Watch a route over time",
@@ -60,6 +62,26 @@ struct MTRToolView: View {
                 Text("One traceroute probe per hop per round; loss and jitter are aggregated across rounds.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    /// The first batch of rounds can take half a minute on a long route; an
+    /// empty state here read as "nothing is happening".
+    private var measuringCard: some View {
+        ToolkitCard {
+            HStack(spacing: DesignToken.Spacing.medium) {
+                ProgressView().controlSize(.small)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Measuring the route…")
+                        .font(.caption.weight(.semibold))
+                    Text(
+                        "Each round is one traceroute probe per hop. The chart appears after the first round."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+                Spacer()
             }
         }
     }
@@ -319,10 +341,30 @@ private struct MTRHopChart: View {
                 dots.append(point)
             }
             context.stroke(path, with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.5))
+            // A route with one replying hop used to draw nothing at all: a path
+            // that only moves is not stroked, and a single small dot read as an
+            // empty chart. A dashed guide and a ringed marker make the value
+            // visible even then.
+            if let only = dots.first, dots.count == 1 {
+                var guide = Path()
+                guide.move(to: CGPoint(x: plot.minX, y: only.y))
+                guide.addLine(to: CGPoint(x: plot.maxX, y: only.y))
+                context.stroke(
+                    guide, with: .color(.accentColor.opacity(0.35)),
+                    style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            }
             for point in dots {
-                context.fill(
-                    Path(ellipseIn: CGRect(x: point.x - 2.5, y: point.y - 2.5, width: 5, height: 5)),
-                    with: .color(.accentColor))
+                let marker = CGRect(x: point.x - 3.5, y: point.y - 3.5, width: 7, height: 7)
+                context.fill(Path(ellipseIn: marker), with: .color(.accentColor))
+                context.stroke(Path(ellipseIn: marker), with: .color(.white.opacity(0.8)), lineWidth: 1)
+            }
+            if let last = dots.last, let value = hops.compactMap(\.averageMilliseconds).last {
+                context.draw(
+                    Text(String(format: "%.1f ms", value))
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.primary),
+                    at: CGPoint(x: min(last.x + 8, plot.maxX - 24), y: max(plot.minY + 6, last.y - 10)),
+                    anchor: .leading)
             }
 
             // Hop numbers along the bottom, thinned out on long routes.

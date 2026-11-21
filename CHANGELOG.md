@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.6.10 — 2026-11-21
+
+### Fixed
+- **The MTR chart is no longer an empty plot.** A route with a single replying
+  hop drew nothing: a path that only moves is never stroked, and the one 5 pt
+  dot was invisible against the grid. The plot now draws a dashed guide across
+  the route's latency, a ringed marker per replied hop and the current average
+  as a label, so a nearby target shows a readable chart instead of a blank card.
+- While a run is in progress and the first round has not finished, the screen
+  shows "Measuring the route…" with a spinner instead of the "watch a route over
+  time" empty state, which read as "nothing is happening".
+
 ## 5.6.9 — 2026-11-21
 
 ### Fixed
