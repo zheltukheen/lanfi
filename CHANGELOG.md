@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.6.15 — 2026-11-21
+
+### Changed
+- **The site survey header is one row.** Floor, 3D, Plan, Map and the network
+  picker sit on one compact strip; import, blank plan, save, PDF, report and
+  clearing points moved into a file menu, and structure actions plus the heatmap
+  detail into an overflow menu. The plan tool chips stay in the inspector, where
+  they already were. The screen used to spend two stacked toolbars of small
+  controls before the plan started.
+- **A hand-drawn plan fills the workspace.** Blank plans are a metre grid, not a
+  photograph, so they no longer sit centred as a square with empty bands on both
+  sides; an imported floor plan still keeps its own aspect ratio so rooms are
+  not stretched.
+
 ## 5.6.14 — 2026-11-21
 
 ### Fixed

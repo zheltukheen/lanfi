@@ -1651,3 +1651,7 @@
 "Pick a running process or an installed application, or create one from any socket or process row." = "选择一个运行中的进程或已安装的应用，也可以从套接字或进程行创建规则。";
 "Add a rule for %@" = "为 %@ 添加规则";
 "Apps" = "应用";
+"Plan file" = "平面图文件";
+"More tools" = "更多工具";
+"Heatmap detail" = "热图精细度";
+"New Plan" = "新建平面图";

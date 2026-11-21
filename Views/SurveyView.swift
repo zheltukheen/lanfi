@@ -34,10 +34,7 @@ struct SurveyView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            secondaryToolbar
-            Divider()
-            toolbar
-            Divider()
+            header
             HStack(spacing: 0) {
                 surveyInspector
                     .frame(width: 268)
@@ -72,226 +69,179 @@ struct SurveyView: View {
         }
     }
 
-    private var toolbar: some View {
-        VStack(spacing: 6) {
-
-            HStack(spacing: 10) {
-                Divider().frame(height: 20)
-
-                Picker(
-                    String(localized: "Floor"),
-                    selection: Binding(
-                        get: { survey.project.id },
-                        set: { survey.selectProject(id: $0) }
-                    )
-                ) {
-                    ForEach(survey.projects) { project in
-                        Text(project.name).tag(project.id)
-                    }
+    /// One compact strip. The screen used to stack two rows of toolbars under
+    /// the tool header, which cost a third of the window before the plan even
+    /// started; the actions that do not belong in a header live in two menus.
+    private var header: some View {
+        HStack(spacing: DesignToken.Spacing.small) {
+            Picker(
+                String(localized: "Floor"),
+                selection: Binding(
+                    get: { survey.project.id },
+                    set: { survey.selectProject(id: $0) }
+                )
+            ) {
+                ForEach(survey.projects) { project in
+                    Text(project.name).tag(project.id)
                 }
-                .frame(minWidth: 130, maxWidth: 190)
-                .controlSize(.small)
-                Button {
-                    survey.newFloor()
-                } label: {
-                    Image(systemName: "plus.rectangle.on.rectangle")
-                }
-                .controlSize(.small)
-                .help("New floor")
-                .accessibilityLabel("New floor")
-                Button {
-                    show3DFloors = true
-                } label: {
-                    Label("3D", systemImage: "square.3.layers.3d")
-                }
-                .controlSize(.small)
-                .help("Multi-floor 3D view")
-
-                Divider().frame(height: 20)
-
-                Button {
-                    showingPlanning = true
-                } label: {
-                    Label("Plan", systemImage: "square.grid.3x3.topleft.filled")
-                }
-                .controlSize(.small)
-                .help("Plan AP placement and track the active survey")
-
-                Button {
-                    showingMap = true
-                } label: {
-                    Label("Map", systemImage: "map")
-                }
-                .controlSize(.small)
-                .help("GPS-tagged samples and GPX tracks")
-
-                Picker("Network", selection: $survey.selectedNetworkId) {
-                    Text("All networks").tag(String?.none)
-                    ForEach(analyzer.networks.sorted { $0.signal > $1.signal }) { network in
-                        Text("\(network.displaySSID) · \(network.bssid)").tag(Optional(network.id))
-                    }
-                }
-                .frame(minWidth: 240, maxWidth: 360)
-                .controlSize(.small)
-
-                if let selectedNetwork {
-                    Text("\(selectedNetwork.signal) dBm · \(selectedNetwork.bandLabel) · ch \(selectedNetwork.channel)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
             }
+            .frame(width: 150)
+            .controlSize(.small)
+
+            ToolbarIconButton(
+                systemImage: "plus.rectangle.on.rectangle", label: "New floor",
+                help: "New floor"
+            ) { survey.newFloor() }
+
+            ToolbarIconButton(
+                systemImage: "square.3.layers.3d", label: "Multi-floor 3D view",
+                help: "Multi-floor 3D view"
+            ) { show3DFloors = true }
+
+            Divider().frame(height: 18)
+
+            ToolbarIconButton(
+                systemImage: "square.grid.3x3.topleft.filled", label: "Plan",
+                help: "Plan AP placement and track the active survey"
+            ) { showingPlanning = true }
+
+            ToolbarIconButton(
+                systemImage: "map", label: "Map",
+                help: "GPS-tagged samples and GPX tracks"
+            ) { showingMap = true }
+
+            Divider().frame(height: 18)
+
+            networkMenu
+
+            if let selectedNetwork {
+                Text(
+                    "\(selectedNetwork.signal) dBm · \(selectedNetwork.bandLabel) · ch \(selectedNetwork.channel)"
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+            }
+
+            Spacer(minLength: DesignToken.Spacing.small)
+
+            fileMenu
+            overflowMenu
         }
-        .frame(minHeight: 34)
         .padding(.horizontal, DesignToken.Spacing.compact)
-        .padding(.vertical, DesignToken.Spacing.small)
+        .padding(.vertical, DesignToken.Spacing.tight)
+        .frame(height: DesignToken.Toolbar.height + DesignToken.Spacing.tight * 2)
         .background(Material.bar)
-        // Two dense rows must keep their intrinsic height; without this the
-        // canvas below compresses the second row under the divider.
-        .fixedSize(horizontal: false, vertical: true)
-        .layoutPriority(1)
+        .overlay(
+            Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)),
+            alignment: .bottom
+        )
     }
 
-    private var secondaryToolbar: some View {
-        HStack(spacing: 10) {
-            Button {
+    private var networkMenu: some View {
+        Menu {
+            Button(String(localized: "All networks")) { survey.selectedNetworkId = nil }
+            ForEach(analyzer.networks.sorted { $0.signal > $1.signal }) { network in
+                Button("\(network.displaySSID) · \(network.bssid)") {
+                    survey.selectedNetworkId = network.id
+                }
+            }
+        } label: {
+            AppMenuLabel(
+                title: selectedNetwork?.displaySSID ?? String(localized: "All networks"),
+                systemImage: "wifi",
+                isActive: selectedNetwork != nil)
+        }
+        .appMenuStyle()
+        .help("Network")
+        .accessibilityLabel("Network")
+    }
+
+    private var fileMenu: some View {
+        Menu {
+            Button(String(localized: "Import Floor Plan"), systemImage: "photo") {
                 survey.importFloorPlan()
-            } label: {
-                Label("Import Floor Plan", systemImage: "photo")
             }
-            .controlSize(.small)
-
-            Button {
+            Button(String(localized: "New Plan"), systemImage: "square.dashed") {
                 showingBlankPlan = true
-            } label: {
-                Label("New Plan", systemImage: "square.dashed")
             }
-            .controlSize(.small)
-            .help("Create a blank plan with a metre grid and draw it by hand")
-
-            Button {
+            Button(String(localized: "Save"), systemImage: "square.and.arrow.down") {
                 survey.save()
-            } label: {
-                Label("Save", systemImage: "square.and.arrow.down")
             }
-            .controlSize(.small)
-
-            Menu {
-                Button("This floor") {
+            Divider()
+            Menu(String(localized: "PDF")) {
+                Button(String(localized: "This floor")) {
                     survey.exportPDF(
                         networkName: selectedNetwork?.displaySSID ?? "All networks",
                         samples: displayedSamples)
                 }
-                Button("All floors") {
-                    survey.exportAllFloorsPDF(networkName: selectedNetwork?.displaySSID ?? "All networks")
+                Button(String(localized: "All floors")) {
+                    survey.exportAllFloorsPDF(
+                        networkName: selectedNetwork?.displaySSID ?? "All networks")
                 }
-            } label: {
-                Label("PDF", systemImage: "doc.richtext")
             }
-            .menuStyle(.borderlessButton)
-            .frame(width: 58)
-            .controlSize(.small)
-
-            Button {
+            Button(String(localized: "Report"), systemImage: "doc.badge.gearshape") {
                 showReportSettings = true
-            } label: {
-                Label("Report", systemImage: "doc.badge.gearshape")
             }
-            .controlSize(.small)
-
-            Button(role: .destructive) {
+            Divider()
+            Button(String(localized: "Clear Points"), role: .destructive) {
                 survey.clearSamples()
-            } label: {
-                Label("Clear Points", systemImage: "trash")
             }
-            .controlSize(.small)
-            .labelStyle(.iconOnly)
-            .help("Clear points")
-            .accessibilityLabel("Clear points")
             .disabled(survey.samples.isEmpty)
+        } label: {
+            AppIconMenuLabel(systemImage: "folder")
+        }
+        .appMenuStyle()
+        .help("Plan file")
+        .accessibilityLabel("Plan file")
+    }
 
-            Divider().frame(height: 20)
-
-            Picker("Heatmap detail", selection: $heatmapDetail) {
+    private var overflowMenu: some View {
+        Menu {
+            Picker(String(localized: "Heatmap detail"), selection: $heatmapDetail) {
                 Text("Fast").tag("fast")
                 Text("Balanced").tag("balanced")
                 Text("High").tag("high")
             }
-            .pickerStyle(.segmented)
-            .frame(width: 150)
-            .controlSize(.small)
-            .help("Heatmap detail: higher detail is slower on large plans")
-
-            Divider().frame(height: 20)
-
-            Picker(selection: $mode) {
-                ForEach(SurveyToolMode.allCases) { tool in
-                    Label(tool.title, systemImage: tool.icon).tag(tool)
-                }
-            } label: {
-                Label(mode.title, systemImage: mode.icon)
+            Divider()
+            Button(String(localized: "Draw Room"), systemImage: "rectangle.dashed") {
+                select(.room)
             }
-            .pickerStyle(.menu)
-            .labelsHidden()
-            .frame(width: 240)
-            .controlSize(.small)
-            .help("What a click on the plan does")
-            .onChange(of: mode) { newMode in
-                pendingWallStart = nil
+            .disabled(mode == .room)
+            Button(String(localized: "Finish Room")) { finishRoom() }
+                .disabled(roomPoints.count < 3)
+            Button(String(localized: "Clear Rooms"), role: .destructive) {
+                survey.clearObstacles()
                 roomPoints = []
-                calibrationPoints = []
-                survey.statusMessage = newMode.activationMessage
             }
-
-            Menu {
-                Button {
-                    select(.room)
-                } label: {
-                    Label(mode == .room ? "Room mode on" : "Draw Room", systemImage: "rectangle.dashed")
-                }
-                .disabled(mode == .room)
-                Button("Finish Room") { finishRoom() }
-                    .disabled(roomPoints.count < 3)
-                Button("Clear Rooms", role: .destructive) {
-                    survey.clearObstacles()
-                    roomPoints = []
-                }
-                .disabled(survey.obstacles.isEmpty)
-                Button("Clear Predictive APs", role: .destructive) {
-                    survey.clearAccessPoints()
-                }
-                .disabled(survey.accessPoints.isEmpty)
-                Divider()
-                Button(mode == .calibrate ? "Cancel Calibration" : "Calibrate Scale") {
-                    if mode == .calibrate {
-                        select(.sample)
-                    } else {
-                        select(.calibrate)
-                    }
-                }
-                Divider()
-                Button("Clear Walls", role: .destructive) {
-                    survey.clearWalls()
-                    pendingWallStart = nil
-                }
-                .disabled(survey.walls.isEmpty)
-            } label: {
-                Label("Structure", systemImage: "square.on.square")
+            .disabled(survey.obstacles.isEmpty)
+            Button(String(localized: "Clear Predictive APs"), role: .destructive) {
+                survey.clearAccessPoints()
             }
-            .menuStyle(.borderlessButton)
-            .labelStyle(.iconOnly)
-            .help("Structure tools")
-            .accessibilityLabel("Structure tools")
-            .controlSize(.small)
-
-            Spacer()
+            .disabled(survey.accessPoints.isEmpty)
+            Divider()
+            Button(
+                mode == .calibrate
+                    ? String(localized: "Cancel Calibration")
+                    : String(localized: "Calibrate Scale")
+            ) {
+                if mode == .calibrate {
+                    select(.sample)
+                } else {
+                    select(.calibrate)
+                }
+            }
+            Button(String(localized: "Clear Walls"), role: .destructive) {
+                survey.clearWalls()
+                pendingWallStart = nil
+            }
+            .disabled(survey.walls.isEmpty)
+        } label: {
+            AppIconMenuLabel(systemImage: "ellipsis.circle")
         }
-        .frame(minHeight: 34)
-        .padding(.horizontal, DesignToken.Spacing.compact)
-        .padding(.vertical, DesignToken.Spacing.small)
-        .background(Material.bar)
-        .fixedSize(horizontal: false, vertical: true)
+        .appMenuStyle()
+        .help("Structure")
+        .accessibilityLabel("More tools")
     }
 
     // MARK: - Inspector
@@ -1024,6 +974,10 @@ struct SurveyView: View {
         .appCardSurface(radius: Theme.Radius.control)
     }
 
+    /// The drawable sheet. An imported floor plan keeps its own aspect ratio so
+    /// rooms are not distorted; a hand-drawn plan fills the whole pane, because
+    /// it is a metre grid rather than a photograph and used to sit in the middle
+    /// of the workspace as a square with empty bands on both sides.
     private func fittedRect(in size: CGSize) -> CGRect {
         if let image = survey.floorPlanImage, image.size.width > 0, image.size.height > 0 {
             let scale = min(size.width / image.size.width, size.height / image.size.height)
@@ -1033,15 +987,7 @@ struct SurveyView: View {
                 x: (size.width - width) / 2, y: (size.height - height) / 2,
                 width: width, height: height)
         }
-        // Image-less plans use their real metre dimensions for the aspect ratio.
-        let widthMeters = survey.project.planWidthMeters ?? 12
-        let heightMeters = survey.project.planHeightMeters ?? max(4, widthMeters * 0.7)
-        let scale = min(size.width / widthMeters, size.height / heightMeters)
-        let width = widthMeters * scale
-        let height = heightMeters * scale
-        return CGRect(
-            x: (size.width - width) / 2, y: (size.height - height) / 2,
-            width: width, height: height)
+        return CGRect(origin: .zero, size: size)
     }
 
     /// One-metre grid for hand-drawn plans, with a label every two metres.

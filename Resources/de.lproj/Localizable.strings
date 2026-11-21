@@ -1651,3 +1651,7 @@
 "Pick a running process or an installed application, or create one from any socket or process row." = "Wähle einen laufenden Prozess oder eine installierte App oder lege eine Regel aus einer Socket- oder Prozesszeile an.";
 "Add a rule for %@" = "Regel für %@ hinzufügen";
 "Apps" = "Apps";
+"Plan file" = "Plan-Datei";
+"More tools" = "Weitere Werkzeuge";
+"Heatmap detail" = "Heatmap-Detail";
+"New Plan" = "Neuer Plan";
