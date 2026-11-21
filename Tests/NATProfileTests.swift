@@ -15,7 +15,12 @@ final class NATProfileTests: XCTestCase {
     func testParsesXORMappedIPv4() {
         let answer = response(
             attribute: 0x0020, family: 0x01,
-            port: UInt16(54321) ^ 0x2112, address: [203 ^ 0x21, 0 ^ 0x12, 113 ^ 0xA4, 5 ^ 0x42])
+            // The XOR results are cast explicitly: on an older Swift toolchain the
+            // literals fold as Int and do not narrow back to UInt8 on their own.
+            port: UInt16(54321) ^ 0x2112,
+            address: [
+                UInt8(203 ^ 0x21), UInt8(0 ^ 0x12), UInt8(113 ^ 0xA4), UInt8(5 ^ 0x42),
+            ])
         let endpoint = STUNMessage.mappedEndpoint(from: answer)
         XCTAssertEqual(endpoint?.address, "203.0.113.5")
         XCTAssertEqual(endpoint?.port, 54321)
