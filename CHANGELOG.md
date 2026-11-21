@@ -1,5 +1,16 @@
 # Changelog
 
+## 5.6.14 — 2026-11-21
+
+### Fixed
+- **The Connections screen no longer jumps upward when it opens.** Its summary,
+  watcher card and a table of up to 640 pt made a `VStack` taller than the
+  window, and SwiftUI clipped the overflow at the top, which pushed the tool
+  header and the Sockets/Traffic/Rules tabs out of sight. The screen scrolls
+  now, so the header and the tabs stay where they belong.
+- Tab labels in the shared strip no longer wrap to a second line and clip; the
+  rule sheet's scope caption is no longer squeezed out of its row.
+
 ## 5.6.13 — 2026-11-21
 
 ### Added

@@ -1651,3 +1651,4 @@
 "%lld connections" = "%lld connections";
 "Pick a running process or an installed application, or create one from any socket or process row." = "Pick a running process or an installed application, or create one from any socket or process row.";
 "Add a rule for %@" = "Add a rule for %@";
+"Apps" = "Apps";

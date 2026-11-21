@@ -83,22 +83,28 @@ struct OpenConnectionsToolView: View {
     // MARK: Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
-            controls
-            if let errorMessage {
-                ToolkitErrorBanner(message: errorMessage)
+        // The summary, the watcher card and a tall table together are taller
+        // than a short window; a plain VStack overflowed and dragged the tabs
+        // and the tool header above the top edge. Scrolling keeps them in place.
+        ScrollView {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+                controls
+                if let errorMessage {
+                    ToolkitErrorBanner(message: errorMessage)
+                }
+                if let notice {
+                    ruleNotice(notice)
+                }
+                if !matchingConnections.isEmpty {
+                    ruleBanner
+                }
+                summary
+                watcherCard
+                table
             }
-            if let notice {
-                ruleNotice(notice)
-            }
-            if !matchingConnections.isEmpty {
-                ruleBanner
-            }
-            summary
-            watcherCard
-            table
+            .appContentPadding()
         }
-        .appContentPadding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
             watcher.restoreFromSettings()
             await refresh()
@@ -763,7 +769,7 @@ struct BlockRuleEditorSheet: View {
         var title: String {
             switch self {
             case .running: return String(localized: "Running apps")
-            case .applications: return String(localized: "Installed apps")
+            case .applications: return String(localized: "Apps")
             case .custom: return String(localized: "Custom value")
             }
         }
@@ -951,10 +957,13 @@ struct BlockRuleEditorSheet: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: DesignToken.Spacing.tight)
                 Text(target.scope.title)
                     .font(.system(size: 9))
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .layoutPriority(1)
             }
             .padding(.horizontal, DesignToken.Spacing.small)
             .padding(.vertical, DesignToken.Spacing.tight)

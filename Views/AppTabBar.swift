@@ -55,6 +55,7 @@ struct AppTabBar: View {
             HStack(spacing: 6) {
                 Image(systemName: item.icon)
                 Text(item.title)
+                    .lineLimit(1)
             }
             .font(.system(size: 13, weight: isSelected ? .medium : .regular))
             .foregroundColor(isSelected ? .accentColor : .primary)

@@ -1687,3 +1687,4 @@
 "%lld connections" = "подключений: %lld";
 "Pick a running process or an installed application, or create one from any socket or process row." = "Выберите запущенный процесс или установленное приложение, либо создайте правило из строки сокета или процесса.";
 "Add a rule for %@" = "Добавить правило для %@";
+"Apps" = "Приложения";
