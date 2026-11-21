@@ -81,6 +81,9 @@ enum Theme {
         static let sectionLabel = Font.system(size: 10, weight: .semibold)
         /// Inline “key” text beside a value.
         static let caption = Font.caption
+        /// Table column headers. Larger than a section label because a header
+        /// sits next to the data it names, not above a card.
+        static let tableHeader = Font.system(size: 12, weight: .semibold)
         /// Smallest legible label: chart annotations, pills, chips.
         static let micro = Font.system(size: 8, weight: .semibold)
         /// One-letter or one-digit glyphs in status pills and badges.
@@ -111,6 +114,9 @@ enum Theme {
         static let cardStroke = Color.primary.opacity(0.08)
         /// Hairline around a control or a nested panel.
         static let border = Color.secondary.opacity(0.12)
+        /// Column and section rule inside a table or list. Stronger than a
+        /// card border: it has to separate data, not just an edge.
+        static let divider = Color.secondary.opacity(0.22)
         /// Very light fill behind an alternating row or an inset block.
         static let subtleFill = Color.secondary.opacity(0.06)
         /// Fill behind a warning banner or block.

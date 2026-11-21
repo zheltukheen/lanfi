@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// One description of a column in `AppTable`: a stable id, its title, how to
@@ -58,6 +59,13 @@ struct AppTable<Row: Identifiable>: View {
     private let onActivate: ((Row) -> Void)?
     @StateObject private var sorter: TableSorter<Row>
     @Environment(\.appTableDensity) private var density
+    /// Widths the user dragged by hand, keyed by column id. Columns without an
+    /// entry share whatever width is left over, so a table always fills its
+    /// card and a resized column never squeezes the others to nothing.
+    @State private var columnOverrides: [String: CGFloat] = [:]
+    /// Width of the column being dragged when the drag started; without it the
+    /// width would feed back into itself and the column would run away.
+    @State private var dragOrigin: CGFloat?
 
     init(
         columns: [AppTableColumn<Row>], rows: [Row], initialKey: String, ascending: Bool = true
@@ -130,12 +138,15 @@ struct AppTable<Row: Identifiable>: View {
 
     var body: some View {
         // The table fills its card. A plain ScrollView proposes nil width to
-        // its content, which made every row shrink to its intrinsic size and
+        // its content, which let every column fall back to its minimum and
         // left the card half empty; the reader supplies the width floor and
-        // the ScrollView still takes over when the columns need more.
+        // the ScrollView still takes over once a column is dragged wider.
         GeometryReader { proxy in
+            let widths = columnWidths(fitting: proxy.size.width - 2 * TableMetrics.cellInset)
             ScrollView([.horizontal, .vertical]) {
-                content
+                table(widths: widths)
+                    .frame(width: max(widths.reduce(0, +), 1), alignment: .leading)
+                    .padding(.horizontal, TableMetrics.cellInset)
                     .frame(minWidth: proxy.size.width, alignment: .leading)
             }
         }
@@ -143,18 +154,17 @@ struct AppTable<Row: Identifiable>: View {
         .accessibilityLabel("Sortable table")
     }
 
-    private var content: some View {
+    private func table(widths: [CGFloat]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
+            header(widths: widths)
             Divider()
             LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(sortedRows.enumerated()), id: \.element.id) { index, row in
-                    rowView(row, striped: index.isMultiple(of: 2))
+                    rowView(row, widths: widths, striped: index.isMultiple(of: 2))
                     Divider().opacity(0.35)
                 }
             }
         }
-        .padding(.horizontal, DesignToken.Spacing.tight)
         .padding(.bottom, DesignToken.Spacing.tight)
     }
 
@@ -162,64 +172,147 @@ struct AppTable<Row: Identifiable>: View {
         sorter.sorted(rows, grouping: grouping)
     }
 
-    private var header: some View {
-        HStack(alignment: .center, spacing: DesignToken.Spacing.medium) {
-            ForEach(columns, id: \.id) { column in
-                if column.isSortable {
-                    Button {
-                        if sorter.key == column.id {
-                            sorter.ascending.toggle()
-                        } else {
-                            sorter.key = column.id
-                            sorter.ascending = true
-                        }
-                    } label: {
-                        headerLabel(column, showsDirection: true)
-                    }
-                    .buttonStyle(.plain)
-                    .frame(minWidth: column.minWidth, alignment: alignment(for: column))
-                    .contentShape(Rectangle())
-                    .help("Sort by \(column.title)")
-                    .accessibilityLabel("Sort by \(column.title)")
-                    .accessibilityValue(
-                        sorter.key == column.id
-                            ? (sorter.ascending ? "Ascending" : "Descending") : "")
-                } else {
-                    headerLabel(column, showsDirection: false)
-                        .frame(minWidth: column.minWidth, alignment: alignment(for: column))
-                }
-            }
-            Spacer(minLength: 0)
+    /// Column widths for the space the card actually has; the rules live in
+    /// `TableColumnLayout` so they can be checked without a window.
+    private func columnWidths(fitting available: CGFloat) -> [CGFloat] {
+        var overrides: [Int: CGFloat] = [:]
+        for (index, column) in columns.enumerated() {
+            if let width = columnOverrides[column.id] { overrides[index] = width }
         }
-        .padding(.vertical, DesignToken.Spacing.tight)
+        return TableColumnLayout.widths(
+            minimums: columns.map(\.minWidth),
+            overrides: overrides,
+            available: available
+        )
+    }
+
+    private func header(widths: [CGFloat]) -> some View {
+        HStack(spacing: 0) {
+            ForEach(Array(columns.enumerated()), id: \.element.id) { index, column in
+                headerCell(column, width: widths[index], isLast: index == columns.count - 1)
+            }
+        }
+        .frame(height: TableMetrics.headerHeight)
+        .background(Theme.Surface.subtleFill)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Theme.Surface.divider)
+                .frame(height: Theme.Stroke.hairline)
+        }
+    }
+
+    private func headerCell(
+        _ column: AppTableColumn<Row>, width: CGFloat, isLast: Bool
+    ) -> some View {
+        let content = headerLabel(column, showsDirection: column.isSortable)
+            .padding(.horizontal, TableMetrics.cellInset)
+            .frame(width: width, alignment: alignment(for: column))
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+
+        return Group {
+            if column.isSortable {
+                Button {
+                    if sorter.key == column.id {
+                        sorter.ascending.toggle()
+                    } else {
+                        sorter.key = column.id
+                        sorter.ascending = true
+                    }
+                } label: {
+                    content
+                }
+                .buttonStyle(.plain)
+                .help("Sort by \(column.title)")
+                .accessibilityLabel("Sort by \(column.title)")
+                .accessibilityValue(
+                    sorter.key == column.id
+                        ? (sorter.ascending ? "Ascending" : "Descending") : "")
+            } else {
+                content
+            }
+        }
+        .overlay(alignment: .trailing) {
+            if !isLast {
+                columnSeparator
+            }
+        }
+        .overlay(alignment: .trailing) {
+            resizeHandle(for: column, width: width)
+        }
     }
 
     private func headerLabel(
         _ column: AppTableColumn<Row>, showsDirection: Bool
     ) -> some View {
         let isSorted = showsDirection && sorter.key == column.id
-        return HStack(spacing: 2) {
+        return HStack(spacing: DesignToken.Spacing.hairline) {
             Text(column.title)
             if isSorted {
                 Image(systemName: sorter.ascending ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 7, weight: .bold))
+                    .font(Theme.Typography.chevron)
             }
         }
-        .font(.caption2.bold())
+        .font(Theme.Typography.tableHeader)
         .foregroundColor(isSorted ? .primary : .secondary)
         .lineLimit(1)
+        .truncationMode(.tail)
     }
 
-    private func rowView(_ row: Row, striped: Bool) -> some View {
-        let isSelected = selection?.wrappedValue == row.id
-        return HStack(alignment: .center, spacing: DesignToken.Spacing.medium) {
-            ForEach(columns, id: \.id) { column in
-                column.cell(row)
-                    .frame(minWidth: column.minWidth, alignment: alignment(for: column))
+    /// The hairline between two columns. It runs the full height of the row it
+    /// belongs to, which is why cells carry their own vertical padding.
+    private var columnSeparator: some View {
+        Rectangle()
+            .fill(Theme.Surface.divider)
+            .frame(width: Theme.Stroke.hairline)
+            .frame(maxHeight: .infinity)
+    }
+
+    /// A grab strip on the column's trailing edge. It sits above the header
+    /// button: a drag resizes, a plain click still sorts.
+    private func resizeHandle(for column: AppTableColumn<Row>, width: CGFloat) -> some View {
+        Rectangle()
+            .fill(Color.clear)
+            .frame(width: TableMetrics.resizeHandleWidth)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .onHover { hovering in
+                if hovering {
+                    NSCursor.resizeLeftRight.set()
+                } else {
+                    NSCursor.arrow.set()
+                }
             }
-            Spacer(minLength: 0)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if dragOrigin == nil { dragOrigin = width }
+                        let start = dragOrigin ?? width
+                        columnOverrides[column.id] = max(
+                            TableMetrics.minColumnWidth, start + value.translation.width)
+                    }
+                    .onEnded { _ in dragOrigin = nil }
+            )
+            .help("Drag to resize")
+            .accessibilityLabel("Resize \(column.title)")
+    }
+
+    private func rowView(_ row: Row, widths: [CGFloat], striped: Bool) -> some View {
+        let isSelected = selection?.wrappedValue == row.id
+        let verticalInset = max(2, (density.rowHeight - 18) / 2)
+        return HStack(spacing: 0) {
+            ForEach(Array(columns.enumerated()), id: \.element.id) { index, column in
+                column.cell(row)
+                    .padding(.horizontal, TableMetrics.cellInset)
+                    .padding(.vertical, verticalInset)
+                    .frame(width: widths[index], alignment: alignment(for: column))
+                    .overlay(alignment: .trailing) {
+                        if index < columns.count - 1 {
+                            columnSeparator
+                        }
+                    }
+            }
         }
-        .padding(.vertical, max(1, (density.rowHeight - 16) / 2))
         .contentShape(Rectangle())
         .onTapGesture {
             onActivate?(row)
@@ -231,9 +324,8 @@ struct AppTable<Row: Identifiable>: View {
         }
         .background(
             isSelected
-                ? Color.accentColor.opacity(0.16)
-                : (striped ? DesignToken.Surface.subtleFill : Color.clear),
-            in: RoundedRectangle(cornerRadius: DesignToken.Radius.tiny)
+                ? Theme.Surface.selectionFill
+                : (striped ? DesignToken.Surface.subtleFill : Color.clear)
         )
     }
 

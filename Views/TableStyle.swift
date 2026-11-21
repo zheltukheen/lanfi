@@ -23,6 +23,22 @@ extension TableDensity {
     }
 }
 
+/// Table geometry that every column, header and row shares.
+enum TableMetrics {
+    /// Space between a cell's text and its column separators.
+    static let cellInset = Theme.Spacing.small
+    /// A column can never be dragged narrower than this; below it the sort
+    /// chevron and two characters no longer fit.
+    static var minColumnWidth: CGFloat { TableColumnLayout.minColumnWidth }
+    /// The grab area on a column's trailing edge.
+    static let resizeHandleWidth: CGFloat = 7
+    /// Header text height, so every table's header is the same band.
+    static let headerHeight: CGFloat = 24
+    /// How far a drag must move before it counts as a resize, so a sort click
+    /// on the header never resizes by accident.
+    static let resizeThreshold: CGFloat = 1
+}
+
 /// Applies the Settings row density live: SwiftUI reads the same
 /// `LanFi.rowDensity` key, so switching Compact/Standard/Roomy updates every
 /// list, table and control size without relaunching.
