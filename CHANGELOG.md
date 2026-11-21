@@ -1,5 +1,16 @@
 # Changelog
 
+## 5.6.11 — 2026-11-21
+
+### Fixed
+- **One header strip everywhere.** DNS Lookup/Propagation was a segmented picker
+  inside the scrolling content, Whois & GeoIP and Visual Traceroute were two
+  filled buttons, and Network Monitor's strip changed height depending on what
+  sat on its right. All four now use the same `ToolkitHeaderBar` + `AppTabBar`
+  strip as Connections, and the strip's row has a fixed height, so captions and
+  buttons no longer stretch it. Selecting DNS propagation in the sidebar or from
+  a `lanfi://` link now opens that tab instead of leaving Lookup showing.
+
 ## 5.6.10 — 2026-11-21
 
 ### Fixed

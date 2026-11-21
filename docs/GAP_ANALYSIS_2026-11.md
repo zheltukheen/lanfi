@@ -1735,7 +1735,10 @@ sample, which stops a single measurement from colouring the whole floor.
   relaunch; the AppKit Wi-Fi table already reloads on the same key.
 - **One tab strip.** `Views/AppTabBar.swift` is the shared tab component; the
   Wi-Fi workspace's bottom strip now builds on its sections/items, replacing the
-  private `TabButton`/`TabGroup` duplicates.
+  private `TabButton`/`TabGroup` duplicates. Inside the toolkit every split
+  screen uses it through `ToolkitHeaderBar` — DNS Lookup/Propagation, Whois &
+  GeoIP, Visual Traceroute, Connections and Network Monitor — and the strip has
+  a fixed row height so trailing captions and buttons cannot change its size.
 - **Known Networks master/detail.** Rows are selectable and open a detail pane
   with saved-name state, live band/channel/width/security/BSSID/signal/quality,
   or a clear "not in range" explanation, plus the guest QR action. The QR sheet

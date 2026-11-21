@@ -35,16 +35,18 @@ struct WhoisGeoIPToolView: View {
     var body: some View {
         VStack(spacing: 0) {
             ToolkitHeaderBar {
-                HStack(spacing: DesignToken.Spacing.small) {
-                    ForEach(Tab.allCases) { item in
-                        AppButton(
-                            item.title, systemImage: item.icon,
-                            tone: tab == item ? .primary : .secondary
-                        ) {
-                            tab = item
-                        }
-                    }
-                }
+                AppTabBar(
+                    sections: [
+                        .init(
+                            id: "whoisGeoIP", title: nil,
+                            items: Tab.allCases.map {
+                                .init(id: $0.rawValue, title: $0.title, icon: $0.icon)
+                            })
+                    ],
+                    selection: Binding(
+                        get: { tab.rawValue },
+                        set: { tab = Tab(rawValue: $0) ?? tab }),
+                    showsGroupTitles: false)
             } trailing: {
                 Text(targetLine)
                     .font(.caption2.monospaced())

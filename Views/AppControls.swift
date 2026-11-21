@@ -258,6 +258,9 @@ struct ToolkitHeaderBar<Content: View, Trailing: View>: View {
                 Spacer(minLength: 0)
                 trailing
             }
+            // A fixed row height keeps the strip the same size whether a screen
+            // trails a caption, a button or nothing at all.
+            .frame(height: DesignToken.Toolbar.height)
             .padding(.horizontal, DesignToken.Layout.contentPadding)
             .padding(.vertical, DesignToken.Spacing.small)
             Divider()

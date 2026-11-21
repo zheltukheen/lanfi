@@ -4,6 +4,7 @@ import SwiftUI
 struct DNSToolView: View {
     @ObservedObject var model: DNSToolModel
     @ObservedObject var propagation: DNSPropagationToolModel
+    @ObservedObject var toolkit: ToolkitViewModel
     @StateObject private var benchmark = DNSBenchmarkModel()
 
     private enum Section: String, CaseIterable, Identifiable {
@@ -20,30 +21,66 @@ struct DNSToolView: View {
     @State private var section: Section = .lookup
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                sectionPicker
-                if section == .lookup {
-                    controls
-                    if let error = model.errorMessage {
-                        ToolkitErrorBanner(message: error)
-                    }
-                    benchmarkCard
-                    switch model.tab {
-                    case .records:
-                        recordsContent
-                    case .mail:
-                        mailContent
-                    case .reports:
-                        reportsContent
-                    }
-                } else {
-                    DNSPropagationToolView(model: propagation, embedded: true)
-                }
+        VStack(spacing: 0) {
+            // The Lookup/Propagation split is the same tab strip as Whois,
+            // Traceroute and Network Monitor: this screen used to carry a
+            // segmented picker inside its scrolling content instead.
+            ToolkitHeaderBar {
+                AppTabBar(
+                    sections: [
+                        .init(
+                            id: "dns", title: nil,
+                            items: [
+                                .init(
+                                    id: Section.lookup.rawValue, title: "Lookup",
+                                    icon: "magnifyingglass"),
+                                .init(
+                                    id: Section.propagation.rawValue, title: "Propagation",
+                                    icon: "globe"),
+                            ])
+                    ],
+                    selection: Binding(
+                        get: { section.rawValue },
+                        set: { section = Section(rawValue: $0) ?? section }),
+                    showsGroupTitles: false)
+            } trailing: {
+                Text(
+                    "One name, two questions: what does it resolve to now, and does every resolver agree?"
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
             }
-            .appContentPadding()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    if section == .lookup {
+                        controls
+                        if let error = model.errorMessage {
+                            ToolkitErrorBanner(message: error)
+                        }
+                        benchmarkCard
+                        switch model.tab {
+                        case .records:
+                            recordsContent
+                        case .mail:
+                            mailContent
+                        case .reports:
+                            reportsContent
+                        }
+                    } else {
+                        DNSPropagationToolView(model: propagation, embedded: true)
+                    }
+                }
+                .appContentPadding()
+            }
         }
-        .onAppear { syncPropagationHost() }
+        .onAppear {
+            syncSection(with: toolkit.selection)
+            syncPropagationHost()
+        }
+        .onChange(of: toolkit.selection) { selection in syncSection(with: selection) }
         .onChange(of: model.host) { _ in syncPropagationHost() }
         .onChange(of: propagation.host) { _ in
             if section == .propagation, propagation.host != model.host {
@@ -52,22 +89,10 @@ struct DNSToolView: View {
         }
     }
 
-    private var sectionPicker: some View {
-        HStack(spacing: 10) {
-            Picker("Section", selection: $section) {
-                ForEach(Section.allCases) { item in
-                    Text(item.title).tag(item)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 220)
-            Text("One name, two questions: what does it resolve to now, and does every resolver agree?")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-            Spacer()
-        }
+    /// A deep link to the propagation tool opens its own tab.
+    private func syncSection(with tool: ToolboxTool) {
+        if tool == .dnsPropagation { section = .propagation }
+        if tool == .dnsLookup { section = .lookup }
     }
 
     private func syncPropagationHost() {
