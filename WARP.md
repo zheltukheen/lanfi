@@ -543,10 +543,12 @@ The app uses the same seam style: `WiFiScanning` is injected into
   attaches `appcast.xml`.
 - `Casks/lanfi.rb` is updated automatically on release.
 - CI (`.github/workflows/ci.yml`) runs swift-format lint, XCTest on a macOS
-  13/14/15/26 matrix (13 is best-effort: the runner image is retired and its
-  Xcode cannot build the Swift 6 core package), a UI smoke test and performance
-  budgets on macOS 15, then a universal Release build. `scripts/ui_smoke.sh`
-  runs `--smoke-test` plus two snapshot captures and fails on an empty image;
+  14/15/26 matrix (14 is best-effort while that image retires; 13 no longer has
+  a runner, so its deployment target is compiled by the remaining images), a UI
+  smoke test and performance budgets on macOS 15, then a universal Release
+  build. `scripts/ui_smoke.sh` runs `--ui-smoke`, which lays out every available
+  tool screen and both menu-bar surfaces headlessly, then `--smoke-test`;
+  screenshots are an opt-in local step (`LANFI_UI_SNAPSHOTS=1`);
   `Tests/PerformanceBudgetTests.swift` holds generous budgets for analysis,
   JSON export and the route window, so the same numbers hold locally and on a
   shared runner.

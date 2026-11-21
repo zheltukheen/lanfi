@@ -40,6 +40,7 @@
 		0AB1711C16983B05CF804ACE /* SurveyReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90B3763FEBE0A808B12AB64 /* SurveyReportExporter.swift */; };
 		0AC4ECD222FDB7737149C5D4 /* OfflineCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4322DE958F9E2353026A60F /* OfflineCaptureView.swift */; };
 		0ACABA5D7DA42F3178A2C148 /* LANScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3D5F699AAF617B4DF925DF /* LANScannerService.swift */; };
+		0AE0A057EE12F264C7581865 /* AppUISmoke.swift in Sources */ = {isa = PBXBuildFile; fileRef = F475CC927A944C82B9CBFF88 /* AppUISmoke.swift */; };
 		0AEE0DCCBA3C19BC4B84BC5D /* AnalyzerViewModel+Filtering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1212AA888917C29458611D02 /* AnalyzerViewModel+Filtering.swift */; };
 		0AF7AABF34AD864BB7910707 /* MCPToolkit+ServiceTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415F204E0991B069A9BD35EA /* MCPToolkit+ServiceTools.swift */; };
 		0B08F13B1F4A4C4A99D80F75 /* AccessibilityPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13888DCA53B503F377CB0E4 /* AccessibilityPalette.swift */; };
@@ -1447,6 +1448,7 @@
 		F27DF8F8EA37BD15517C2D69 /* RFOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFOverviewView.swift; sourceTree = "<group>"; };
 		F284D3055FA72E1197279C47 /* AppUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUIState.swift; sourceTree = "<group>"; };
 		F2B83C0469401812A07488A8 /* PassiveScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassiveScanViewModel.swift; sourceTree = "<group>"; };
+		F475CC927A944C82B9CBFF88 /* AppUISmoke.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUISmoke.swift; sourceTree = "<group>"; };
 		F4D2A874BC789EE460BCA74C /* HeatPaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatPaletteTests.swift; sourceTree = "<group>"; };
 		F4EFD365EC084D1543629E86 /* CommandPaletteSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteSelection.swift; sourceTree = "<group>"; };
 		F536E599811A0A3DE912A657 /* ServiceBannerProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceBannerProbe.swift; sourceTree = "<group>"; };
@@ -1773,6 +1775,7 @@
 		7209091AB9D29F2484493A0F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				F475CC927A944C82B9CBFF88 /* AppUISmoke.swift */,
 				5C03AB53825ABDCEE4413625 /* UpdaterController.swift */,
 			);
 			path = App;
@@ -2887,6 +2890,7 @@
 				DBA4F41046A0C1F9FBA2B16B /* AppTable.swift in Sources */,
 				9186E34078E00A2E9ACE5FD2 /* AppTrafficHistory.swift in Sources */,
 				EB178E0C5A9D6CE4EE4E7D37 /* AppTrafficHistoryService.swift in Sources */,
+				0AE0A057EE12F264C7581865 /* AppUISmoke.swift in Sources */,
 				8BFF63A43C397B96E692CEA7 /* AppUIState.swift in Sources */,
 				CB0C061C7995E4AB1820BCAC /* AutomationSettingsView.swift in Sources */,
 				14C86002AF68658D37BB897D /* BonjourDiscovery.swift in Sources */,

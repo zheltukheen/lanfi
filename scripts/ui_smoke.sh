@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# UI smoke test: build the Debug app, run its headless bundle check and capture
-# two real screens through the in-app snapshot harness. No Screen Recording
-# permission and no UI automation framework; a crash, a blank window or a view
-# that cannot be constructed fails the step. Screenshots are kept for review.
+# UI smoke test: build the Debug app, lay out every available tool screen in
+# `--ui-smoke` (no WindowServer required) and run the bundle checks with
+# `--smoke-test`. Optional screenshot capture (`LANFI_UI_SNAPSHOTS=1`) needs a
+# logged-in GUI session and is therefore not part of CI.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -21,14 +21,9 @@ xcodebuild build \
 BIN=build/DerivedData/Build/Products/Debug/LanFi.app/Contents/MacOS/LanFi
 test -x "$BIN" || { echo "Missing app binary: $BIN" >&2; exit 1; }
 
-# Bundle and resource checks, then two screens: the all-band workspace and the
-# newest toolkit surface. Fixed language, theme and size keep the result
-# comparable between runs.
-"$BIN" --smoke-test | tee "$OUT/smoke.json"
-
-# The snapshot harness needs a WindowServer session. On a machine where the
-# shell has none (a background agent) AppKit never reaches the run loop, so a
-# hard limit turns a hang into a readable failure instead of a dead job.
+# Hard limit: a view that never finishes layout must fail the step instead of
+# hanging the job. AppKit can block indefinitely when the shell has no GUI
+# session, and the app's normal launch would then never reach the check.
 run_with_timeout() {
   local seconds="$1"
   shift
@@ -47,6 +42,14 @@ run_with_timeout() {
   done
   wait "$pid"
 }
+
+run_with_timeout 120 "$BIN" --ui-smoke | tee "$OUT/ui-smoke.json"
+"$BIN" --smoke-test | tee "$OUT/smoke.json"
+
+if [ "${LANFI_UI_SNAPSHOTS:-0}" != "1" ]; then
+  printf 'UI smoke passed; set LANFI_UI_SNAPSHOTS=1 to also capture screenshots\n'
+  exit 0
+fi
 
 BASE_ARGS=(-LanFi.hasCompletedFirstRun YES -AppleLanguages '(en)' -AppleLocale en_US --demo)
 run_with_timeout 90 "$BIN" "${BASE_ARGS[@]}" --appearance light --window-size 1180x760 \

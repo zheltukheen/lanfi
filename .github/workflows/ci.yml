@@ -46,19 +46,18 @@ jobs:
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    # macOS 13 is the deployment floor, but GitHub has retired that runner
-    # image and its Xcode cannot build the Swift 6 core package. Keep the entry
-    # visible as a best-effort check without letting it gate the workflow.
+    # GitHub has retired the macOS 13 runner image and is retiring macOS 14;
+    # the 13.0 deployment target is still compiled by both remaining images.
+    # macOS 14 is best-effort and does not gate the workflow when its image is
+    # unavailable.
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
-            experimental: true
           - os: macos-14
-            experimental: false
+            experimental: true
           - os: macos-15
             experimental: false
           - os: macos-26

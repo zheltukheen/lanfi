@@ -17,9 +17,12 @@ Foundation-only seam.
 
 ### Engineering
 - **CI covers the supported systems, the UI and performance.** The test job runs
-on macOS 13/14/15/26 (13 is best-effort because its runner image is retired),
-`scripts/ui_smoke.sh` runs the bundle smoke test and captures the workspace and
-Route Monitor screens, and `Tests/PerformanceBudgetTests.swift` enforces budgets
+on macOS 14/15/26 (13's runner image is retired; the 14 entry is best-effort
+while that image retires),
+`scripts/ui_smoke.sh` lays out every available tool screen and both menu-bar
+surfaces headlessly (`--ui-smoke`) and then runs the bundle check; screenshot
+capture stays an opt-in local aid because it needs a GUI session.
+`Tests/PerformanceBudgetTests.swift` enforces budgets
 for a 300-network analysis, the JSON export and the 180-sample route window;
 those budgets run in the normal suite.
 

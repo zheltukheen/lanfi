@@ -1183,10 +1183,14 @@ locales.
 - [x] Make `swift-format` blocking in CI and run `swift test` for the core
       package.
 - [x] Add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
-      The test job runs the core package plus the app suite on all four images;
-      macOS 13 is `continue-on-error` because the runner image is retired and
-      its Xcode predates the Swift 6 core package. `scripts/ui_smoke.sh` runs the
-      bundle smoke test and captures the workspace and Route Monitor screens.
+      The test job runs the core package plus the app suite on the images
+      GitHub still provides (`macos-15`, `macos-26`, with `macos-14` best-effort
+      while it retires); macOS 13 no longer has a runner image, so the 13.0
+      deployment target is compiled by the remaining images instead.
+      `scripts/ui_smoke.sh` runs `--ui-smoke`, which lays out every available
+      tool screen and both menu-bar surfaces headlessly, then the bundle check.
+      Screenshot capture stays an opt-in local aid (`LANFI_UI_SNAPSHOTS=1`)
+      because it needs a WindowServer session.
       `Tests/PerformanceBudgetTests.swift` holds generous budgets for a
       300-network analysis, the JSON export and a 180-sample route window, so
       the same tests run locally and on the runner.

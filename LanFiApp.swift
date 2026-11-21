@@ -14,6 +14,11 @@ enum LanFiMain {
         if CommandLine.arguments.contains("--smoke-test") {
             AppSmokeTest.run()
         }
+        #if DEBUG
+            if CommandLine.arguments.contains("--ui-smoke") {
+                MainActor.assumeIsolated { AppUISmoke.run() }
+            }
+        #endif
         CrashLogger.install()
         LanFiApp.main()
     }
