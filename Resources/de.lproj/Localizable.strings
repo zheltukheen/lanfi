@@ -1618,3 +1618,19 @@
 "Global shortcut" = "Globale Tastenkürzel";
 "Press the keys…" = "Tasten drücken…";
 "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "Öffnet „Verbindungen“ aus jeder App. Bis Sie ein Kürzel aufnehmen, wird nichts registriert; nötig ist mindestens eines von ⌘, ⌃ oder ⌥.";
+
+/* Site survey plan tools */
+"Sample" = "Messung";
+"Wall" = "Wand";
+"Room" = "Raum";
+"Scale" = "Maßstab";
+"Record mode: click the plan to add a sample." = "Messmodus: Klicken Sie auf den Plan, um einen Messpunkt zu setzen.";
+
+/* Site survey plan tools and blank plans */
+"Plan tool" = "Planwerkzeug";
+"Import a floor plan or create a blank metre grid." = "Grundriss importieren oder ein leeres Meterraster anlegen.";
+"A metre grid you can draw on: add walls and rooms, place predictive APs and click to record signal. No floor-plan image needed." = "Ein Meterraster zum Zeichnen: Wände und Räume hinzufügen, prognostizierte APs platzieren und zum Aufzeichnen klicken. Kein Grundrissbild nötig.";
+"New blank plan" = "Neuer leerer Plan";
+"Width (m)" = "Breite (m)";
+"Height (m)" = "Höhe (m)";
+"No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "Noch kein Netz erfasst. Starten Sie einen WLAN-Scan im Analysator und klicken Sie dann auf den Plan.";

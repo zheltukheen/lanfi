@@ -1618,3 +1618,19 @@
 "Global shortcut" = "全局快捷键";
 "Press the keys…" = "请按下按键…";
 "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "可从任意应用打开“连接”。在你录制快捷键之前不会注册任何内容；至少需要 ⌘、⌃ 或 ⌥ 之一。";
+
+/* Site survey plan tools */
+"Sample" = "采样";
+"Wall" = "墙体";
+"Room" = "房间";
+"Scale" = "比例";
+"Record mode: click the plan to add a sample." = "采样模式：点击平面图以添加采样点。";
+
+/* Site survey plan tools and blank plans */
+"Plan tool" = "平面图工具";
+"Import a floor plan or create a blank metre grid." = "导入平面图，或创建空白米制网格。";
+"A metre grid you can draw on: add walls and rooms, place predictive APs and click to record signal. No floor-plan image needed." = "可直接绘制的米制网格：添加墙体与房间、放置预测 AP，并点击记录信号。无需平面图图片。";
+"New blank plan" = "新建空白平面图";
+"Width (m)" = "宽度（米）";
+"Height (m)" = "高度（米）";
+"No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "尚未捕获网络。请先在分析器中扫描 Wi-Fi，然后点击平面图。";

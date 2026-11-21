@@ -5,17 +5,13 @@ import AppKit
 struct SurveyView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
     @ObservedObject var survey: SurveyViewModel
-    @State private var wallMode = false
+    @State private var mode: SurveyToolMode = .sample
     @State private var pendingWallStart: CGPoint?
-    @State private var roomMode = false
     @State private var roomPoints: [SurveyPoint] = []
-    @State private var walkMode = false
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
-    @State private var predictiveMode = false
     @AppStorage(AppSettingsKey.surveyHeatmapDetail.rawValue) private var heatmapDetail = "balanced"
     @State private var show3DFloors = false
-    @State private var calibrating = false
     @State private var calibrationPoints: [SurveyPoint] = []
     @State private var showingClearConfirm = false
     @State private var showingBlankPlan = false
@@ -229,66 +225,32 @@ struct SurveyView: View {
 
             Divider().frame(height: 20)
 
-            Button {
-                wallMode.toggle()
+            Picker(selection: $mode) {
+                ForEach(SurveyToolMode.allCases) { tool in
+                    Label(tool.title, systemImage: tool.icon).tag(tool)
+                }
+            } label: {
+                Label(mode.title, systemImage: mode.icon)
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .frame(width: 240)
+            .controlSize(.small)
+            .help("What a click on the plan does")
+            .onChange(of: mode) { newMode in
                 pendingWallStart = nil
-                survey.statusMessage =
-                    wallMode
-                    ? String(localized: "Wall mode: click two points to draw a wall.")
-                    : String(localized: "Wall mode off.")
-            } label: {
-                Label("Draw Wall", systemImage: wallMode ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
+                roomPoints = []
+                calibrationPoints = []
+                survey.statusMessage = newMode.activationMessage
             }
-            .controlSize(.small)
-            .buttonStyle(.bordered)
-            .labelStyle(.iconOnly)
-            .help("Draw wall")
-            .tint(wallMode ? .orange : nil)
-
-            Button {
-                predictiveMode.toggle()
-                survey.statusMessage =
-                    predictiveMode
-                    ? String(localized: "Predictive mode: click the plan to place an AP.")
-                    : String(localized: "Predictive mode off.")
-            } label: {
-                Label(
-                    "Predictive",
-                    systemImage: predictiveMode
-                        ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
-            }
-            .controlSize(.small)
-            .buttonStyle(.bordered)
-            .labelStyle(.iconOnly)
-            .help("Predictive mode")
-            .tint(predictiveMode ? .purple : nil)
-
-            Button {
-                walkMode.toggle()
-                survey.statusMessage =
-                    walkMode
-                    ? String(localized: "Walk mode: move the pointer over the plan to sample automatically.")
-                    : String(localized: "Walk mode off.")
-            } label: {
-                Label("Walk", systemImage: walkMode ? "figure.walk.circle.fill" : "figure.walk")
-            }
-            .controlSize(.small)
-            .buttonStyle(.bordered)
-            .labelStyle(.iconOnly)
-            .help("Walk mode")
-            .tint(walkMode ? .green : nil)
 
             Menu {
                 Button {
-                    roomMode.toggle()
-                    roomPoints = []
-                    survey.statusMessage =
-                        roomMode
-                        ? String(localized: "Room mode: click vertices, then Finish Room.")
-                        : String(localized: "Room mode off.")
+                    select(.room)
                 } label: {
-                    Label(roomMode ? "Cancel Room" : "Draw Room", systemImage: "rectangle.dashed")
+                    Label(mode == .room ? "Room mode on" : "Draw Room", systemImage: "rectangle.dashed")
                 }
+                .disabled(mode == .room)
                 Button("Finish Room") { finishRoom() }
                     .disabled(roomPoints.count < 3)
                 Button("Clear Rooms", role: .destructive) {
@@ -301,13 +263,12 @@ struct SurveyView: View {
                 }
                 .disabled(survey.accessPoints.isEmpty)
                 Divider()
-                Button(calibrating ? "Cancel Calibration" : "Calibrate Scale") {
-                    calibrating.toggle()
-                    calibrationPoints = []
-                    survey.statusMessage =
-                        calibrating
-                        ? String(localized: "Calibration: click two points and enter the real distance.")
-                        : String(localized: "Calibration cancelled.")
+                Button(mode == .calibrate ? "Cancel Calibration" : "Calibrate Scale") {
+                    if mode == .calibrate {
+                        select(.sample)
+                    } else {
+                        select(.calibrate)
+                    }
                 }
                 Divider()
                 Button("Clear Walls", role: .destructive) {
@@ -410,19 +371,65 @@ struct SurveyView: View {
     private var toolCard: some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 6) {
-                ToolkitSectionLabel(text: "Current tool")
-                HStack(spacing: 7) {
-                    Image(systemName: currentToolIcon)
-                        .foregroundColor(currentToolTint)
-                    Text(currentToolTitle)
-                        .font(.caption.weight(.semibold))
-                    Spacer()
+                ToolkitSectionLabel(text: "Plan tool")
+                // Every tool is one visible click: the toolbar only had three
+                // icon toggles and a menu, and the pattern of which click did
+                // what was impossible to guess.
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)],
+                    spacing: 6
+                ) {
+                    ForEach(SurveyToolMode.allCases) { tool in
+                        toolChip(tool)
+                    }
                 }
                 Text(currentToolHint)
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    private func toolChip(_ tool: SurveyToolMode) -> some View {
+        let selected = mode == tool
+        return Button {
+            select(tool)
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: tool.icon)
+                    .font(.caption2)
+                Text(tool.shortTitle)
+                    .font(.caption2.weight(selected ? .semibold : .regular))
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 7)
+            .padding(.vertical, 5)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .foregroundColor(selected ? .white : .primary)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Radius.control)
+                    .fill(selected ? currentTint(for: tool) : Theme.Surface.controlFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.control)
+                    .stroke(Theme.Surface.border, lineWidth: selected ? 0 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .help(tool.hint)
+        .accessibilityLabel(tool.title)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private func currentTint(for tool: SurveyToolMode) -> Color {
+        switch tool.tone {
+        case .accent: return .accentColor
+        case .green: return .green
+        case .orange: return .orange
+        case .purple: return .purple
+        case .cyan: return .cyan
         }
     }
 
@@ -527,51 +534,22 @@ struct SurveyView: View {
         }
     }
 
-    private var currentToolTitle: String {
-        if calibrating { return String(localized: "Calibrate scale") }
-        if predictiveMode { return String(localized: "Predictive AP") }
-        if wallMode { return String(localized: "Draw wall") }
-        if roomMode { return String(localized: "Draw room") }
-        if walkMode { return String(localized: "Walk sampling") }
-        return String(localized: "Record sample")
-    }
+    private var currentToolTitle: String { mode.title }
 
-    private var currentToolIcon: String {
-        if calibrating { return "ruler" }
-        if predictiveMode { return "antenna.radiowaves.left.and.right" }
-        if wallMode { return "pencil.tip" }
-        if roomMode { return "rectangle.dashed" }
-        if walkMode { return "figure.walk" }
-        return "hand.tap"
-    }
+    private var currentToolIcon: String { mode.icon }
 
-    private var currentToolTint: Color {
-        if calibrating { return .cyan }
-        if predictiveMode { return .purple }
-        if wallMode || roomMode { return .orange }
-        if walkMode { return .green }
-        return .accentColor
-    }
+    private var currentToolTint: Color { currentTint(for: mode) }
 
-    private var currentToolHint: String {
-        if calibrating {
-            return String(localized: "Click two points that have a known real-world distance.")
-        }
-        if predictiveMode {
-            return String(
-                localized: "Click the plan to place a virtual access point and render predicted coverage."
-            )
-        }
-        if wallMode {
-            return String(localized: "Click two points to draw a wall. Walls attenuate the heatmap.")
-        }
-        if roomMode {
-            return String(localized: "Click the room corners, then choose Finish Room from Structure.")
-        }
-        if walkMode {
-            return String(localized: "Move the pointer over the plan to sample automatically as you walk.")
-        }
-        return String(localized: "Click anywhere on the plan to capture the selected network's signal.")
+    private var currentToolHint: String { mode.hint }
+
+    /// Switching tools clears the half-finished geometry of the previous one, so
+    /// a half-drawn wall cannot surprise the next click in another mode.
+    private func select(_ newMode: SurveyToolMode) {
+        mode = newMode
+        if newMode != .calibrate { calibrationPoints = [] }
+        if newMode != .room { roomPoints = [] }
+        if newMode != .wall { pendingWallStart = nil }
+        survey.statusMessage = newMode.activationMessage
     }
 
     @ViewBuilder
@@ -633,146 +611,165 @@ struct SurveyView: View {
             }
         } else {
             GeometryReader { geo in
+                // The sheet is the drawable area. Everything below — grid,
+                // heat, overlays, gesture — uses its own local frame, so a
+                // click can never be off by the letterbox offset and the
+                // overlays can never leave the plan.
                 let rect = fittedRect(in: geo.size)
+                let sheet = CGRect(origin: .zero, size: rect.size)
                 let cell: CGFloat =
                     heatmapDetail == "fast" ? 8 : (heatmapDetail == "high" ? 4 : 6)
-                let columns = max(1, Int(rect.width / cell))
-                let rows = max(1, Int(rect.height / cell))
+                let columns = max(1, Int(sheet.width / cell))
+                let rows = max(1, Int(sheet.height / cell))
                 let planWidthMeters = survey.project.planWidthMeters ?? 12
                 let request = SurveyHeatmapRequest(
                     columns: columns, rows: rows, cellSize: Double(cell),
-                    pixelWidth: Double(rect.width), pixelHeight: Double(rect.height),
+                    pixelWidth: Double(sheet.width), pixelHeight: Double(sheet.height),
                     samples: displayedSamples, walls: survey.walls,
                     obstacles: survey.obstacles, accessPoints: survey.accessPoints,
-                    predictiveMode: predictiveMode,
+                    predictiveMode: mode == .predictive,
                     // Must match `fittedRect` and `drawPlanGrid`, or the
                     // predicted coverage is drawn at the wrong scale.
                     planWidthMeters: planWidthMeters
                 )
-                ZStack(alignment: .topLeading) {
+                ZStack {
                     Color(nsColor: .underPageBackgroundColor)
-                    if let image = survey.floorPlanImage {
-                        Image(nsImage: image)
-                            .resizable()
-                            .interpolation(.high)
-                            .frame(width: rect.width, height: rect.height)
-                            .position(x: rect.midX, y: rect.midY)
-                    }
-                    Canvas { context, _ in
-                        if survey.floorPlanImage == nil {
-                            drawPlanGrid(context: context, rect: rect)
+                    ZStack(alignment: .topLeading) {
+                        if let image = survey.floorPlanImage {
+                            Image(nsImage: image)
+                                .resizable()
+                                .interpolation(.high)
+                                .frame(width: sheet.width, height: sheet.height)
+                                .clipped()
                         }
-                        if let heatGrid {
-                            drawHeatGrid(context: context, rect: rect, grid: heatGrid, cell: cell)
+                        Canvas { context, _ in
+                            if survey.floorPlanImage == nil {
+                                drawPlanGrid(context: context, rect: sheet)
+                            }
+                            if let heatGrid {
+                                drawHeatGrid(context: context, rect: sheet, grid: heatGrid, cell: cell)
+                            }
+                            for sample in displayedSamples {
+                                let point = CGPoint(
+                                    x: sheet.minX + sample.x * sheet.width,
+                                    y: sheet.minY + sample.y * sheet.height
+                                )
+                                drawSample(context: context, at: point, rssi: sample.rssi)
+                            }
+                            drawWalls(context: context, rect: sheet)
+                            drawRooms(context: context, rect: sheet)
+                            drawAccessPoints(context: context, rect: sheet)
+                            drawCalibration(context: context, rect: sheet)
                         }
-                        for sample in displayedSamples {
-                            let point = CGPoint(
-                                x: rect.minX + sample.x * rect.width,
-                                y: rect.minY + sample.y * rect.height
-                            )
-                            drawSample(context: context, at: point, rssi: sample.rssi)
-                        }
-                        drawWalls(context: context, rect: rect)
-                        drawRooms(context: context, rect: rect)
-                        drawAccessPoints(context: context, rect: rect)
-                        drawCalibration(context: context, rect: rect)
-                    }
-                    .allowsHitTesting(false)
-                    .task(id: request.key) {
-                        // Build the grid once per request key on a background
-                        // task. The previous streaming loop restarted on every
-                        // key change and could end up publishing nothing, which
-                        // left the plan without any heat at all.
-                        heatGrid = nil
-                        let built = await Task.detached(priority: .userInitiated) {
-                            request.build()
-                        }.value
-                        guard !Task.isCancelled else { return }
-                        heatGrid = built
-                    }
-                    .accessibilityLabel(String(localized: "Floor plan heatmap"))
-                    .accessibilityValue(
-                        String(
-                            format: String(
-                                localized: "%lld samples, %lld walls, %@"),
-                            displayedSamples.count, survey.walls.count,
-                            selectedNetwork?.displaySSID ?? String(localized: "all networks")))
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(selectedNetwork?.displaySSID ?? "All networks")
-                            .font(.caption.bold())
-                        Text(
-                            "\(displayedSamples.count) points · \(survey.walls.count) walls · \(survey.obstacles.count) rooms"
-                        )
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        Text(survey.statusMessage)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                            .frame(maxWidth: 260, alignment: .leading)
-                        if heatGrid == nil,
-                            !displayedSamples.isEmpty || (predictiveMode && !survey.accessPoints.isEmpty)
-                        {
-                            Text("Computing coverage…")
-                                .font(.caption2)
-                                .foregroundColor(.accentColor)
-                        }
-                    }
-                    .padding(DesignToken.Spacing.small)
-                    .appCardSurface(radius: Theme.Radius.control)
-                    .padding(DesignToken.Spacing.compact)
-
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            legend
-                        }
-                    }
-                    .padding(DesignToken.Spacing.compact)
-
-                    if displayedSamples.isEmpty, !predictiveMode {
-                        VStack(spacing: 5) {
-                            Image(systemName: "hand.tap")
-                                .font(.title3)
-                                .foregroundColor(.accentColor)
-                            Text("Click anywhere on the plan")
-                                .font(.caption.weight(.semibold))
-                            Text(
-                                captureNetwork?.displaySSID
-                                    ?? String(localized: "Start a Wi-Fi scan first")
-                            )
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, DesignToken.Spacing.large)
-                        .padding(.vertical, DesignToken.Spacing.medium)
-                        .appCardSurface()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .allowsHitTesting(false)
+                        .task(id: request.key) {
+                            // Build the grid once per request key on a background
+                            // task. The previous streaming loop restarted on every
+                            // key change and could end up publishing nothing, which
+                            // left the plan without any heat at all.
+                            heatGrid = nil
+                            let built = await Task.detached(priority: .userInitiated) {
+                                request.build()
+                            }.value
+                            guard !Task.isCancelled else { return }
+                            heatGrid = built
+                        }
+                        .accessibilityLabel(String(localized: "Floor plan heatmap"))
+                        .accessibilityValue(
+                            String(
+                                format: String(localized: "%lld samples, %lld walls, %@"),
+                                displayedSamples.count, survey.walls.count,
+                                selectedNetwork?.displaySSID ?? String(localized: "all networks")))
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(selectedNetwork?.displaySSID ?? "All networks")
+                                .font(.caption.bold())
+                            Text(
+                                "\(displayedSamples.count) points · \(survey.walls.count) walls · \(survey.obstacles.count) rooms"
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            Text(survey.statusMessage)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .lineLimit(2)
+                                .frame(maxWidth: 260, alignment: .leading)
+                            if heatGrid == nil,
+                                !displayedSamples.isEmpty
+                                    || (mode == .predictive && !survey.accessPoints.isEmpty)
+                            {
+                                Text("Computing coverage…")
+                                    .font(.caption2)
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                        .padding(DesignToken.Spacing.small)
+                        .appCardSurface(radius: Theme.Radius.control)
+                        .padding(DesignToken.Spacing.small)
+
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                legend
+                            }
+                        }
+                        .padding(DesignToken.Spacing.small)
+
+                        if displayedSamples.isEmpty, mode != .predictive {
+                            VStack(spacing: 5) {
+                                Image(systemName: mode.icon)
+                                    .font(.title3)
+                                    .foregroundColor(.accentColor)
+                                Text(mode.hint)
+                                    .font(.caption.weight(.semibold))
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: 260)
+                                Text(
+                                    captureNetwork?.displaySSID
+                                        ?? String(localized: "Start a Wi-Fi scan first")
+                                )
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, DesignToken.Spacing.large)
+                            .padding(.vertical, DesignToken.Spacing.medium)
+                            .appCardSurface()
+                            .position(x: sheet.midX, y: sheet.midY)
+                            .allowsHitTesting(false)
+                        }
+                    }
+                    .frame(width: sheet.width, height: sheet.height)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onEnded { value in
+                                guard abs(value.translation.width) < 4,
+                                    abs(value.translation.height) < 4
+                                else { return }
+                                surveyTap(
+                                    at: CGPoint(
+                                        x: min(max(value.location.x, 0), sheet.width),
+                                        y: min(max(value.location.y, 0), sheet.height)),
+                                    in: sheet)
+                            }
+                    )
+                    .onContinuousHover { phase in
+                        guard mode == .walk, phase != .ended else { return }
+                        guard case .active(let location) = phase else { return }
+                        guard sheet.width > 0, sheet.height > 0 else { return }
+                        let now = Date()
+                        guard now.timeIntervalSince(lastWalkSample) >= 0.8 else { return }
+                        guard let network = captureNetwork else { return }
+                        lastWalkSample = now
+                        survey.addSample(
+                            x: Double(location.x / sheet.width),
+                            y: Double(location.y / sheet.height),
+                            network: network
+                        )
                     }
                 }
-                .contentShape(Rectangle())
-                .gesture(
-                    SpatialTapGesture()
-                        .onEnded { value in
-                            surveyTap(at: value.location, in: rect)
-                        }
-                ).onContinuousHover { phase in
-                    guard walkMode, !roomMode, !wallMode, phase != .ended else { return }
-                    guard case .active(let location) = phase else { return }
-                    guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
-                    let now = Date()
-                    guard now.timeIntervalSince(lastWalkSample) >= 0.8 else { return }
-                    guard let network = captureNetwork else { return }
-                    lastWalkSample = now
-                    survey.addSample(
-                        x: Double((location.x - rect.minX) / rect.width),
-                        y: Double((location.y - rect.minY) / rect.height),
-                        network: network
-                    )
-                }
+                .clipped()
             }
         }
     }
@@ -785,14 +782,14 @@ struct SurveyView: View {
         guard rect.contains(location), rect.width > 0, rect.height > 0 else { return }
         let x = Double((location.x - rect.minX) / rect.width)
         let y = Double((location.y - rect.minY) / rect.height)
-        if calibrating {
+        if mode == .calibrate {
             calibrationPoints.append(SurveyPoint(x: x, y: y))
             if calibrationPoints.count == 2 {
                 finishCalibration()
             }
             return
         }
-        if predictiveMode {
+        if mode == .predictive {
             let network = captureNetwork
             survey.addAccessPoint(
                 x: x, y: y,
@@ -801,14 +798,14 @@ struct SurveyView: View {
             )
             return
         }
-        if roomMode {
+        if mode == .room {
             roomPoints.append(SurveyPoint(x: x, y: y))
             survey.statusMessage = String(
                 format: String(localized: "Room vertices: %lld. Finish Room when ready."),
                 roomPoints.count)
             return
         }
-        if wallMode {
+        if mode == .wall {
             if let start = pendingWallStart {
                 survey.addWall(x1: Double(start.x), y1: Double(start.y), x2: x, y2: y)
                 pendingWallStart = nil
@@ -819,7 +816,14 @@ struct SurveyView: View {
             }
             return
         }
-        guard let network = captureNetwork else { return }
+        guard let network = captureNetwork else {
+            // A silent no-op here looked like a broken plan: the user clicked
+            // and nothing at all happened.
+            survey.statusMessage = String(
+                localized:
+                    "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan.")
+            return
+        }
         survey.addSample(x: x, y: y, network: network)
     }
 
@@ -865,7 +869,7 @@ struct SurveyView: View {
             survey.calibrateScale(realMeters: meters, normalizedDistance: distance)
         }
         calibrationPoints = []
-        calibrating = false
+        mode = .sample
     }
 
     private func drawCalibration(context: GraphicsContext, rect: CGRect) {
@@ -890,14 +894,14 @@ struct SurveyView: View {
         guard roomPoints.count >= 3 else { return }
         survey.addObstacle(points: roomPoints)
         roomPoints = []
-        roomMode = false
+        mode = .sample
     }
 
     /// Interpolates one grid cell. Predictive mode (placed access points)
     /// takes precedence over measured samples, matching the previous
     /// drawing behaviour.
     private func estimateRSSI(nx: Double, ny: Double) -> Int? {
-        if predictiveMode && !survey.accessPoints.isEmpty {
+        if mode == .predictive && !survey.accessPoints.isEmpty {
             let width = survey.project.planWidthMeters ?? 30
             return SurveyPredictor.estimate(
                 x: nx, y: ny, accessPoints: survey.accessPoints,
@@ -914,10 +918,22 @@ struct SurveyView: View {
     private func drawHeatGrid(
         context: GraphicsContext, rect: CGRect, grid: HeatGridCache.Grid, cell: CGFloat
     ) {
-        let opacity = predictiveMode && !survey.accessPoints.isEmpty ? 0.42 : 0.46
+        let predicted = mode == .predictive && !survey.accessPoints.isEmpty
+        let baseOpacity = predicted ? 0.42 : 0.46
+        let heightMeters =
+            survey.project.planHeightMeters
+            ?? max(4, (survey.project.planWidthMeters ?? 12) * 0.7)
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
                 guard let rssi = grid.cells[row * grid.columns + column] else { continue }
+                let nx = (CGFloat(column) + 0.5) * cell / max(1, rect.width)
+                let ny = (CGFloat(row) + 0.5) * cell / max(1, rect.height)
+                // Interpolation has no range limit, so one sample used to paint
+                // the whole floor as excellent. Fading the confidence with the
+                // distance to the nearest real sample keeps the colour where it
+                // was measured and leaves the far corners honest and readable.
+                let confidence = predicted ? 1 : heatConfidence(x: Double(nx), y: Double(ny))
+                guard confidence > 0.06 else { continue }
                 context.fill(
                     Path(
                         CGRect(
@@ -925,10 +941,28 @@ struct SurveyView: View {
                             y: rect.minY + CGFloat(row) * cell,
                             width: cell + 0.5, height: cell + 0.5
                         )),
-                    with: .color(heatColor(rssi).opacity(opacity))
+                    with: .color(heatColor(rssi).opacity(baseOpacity * confidence))
                 )
             }
         }
+    }
+
+    /// 1 next to a sample, falling smoothly to 0 around eight metres away.
+    private func heatConfidence(x: Double, y: Double) -> Double {
+        let widthMeters = survey.project.planWidthMeters ?? 12
+        let heightMeters =
+            survey.project.planHeightMeters
+            ?? max(4, widthMeters * 0.7)
+        var nearest = Double.greatestFiniteMagnitude
+        for sample in displayedSamples {
+            let dx = (sample.x - x) * widthMeters
+            let dy = (sample.y - y) * heightMeters
+            nearest = min(nearest, (dx * dx + dy * dy).squareRoot())
+        }
+        guard nearest.isFinite else { return 0 }
+        // Linear falloff with a hard edge: an inverse-square tail kept a faint
+        // tint over the whole floor, which read as "everything is covered".
+        return max(0, 1 - nearest / 5)
     }
 
     private func drawAccessPoints(context: GraphicsContext, rect: CGRect) {
@@ -984,7 +1018,7 @@ struct SurveyView: View {
                 .clipShape(Capsule())
             Text("-40 dBm").font(.caption2).foregroundColor(.secondary)
             Text("· walls/rooms -8 dB").font(.caption2).foregroundColor(.secondary)
-            if predictiveMode { Text("· predictive").font(.caption2).foregroundColor(.purple) }
+            if mode == .predictive { Text("· predictive").font(.caption2).foregroundColor(.purple) }
         }
         .padding(DesignToken.Spacing.small)
         .appCardSurface(radius: Theme.Radius.control)
@@ -1012,6 +1046,10 @@ struct SurveyView: View {
 
     /// One-metre grid for hand-drawn plans, with a label every two metres.
     private func drawPlanGrid(context: GraphicsContext, rect: CGRect) {
+        // The sheet is drawn before the grid: on the dark window a bare grid
+        // read as empty space, and it was impossible to tell where the plan
+        // ended and where a click would land.
+        context.fill(Path(rect), with: .color(Color(nsColor: .controlBackgroundColor)))
         let widthMeters = survey.project.planWidthMeters ?? 12
         let heightMeters = survey.project.planHeightMeters ?? max(4, widthMeters * 0.7)
         var grid = Path()

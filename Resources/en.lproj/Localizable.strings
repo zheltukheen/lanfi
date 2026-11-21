@@ -1619,3 +1619,19 @@
 "Global shortcut" = "Global shortcut";
 "Press the keys…" = "Press the keys…";
 "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥.";
+
+/* Site survey plan tools */
+"Sample" = "Sample";
+"Wall" = "Wall";
+"Room" = "Room";
+"Scale" = "Scale";
+"Record mode: click the plan to add a sample." = "Record mode: click the plan to add a sample.";
+
+/* Site survey plan tools and blank plans */
+"Plan tool" = "Plan tool";
+"Import a floor plan or create a blank metre grid." = "Import a floor plan or create a blank metre grid.";
+"A metre grid you can draw on: add walls and rooms, place predictive APs and click to record signal. No floor-plan image needed." = "A metre grid you can draw on: add walls and rooms, place predictive APs and click to record signal. No floor-plan image needed.";
+"New blank plan" = "New blank plan";
+"Width (m)" = "Width (m)";
+"Height (m)" = "Height (m)";
+"No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan.";

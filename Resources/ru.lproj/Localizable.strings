@@ -1655,3 +1655,19 @@
 "Global shortcut" = "Глобальное сочетание";
 "Press the keys…" = "Нажмите клавиши…";
 "Opens Connections from any app. Nothing is registered until you record a shortcut; it needs at least one of ⌘, ⌃ or ⌥." = "Открывает «Подключения» из любого приложения. Пока вы не запишете сочетание, ничего не регистрируется; нужен хотя бы один из ⌘, ⌃ или ⌥.";
+
+/* Site survey plan tools */
+"Sample" = "Замер";
+"Wall" = "Стена";
+"Room" = "Комната";
+"Scale" = "Масштаб";
+"Record mode: click the plan to add a sample." = "Режим замера: нажмите на план, чтобы добавить точку.";
+
+/* Site survey plan tools and blank plans */
+"Plan tool" = "Инструмент плана";
+"Import a floor plan or create a blank metre grid." = "Импортируйте план или создайте пустую сетку в метрах.";
+"A metre grid you can draw on: add walls and rooms, place predictive APs and click to record signal. No floor-plan image needed." = "Сетка в метрах, на которой можно рисовать: добавляйте стены и комнаты, ставьте прогнозные ТД и нажимайте для записи сигнала. Изображение плана не нужно.";
+"New blank plan" = "Новый пустой план";
+"Width (m)" = "Ширина (м)";
+"Height (m)" = "Высота (м)";
+"No network captured yet. Start a Wi-Fi scan in the analyzer, then click the plan." = "Сеть ещё не захвачена. Запустите сканирование Wi-Fi в анализаторе и снова нажмите на план.";

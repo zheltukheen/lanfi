@@ -75,6 +75,7 @@ struct LanFiApp: App {
                 .environmentObject(meter)
                 .environment(\.lanFiHighContrast, highContrast)
                 .preferredColorScheme(preferredAppearance)
+                .background(WindowFitter())
                 .onAppear {
                     meter.start()
                     connectivity.start()
