@@ -1,5 +1,36 @@
 # Changelog
 
+## 5.6.7 — 2026-11-21
+
+### Fixed
+- **The site-survey plan is drawable again.** Clicks on the plan never arrived:
+  the screen relied on `SpatialTapGesture`, which silently delivered nothing, so
+  choosing a tool, moving the pointer and clicking added no sample, wall, room
+  vertex or predictive AP. The plan now handles clicks through a `DragGesture`
+  with a movement threshold, which reports the point in the sheet's own
+  coordinates — the same space the grid, heat and markers are drawn in.
+- The plan is a sheet with its own frame: grid, heat, sample dots, walls, rooms,
+  AP markers and the empty-plan hint are all positioned inside that frame, so the
+  hint is centred on the plan, the statistics card and legend sit inside its
+  corners, and nothing spills over the window edge.
+- The main window is fitted to the screen on launch (`Views/WindowLayout.swift`,
+  `WindowFitter`). macOS restored a frame taller than the display, which put the
+  bottom of the plan — and its legend — off the screen.
+- A single sample no longer paints the whole floor as excellent: heat cell
+  opacity fades linearly with the distance to the nearest measured sample, so
+  the colour stays where it was measured and far corners stay honest.
+- Clicking in record mode with no captured network used to do nothing at all; the
+  plan now says to start a Wi-Fi scan first.
+
+### Changed
+- **One plan tool at a time (`Models/SurveyToolMode.swift`).** Four independent
+  booleans (wall, room, walk, predictive) replaced by one mode, so two tools can
+  no longer be on at once with the click order deciding which one runs. The
+  inspector shows all six tools as chips, the toolbar shows the current one as a
+  menu, and switching tools clears half-drawn geometry.
+- Missing translations for the plan tools, the blank-plan sheet and the plan
+  tool label in all five locales.
+
 ## 5.6.6 — 2026-11-20
 
 ### Added

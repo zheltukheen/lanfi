@@ -1184,6 +1184,21 @@ locales.
 
 ---
 
+## Delivered in the forty-second slice (2026-11-21)
+
+Site-survey plan repaired. Three defects made the screen unusable rather than
+unfinished: `SpatialTapGesture` delivered no clicks at all, so no tool could
+place anything; the drawn grid and every overlay (statistics card, legend,
+empty-plan hint) were positioned against the whole canvas instead of the fitted
+plan rectangle, so they covered empty space and ran off the window; and the
+restored window frame was taller than the display, cutting the bottom of the
+plan away. Clicks now arrive through a `DragGesture` with a movement threshold
+in the sheet's own coordinates, the sheet owns its frame for drawing and
+overlays, `Views/WindowLayout.swift` fits the window into `visibleFrame`, and
+the four tool booleans became `Models/SurveyToolMode.swift` so two tools can no
+longer fight over one click. Heat cells fade with the distance to the nearest
+sample, which stops a single measurement from colouring the whole floor.
+
 ## Delivered in the forty-first slice (2026-11-20)
 
 - **Hierarchical tables sort from their headers.** `AppTable` learned

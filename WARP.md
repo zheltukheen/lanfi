@@ -257,6 +257,12 @@ an app bundle.
 - `Views/ProtocolsView.swift` — block cards and all-network protocol coverage.
 - `Views/DiagnosticsView.swift` — diagnostics status, check grid and history.
 - `Views/SurveyView.swift` — floor-plan import, sample placement and heatmap.
+  The plan is drawn in a fitted sheet rectangle and clicks are read in that
+  rectangle's coordinates; `Models/SurveyToolMode.swift` is the single source of
+  what a click does (sample, walk, wall, room, predictive AP, calibration).
+- `Views/WindowLayout.swift` — fits the restored main window into the visible
+  screen area, because a frame larger than the display hid the bottom of the
+  survey plan.
 - `ViewModels/DiagnosticsViewModel.swift` — diagnostics run/monitor state.
 - `ViewModels/SurveyViewModel.swift` — survey project and floor-plan state.
 - `Views/SpectrumView.swift` — per-band Canvas spectrum with hit testing.
