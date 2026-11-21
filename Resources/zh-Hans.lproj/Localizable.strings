@@ -1637,3 +1637,5 @@
 "Warranty" = "保修";
 "Measuring the route…" = "正在测量路由…";
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "每一轮会为每个跃点发送一次 traceroute 探测。首轮结束后显示图表。";
+"Passive" = "被动";
+"Directed" = "定向";

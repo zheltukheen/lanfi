@@ -30,6 +30,49 @@ struct BandFilterChip: View {
     }
 }
 
+/// One chip of the scan-mode row. It borrows the table's band-filter look —
+/// the app's established style for a set of exclusive toggles — instead of a
+/// native popup button.
+struct ScanModeChip: View {
+    let mode: ScanMode
+    let isOn: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            action()
+        } label: {
+            Text(mode.title)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+                .foregroundColor(isOn ? .accentColor : .secondary)
+                .padding(.horizontal, DesignToken.Spacing.tight)
+                .frame(minWidth: 30, minHeight: DesignToken.Toolbar.height)
+                .fixedSize()
+                .background(
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                        .fill(
+                            isOn
+                                ? Color.accentColor.opacity(0.16)
+                                : Color(nsColor: .controlBackgroundColor))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                        .stroke(
+                            isOn
+                                ? Color.accentColor.opacity(0.55)
+                                : Color.secondary.opacity(0.18),
+                            lineWidth: 1)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(mode.title)
+        .accessibilityLabel(Text(mode.title))
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+}
+
 /// Тулбар с унифицированными кнопками настроек
 struct ToolbarView: View {
     @ObservedObject var viewModel: AnalyzerViewModel
@@ -49,6 +92,12 @@ struct ToolbarView: View {
     @State private var isRefreshMenuOpen = false
     @State private var menuOpenedAt = Date()
     @State private var isRefreshHovering = false
+    /// The countdown is driven by a value, not by a `TimelineView` inside the
+    /// button's label: a label that rebuilt itself twice a second gave the
+    /// popover a new anchor, so a click could open and immediately dismiss it.
+    @State private var countdownTick = Date()
+    private let countdown = Timer.publish(every: 0.5, on: .main, in: .common)
+        .autoconnect()
 
     private var diagnosticsButton: some View {
         ToolbarIconButton(
@@ -183,15 +232,8 @@ struct ToolbarView: View {
     /// seconds in a fixed-width, monospaced slot and is followed by a chevron,
     /// so the control keeps one size on every tick and reads as clickable even
     /// though the native menu indicator is gone.
-    @ViewBuilder
     private var refreshCountdown: some View {
-        if isRefreshMenuOpen {
-            countdownLabel(at: menuOpenedAt)
-        } else {
-            TimelineView(.periodic(from: .now, by: 0.5)) { context in
-                countdownLabel(at: context.date)
-            }
-        }
+        countdownLabel(at: isRefreshMenuOpen ? menuOpenedAt : countdownTick)
     }
 
     private func countdownLabel(at date: Date) -> some View {
@@ -204,7 +246,7 @@ struct ToolbarView: View {
                 .font(.caption2.monospacedDigit())
                 .frame(width: 34, alignment: .trailing)
             Image(systemName: "chevron.down")
-                .font(.system(size: 8, weight: .bold))
+                .font(.system(size: 9, weight: .semibold))
                 .foregroundColor(.secondary)
         }
         .foregroundColor(
@@ -235,29 +277,17 @@ struct ToolbarView: View {
     /// Modal picker replaced by a menu so it matches every other dropdown; the
     /// current mode is the label and a checkmark marks it in the list.
     private var scanModePicker: some View {
-        Menu {
+        HStack(spacing: DesignToken.Spacing.tight) {
             ForEach(ScanMode.allCases) { mode in
-                Button {
+                ScanModeChip(mode: mode, isOn: passiveScan.mode == mode) {
                     viewModel.selectScanMode(mode)
                     if mode != .active { showingScanModes = true }
-                } label: {
-                    if passiveScan.mode == mode {
-                        Label(mode.title, systemImage: "checkmark")
-                    } else {
-                        Label(mode.title, systemImage: mode.systemImage)
-                    }
                 }
             }
-        } label: {
-            AppMenuLabel(
-                title: passiveScan.mode.title,
-                systemImage: passiveScan.mode.systemImage,
-                isActive: passiveScan.mode != .active)
         }
-        .appMenuStyle()
         .help("Scan mode: active, passive or directed")
+        .accessibilityElement(children: .contain)
         .accessibilityLabel("Scan mode")
-        .accessibilityValue(passiveScan.mode.title)
     }
 
     private func remainingUntilRefresh(at date: Date) -> Double {
@@ -288,7 +318,7 @@ struct ToolbarView: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: DesignToken.Spacing.medium) {
 
             // 1. LEFT CONTROLS (Refresh & Settings)
             HStack(spacing: DesignToken.Toolbar.spacing) {
@@ -369,9 +399,7 @@ struct ToolbarView: View {
                     }
 
                 } label: {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 14))
-                        .frame(width: DesignToken.Toolbar.iconWidth + 8)
+                    AppIconMenuLabel(systemImage: "gearshape")
                 }
                 .appMenuStyle()
                 .appToolbarChrome()
@@ -386,7 +414,7 @@ struct ToolbarView: View {
                     TextField("Search...", text: $viewModel.searchText)
                         .textFieldStyle(.plain)
                         .focused($isSearchFocused)
-                        .frame(minWidth: 100, maxWidth: 200)
+                        .frame(minWidth: 90, maxWidth: 140)
                 }
                 .padding(DesignToken.Spacing.tight)
                 .background(Color(nsColor: .controlBackgroundColor))
@@ -409,9 +437,6 @@ struct ToolbarView: View {
                 .background(Color.green.opacity(0.10))
                 .clipShape(Capsule())
             }
-            Text("\(viewModel.networks.count) networks")
-                .font(.caption2)
-                .foregroundColor(.secondary)
 
             // 4. Right Controls
             HStack(spacing: 12) {
@@ -426,8 +451,7 @@ struct ToolbarView: View {
                         Button("Export CSV…") { viewModel.exportCSV() }
                         Button("Export JSON…") { viewModel.exportJSON() }
                     } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .frame(width: DesignToken.Toolbar.iconWidth - 8)
+                        AppIconMenuLabel(systemImage: "square.and.arrow.up")
                     }
                     .appMenuStyle()
                     .appToolbarChrome()
@@ -466,6 +490,9 @@ struct ToolbarView: View {
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)), alignment: .bottom)
         .onReceive(NotificationCenter.default.publisher(for: .lanfiFocusSearch)) { _ in
             isSearchFocused = true
+        }
+        .onReceive(countdown) { date in
+            if !isRefreshMenuOpen { countdownTick = date }
         }
     }
 }

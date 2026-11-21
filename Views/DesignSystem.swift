@@ -205,6 +205,25 @@ struct AppMenuLabel: View {
     }
 }
 
+/// Icon-only dropdown label: same chrome and side padding as `AppMenuLabel`,
+/// so a gear or a share glyph is not a tighter button than the text menus next
+/// to it. Menus without a title used to frame the glyph directly, which left
+/// the icon touching the edge of its control.
+struct AppIconMenuLabel: View {
+    let systemImage: String
+    var isActive = false
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(Theme.Typography.menuIcon)
+            .foregroundColor(isActive ? .accentColor : .primary)
+            .frame(width: Theme.Control.iconWidth - Theme.Control.horizontalPadding * 2)
+            .padding(.horizontal, Theme.Control.horizontalPadding)
+            .appToolbarChrome(isActive: isActive)
+            .accessibilityHidden(true)
+    }
+}
+
 extension View {
     /// The shared dropdown chrome: borderless, intrinsic width, no bezel — the
     /// label carries the chrome via `appToolbarChrome`/`AppMenuLabel`.

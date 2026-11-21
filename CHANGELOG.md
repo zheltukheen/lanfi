@@ -1,5 +1,24 @@
 # Changelog
 
+## 5.6.12 — 2026-11-21
+
+### Fixed
+- **The analyzer's interval menu opens on click again.** The countdown pill used
+  a `TimelineView` inside its own label, so the button got a fresh anchor twice
+  a second and the popover it presented could be torn down immediately. The
+  countdown is now a value updated by a timer, the label keeps one identity, and
+  its chevron is large enough to read as "this opens a list".
+- **Icon menus no longer sit tight against their border.** The gear and the
+  share menu framed the bare glyph; both now use a shared icon label with the
+  same chrome and side padding as the text menus beside them.
+
+### Changed
+- **Scan mode is a chip row.** Active/Passive/Directed are three chips in the
+  table filters' style instead of a native-looking popup, so the current mode is
+  visible at a glance. The toolbar gave up its duplicate "N networks" caption
+  (the filter strip already shows visible/total) and a narrower search field to
+  make room, and "Passive"/"Directed" are now translated in all five locales.
+
 ## 5.6.11 — 2026-11-21
 
 ### Fixed

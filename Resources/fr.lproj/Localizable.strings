@@ -1637,3 +1637,5 @@
 "Warranty" = "Garantie";
 "Measuring the route…" = "Mesure de la route…";
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "Un tour correspond à une sonde traceroute par saut. Le graphique apparaît après le premier tour.";
+"Passive" = "Passif";
+"Directed" = "Dirigé";

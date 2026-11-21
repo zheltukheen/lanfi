@@ -1674,3 +1674,5 @@
 "Warranty" = "Гарантия";
 "Measuring the route…" = "Измеряю маршрут…";
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "Один раунд — один запрос traceroute на узел. График появится после первого раунда.";
+"Passive" = "Пассивно";
+"Directed" = "Направленно";
