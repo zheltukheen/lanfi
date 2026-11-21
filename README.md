@@ -152,25 +152,40 @@ are covered by tests in [`Tests/NetworkAnalyzerTests.swift`](Tests/NetworkAnalyz
 
 ## Comparison
 
-As of November 2026, against common macOS tools:
+Updated 21 November 2026 (LanFi 5.6.16), against common macOS tools:
 
 | | LanFi | WiFi Explorer | NetSpot | Apple Wireless Diagnostics |
 | --- | --- | --- | --- | --- |
 | Price / license | Free, FSL-1.1-ALv2 | Paid (from ~$20; Pro) | Free tier; ~$19/mo or ~$179 one-time | Free |
 | Native CoreWLAN scanning | ✅ | ✅ | ✅ | ✅ |
+| Active, passive (monitor mode) and directed scans | ✅ | ✅ (Pro) | ✅ | Directed only |
 | Quality + congestion scores | ✅ | Partial | Partial | — |
 | Ranked channel recommendations | ✅ | Partial | Partial | — |
+| All-band RF overview with channel overlap | ✅ | ✅ | ✅ | Partial |
 | WPA3/OWE/PMF/WPS audit with remediation | ✅ | Partial | — | — |
+| Evil twin, security downgrade and deauth-burst detection | ✅ | — | — | Partial |
+| VPN status and DNS/IPv6 leak checks | ✅ | — | — | — |
+| Gateway ARP change and DNS-hijack detection | ✅ | — | — | Partial |
 | Network toolkit: ping, traceroute, MTR, DNS, ports, SSL, subnet, iperf3 | ✅ | — | Speed test only | Partial |
-| Uptime Monitor + LAN Scanner + Network Guard | ✅ | — | — | — |
+| DNS console: record types, DoH/DoT, resolver comparison and propagation | ✅ | — | — | Partial |
+| HTTP traffic capture and HAR analysis | ✅ | — | — | — |
+| NAT type and STUN reachability | ✅ | — | — | — |
+| Speed test with bufferbloat grade and history | ✅ | — | ✅ | ✅ |
+| Uptime Monitor, LAN Scanner, Device Shelf with risk findings and Network Guard | ✅ | — | — | — |
+| Listener watch: exposure class and port-change alerts | ✅ | Partial | — | Partial |
+| Persistent monitor: history, events, roaming failures and alerts | ✅ | Partial | Partial | — |
 | Interfaces / gateway / DNS monitor | ✅ | Partial | — | Partial |
-| Remote sensors over SSH | ✅ | ✅ (Pro) | — | — |
+| Per-process traffic, open connections and per-app history | ✅ | — | Partial | — |
+| Remote sensors over SSH and controller inventory (UniFi, Meraki, SNMP) | ✅ | ✅ (Pro) | — | — |
 | CSV + JSON export | ✅ | CSV/PCAP | CSV/PDF | — |
-| Raw information elements | ✅ | ✅ (Pro) | — | — |
-| Menu bar extra | ✅ | — | — | — |
-| Site survey / heatmap | IDW + wall attenuation | — | ✅ | — |
+| Raw information elements, EHT/MLO decoding | ✅ | ✅ (Pro) | — | Partial |
+| Offline pcap/pcapng capture analysis | ✅ | ✅ | — | ✅ |
+| Menu bar: live meter, alerts and connectivity state | ✅ | — | — | — |
+| Site survey / heatmap | IDW + walls, predictive coverage, multi-floor, PDF, GPX | — | ✅ | — |
 | Protocol blocks + diagnostics | ✅ | Partial | Partial | Partial |
-| Grouping, saved sessions, annotations | ✅ | ✅ (Pro) | Partial | — |
+| Grouping, saved sessions, annotations and column profiles | ✅ | ✅ (Pro) | Partial | — |
+| Known-network inventory with Wi-Fi QR | ✅ | — | — | Partial |
+| Command palette, URL scheme, CLI and MCP server | ✅ | — | — | — |
 | PCAP export | Synthetic + live capture | ✅ | — | ✅ |
 | Auto-update | Sparkle signed appcast | ✅ | ✅ | ✅ |
 | Notarized | Roadmap | ✅ | ✅ | ✅ |
