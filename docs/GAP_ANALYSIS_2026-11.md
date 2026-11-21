@@ -1184,9 +1184,10 @@ locales.
       package.
 - [x] Add a macOS 13/14/15/26 matrix, UI smoke tests and performance budgets.
       The test job runs the core package plus the app suite on the images
-      GitHub still provides (`macos-15`, `macos-26`, with `macos-14` best-effort
-      while it retires); macOS 13 no longer has a runner image, so the 13.0
-      deployment target is compiled by the remaining images instead.
+      GitHub still provides (`macos-15`, `macos-26`); 13 and 14 no longer have
+      runner images (a job on either label is cancelled before its first step),
+      so the 13.0 deployment target is compiled and tested by the images that
+      remain.
       `scripts/ui_smoke.sh` runs `--ui-smoke`, which lays out every available
       tool screen and both menu-bar surfaces headlessly, then the bundle check.
       Screenshot capture stays an opt-in local aid (`LANFI_UI_SNAPSHOTS=1`)

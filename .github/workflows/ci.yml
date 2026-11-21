@@ -46,22 +46,15 @@ jobs:
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    # GitHub has retired the macOS 13 runner image and is retiring macOS 14;
-    # the 13.0 deployment target is still compiled by both remaining images.
-    # macOS 14 is best-effort and does not gate the workflow when its image is
-    # unavailable.
-    continue-on-error: ${{ matrix.experimental }}
+    # GitHub no longer offers macOS 13 or macOS 14 runner images: a job on
+    # either label is cancelled without running a step, which cancels the whole
+    # run. The 13.0 deployment target is still compiled and tested by both
+    # images that remain.
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-14
-            experimental: true
-          - os: macos-15
-            experimental: false
-          - os: macos-26
-            experimental: false
+        os: [macos-15, macos-26]
 
     steps:
       - name: Checkout

@@ -17,8 +17,8 @@ Foundation-only seam.
 
 ### Engineering
 - **CI covers the supported systems, the UI and performance.** The test job runs
-on macOS 14/15/26 (13's runner image is retired; the 14 entry is best-effort
-while that image retires),
+on macOS 15 and 26; GitHub no longer offers 13 or 14 runner images, so the
+13.0 deployment target is compiled and tested by the remaining images.
 `scripts/ui_smoke.sh` lays out every available tool screen and both menu-bar
 surfaces headlessly (`--ui-smoke`) and then runs the bundle check; screenshot
 capture stays an opt-in local aid because it needs a GUI session.

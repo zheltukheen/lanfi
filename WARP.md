@@ -543,8 +543,8 @@ The app uses the same seam style: `WiFiScanning` is injected into
   attaches `appcast.xml`.
 - `Casks/lanfi.rb` is updated automatically on release.
 - CI (`.github/workflows/ci.yml`) runs swift-format lint, XCTest on a macOS
-  14/15/26 matrix (14 is best-effort while that image retires; 13 no longer has
-  a runner, so its deployment target is compiled by the remaining images), a UI
+  macOS 15/26 matrix (GitHub no longer offers 13 or 14 images, so the 13.0
+  deployment target is compiled and tested by the images that remain), a UI
   smoke test and performance budgets on macOS 15, then a universal Release
   build. `scripts/ui_smoke.sh` runs `--ui-smoke`, which lays out every available
   tool screen and both menu-bar surfaces headlessly, then `--smoke-test`;
