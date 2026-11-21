@@ -477,6 +477,53 @@ struct DNSToolView: View {
         ]
     }
 
+    /// The answer columns are their own property: folding them into one
+    /// `AppTable` expression pushed the type checker past its limit on an
+    /// older toolchain.
+    private var recordColumns: [AppTableColumn<DNSRecord>] {
+        [
+            AppTableColumn(
+                id: "type", title: "Type", minWidth: 66,
+                value: { .text($0.type.label) }
+            ) { record in
+                ToolkitTypeBadge(
+                    text: record.type.label,
+                    color: ToolkitTypeColor.color(for: record.type))
+            },
+            AppTableColumn(
+                id: "name", title: "Name", minWidth: 140,
+                value: { .text($0.name) }
+            ) { record in
+                Text(record.name)
+                    .font(.caption.monospaced())
+            },
+            AppTableColumn(
+                id: "ttl", title: "TTL", minWidth: 70,
+                value: { .number(Int($0.ttl)) }
+            ) { record in
+                Text("\(record.ttl)s")
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+            },
+            AppTableColumn(
+                id: "priority", title: "Priority", minWidth: 64,
+                value: { .number($0.priority.map(Int.init)) }
+            ) { record in
+                Text(record.priority.map(String.init) ?? "—")
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+            },
+            AppTableColumn(
+                id: "value", title: "Value", minWidth: 200,
+                value: { .text($0.value) }
+            ) { record in
+                Text(record.value)
+                    .font(.caption.monospaced())
+                    .textSelection(.enabled)
+            },
+        ]
+    }
+
     private func recordsTable(_ result: DNSLookupResult) -> some View {
         ToolkitCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
@@ -492,47 +539,7 @@ struct DNSToolView: View {
                 .padding(.bottom, DesignToken.Spacing.tight)
 
                 AppTable(
-                    columns: [
-                        AppTableColumn(
-                            id: "type", title: "Type", minWidth: 66,
-                            value: { .text($0.type.label) }
-                        ) { record in
-                            ToolkitTypeBadge(
-                                text: record.type.label,
-                                color: ToolkitTypeColor.color(for: record.type))
-                        },
-                        AppTableColumn(
-                            id: "name", title: "Name", minWidth: 140,
-                            value: { .text($0.name) }
-                        ) { record in
-                            Text(record.name)
-                                .font(.caption.monospaced())
-                        },
-                        AppTableColumn(
-                            id: "ttl", title: "TTL", minWidth: 70,
-                            value: { .number(Int($0.ttl)) }
-                        ) { record in
-                            Text("\(record.ttl)s")
-                                .font(.caption.monospacedDigit())
-                                .foregroundColor(.secondary)
-                        },
-                        AppTableColumn(
-                            id: "priority", title: "Priority", minWidth: 64,
-                            value: { .number($0.priority.map(Int.init)) }
-                        ) { record in
-                            Text(record.priority.map(String.init) ?? "—")
-                                .font(.caption.monospacedDigit())
-                                .foregroundColor(.secondary)
-                        },
-                        AppTableColumn(
-                            id: "value", title: "Value", minWidth: 200,
-                            value: { .text($0.value) }
-                        ) { record in
-                            Text(record.value)
-                                .font(.caption.monospaced())
-                                .textSelection(.enabled)
-                        },
-                    ] + locationColumn,
+                    columns: recordColumns + locationColumn,
                     rows: result.records, initialKey: "type"
                 )
                 .frame(
