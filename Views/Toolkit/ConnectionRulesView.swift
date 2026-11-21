@@ -5,6 +5,8 @@ import SwiftUI
 struct ConnectionRulesView: View {
     @ObservedObject var rules: ConnectionRulesModel
     @State private var editor: BlockRuleDraft?
+    @State private var suggestions: [RuleTarget] = []
+    @State private var isLoadingSuggestions = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
@@ -39,12 +41,16 @@ struct ConnectionRulesView: View {
                 }
             }
 
+            if !suggestions.isEmpty {
+                suggestionsCard
+            }
+
             if rules.rules.isEmpty {
                 ToolkitEmptyState(
                     icon: "shield.lefthalf.filled",
                     title: "No block rules",
                     message:
-                        "Create one from any socket or process row, or add one here for an application, process, port, host or user."
+                        "Pick a running process or an installed application, or create one from any socket or process row."
                 )
             } else {
                 VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
@@ -83,8 +89,77 @@ struct ConnectionRulesView: View {
         .sheet(item: $editor) { draft in
             BlockRuleEditorSheet(draft: draft) { rule in
                 rules.add(rule)
+                Task { await refreshSuggestions() }
             }
         }
+        .task { await refreshSuggestions() }
+        .onChange(of: rules.rules) { _ in Task { await refreshSuggestions() } }
+    }
+
+    /// Apps that are talking right now and have no rule yet. One click turns a
+    /// row into a rule, which is the whole point of a rules screen: you see
+    /// what is active instead of recalling executable names.
+    private var suggestionsCard: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.tight) {
+                    Label("Active connections without a rule", systemImage: "bolt.horizontal")
+                        .font(.headline)
+                    if isLoadingSuggestions {
+                        ProgressView().controlSize(.small)
+                    }
+                    Spacer()
+                }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DesignToken.Spacing.tight) {
+                        ForEach(suggestions) { target in
+                            Button {
+                                rules.add(target.rule)
+                            } label: {
+                                HStack(spacing: DesignToken.Spacing.tight) {
+                                    Image(systemName: "plus.circle")
+                                        .font(.caption2.weight(.semibold))
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text(target.name)
+                                            .font(.caption.weight(.medium))
+                                        Text(target.detail)
+                                            .font(.system(size: 9))
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.horizontal, DesignToken.Spacing.small)
+                                .padding(.vertical, DesignToken.Spacing.tight)
+                                .background(
+                                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                                        .fill(Color(nsColor: .controlBackgroundColor))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                                        .stroke(
+                                            Color.secondary.opacity(
+                                                DesignToken.Toolbar.strokeOpacity),
+                                            lineWidth: DesignToken.Stroke.hairline)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .help("Add a rule for \(target.name)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func refreshSuggestions() async {
+        isLoadingSuggestions = true
+        defer { isLoadingSuggestions = false }
+        guard let connections = try? await OpenConnectionsService.fetch(includeListeners: false)
+        else {
+            suggestions = []
+            return
+        }
+        suggestions = RuleSuggestionBuilder.suggestions(
+            connections: connections, rules: rules.rules)
     }
 }
 

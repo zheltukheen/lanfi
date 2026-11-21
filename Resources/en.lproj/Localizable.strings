@@ -1640,3 +1640,14 @@
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "Each round is one traceroute probe per hop. The chart appears after the first round.";
 "Passive" = "Passive";
 "Directed" = "Directed";
+"Running apps" = "Running apps";
+"Installed apps" = "Installed apps";
+"Custom value" = "Custom value";
+"Search running processes" = "Search running processes";
+"Search installed apps" = "Search installed apps";
+"Nothing matches" = "Nothing matches";
+"Active connections without a rule" = "Active connections without a rule";
+"1 connection" = "1 connection";
+"%lld connections" = "%lld connections";
+"Pick a running process or an installed application, or create one from any socket or process row." = "Pick a running process or an installed application, or create one from any socket or process row.";
+"Add a rule for %@" = "Add a rule for %@";

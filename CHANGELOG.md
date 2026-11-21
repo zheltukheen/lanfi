@@ -1,5 +1,25 @@
 # Changelog
 
+## 5.6.13 — 2026-11-21
+
+### Added
+- **Rules from what is actually running.** The new-rule sheet offers three
+  sources: running processes, installed applications and the manual form. Each
+  list is searchable, shows the PID and bundle identifier, and fills the rule in
+  from the selection, so a rule no longer starts with typing an executable name
+  by hand. Helpers and XPC services that own sockets but no bundle are matched
+  by executable name.
+- **Suggestions on the Rules tab.** Apps with established sockets that no rule
+  covers yet appear as one-click chips ("Safari — 3 connections"), sorted by
+  activity, and the list refreshes after a rule is added.
+
+### Changed
+- Rule matching stays process-level (LanFi ships no packet filter and no root
+  helper); the picker only changes how a rule is authored.
+- `Models/RuleTargets.swift` keeps the catalog logic free of AppKit so it is
+  unit tested; five tests cover merging, process scoping, ordering and the
+  suggestion list.
+
 ## 5.6.12 — 2026-11-21
 
 ### Fixed

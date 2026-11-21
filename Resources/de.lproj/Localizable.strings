@@ -1639,3 +1639,14 @@
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "Eine Runde ist eine Traceroute-Sonde pro Hop. Das Diagramm erscheint nach der ersten Runde.";
 "Passive" = "Passiv";
 "Directed" = "Gerichtet";
+"Running apps" = "Laufende Apps";
+"Installed apps" = "Installierte Apps";
+"Custom value" = "Eigener Wert";
+"Search running processes" = "Laufende Prozesse suchen";
+"Search installed apps" = "Apps suchen";
+"Nothing matches" = "Keine Treffer";
+"Active connections without a rule" = "Aktive Verbindungen ohne Regel";
+"1 connection" = "1 Verbindung";
+"%lld connections" = "%lld Verbindungen";
+"Pick a running process or an installed application, or create one from any socket or process row." = "Wähle einen laufenden Prozess oder eine installierte App oder lege eine Regel aus einer Socket- oder Prozesszeile an.";
+"Add a rule for %@" = "Regel für %@ hinzufügen";

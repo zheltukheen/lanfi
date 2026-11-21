@@ -747,39 +747,118 @@ enum SocketGroupMode: String, CaseIterable, Identifiable {
 }
 
 /// The rule editor sheet is shared by the Sockets screen and the Rules tab.
+///
+/// The default path is a list: running processes and installed applications can
+/// be picked and searched, and the rule is filled in from the choice. Typing a
+/// value by hand is still there as the "Custom" source for hosts, ports and
+/// users that no catalog can enumerate.
 struct BlockRuleEditorSheet: View {
+    enum Source: String, CaseIterable, Identifiable {
+        case running
+        case applications
+        case custom
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .running: return String(localized: "Running apps")
+            case .applications: return String(localized: "Installed apps")
+            case .custom: return String(localized: "Custom value")
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .running: return "bolt.horizontal.circle"
+            case .applications: return "square.grid.2x2"
+            case .custom: return "character.cursor.ibeam"
+            }
+        }
+    }
+
     @Environment(\.dismiss) private var dismiss
+    @State private var source: Source
     @State private var scope: BlockRuleScope
     @State private var value: String
     @State private var note: String
+    @State private var search = ""
+    @State private var targets: [RuleTarget] = []
+    @State private var isLoadingTargets = true
     let onSave: (ConnectionBlockRule) -> Void
 
     init(draft: BlockRuleDraft, onSave: @escaping (ConnectionBlockRule) -> Void) {
         _scope = State(initialValue: draft.scope)
         _value = State(initialValue: draft.value)
         _note = State(initialValue: draft.note ?? "")
+        // A draft that already carries a value (a row's context menu) keeps the
+        // manual editor; an empty one starts from the pickable list.
+        _source = State(initialValue: draft.value.isEmpty ? .running : .custom)
         self.onSave = onSave
     }
 
     private var trimmed: String { value.trimmingCharacters(in: .whitespacesAndNewlines) }
 
+    private var filteredTargets: [RuleTarget] {
+        let query = search.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let kind: RuleTarget.Kind = source == .applications ? .application : .running
+        return targets.filter { target in
+            guard target.kind == kind else { return false }
+            guard !query.isEmpty else { return true }
+            return target.name.lowercased().contains(query)
+                || target.detail.lowercased().contains(query)
+                || target.value.lowercased().contains(query)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
             Text("New block rule")
                 .font(.title3.weight(.semibold))
-            Picker("Match", selection: $scope) {
-                ForEach(BlockRuleScope.allCases) { scope in
-                    Text(scope.title).tag(scope)
+
+            AppTabBar(
+                sections: [
+                    .init(
+                        id: "ruleSource", title: nil,
+                        items: [
+                            .init(
+                                id: Source.running.rawValue,
+                                title: LocalizedStringKey(Source.running.title),
+                                icon: Source.running.icon),
+                            .init(
+                                id: Source.applications.rawValue,
+                                title: LocalizedStringKey(Source.applications.title),
+                                icon: Source.applications.icon),
+                            .init(
+                                id: Source.custom.rawValue,
+                                title: LocalizedStringKey(Source.custom.title),
+                                icon: Source.custom.icon),
+                        ])
+                ],
+                selection: Binding(
+                    get: { source.rawValue },
+                    set: { source = Source(rawValue: $0) ?? source }),
+                showsGroupTitles: false)
+
+            if source == .custom {
+                Picker("Match", selection: $scope) {
+                    ForEach(BlockRuleScope.allCases) { scope in
+                        Text(scope.title).tag(scope)
+                    }
                 }
+                .pickerStyle(.menu)
+                TextField("Value", text: $value)
+                    .textFieldStyle(.roundedBorder)
+                Text(scope.hint)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            } else {
+                targetList
             }
-            .pickerStyle(.menu)
-            TextField("Value", text: $value)
-                .textFieldStyle(.roundedBorder)
-            Text(scope.hint)
-                .font(.caption2)
-                .foregroundColor(.secondary)
+
             TextField("Note (optional)", text: $note)
                 .textFieldStyle(.roundedBorder)
+
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
@@ -797,6 +876,108 @@ struct BlockRuleEditorSheet: View {
             }
         }
         .padding(DesignToken.Spacing.card)
-        .frame(width: 420)
+        .frame(width: 460)
+        .task { await loadTargets() }
+    }
+
+    private var targetList: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
+            AppSearchField(
+                placeholder: source == .running
+                    ? "Search running processes" : "Search applications",
+                text: $search)
+            Group {
+                if isLoadingTargets {
+                    HStack(spacing: DesignToken.Spacing.tight) {
+                        ProgressView().controlSize(.small)
+                        Text("Loading…")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 120)
+                } else if filteredTargets.isEmpty {
+                    VStack(spacing: DesignToken.Spacing.tight) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("Nothing matches")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 120)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(filteredTargets) { target in
+                                targetRow(target)
+                            }
+                        }
+                    }
+                    .frame(height: 200)
+                    .background(
+                        RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                            .fill(Color(nsColor: .controlBackgroundColor))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                            .stroke(
+                                Color.secondary.opacity(DesignToken.Toolbar.strokeOpacity),
+                                lineWidth: DesignToken.Stroke.hairline)
+                    )
+                }
+            }
+        }
+    }
+
+    private func targetRow(_ target: RuleTarget) -> some View {
+        let isSelected =
+            scope == target.scope
+            && value.compare(target.value, options: .caseInsensitive) == .orderedSame
+        return Button {
+            scope = target.scope
+            value = target.value
+        } label: {
+            HStack(spacing: DesignToken.Spacing.small) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.caption)
+                    .foregroundColor(isSelected ? .accentColor : .secondary.opacity(0.6))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(target.name)
+                        .font(.callout)
+                        .lineLimit(1)
+                    Text(target.detail)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                Spacer(minLength: 0)
+                Text(target.scope.title)
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, DesignToken.Spacing.small)
+            .padding(.vertical, DesignToken.Spacing.tight)
+            .contentShape(Rectangle())
+            .background(
+                isSelected ? Color.accentColor.opacity(0.10) : Color.clear
+            )
+        }
+        .buttonStyle(.plain)
+        .help(target.detail)
+    }
+
+    private func loadTargets() async {
+        isLoadingTargets = true
+        let applications = await Task.detached(priority: .userInitiated) {
+            RuleTargetCatalog.installedApplications()
+        }.value
+        let connections =
+            (try? await OpenConnectionsService.fetch(
+                includeListeners: false, includeUDP: true)) ?? []
+        targets = RuleTargetCatalog.targets(
+            running: RuleTargetCatalog.runningProcesses(connections: connections),
+            applications: applications)
+        isLoadingTargets = false
     }
 }

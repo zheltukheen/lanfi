@@ -1676,3 +1676,14 @@
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "Один раунд — один запрос traceroute на узел. График появится после первого раунда.";
 "Passive" = "Пассивно";
 "Directed" = "Направленно";
+"Running apps" = "Запущенные";
+"Installed apps" = "Установленные приложения";
+"Custom value" = "Вручную";
+"Search running processes" = "Поиск запущенных процессов";
+"Search installed apps" = "Поиск приложений";
+"Nothing matches" = "Ничего не найдено";
+"Active connections without a rule" = "Активные подключения без правила";
+"1 connection" = "1 подключение";
+"%lld connections" = "подключений: %lld";
+"Pick a running process or an installed application, or create one from any socket or process row." = "Выберите запущенный процесс или установленное приложение, либо создайте правило из строки сокета или процесса.";
+"Add a rule for %@" = "Добавить правило для %@";

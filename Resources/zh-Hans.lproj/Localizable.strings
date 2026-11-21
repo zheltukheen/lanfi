@@ -1639,3 +1639,14 @@
 "Each round is one traceroute probe per hop. The chart appears after the first round." = "每一轮会为每个跃点发送一次 traceroute 探测。首轮结束后显示图表。";
 "Passive" = "被动";
 "Directed" = "定向";
+"Running apps" = "运行中的应用";
+"Installed apps" = "已安装应用";
+"Custom value" = "自定义值";
+"Search running processes" = "搜索运行中的进程";
+"Search installed apps" = "搜索应用";
+"Nothing matches" = "没有匹配项";
+"Active connections without a rule" = "没有规则的活动连接";
+"1 connection" = "1 个连接";
+"%lld connections" = "%lld 个连接";
+"Pick a running process or an installed application, or create one from any socket or process row." = "选择一个运行中的进程或已安装的应用，也可以从套接字或进程行创建规则。";
+"Add a rule for %@" = "为 %@ 添加规则";
