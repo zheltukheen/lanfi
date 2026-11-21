@@ -572,6 +572,7 @@ struct SurveyView: View {
                 let columns = max(1, Int(sheet.width / cell))
                 let rows = max(1, Int(sheet.height / cell))
                 let planWidthMeters = survey.project.planWidthMeters ?? 12
+                let planHeightMeters = resolvedPlanHeightMeters
                 let request = SurveyHeatmapRequest(
                     columns: columns, rows: rows, cellSize: Double(cell),
                     pixelWidth: Double(sheet.width), pixelHeight: Double(sheet.height),
@@ -580,7 +581,8 @@ struct SurveyView: View {
                     predictiveMode: mode == .predictive,
                     // Must match `fittedRect` and `drawPlanGrid`, or the
                     // predicted coverage is drawn at the wrong scale.
-                    planWidthMeters: planWidthMeters
+                    planWidthMeters: planWidthMeters,
+                    planHeightMeters: planHeightMeters
                 )
                 ZStack {
                     Color(nsColor: .underPageBackgroundColor)
@@ -852,10 +854,11 @@ struct SurveyView: View {
     /// drawing behaviour.
     private func estimateRSSI(nx: Double, ny: Double) -> Int? {
         if mode == .predictive && !survey.accessPoints.isEmpty {
-            let width = survey.project.planWidthMeters ?? 30
             return SurveyPredictor.estimate(
                 x: nx, y: ny, accessPoints: survey.accessPoints,
-                walls: survey.walls, obstacles: survey.obstacles, planWidthMeters: width
+                walls: survey.walls, obstacles: survey.obstacles,
+                planWidthMeters: survey.project.planWidthMeters ?? 30,
+                planHeightMeters: resolvedPlanHeightMeters
             )
         }
         guard !displayedSamples.isEmpty else { return nil }
@@ -870,9 +873,6 @@ struct SurveyView: View {
     ) {
         let predicted = mode == .predictive && !survey.accessPoints.isEmpty
         let baseOpacity = predicted ? 0.42 : 0.46
-        let heightMeters =
-            survey.project.planHeightMeters
-            ?? max(4, (survey.project.planWidthMeters ?? 12) * 0.7)
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
                 guard let rssi = grid.cells[row * grid.columns + column] else { continue }
@@ -900,9 +900,7 @@ struct SurveyView: View {
     /// 1 next to a sample, falling smoothly to 0 around eight metres away.
     private func heatConfidence(x: Double, y: Double) -> Double {
         let widthMeters = survey.project.planWidthMeters ?? 12
-        let heightMeters =
-            survey.project.planHeightMeters
-            ?? max(4, widthMeters * 0.7)
+        let heightMeters = resolvedPlanHeightMeters
         var nearest = Double.greatestFiniteMagnitude
         for sample in displayedSamples {
             let dx = (sample.x - x) * widthMeters
@@ -974,6 +972,20 @@ struct SurveyView: View {
         .appCardSurface(radius: Theme.Radius.control)
     }
 
+    /// Height of the plan in metres. The width is the calibrated scale, so an
+    /// imported image contributes its own aspect ratio and a blank plan falls
+    /// back to its default footprint. Coverage prediction needs it because the
+    /// plan is stretched across the whole pane: one X unit and one Y unit are
+    /// not the same number of metres unless the plan is square.
+    private var resolvedPlanHeightMeters: Double {
+        if let height = survey.project.planHeightMeters { return height }
+        let width = survey.project.planWidthMeters ?? 12
+        if let image = survey.floorPlanImage, image.size.width > 0 {
+            return width * Double(image.size.height / image.size.width)
+        }
+        return max(4, width * 0.7)
+    }
+
     /// The drawable sheet. An imported floor plan keeps its own aspect ratio so
     /// rooms are not distorted; a hand-drawn plan fills the whole pane, because
     /// it is a metre grid rather than a photograph and used to sit in the middle
@@ -997,7 +1009,7 @@ struct SurveyView: View {
         // ended and where a click would land.
         context.fill(Path(rect), with: .color(Color(nsColor: .controlBackgroundColor)))
         let widthMeters = survey.project.planWidthMeters ?? 12
-        let heightMeters = survey.project.planHeightMeters ?? max(4, widthMeters * 0.7)
+        let heightMeters = resolvedPlanHeightMeters
         var grid = Path()
         let columns = Int(widthMeters.rounded())
         let rows = Int(heightMeters.rounded())

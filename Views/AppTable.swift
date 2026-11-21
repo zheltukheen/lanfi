@@ -247,7 +247,12 @@ struct AppTable<Row: Identifiable>: View {
     ) -> some View {
         let isSorted = showsDirection && sorter.key == column.id
         return HStack(spacing: DesignToken.Spacing.hairline) {
-            Text(column.title)
+            // Column titles are plain strings, and a call site that writes a
+            // literal there is invisible to `String(localized:)`. Resolving the
+            // title as a localized key at the one place headers are drawn makes
+            // every table translate without touching each column list; a title
+            // that is already translated simply falls back to itself.
+            Text(LocalizedStringKey(column.title))
             if isSorted {
                 Image(systemName: sorter.ascending ? "chevron.up" : "chevron.down")
                     .font(Theme.Typography.chevron)

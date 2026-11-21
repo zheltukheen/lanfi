@@ -8,7 +8,7 @@ final class SurveyHeatmapTests: XCTestCase {
         let request = SurveyHeatmapRequest(
             columns: 2, rows: 2, cellSize: 50, pixelWidth: 100, pixelHeight: 100,
             samples: [sample], walls: [], obstacles: [], accessPoints: [],
-            predictiveMode: false, planWidthMeters: 30)
+            predictiveMode: false, planWidthMeters: 30, planHeightMeters: 30)
 
         let grid = request.build()
         XCTAssertEqual(grid.columns, 2)
@@ -25,7 +25,7 @@ final class SurveyHeatmapTests: XCTestCase {
             return SurveyHeatmapRequest(
                 columns: 2, rows: 2, cellSize: 50, pixelWidth: 100, pixelHeight: 100,
                 samples: [sample], walls: [], obstacles: [], accessPoints: [],
-                predictiveMode: false, planWidthMeters: 30)
+                predictiveMode: false, planWidthMeters: 30, planHeightMeters: 30)
         }
 
         XCTAssertNotEqual(request(rssi: -50).key, request(rssi: -70).key)
@@ -38,7 +38,7 @@ final class SurveyHeatmapTests: XCTestCase {
         let request = SurveyHeatmapRequest(
             columns: 2, rows: 3, cellSize: 50, pixelWidth: 100, pixelHeight: 150,
             samples: [sample], walls: [], obstacles: [], accessPoints: [],
-            predictiveMode: false, planWidthMeters: 30)
+            predictiveMode: false, planWidthMeters: 30, planHeightMeters: 30)
 
         var grids: [HeatGridCache.Grid] = []
         for await grid in request.stream(chunkRows: 1) {
@@ -55,9 +55,25 @@ final class SurveyHeatmapTests: XCTestCase {
         let request = SurveyHeatmapRequest(
             columns: 2, rows: 2, cellSize: 50, pixelWidth: 100, pixelHeight: 100,
             samples: [], walls: [], obstacles: [], accessPoints: [ap],
-            predictiveMode: true, planWidthMeters: 30)
+            predictiveMode: true, planWidthMeters: 30, planHeightMeters: 30)
 
         let grid = request.build()
         XCTAssertEqual(grid.cells.compactMap { $0 }.count, 4)
+    }
+
+    /// A plan stretched across a wide pane covers fewer metres vertically than
+    /// horizontally. Using the width for both axes made the predicted distance
+    /// too long and painted weak coverage over a room that is actually close.
+    func testPredictorUsesSeparateHorizontalAndVerticalScales() {
+        let ap = SurveyAccessPoint.new(x: 0.5, y: 0.5, band: "5GHz", channel: 36, txPowerDbm: 20)
+        let square = SurveyPredictor.estimate(
+            x: 0.5, y: 1.0, accessPoints: [ap], walls: [], obstacles: [],
+            planWidthMeters: 30, planHeightMeters: 30)
+        let stretched = SurveyPredictor.estimate(
+            x: 0.5, y: 1.0, accessPoints: [ap], walls: [], obstacles: [],
+            planWidthMeters: 30, planHeightMeters: 6)
+        XCTAssertNotNil(square)
+        XCTAssertNotNil(stretched)
+        XCTAssertGreaterThan(stretched ?? 0, square ?? 0)
     }
 }

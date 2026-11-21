@@ -212,7 +212,8 @@ enum RuleSuggestionBuilder {
             counts[key] = (name, current + 1)
         }
         let covered = Set(
-            rules.filter { $0.scope == .application }.map { $0.value.lowercased() })
+            rules.filter { $0.isEnabled && $0.scope == .application }
+                .map { $0.value.lowercased() })
         var ranked: [(count: Int, target: RuleTarget)] = []
         for (key, value) in counts where !covered.contains(key) {
             let detail =

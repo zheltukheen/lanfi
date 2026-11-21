@@ -15,6 +15,10 @@ struct SurveyHeatmapRequest: Sendable {
     let accessPoints: [SurveyAccessPoint]
     let predictiveMode: Bool
     let planWidthMeters: Double
+    /// The plan fills the workspace, so one screen unit covers a different
+    /// number of metres on X and Y. The predictor needs both scales, otherwise
+    /// a stretched plan reports coverage for a square room.
+    let planHeightMeters: Double
 
     var key: String {
         var parts = [
@@ -38,7 +42,7 @@ struct SurveyHeatmapRequest: Sendable {
         for ap in accessPoints {
             parts.append("a:\(ap.id.uuidString):\(ap.x):\(ap.y):\(ap.band):\(ap.channel):\(ap.txPowerDbm)")
         }
-        parts.append("plan:\(planWidthMeters)")
+        parts.append("plan:\(planWidthMeters)x\(planHeightMeters)")
         return parts.joined(separator: "|")
     }
 
@@ -96,7 +100,8 @@ struct SurveyHeatmapRequest: Sendable {
         if predictiveMode && !accessPoints.isEmpty {
             return SurveyPredictor.estimate(
                 x: nx, y: ny, accessPoints: accessPoints, walls: walls,
-                obstacles: obstacles, planWidthMeters: planWidthMeters)
+                obstacles: obstacles, planWidthMeters: planWidthMeters,
+                planHeightMeters: planHeightMeters)
         }
         guard !samples.isEmpty else { return nil }
         return SurveyInterpolator.estimate(

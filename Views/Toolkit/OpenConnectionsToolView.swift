@@ -791,17 +791,27 @@ struct BlockRuleEditorSheet: View {
     @State private var search = ""
     @State private var targets: [RuleTarget] = []
     @State private var isLoadingTargets = true
+    /// Identity of the rule being edited; nil when the sheet creates a new one.
+    @State private var ruleID: UUID?
+    @State private var createdAt: Date
     let onSave: (ConnectionBlockRule) -> Void
 
     init(draft: BlockRuleDraft, onSave: @escaping (ConnectionBlockRule) -> Void) {
         _scope = State(initialValue: draft.scope)
         _value = State(initialValue: draft.value)
         _note = State(initialValue: draft.note ?? "")
-        // A draft that already carries a value (a row's context menu) keeps the
-        // manual editor; an empty one starts from the pickable list.
-        _source = State(initialValue: draft.value.isEmpty ? .running : .custom)
+        _ruleID = State(initialValue: draft.ruleID)
+        _createdAt = State(initialValue: draft.createdAt ?? Date())
+        // Editing always starts from the manual editor, where the scope and
+        // value can be changed; a new empty draft starts from the pickable
+        // list, and a draft that already carries a value (a row's context menu)
+        // keeps the manual editor.
+        _source = State(
+            initialValue: draft.ruleID != nil || !draft.value.isEmpty ? .custom : .running)
         self.onSave = onSave
     }
+
+    private var isEditing: Bool { ruleID != nil }
 
     private var trimmed: String { value.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -819,7 +829,7 @@ struct BlockRuleEditorSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
-            Text("New block rule")
+            Text(isEditing ? LocalizedStringKey("Edit block rule") : LocalizedStringKey("New block rule"))
                 .font(.title3.weight(.semibold))
 
             AppTabBar(
@@ -869,11 +879,11 @@ struct BlockRuleEditorSheet: View {
                 Spacer()
                 Button("Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("Add rule") {
+                Button(isEditing ? LocalizedStringKey("Save") : LocalizedStringKey("Add rule")) {
                     onSave(
                         ConnectionBlockRule(
-                            scope: scope, value: trimmed,
-                            note: note.isEmpty ? nil : note))
+                            id: ruleID ?? UUID(), scope: scope, value: trimmed,
+                            note: note.isEmpty ? nil : note, createdAt: createdAt))
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)

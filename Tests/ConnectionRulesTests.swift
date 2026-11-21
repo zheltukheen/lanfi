@@ -47,6 +47,61 @@ final class ConnectionRulesTests: XCTestCase {
                 rules: [ConnectionBlockRule(scope: .port, value: "443")]))
     }
 
+    func testDisabledRuleStopsMatching() {
+        var rule = ConnectionBlockRule(scope: .port, value: "443", isEnabled: false)
+        XCTAssertFalse(ConnectionBlockRuleMatcher.matches(connection(), rules: [rule]))
+        rule.isEnabled = true
+        XCTAssertTrue(ConnectionBlockRuleMatcher.matches(connection(), rules: [rule]))
+    }
+
+    func testModelUpdatesTogglesAndRoundTripsRulesThroughJSON() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lanfi-rules-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = ConnectionRulesModel(
+            store: ConnectionBlockRuleStore(directory: root.appendingPathComponent("a")))
+
+        var rule = ConnectionBlockRule(scope: .application, value: "Mail")
+        model.add(rule)
+        rule.scope = .process
+        rule.value = "MailHelper"
+        model.update(rule)
+        XCTAssertEqual(model.rules.count, 1)
+        XCTAssertEqual(model.rules.first?.value, "MailHelper")
+
+        model.setEnabled(false, id: rule.id)
+        XCTAssertEqual(model.rules.first?.isEnabled, false)
+
+        let data = try model.exportData()
+        let other = ConnectionRulesModel(
+            store: ConnectionBlockRuleStore(directory: root.appendingPathComponent("b")))
+        let first = try other.importData(data)
+        XCTAssertEqual(first.added, 1)
+        XCTAssertEqual(other.rules.first?.isEnabled, false)
+
+        // Importing the same file again refreshes the rule instead of cloning it.
+        let again = try other.importData(data)
+        XCTAssertEqual(again.added, 0)
+        XCTAssertEqual(again.updated, 1)
+        XCTAssertEqual(other.rules.count, 1)
+    }
+
+    func testRulesWithoutEnabledFlagStillLoad() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lanfi-rules-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ConnectionBlockRuleStore(directory: root)
+        let legacy =
+            #"[{"id":""# + UUID().uuidString
+            + #"","scope":"process","value":"safari","createdAt":780000000}]"#
+        store.save([])
+        let url = root.appendingPathComponent("block-rules.json")
+        try Data(legacy.utf8).write(to: url, options: .atomic)
+        let rules = store.load()
+        XCTAssertEqual(rules.count, 1)
+        XCTAssertTrue(rules.first?.isEnabled ?? false)
+    }
+
     func testSocketGroupingCollapsesSharedLocalEndpoint() {
         let rows = [
             connection(local: "10.0.0.2:52211", remote: "1.1.1.1:443"),

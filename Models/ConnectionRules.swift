@@ -49,16 +49,37 @@ struct ConnectionBlockRule: Identifiable, Codable, Equatable {
     var value: String
     var note: String?
     var createdAt: Date
+    /// A disabled rule stays in the list and keeps its place, but no longer
+    /// matches sockets. Pausing a rule used to mean deleting it and typing it
+    /// again after the experiment.
+    var isEnabled: Bool
 
     init(
         id: UUID = UUID(), scope: BlockRuleScope, value: String, note: String? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(), isEnabled: Bool = true
     ) {
         self.id = id
         self.scope = scope
         self.value = value
         self.note = note
         self.createdAt = createdAt
+        self.isEnabled = isEnabled
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, scope, value, note, createdAt, isEnabled
+    }
+
+    /// Rules written before `isEnabled` existed must keep loading, so the flag
+    /// decodes as on rather than failing the whole file.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        scope = try container.decode(BlockRuleScope.self, forKey: .scope)
+        value = try container.decode(String.self, forKey: .value)
+        note = try container.decodeIfPresent(String.self, forKey: .note)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
     }
 
     var displayValue: String { value.isEmpty ? "—" : value }
@@ -101,13 +122,13 @@ struct ConnectionBlockRule: Identifiable, Codable, Equatable {
 
 enum ConnectionBlockRuleMatcher {
     static func matches(_ connection: OpenConnection, rules: [ConnectionBlockRule]) -> Bool {
-        rules.contains { $0.matches(connection) }
+        rules.contains { $0.isEnabled && $0.matches(connection) }
     }
 
     static func matches(
         process: String, pid: Int, rules: [ConnectionBlockRule]
     ) -> Bool {
-        rules.contains { $0.matches(process: process, pid: pid) }
+        rules.contains { $0.isEnabled && $0.matches(process: process, pid: pid) }
     }
 
     static func matching(
@@ -309,6 +330,23 @@ final class ConnectionRulesModel: ObservableObject {
         persist()
     }
 
+    /// Saves an edited rule in place, keeping its id and creation date, so a
+    /// changed scope or value does not read as a different rule.
+    func update(_ rule: ConnectionBlockRule) {
+        guard let index = rules.firstIndex(where: { $0.id == rule.id }) else {
+            add(rule)
+            return
+        }
+        rules[index] = rule
+        persist()
+    }
+
+    func setEnabled(_ isEnabled: Bool, id: UUID) {
+        guard let index = rules.firstIndex(where: { $0.id == id }) else { return }
+        rules[index].isEnabled = isEnabled
+        persist()
+    }
+
     func remove(id: UUID) {
         rules.removeAll { $0.id == id }
         persist()
@@ -317,6 +355,56 @@ final class ConnectionRulesModel: ObservableObject {
     func removeAll() {
         rules = []
         persist()
+    }
+
+    // MARK: Moving rules between machines
+
+    struct ImportResult: Equatable {
+        var added = 0
+        var updated = 0
+    }
+
+    func exportData() throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+        return try encoder.encode(rules)
+    }
+
+    /// Merges a rules file into the current set. A rule with the same id — or
+    /// the same scope and value — is replaced rather than duplicated, so
+    /// importing the same file twice changes nothing.
+    func importData(_ data: Data) throws -> ImportResult {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded: [ConnectionBlockRule]
+        do {
+            decoded = try decoder.decode([ConnectionBlockRule].self, from: data)
+        } catch {
+            // The app's own store writes dates as reference-time doubles.
+            decoded = try JSONDecoder().decode([ConnectionBlockRule].self, from: data)
+        }
+        var result = ImportResult()
+        for rule in decoded {
+            let value = rule.value.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !value.isEmpty else { continue }
+            if let index = rules.firstIndex(where: {
+                $0.id == rule.id || ($0.scope == rule.scope && $0.value == rule.value)
+            }) {
+                rules[index] = ConnectionBlockRule(
+                    id: rules[index].id, scope: rule.scope, value: value, note: rule.note,
+                    createdAt: rules[index].createdAt, isEnabled: rule.isEnabled)
+                result.updated += 1
+            } else {
+                rules.append(
+                    ConnectionBlockRule(
+                        id: rule.id, scope: rule.scope, value: value, note: rule.note,
+                        createdAt: rule.createdAt, isEnabled: rule.isEnabled))
+                result.added += 1
+            }
+        }
+        persist()
+        return result
     }
 
     private func persist() { store.save(rules) }

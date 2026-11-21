@@ -1,5 +1,28 @@
 # Changelog
 
+## 5.6.16 — 2026-11-21
+
+### Added
+- **Block rules can be paused and edited.** Each rule has a switch that stops it
+  from matching sockets without deleting it, and a pencil opens the same editor
+  pre-filled, so changing a rule's scope or value no longer means deleting it and
+  typing it again.
+- **Rules export and import as JSON.** A rules file moves a rule set to another
+  Mac or saves it before an experiment; importing merges by rule identity, so a
+  second import updates instead of duplicating.
+
+### Fixed
+- **Table headers are localized.** Column titles were plain strings drawn
+  verbatim, so LAN Scanner and the device shelf showed Device, Hostname, Vendor,
+  Ports, RTT, Availability, Warranty and Last seen in English inside a Russian
+  interface. Headers now resolve as localizable keys, and the column titles that
+  had no translation yet were added in all five languages.
+- **Stretched survey plans no longer skew the coverage prediction.** A hand-drawn
+  plan fills the pane, so a pixel is not the same number of metres on X and on Y;
+  the predictor used the plan width for both axes and reported the wrong
+  distance. Predictive coverage now takes separate horizontal and vertical
+  scales.
+
 ## 5.6.15 — 2026-11-21
 
 ### Changed

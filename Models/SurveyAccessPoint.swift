@@ -52,15 +52,20 @@ enum SurveyPredictor {
         return strongest
     }
 
+    /// `planHeightMeters` keeps the distance honest when the plan is drawn
+    /// stretched across a workspace whose aspect ratio differs from the plan's:
+    /// a metre on X and a metre on Y are then a different number of points.
     static func estimate(
         x: Double, y: Double, accessPoints: [SurveyAccessPoint],
-        walls: [SurveyWall], obstacles: [SurveyObstacle], planWidthMeters: Double = 30
+        walls: [SurveyWall], obstacles: [SurveyObstacle], planWidthMeters: Double = 30,
+        planHeightMeters: Double? = nil
     ) -> Int? {
         guard !accessPoints.isEmpty else { return nil }
+        let heightMeters = planHeightMeters ?? planWidthMeters
         var strongest: Int?
         for ap in accessPoints {
             let dx = (ap.x - x) * planWidthMeters
-            let dy = (ap.y - y) * planWidthMeters
+            let dy = (ap.y - y) * heightMeters
             let distance = max(0.3, sqrt(dx * dx + dy * dy))
             let frequency = frequencyMHz(band: ap.band, channel: ap.channel)
             let fspl = 20 * log10(distance) + 20 * log10(frequency) - 27.55
