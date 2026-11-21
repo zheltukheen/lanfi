@@ -1,5 +1,29 @@
 # Changelog
 
+## 5.6.8 — 2026-11-21
+
+### Fixed
+- **Tables read as tables again.** Every `AppTable` now draws a hairline rule
+  between columns in the header and in each row, gives each cell horizontal and
+  vertical padding instead of gluing text to the column edge, and paints the
+  header band so it separates from the data. Header type moved from `caption2`
+  to a 12 pt semibold `Theme.Typography.tableHeader`, so a header is legible and
+  the same size in every screen.
+- **Columns fill the card.** Each column used to take its minimum width while a
+  trailing `Spacer` swallowed the rest, which left the columns huddled at the
+  left of a half-empty card. `Models/TableColumnLayout.swift` now distributes the
+  leftover space in proportion to the column minimums, so the table ends exactly
+  at the card edge.
+- **Columns can be resized.** Every column boundary is a 7 pt grab strip with a
+  resize cursor; dragging it sets that column's width, and the other columns
+  give up space down to their minimums before the table starts scrolling. A
+  plain click on the header still sorts, and a column cannot be dragged below
+  its declared minimum.
+
+### Added
+- `Tests/TableColumnLayoutTests` covers the fill, proportional, minimum, borrow
+  and scroll cases of the width rules.
+
 ## 5.6.7 — 2026-11-21
 
 ### Fixed

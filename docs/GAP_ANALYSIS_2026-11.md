@@ -1184,6 +1184,20 @@ locales.
 
 ---
 
+## Delivered in the forty-third slice (2026-11-21)
+
+Tables fixed at the shared builder instead of screen by screen. `AppTable` had
+no column rules (only a horizontal divider), no cell padding (text sat against
+the column edge), a `caption2` header in every screen, no way to resize a
+column, and a trailing `Spacer` that ate the leftover width — so all columns
+huddled at the left of a half-empty card. The builder now paints a header band
+with a 12 pt semibold `Theme.Typography.tableHeader`, draws
+`Theme.Surface.divider` rules between columns in both the header and the rows,
+pads every cell, and reads widths from `Models/TableColumnLayout.swift`, which
+fills the card, honours a hand-dragged column and borrows from the flexible ones
+down to their minimums before scrolling. A 7 pt grab strip on each boundary
+resizes; a plain header click still sorts.
+
 ## Delivered in the forty-second slice (2026-11-21)
 
 Site-survey plan repaired. Three defects made the screen unusable rather than

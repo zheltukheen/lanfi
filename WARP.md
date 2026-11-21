@@ -263,6 +263,11 @@ an app bundle.
 - `Views/WindowLayout.swift` — fits the restored main window into the visible
   screen area, because a frame larger than the display hid the bottom of the
   survey plan.
+- `Views/AppTable.swift` — the one table builder: header band, column rules,
+  cell padding, sortable headers and a drag strip on every column boundary.
+  `Models/TableColumnLayout.swift` decides the widths (fill the card, honour a
+  hand-dragged column, borrow from the flexible ones down to their minimums);
+  `TableMetrics` in `Views/TableStyle.swift` holds the shared table geometry.
 - `ViewModels/DiagnosticsViewModel.swift` — diagnostics run/monitor state.
 - `ViewModels/SurveyViewModel.swift` — survey project and floor-plan state.
 - `Views/SpectrumView.swift` — per-band Canvas spectrum with hit testing.
