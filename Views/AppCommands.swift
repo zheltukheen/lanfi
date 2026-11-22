@@ -209,6 +209,10 @@ struct LanFiCommands: Commands {
             }
             .keyboardShortcut("e", modifiers: [.command, .option])
 
+            Button("Export Combined Report as PDF…") {
+                exportCombinedReportPDF()
+            }
+
             Divider()
 
             Button("Export Filter Profile…") {
@@ -232,8 +236,8 @@ struct LanFiCommands: Commands {
 
     /// One HTML file with the scan, survey, security findings, diagnostics,
     /// speed history and monitor events — the handover document.
-    private func exportCombinedReport() {
-        let report = CombinedReportBuilder.make(
+    private func combinedReport() -> CombinedReport {
+        CombinedReportBuilder.make(
             networks: viewModel.networks,
             analysis: viewModel.analysis,
             survey: survey.project,
@@ -241,6 +245,10 @@ struct LanFiCommands: Commands {
             speedTests: ThroughputHistoryStore().load(),
             events: viewModel.monitor.events
         )
+    }
+
+    private func exportCombinedReport() {
+        let report = combinedReport()
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.html]
         panel.nameFieldStringValue = "LanFi-report-\(Self.dateStamp()).html"
@@ -254,6 +262,26 @@ struct LanFiCommands: Commands {
             alert.messageText = String(localized: "Could not export the report")
             alert.informativeText = error.localizedDescription
             alert.runModal()
+        }
+    }
+
+    private func exportCombinedReportPDF() {
+        let report = combinedReport()
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        panel.nameFieldStringValue = "LanFi-report-\(Self.dateStamp()).pdf"
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        Task {
+            do {
+                let data = try await CombinedReportPDFExporter.pdf(for: report)
+                try data.write(to: url)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = String(localized: "Could not export the PDF")
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+            }
         }
     }
 

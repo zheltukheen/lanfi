@@ -1831,3 +1831,5 @@
 "Legacy WPA should be replaced by WPA2/WPA3." = "Legacy WPA should be replaced by WPA2/WPA3.";
 "These networks are in range but have no saved entry. Join them in System Settings if they belong to you." = "These networks are in range but have no saved entry. Join them in System Settings if they belong to you.";
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Saved names come from System Settings; live fields come from the current scan. Passwords are never read.";
+"Export Combined Report as PDF…" = "Export Combined Report as PDF…";
+"Could not export the PDF" = "Could not export the PDF";

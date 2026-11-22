@@ -3,6 +3,7 @@
     import CoreWLAN
     import Foundation
     import LanFiCore
+    import UniformTypeIdentifiers
 
     /// App Intents keep LanFi usable from Shortcuts without a visible window.
     /// They only read the radio, exactly like the app; nothing is uploaded.
@@ -86,6 +87,48 @@
         }
     }
 
+    /// P1.7: a Shortcut can hand the current scan to Files or another app
+    /// without opening LanFi. Columns match the app's default scan export.
+    @available(macOS 13.0, *)
+    struct LanFiExportScanIntent: AppIntent {
+        static var title: LocalizedStringResource = "Export the Wi-Fi scan"
+        static var description = IntentDescription(
+            "Scans nearby networks and returns a CSV file with SSID, BSSID, band, channel, signal, security and vendor."
+        )
+        static var openAppWhenRun: Bool = false
+
+        func perform() async throws -> some IntentResult & ReturnsValue<IntentFile> & ProvidesDialog {
+            let networks = try await WiFiScanner().scan()
+            let header = "ssid,bssid,band,channel,width_mhz,signal_dbm,security,vendor"
+            let rows = networks.map { network in
+                [
+                    network.ssid, network.bssid, network.bandLabel, String(network.channel),
+                    String(network.channelWidthMHz), String(network.signal), network.security,
+                    network.vendor ?? "",
+                ].map(Self.csvField).joined(separator: ",")
+            }
+            let csv = ([header] + rows).joined(separator: "\r\n") + "\r\n"
+            let file = IntentFile(
+                data: Data(csv.utf8),
+                filename: "LanFi-scan-\(Self.dateStamp()).csv",
+                type: .commaSeparatedText
+            )
+            return .result(
+                value: file,
+                dialog: "Exported \(networks.count) networks as CSV.")
+        }
+
+        private static func csvField(_ value: String) -> String {
+            "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
+        }
+
+        private static func dateStamp() -> String {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.string(from: Date())
+        }
+    }
+
     @available(macOS 13.0, *)
     struct LanFiAppShortcuts: AppShortcutsProvider {
         static var appShortcuts: [AppShortcut] {
@@ -112,6 +155,12 @@
                 phrases: ["Run a speed test in \(.applicationName)"],
                 shortTitle: "Speed test",
                 systemImageName: "speedometer"
+            )
+            AppShortcut(
+                intent: LanFiExportScanIntent(),
+                phrases: ["Export the Wi-Fi scan in \(.applicationName)"],
+                shortTitle: "Export scan",
+                systemImageName: "square.and.arrow.up"
             )
         }
     }

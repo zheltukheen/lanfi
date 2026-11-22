@@ -218,8 +218,11 @@ opens without a multi-gigabyte memory spike.
       with the same RSNE parser, so a Wi-Fi 7 compatibility-mode AP shows its
       SAE/AKM-24 overrides (raw-IE view plus an "RSN override" fact in the
       security block); the same vendor OUI names Hotspot 2.0 (0x10) and SAE-PK
-      (0x1F). The WFA Capabilities element body (capability bitmap) and RSNXE
-      Override (0x2B) remain open.
+      (0x1F). RSNXE Override (0x2B) is decoded from its RSNXE Information field
+      (field length nibble plus the extended-capability bits: Protected TWT,
+      SAE H2E, SAE-PK, Protected WUR, Secure LTF/RTT, URNM-MFPR-X20, Protected
+      Announcement, PBAC), and RSN Selection (0x2C) shows the selected variant.
+      The WFA Capabilities element body (capability bitmap) remains open.
 - [x] 6 GHz PSC hints and a “why is this AP not visible” explanation
       (`VisibilityAdvisor`): PSC vs non-PSC channels, DFS sharing and hidden
       SSIDs, plus the same hint in the empty workspace.
@@ -288,11 +291,15 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       target ship; throughput/latency per point, auto-walk and the multi-floor
       diff remain open.
 - [~] **Combined report** — the self-contained HTML report with scan, survey,
-      diagnostics and speed-test sections ships from the Data menu; PDF,
-      branding and scheduled delivery remain open.
-- [~] **Shortcuts/App Intents/widgets** — scan, connected network and speed
-      test intents with Shortcut phrases ship; export, capture and widgets
-      remain open.
+      diagnostics and speed-test sections ships from the Data menu. PDF export
+      delivered 2026-11-22: the same HTML is rendered by `WKWebView` through
+      `CombinedReportPDFExporter` and saved as a paginated PDF from the Data
+      menu, so the handover document no longer needs the browser's print dialog.
+      Branding and scheduled delivery remain open.
+- [~] **Shortcuts/App Intents/widgets** — scan, connected network, speed test
+      and connectivity-state intents with Shortcut phrases ship. CSV export
+      delivered 2026-11-22 (`LanFiExportScanIntent` returns a dated scan file to
+      Shortcuts). Live capture and widgets remain open.
 - [x] **MCP 2.0** — live actions (`scan now`, `start capture`,
       `survey sample`), not only the read-only snapshot. Delivered 2026-11-22:
       `lanfi_scan_now`, `lanfi_start_capture` and `lanfi_survey_sample` ask the

@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.6.23 — 2026-11-22
+
+### Added
+- **PDF combined report.** Data → Export Combined Report as PDF… renders the
+  same self-contained HTML report through WebKit and saves a paginated PDF, so
+  handover no longer needs the browser's print dialog.
+- **Scan CSV export from Shortcuts.** The new “Export the Wi-Fi scan” intent
+  returns a dated CSV (SSID, BSSID, band, channel, width, signal, security,
+  vendor) to Files or any Shortcut action.
+- **RSNXE Override and RSN Selection decoding.** Vendor elements 0x2B and 0x2C
+  from the Wi-Fi Alliance OUI now show field length, SAE H2E/SAE-PK, Protected
+  TWT/WUR, Secure LTF/RTT, PBAC and the selected RSN variant, with truncation
+  reported instead of a silently partial decode.
+
 ## 5.6.22 — 2026-11-22
 
 ### Added

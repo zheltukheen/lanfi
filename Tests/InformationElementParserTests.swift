@@ -216,6 +216,42 @@ final class RsnOverrideElementTests: XCTestCase {
         XCTAssertTrue(element.summary.hasPrefix("Raw:"))
     }
 
+    func testRsnxeOverrideDecodesExtendedCapabilities() throws {
+        // RSNXE Information field: length nibble = 1 means two octets, then
+        // SAE H2E (bit 5) and Secure LTF (bit 8).
+        var data = Data([221, 9])
+        data.append(contentsOf: [0x50, 0x6F, 0x9A, 0x2B, 0x21, 0x01, 0x00, 0x00, 0x00])
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "RSNXE Override" })
+        XCTAssertTrue(element.summary.contains("SAE Hash-to-Element"), "\(element.summary)")
+        XCTAssertTrue(element.summary.contains("Secure LTF"), "\(element.summary)")
+        XCTAssertFalse(element.summary.contains("SAE-PK"), "\(element.summary)")
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Field length: 2") })
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Overrides the RSNXE") })
+    }
+
+    func testRsnxeOverrideWithoutCapabilitiesAndTruncatedPayload() throws {
+        var empty = Data([221, 5])
+        empty.append(contentsOf: [0x50, 0x6F, 0x9A, 0x2B, 0x00])
+        var truncated = Data([221, 6])
+        truncated.append(contentsOf: [0x50, 0x6F, 0x9A, 0x2B, 0x03, 0x20])
+
+        let parsed = InformationElementParser.parse(empty + truncated)
+        let elements = parsed.elements.filter { $0.name == "RSNXE Override" }
+        XCTAssertEqual(elements.count, 2)
+        XCTAssertTrue(elements[0].summary.contains("no extended capabilities"))
+        XCTAssertTrue(elements[1].detailLines.contains { $0.contains("Payload truncated") })
+    }
+
+    func testRsnSelectionIsDecoded() throws {
+        var data = Data([221, 5])
+        data.append(contentsOf: [0x50, 0x6F, 0x9A, 0x2C, 0x02])
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "RSN Selection" })
+        XCTAssertTrue(element.summary.contains("0x02"))
+        XCTAssertTrue(element.detailLines.contains { $0.contains("Variant: 0x02") })
+    }
+
     func testHotspotAndSaePkAreNamed() throws {
         var hotspot = Data([221, 8])
         hotspot.append(contentsOf: [0x50, 0x6F, 0x9A, 0x10, 0x01, 0x02, 0x03, 0x04])

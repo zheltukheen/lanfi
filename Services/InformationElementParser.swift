@@ -876,12 +876,78 @@ struct InformationElementParser {
                 }
                 lines.append("Overrides the RSNE cipher/AKM lists for capable clients")
                 return (name: label, summary: rsn.summary, detailLines: lines)
+            case 0x2B:
+                let rsnxe = decodeRsnxe(body)
+                return (
+                    name: "RSNXE Override",
+                    summary: rsnxe.summary,
+                    detailLines: rsnxe.detailLines + [
+                        "Overrides the RSNXE capabilities for capable clients"
+                    ]
+                )
+            case 0x2C:
+                guard let variant = body.first else {
+                    return (name: "RSN Selection", summary: "Empty", detailLines: ["Empty"])
+                }
+                let value = String(format: "0x%02X", variant)
+                return (
+                    name: "RSN Selection",
+                    summary: "Variant \(value)",
+                    detailLines: [
+                        "Variant: \(value)",
+                        "Tells the AP which RSNE/RSNOE variant the client selected",
+                    ]
+                )
             default:
                 break
             }
         }
 
         return (name: vendorName, summary: vendorName, detailLines: ["Vendor: \(vendorName)"])
+    }
+
+    private struct RsnxeInfo {
+        let summary: String
+        let detailLines: [String]
+    }
+
+    /// RSNXE Information field: the low nibble of the first octet is the field
+    /// length minus one, and the capability bits start in the same octet.
+    private static func decodeRsnxe(_ data: Data) -> RsnxeInfo {
+        guard let first = data.first else {
+            return RsnxeInfo(summary: "Empty", detailLines: ["Empty"])
+        }
+        let fieldLength = Int(first & 0x0F) + 1
+        let available = min(fieldLength, data.count)
+        var capabilities: UInt32 = 0
+        for (index, byte) in data.prefix(available).enumerated() where index < 4 {
+            capabilities |= UInt32(byte) << (8 * index)
+        }
+        let flags: [(UInt32, String)] = [
+            (1 << 4, "Protected TWT"),
+            (1 << 5, "SAE Hash-to-Element"),
+            (1 << 6, "SAE-PK"),
+            (1 << 7, "Protected WUR"),
+            (1 << 8, "Secure LTF"),
+            (1 << 9, "Secure RTT"),
+            (1 << 10, "URNM-MFPR-X20"),
+            (1 << 11, "Protected Announcement"),
+            (1 << 12, "PBAC"),
+        ]
+        let enabled = flags.filter { capabilities & $0.0 != 0 }.map(\.1)
+        var lines = [
+            "Field length: \(fieldLength) byte\(fieldLength == 1 ? "" : "s")",
+            "Capabilities: \(enabled.isEmpty ? "none advertised" : enabled.joined(separator: ", "))",
+        ]
+        if available < fieldLength {
+            lines.append("Payload truncated: \(available) of \(fieldLength) bytes")
+        }
+        return RsnxeInfo(
+            summary: enabled.isEmpty
+                ? "RSNXE Override: no extended capabilities"
+                : "RSNXE Override: \(enabled.joined(separator: ", "))",
+            detailLines: lines
+        )
     }
 
     private struct WpsInfo {

@@ -232,12 +232,13 @@ connectivity watchdog, VPN leak checks, DNS benchmark and comparison,
 per-app traffic history, ARP/DNS-hijack detection, link automation, SSH
 launch, plain-language services and the device shelf.
 
-5.6.17–5.6.22 add MCP live actions and the GPS map, opt-in DNS switching with
+5.6.17–5.6.23 add MCP live actions and the GPS map, opt-in DNS switching with
 revert, per-app domain attribution, the native ICMP probe, live capture
 counters, passive BLE beacon decoding, spectrum interferer classification with
 remote WLAN Pi/NetAlly import, SNMP/SSDP router polling, 802.11bn decoder
-versioning and the expanded known-network inventory (live BSSID grouping,
-filters, CSV/JSON export, weak-security warnings).
+versioning, the expanded known-network inventory (live BSSID grouping, filters,
+CSV/JSON export, weak-security warnings), PDF combined reports, the Shortcuts
+scan-export intent and RSNXE Override decoding.
 
 Remaining outside the shipped code: actual Apple notarization (no Developer
 Program account/Developer ID certificate), live vendor spectrum protocols for

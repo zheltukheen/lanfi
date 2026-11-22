@@ -1830,3 +1830,5 @@
 "Legacy WPA should be replaced by WPA2/WPA3." = "WPA obsolète doit être remplacé par WPA2/WPA3.";
 "These networks are in range but have no saved entry. Join them in System Settings if they belong to you." = "Ces réseaux sont à portée mais ne sont pas enregistrés. Rejoignez-les dans Réglages Système s’ils vous appartiennent.";
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Les noms enregistrés viennent de Réglages Système, les champs live du scan actuel. Les mots de passe ne sont jamais lus.";
+"Export Combined Report as PDF…" = "Exporter le rapport combiné en PDF…";
+"Could not export the PDF" = "Impossible d’exporter le PDF";

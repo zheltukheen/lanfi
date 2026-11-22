@@ -1830,3 +1830,5 @@
 "Legacy WPA should be replaced by WPA2/WPA3." = "旧版 WPA 应替换为 WPA2/WPA3。";
 "These networks are in range but have no saved entry. Join them in System Settings if they belong to you." = "这些网络在范围内但没有保存记录。如果属于你，请在系统设置中连接。";
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "已保存名称来自系统设置，实时字段来自当前扫描。从不读取密码。";
+"Export Combined Report as PDF…" = "将综合报告导出为 PDF…";
+"Could not export the PDF" = "无法导出 PDF";
