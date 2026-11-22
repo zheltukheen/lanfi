@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.6.33 — 2026-11-22
+
+### Changed
+- **First tagged release since 5.6.16.** The sixteen versions from 5.6.17 to
+  5.6.32 ship together in this build, and the release notes collect every one
+  of those sections below their own heading.
+
 ## 5.6.32 — 2026-11-22
 
 ### Changed
