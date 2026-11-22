@@ -109,7 +109,8 @@ struct SurveyFloorInput {
 enum SurveyPredictor {
     static func estimate3D(
         x: Double, y: Double, targetFloorLevel: Int, floors: [SurveyFloorInput],
-        planWidthMeters: Double = 30, floorAttenuationDb: Double = 12
+        planWidthMeters: Double = 30, floorAttenuationDb: Double = 12,
+        calibrationDb: Double = 0
     ) -> Int? {
         var strongest: Int?
         for floor in floors {
@@ -134,7 +135,8 @@ enum SurveyPredictor {
                     toX: x, y: y, planWidthMeters: planWidthMeters,
                     planHeightMeters: planWidthMeters)
                 let rssi = Int(
-                    (ap.txPowerDbm - fspl - floorLoss - wallLoss - antennaLoss).rounded())
+                    (ap.txPowerDbm - fspl - floorLoss - wallLoss - antennaLoss + calibrationDb)
+                        .rounded())
                 strongest = max(strongest ?? rssi, rssi)
             }
         }
@@ -147,7 +149,7 @@ enum SurveyPredictor {
     static func estimate(
         x: Double, y: Double, accessPoints: [SurveyAccessPoint],
         walls: [SurveyWall], obstacles: [SurveyObstacle], planWidthMeters: Double = 30,
-        planHeightMeters: Double? = nil
+        planHeightMeters: Double? = nil, calibrationDb: Double = 0
     ) -> Int? {
         guard !accessPoints.isEmpty else { return nil }
         let heightMeters = planHeightMeters ?? planWidthMeters
@@ -181,7 +183,8 @@ enum SurveyPredictor {
             let antennaLoss = ap.antennaLossDb(
                 toX: x, y: y, planWidthMeters: planWidthMeters,
                 planHeightMeters: heightMeters)
-            let rssi = Int((ap.txPowerDbm - fspl - attenuation - antennaLoss).rounded())
+            let rssi = Int(
+                (ap.txPowerDbm - fspl - attenuation - antennaLoss + calibrationDb).rounded())
             strongest = max(strongest ?? rssi, rssi)
         }
         return strongest

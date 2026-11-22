@@ -10,6 +10,7 @@ struct SurveyView: View {
     @State private var wallMaterial: SurveyWallMaterial = .drywall
     @State private var antennaPattern: SurveyAntennaPattern = .omni
     @State private var antennaHeading = 0.0
+    @State private var useCalibration = true
     @State private var roomPoints: [SurveyPoint] = []
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
@@ -33,6 +34,14 @@ struct SurveyView: View {
 
     private var displayedSamples: [SurveySample] {
         survey.samples(for: selectedNetwork)
+    }
+
+    private var calibration: SurveyCalibration? {
+        SurveyCalibrationCalculator.compute(project: survey.project)
+    }
+
+    private var calibrationOffset: Double {
+        useCalibration ? (calibration?.offsetDb ?? 0) : 0
     }
 
     var body: some View {
@@ -255,6 +264,8 @@ struct SurveyView: View {
                     pattern: antennaPattern, headingDegrees: antennaHeading)
             }
             .disabled(survey.accessPoints.isEmpty)
+            Toggle(String(localized: "Calibrate from samples"), isOn: $useCalibration)
+                .disabled(calibration == nil)
             Button(String(localized: "Clear Walls"), role: .destructive) {
                 survey.clearWalls()
                 pendingWallStart = nil
@@ -337,6 +348,11 @@ struct SurveyView: View {
                     ToolkitMetric(title: "Walls", value: "\(survey.walls.count)")
                     ToolkitMetric(title: "Rooms", value: "\(survey.obstacles.count)")
                     ToolkitMetric(title: "APs", value: "\(survey.accessPoints.count)")
+                }
+                if let calibration, useCalibration {
+                    Text(calibration.summary)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -631,7 +647,8 @@ struct SurveyView: View {
                     // Must match `fittedRect` and `drawPlanGrid`, or the
                     // predicted coverage is drawn at the wrong scale.
                     planWidthMeters: planWidthMeters,
-                    planHeightMeters: planHeightMeters
+                    planHeightMeters: planHeightMeters,
+                    calibrationDb: calibrationOffset
                 )
                 ZStack {
                     Color(nsColor: .underPageBackgroundColor)
@@ -910,7 +927,8 @@ struct SurveyView: View {
                 x: nx, y: ny, accessPoints: survey.accessPoints,
                 walls: survey.walls, obstacles: survey.obstacles,
                 planWidthMeters: survey.project.planWidthMeters ?? 30,
-                planHeightMeters: resolvedPlanHeightMeters
+                planHeightMeters: resolvedPlanHeightMeters,
+                calibrationDb: calibrationOffset
             )
         }
         guard !displayedSamples.isEmpty else { return nil }

@@ -1899,3 +1899,6 @@
 "Omni" = "Всенаправленная";
 "Directional 90°" = "Направленная 90°";
 "Panel 60°" = "Панельная 60°";
+"Calibrate from samples" = "Калибровать по замерам";
+"Calibrate" = "Калибровка";
+"Calibration %+.0f dB · %lld points · ±%.0f dB" = "Калибровка %+.0f дБ · %lld точек · ±%.0f дБ";

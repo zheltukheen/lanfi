@@ -19,6 +19,9 @@ struct SurveyHeatmapRequest: Sendable {
     /// number of metres on X and Y. The predictor needs both scales, otherwise
     /// a stretched plan reports coverage for a square room.
     let planHeightMeters: Double
+    /// Measured offset applied to the predictive model; zero keeps the raw
+    /// free-space estimate.
+    var calibrationDb: Double = 0
 
     var key: String {
         var parts = [
@@ -43,6 +46,7 @@ struct SurveyHeatmapRequest: Sendable {
             parts.append("a:\(ap.id.uuidString):\(ap.x):\(ap.y):\(ap.band):\(ap.channel):\(ap.txPowerDbm)")
         }
         parts.append("plan:\(planWidthMeters)x\(planHeightMeters)")
+        parts.append("cal:\(calibrationDb)")
         return parts.joined(separator: "|")
     }
 
@@ -101,7 +105,7 @@ struct SurveyHeatmapRequest: Sendable {
             return SurveyPredictor.estimate(
                 x: nx, y: ny, accessPoints: accessPoints, walls: walls,
                 obstacles: obstacles, planWidthMeters: planWidthMeters,
-                planHeightMeters: planHeightMeters)
+                planHeightMeters: planHeightMeters, calibrationDb: calibrationDb)
         }
         guard !samples.isEmpty else { return nil }
         return SurveyInterpolator.estimate(

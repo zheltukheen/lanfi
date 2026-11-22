@@ -1862,3 +1862,6 @@
 "Omni" = "全向";
 "Directional 90°" = "定向 90°";
 "Panel 60°" = "面板 60°";
+"Calibrate from samples" = "根据采样校准";
+"Calibrate" = "校准";
+"Calibration %+.0f dB · %lld points · ±%.0f dB" = "校准 %+.0f dB · %lld 个点 · ±%.0f dB";

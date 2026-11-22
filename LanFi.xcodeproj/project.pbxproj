@@ -78,6 +78,7 @@
 		1311FC6B8FFBE6BE9B570378 /* LiveCaptureWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA406676E54068A2D199505 /* LiveCaptureWiringTests.swift */; };
 		137C3E56B2FDB8635D40BB40 /* GeoIPModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FED3195DD05AC301C5DC465 /* GeoIPModels.swift */; };
 		13A4995D494CC86EE5A5998A /* DeviceShelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16ABE02BDD6A7CCC817DCB91 /* DeviceShelfStore.swift */; };
+		13C5E9991E2EBA92EAEC14D9 /* SurveyCalibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C71433E4FA9084C1C70CCDB /* SurveyCalibration.swift */; };
 		13D45087CC5833F7C658CD7F /* MCPToolkit+Scan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0426FA41134C7E9182F3F6A7 /* MCPToolkit+Scan.swift */; };
 		13D80BA6C6CF5CA187E4871C /* LiveClientDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99373C5F0562D292C28FCCB3 /* LiveClientDiscoveryView.swift */; };
 		1413BC888E207681E46C44FD /* RFExplorerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B348D4E69A2EE5ACBDA855E /* RFExplorerProtocol.swift */; };
@@ -1000,6 +1001,7 @@
 		F59F0CC420D276D7736C905A /* AnalyzerViewModel+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF9625F34AB1FEFA8565A15 /* AnalyzerViewModel+Persistence.swift */; };
 		F5BAD0D895AE1E64ECAE5836 /* OverviewDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BDED097B33FE5FF296DD71 /* OverviewDashboardView.swift */; };
 		F6171FAA2A1901BEA51127A5 /* GatewayIntegrity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3893B4FD816CC41E8376E0E0 /* GatewayIntegrity.swift */; };
+		F6779B87CEE1BEFE209BFA2F /* SurveyCalibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C71433E4FA9084C1C70CCDB /* SurveyCalibration.swift */; };
 		F6C50551FFE17346EA40C10A /* UptimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 204AFE2256A942A9A25527E4 /* UptimeModels.swift */; };
 		F6DEF7803AF90ABC4F099D35 /* ChannelPlanCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3BE0D95B38EF723C184BBA /* ChannelPlanCache.swift */; };
 		F6F4BF78701E643589784EC2 /* ExpressionColumnsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8CC55FD96FA73ACBD0E5C4 /* ExpressionColumnsSettingsView.swift */; };
@@ -1011,6 +1013,7 @@
 		F7AD880AABDB06F2E1C68DE4 /* MCPProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D3DA1A00ECCFD28E1C17175 /* MCPProtocol.swift */; };
 		F7B0B2A5F42AB7105CB0C365 /* SparklineGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2A826AB5F61814DF3A00EB /* SparklineGeometry.swift */; };
 		F7D41D285F8052CB58CDF8E1 /* MTRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA22124E58C9880D0963D6F /* MTRService.swift */; };
+		F81C9338C77FA97A8879A9C4 /* SurveyCalibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C71433E4FA9084C1C70CCDB /* SurveyCalibration.swift */; };
 		F87ABA0C3327BD40BE52AE15 /* Iperf3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1231751D684779D89F4286E5 /* Iperf3Tests.swift */; };
 		F90AF0A10AE59AA39BA3C95E /* SecurityParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3543F9C8415CBB18D3FC7D /* SecurityParser.swift */; };
 		F915EC30CDDDAE459D50B781 /* WorkspacePlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335E3DCDF2239B81C2F53553 /* WorkspacePlaceholder.swift */; };
@@ -1096,6 +1099,7 @@
 		1B870F0F23E62513A158D4F6 /* RFOverviewLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFOverviewLayout.swift; sourceTree = "<group>"; };
 		1BE1220EDAEB7603F1786671 /* DNSAddressEnricher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSAddressEnricher.swift; sourceTree = "<group>"; };
 		1C3C905CC11659EF90A175E4 /* BonjourDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDiscovery.swift; sourceTree = "<group>"; };
+		1C71433E4FA9084C1C70CCDB /* SurveyCalibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyCalibration.swift; sourceTree = "<group>"; };
 		1C888108CAE6C8EDAE5E72D0 /* ConnectivityWatchdogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityWatchdogService.swift; sourceTree = "<group>"; };
 		1D68DFFCF17624D88FDCC627 /* GatewayGuardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewayGuardService.swift; sourceTree = "<group>"; };
 		1D8CC55FD96FA73ACBD0E5C4 /* ExpressionColumnsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpressionColumnsSettingsView.swift; sourceTree = "<group>"; };
@@ -2210,6 +2214,7 @@
 				94F61D90CA6BC930BC99DB5D /* SupportedChannel.swift */,
 				957F50461891605F6C31319B /* Survey.swift */,
 				BC294FDA735B3A998DE3D49C /* SurveyAccessPoint.swift */,
+				1C71433E4FA9084C1C70CCDB /* SurveyCalibration.swift */,
 				DFEFAF211D6FA638431AD970 /* SurveyGeo.swift */,
 				5C27FB6F55F1D6038983E716 /* SurveyPlanning.swift */,
 				24E6961A4F201BABD47A5798 /* SurveyToolMode.swift */,
@@ -2642,6 +2647,7 @@
 				7EA951BAAE1B479E0D70ADCF /* SupportedChannel.swift in Sources */,
 				C1CE70DFB8E1CAB17CBF8A6A /* Survey.swift in Sources */,
 				C44B2FE6903318C5B1D190DA /* SurveyAccessPoint.swift in Sources */,
+				F6779B87CEE1BEFE209BFA2F /* SurveyCalibration.swift in Sources */,
 				2BE21F3DA172274265B1154C /* SurveyGeo.swift in Sources */,
 				ADA9B55EC81AD8F311709DC3 /* SurveyHeatmap.swift in Sources */,
 				D9CC4271ADC516E82552BF48 /* SurveyInterpolator.swift in Sources */,
@@ -3004,6 +3010,7 @@
 				2B100A13804AAC523E34BFB1 /* SupportedChannel.swift in Sources */,
 				AE63074E60A93D7CF851D661 /* Survey.swift in Sources */,
 				45002B0662F660A63F09859A /* SurveyAccessPoint.swift in Sources */,
+				F81C9338C77FA97A8879A9C4 /* SurveyCalibration.swift in Sources */,
 				953494C40238354C22073F37 /* SurveyGeo.swift in Sources */,
 				9C10616A88CD304C389780A2 /* SurveyGeoTests.swift in Sources */,
 				8BBFF15C24F6D7ED19D4F89A /* SurveyHeatmap.swift in Sources */,
@@ -3402,6 +3409,7 @@
 				234DD86663AEA6876D4BDFCB /* SupportedChannel.swift in Sources */,
 				53F87085F08DC1B3BAB2C1BE /* Survey.swift in Sources */,
 				F72D6A578F2D20CBE6B66D7A /* SurveyAccessPoint.swift in Sources */,
+				13C5E9991E2EBA92EAEC14D9 /* SurveyCalibration.swift in Sources */,
 				D9452DBF2FA0797AED05B805 /* SurveyGeo.swift in Sources */,
 				97202686658404D927AB50AC /* SurveyHeatmap.swift in Sources */,
 				95C1C49FAC126274235CB027 /* SurveyInterpolator.swift in Sources */,
@@ -3592,14 +3600,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 110;
+				CURRENT_PROJECT_VERSION = 111;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 5.6.27;
+				MARKETING_VERSION = 5.6.28;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
@@ -3709,14 +3717,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 110;
+				CURRENT_PROJECT_VERSION = 111;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 5.6.27;
+				MARKETING_VERSION = 5.6.28;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};

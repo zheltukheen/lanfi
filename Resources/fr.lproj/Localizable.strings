@@ -1862,3 +1862,6 @@
 "Omni" = "Omnidirectionnelle";
 "Directional 90°" = "Directionnelle 90°";
 "Panel 60°" = "Panneau 60°";
+"Calibrate from samples" = "Calibrer d’après les mesures";
+"Calibrate" = "Calibrer";
+"Calibration %+.0f dB · %lld points · ±%.0f dB" = "Calibration %+.0f dB · %lld points · ±%.0f dB";

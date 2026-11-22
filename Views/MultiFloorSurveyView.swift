@@ -8,6 +8,7 @@ struct MultiFloorSurveyView: View {
     @State private var spacing = 110.0
     @State private var showPrediction = true
     @State private var floorAttenuation = 12.0
+    @State private var useCalibration = true
 
     private var floors: [SurveyProject] { survey.projects }
 
@@ -29,6 +30,9 @@ struct MultiFloorSurveyView: View {
                 Label("Spacing", systemImage: "square.3.layers.3d")
                 Slider(value: $spacing, in: 40...180).frame(width: 160)
                 Toggle("Coverage", isOn: $showPrediction)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                Toggle("Calibrate", isOn: $useCalibration)
                     .toggleStyle(.switch)
                     .controlSize(.small)
                 Label("Floor loss", systemImage: "arrow.up.arrow.down")
@@ -69,6 +73,11 @@ struct MultiFloorSurveyView: View {
         }
     }
 
+    private func calibrationOffset(for floor: SurveyProject) -> Double {
+        guard useCalibration else { return 0 }
+        return SurveyCalibrationCalculator.compute(project: floor)?.offsetDb ?? 0
+    }
+
     private func predictionOverlay(for floor: SurveyProject) -> some View {
         Canvas { context, size in
             guard floorInputs.contains(where: { !$0.accessPoints.isEmpty }) else { return }
@@ -82,7 +91,8 @@ struct MultiFloorSurveyView: View {
                     if let rssi = SurveyPredictor.estimate3D(
                         x: nx, y: ny, targetFloorLevel: floor.floorLevel,
                         floors: floorInputs, planWidthMeters: floor.planWidthMeters ?? 30,
-                        floorAttenuationDb: floorAttenuation
+                        floorAttenuationDb: floorAttenuation,
+                        calibrationDb: calibrationOffset(for: floor)
                     ) {
                         let t = min(max(Double(rssi + 90) / 50.0, 0), 1)
                         let color = Color(red: 0.9 - t * 0.8, green: 0.2 + t * 0.7, blue: 0.15)

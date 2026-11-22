@@ -298,14 +298,19 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       APs can be omni, 90° directional or 60° panel with an eight-way compass
       heading (`SurveyAntennaPattern`), the predictor subtracts the off-axis
       loss so a wall-mounted panel stops painting coverage behind itself, and
-      “Apply antenna to all APs” updates an existing layout. Cutouts and
-      calibration against samples remain open.
+      “Apply antenna to all APs” updates an existing layout. Calibration
+      against samples delivered 2026-11-22: `SurveyCalibrationCalculator`
+      compares each walk sample with the prediction at the same point, applies
+      the median offset (and reports the residual), and the toggle “Calibrate
+      from samples” feeds it into the plan heatmap, 3D view and PDF report.
+      Cutouts remain open.
 - [~] **Active Survey** — required samples, covered cells, gaps and the next
       target ship. Throughput/latency per point delivered 2026-11-22: “Measure”
       in the Points card runs one `networkQuality` pass and stores download and
       latency on the newest sample (`SurveySample.downloadMbps`/`latencyMilliseconds`),
-      shown inline and persisted with the project. Auto-walk and the multi-floor
-      diff remain open.
+      shown inline and persisted with the project. Walk sampling is auto-walk:
+      the Walk tool records a point every 0.8 s while the pointer moves over the
+      plan, so no separate mode is needed. The multi-floor diff remains open.
 - [~] **Combined report** — the self-contained HTML report with scan, survey,
       diagnostics and speed-test sections ships from the Data menu. PDF export
       delivered 2026-11-22: the same HTML is rendered by `WKWebView` through

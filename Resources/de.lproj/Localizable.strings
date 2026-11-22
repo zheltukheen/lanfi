@@ -1862,3 +1862,6 @@
 "Omni" = "Rundstrahl";
 "Directional 90°" = "Richtantenne 90°";
 "Panel 60°" = "Panel 60°";
+"Calibrate from samples" = "Anhand Messpunkten kalibrieren";
+"Calibrate" = "Kalibrieren";
+"Calibration %+.0f dB · %lld points · ±%.0f dB" = "Kalibrierung %+.0f dB · %lld Punkte · ±%.0f dB";

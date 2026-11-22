@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.6.28 — 2026-11-22
+
+### Added
+- **Calibration against walk samples.** When a survey has access points and at
+  least three measured points, the app compares measured RSSI with the predicted
+  value, applies the median offset to the predictive heatmap, 3D view and PDF
+  report, and shows the offset, point count and residual in the Coverage card.
+  A toggle turns it off; without enough points the model stays untouched.
+
 ## 5.6.27 — 2026-11-22
 
 ### Added

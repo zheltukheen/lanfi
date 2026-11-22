@@ -160,6 +160,7 @@ private final class SurveyReportView: NSView {
     private func drawPredictiveHeatmap(in rect: NSRect) {
         let cell: CGFloat = 8
         let width = project.planWidthMeters ?? 30
+        let calibration = SurveyCalibrationCalculator.compute(project: project)?.offsetDb ?? 0
         var y = rect.minY
         while y < rect.maxY {
             var x = rect.minX
@@ -168,7 +169,8 @@ private final class SurveyReportView: NSView {
                 let ny = Double((y - rect.minY) / rect.height)
                 if let rssi = SurveyPredictor.estimate(
                     x: nx, y: ny, accessPoints: project.accessPoints,
-                    walls: project.walls, obstacles: project.obstacles, planWidthMeters: width
+                    walls: project.walls, obstacles: project.obstacles, planWidthMeters: width,
+                    calibrationDb: calibration
                 ) {
                     color(for: rssi).withAlphaComponent(0.45).setFill()
                     NSRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5).fill()

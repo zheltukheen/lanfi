@@ -54,6 +54,54 @@ final class SurveyPredictorTests: XCTestCase {
         XCTAssertGreaterThan(front, behind + 15)
     }
 
+    func testCalibrationUsesTheMedianMeasuredOffset() throws {
+        var project = SurveyProject.new(name: "Calibration")
+        project.planWidthMeters = 20
+        project.planHeightMeters = 20
+        project.accessPoints = [
+            SurveyAccessPoint.new(x: 0.5, y: 0.5, band: "5GHz", channel: 36)
+        ]
+        let points = [(0.2, 0.2), (0.8, 0.2), (0.2, 0.8), (0.8, 0.8)]
+        project.samples = points.enumerated().map { index, point in
+            let predicted = SurveyPredictor.estimate(
+                x: point.0, y: point.1, accessPoints: project.accessPoints,
+                walls: [], obstacles: [], planWidthMeters: 20, planHeightMeters: 20)!
+            return SurveySample(
+                id: UUID(), x: point.0, y: point.1, rssi: predicted + 4 + index,
+                ssid: "Calibration", bssid: "AA:BB:CC:DD:EE:FF",
+                recordedAt: Date(timeIntervalSince1970: Double(index)))
+        }
+        let calibration = try XCTUnwrap(SurveyCalibrationCalculator.compute(project: project))
+        XCTAssertEqual(calibration.offsetDb, 5.5, accuracy: 0.01)
+        XCTAssertEqual(calibration.sampleCount, 4)
+        XCTAssertEqual(calibration.residualDb, 1, accuracy: 0.01)
+    }
+
+    func testCalibrationNeedsEnoughSamplesAndAccessPoints() {
+        var project = SurveyProject.new(name: "Empty")
+        XCTAssertNil(SurveyCalibrationCalculator.compute(project: project))
+        project.accessPoints = [SurveyAccessPoint.new(x: 0.5, y: 0.5)]
+        project.samples = [
+            SurveySample(
+                id: UUID(), x: 0.2, y: 0.2, rssi: -60, ssid: "X",
+                bssid: "AA:BB:CC:DD:EE:FF", recordedAt: Date())
+        ]
+        XCTAssertNil(SurveyCalibrationCalculator.compute(project: project))
+    }
+
+    func testCalibrationOffsetShiftsPrediction() throws {
+        let ap = SurveyAccessPoint.new(x: 0.5, y: 0.5)
+        let raw = try XCTUnwrap(
+            SurveyPredictor.estimate(
+                x: 0.8, y: 0.5, accessPoints: [ap], walls: [], obstacles: [],
+                planWidthMeters: 20, planHeightMeters: 20))
+        let calibrated = try XCTUnwrap(
+            SurveyPredictor.estimate(
+                x: 0.8, y: 0.5, accessPoints: [ap], walls: [], obstacles: [],
+                planWidthMeters: 20, planHeightMeters: 20, calibrationDb: 4))
+        XCTAssertEqual(calibrated, raw + 4)
+    }
+
     func testAccessPointWithoutAntennaFieldsDecodesAsOmni() throws {
         let json = """
             {"id":"\(UUID().uuidString)","x":0.5,"y":0.5,"band":"5GHz",
