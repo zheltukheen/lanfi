@@ -1850,3 +1850,8 @@
 "Roams measured" = "Itinérances mesurées";
 "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "Lancez la sonde avant une marche. Elle ping la passerelle une fois par seconde et associe pertes et temps de reconnexion à chaque changement de BSSID dans cette fenêtre.";
 "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "Aucune passerelle par défaut trouvée, la sonde ne peut pas fonctionner. Connectez-vous d’abord à un réseau avec un routeur.";
+"Measuring…" = "Mesure…";
+"Measure" = "Mesurer";
+"Run a speed test at the newest point" = "Lancer un test de débit au dernier point";
+"Point measured · %@ · %@" = "Point mesuré · %@ · %@";
+"Point measurement failed: %@" = "Échec de la mesure du point : %@";

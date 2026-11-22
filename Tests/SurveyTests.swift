@@ -26,6 +26,29 @@ final class SurveyTests: XCTestCase {
         XCTAssertEqual(store.imageData(for: latest), image)
     }
 
+    func testSampleDecodesWithoutPointMeasurement() throws {
+        let json = """
+            {"id":"\(UUID().uuidString)","x":0.2,"y":0.3,"rssi":-61,"ssid":"Office",
+             "bssid":"00:1A:2B:11:22:33","recordedAt":0}
+            """
+        let sample = try JSONDecoder().decode(SurveySample.self, from: Data(json.utf8))
+        XCTAssertNil(sample.downloadMbps)
+        XCTAssertNil(sample.latencyMilliseconds)
+        XCTAssertNil(sample.measuredAt)
+    }
+
+    func testSampleCarriesPointMeasurement() throws {
+        let sample = SurveySample(
+            id: UUID(), x: 0.2, y: 0.3, rssi: -61, ssid: "Office",
+            bssid: "00:1A:2B:11:22:33", recordedAt: Date(timeIntervalSince1970: 1),
+            downloadMbps: 420, latencyMilliseconds: 8.5, measuredAt: Date(timeIntervalSince1970: 2))
+        let decoded = try JSONDecoder().decode(
+            SurveySample.self, from: JSONEncoder().encode(sample))
+        XCTAssertEqual(decoded.downloadMbps, 420)
+        XCTAssertEqual(decoded.latencyMilliseconds, 8.5)
+        XCTAssertNotNil(decoded.measuredAt)
+    }
+
     func testNewProjectStartsEmpty() {
         let project = SurveyProject.new()
         XCTAssertTrue(project.samples.isEmpty)

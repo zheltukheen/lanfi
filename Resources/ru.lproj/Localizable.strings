@@ -1887,3 +1887,8 @@
 "Roams measured" = "Измерено роумингов";
 "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "Запустите пробу потерь перед прогулкой. Она пингует шлюз раз в секунду и привязывает потери и время переподключения к каждой смене BSSID в этом окне.";
 "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "Шлюз по умолчанию не найден, проба потерь не запустится. Сначала подключитесь к сети с роутером.";
+"Measuring…" = "Измерение…";
+"Measure" = "Измерить";
+"Run a speed test at the newest point" = "Запустить тест скорости в последней точке";
+"Point measured · %@ · %@" = "Точка измерена · %@ · %@";
+"Point measurement failed: %@" = "Не удалось измерить точку: %@";

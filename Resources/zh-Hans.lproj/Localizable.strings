@@ -1850,3 +1850,8 @@
 "Roams measured" = "已测漫游";
 "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "走动前启动丢包探测。它每秒 ping 一次网关，并把丢包和重连时间关联到该时间窗内的每次 BSSID 切换。";
 "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "未找到默认网关，无法运行丢包探测。请先连接到有路由器的网络。";
+"Measuring…" = "测量中…";
+"Measure" = "测量";
+"Run a speed test at the newest point" = "在最新点运行速度测试";
+"Point measured · %@ · %@" = "已测量点 · %@ · %@";
+"Point measurement failed: %@" = "点位测量失败：%@";

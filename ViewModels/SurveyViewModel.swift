@@ -35,6 +35,8 @@ final class SurveyViewModel: ObservableObject {
     /// A survey is placeable when it has an imported image or a hand-drawn plan.
     var hasPlan: Bool { floorPlanImage != nil || project.planWidthMeters != nil }
 
+    @Published private(set) var isMeasuringPoint = false
+
     var samples: [SurveySample] { project.samples }
     var walls: [SurveyWall] { project.walls }
     var obstacles: [SurveyObstacle] { project.obstacles }
@@ -83,6 +85,37 @@ final class SurveyViewModel: ObservableObject {
         scheduleSave()
         statusMessage = String(
             format: String(localized: "Recorded %lld dBm for %@."), network.signal, network.displaySSID)
+    }
+
+    /// Runs networkQuality once and stores its result on the newest point, so a
+    /// walk can pair RSSI with the throughput actually available there.
+    func measureLastSample() {
+        guard !isMeasuringPoint, let sample = project.samples.last else { return }
+        isMeasuringPoint = true
+        Task {
+            defer { isMeasuringPoint = false }
+            do {
+                let report = try await ThroughputTester.run(timeout: 10)
+                guard let index = project.samples.firstIndex(where: { $0.id == sample.id }) else {
+                    return
+                }
+                project.samples[index].downloadMbps = report.downloadMbps
+                project.samples[index].latencyMilliseconds = report.latencyMilliseconds
+                project.samples[index].measuredAt = report.testedAt
+                project.updatedAt = Date()
+                save()
+                statusMessage = String(
+                    format: String(localized: "Point measured · %@ · %@"),
+                    report.downloadMbps.map { String(format: "%.0f Mbps", $0) }
+                        ?? String(localized: "down —"),
+                    report.latencyMilliseconds.map { String(format: "%.0f ms", $0) }
+                        ?? String(localized: "latency —"))
+            } catch {
+                statusMessage = String(
+                    format: String(localized: "Point measurement failed: %@"),
+                    error.localizedDescription)
+            }
+        }
     }
 
     func removeSample(id: UUID) {

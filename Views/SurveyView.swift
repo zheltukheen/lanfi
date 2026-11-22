@@ -412,12 +412,25 @@ struct SurveyView: View {
         }
     }
 
+    private func measurementLabel(_ sample: SurveySample) -> String {
+        let down = sample.downloadMbps.map { String(format: "%.0f Mbps", $0) } ?? "—"
+        let latency = sample.latencyMilliseconds.map { String(format: "%.0f ms", $0) } ?? "—"
+        return "\(down) · \(latency)"
+    }
+
     private var samplesCard: some View {
         ToolkitCard {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     ToolkitSectionLabel(text: "Points")
                     Spacer()
+                    Button(survey.isMeasuringPoint ? "Measuring…" : "Measure") {
+                        survey.measureLastSample()
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.caption2)
+                    .disabled(survey.samples.isEmpty || survey.isMeasuringPoint)
+                    .help("Run a speed test at the newest point")
                     Button("Undo") { survey.removeLastSample() }
                         .buttonStyle(.borderless)
                         .font(.caption2)
@@ -439,6 +452,12 @@ struct SurveyView: View {
                             Text(sample.ssid)
                                 .font(.caption2)
                                 .lineLimit(1)
+                            if sample.downloadMbps != nil || sample.latencyMilliseconds != nil {
+                                Text(measurementLabel(sample))
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
                             Spacer()
                             Button {
                                 survey.removeSample(id: sample.id)

@@ -11,6 +11,12 @@ struct SurveySample: Codable, Identifiable, Equatable {
     /// Optional GPS position for map-tagged walks (P1.9).
     var latitude: Double? = nil
     var longitude: Double? = nil
+    /// Optional on-demand throughput measurement taken at this point. Absent
+    /// for points recorded before measurement existed and for points the user
+    /// did not measure, so a walk can stay fast.
+    var downloadMbps: Double? = nil
+    var latencyMilliseconds: Double? = nil
+    var measuredAt: Date? = nil
 }
 
 struct SurveyPoint: Codable, Equatable {

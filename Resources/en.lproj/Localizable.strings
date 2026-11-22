@@ -1851,3 +1851,8 @@
 "Roams measured" = "Roams measured";
 "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window.";
 "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first.";
+"Measuring…" = "Measuring…";
+"Measure" = "Measure";
+"Run a speed test at the newest point" = "Run a speed test at the newest point";
+"Point measured · %@ · %@" = "Point measured · %@ · %@";
+"Point measurement failed: %@" = "Point measurement failed: %@";

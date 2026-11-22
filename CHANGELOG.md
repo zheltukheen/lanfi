@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.6.26 — 2026-11-22
+
+### Added
+- **Throughput and latency per survey point.** The Points card in Site Survey
+  gains a Measure action: one networkQuality pass is attached to the newest
+  point and saved with the project, so a walk records not just RSSI but the
+  throughput actually available at that spot. Points without a measurement keep
+  the old file format.
+
 ## 5.6.25 — 2026-11-22
 
 ### Added

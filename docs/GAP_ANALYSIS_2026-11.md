@@ -297,7 +297,10 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       multi-floor view. Antenna patterns, cutouts and calibration against
       samples remain open.
 - [~] **Active Survey** — required samples, covered cells, gaps and the next
-      target ship; throughput/latency per point, auto-walk and the multi-floor
+      target ship. Throughput/latency per point delivered 2026-11-22: “Measure”
+      in the Points card runs one `networkQuality` pass and stores download and
+      latency on the newest sample (`SurveySample.downloadMbps`/`latencyMilliseconds`),
+      shown inline and persisted with the project. Auto-walk and the multi-floor
       diff remain open.
 - [~] **Combined report** — the self-contained HTML report with scan, survey,
       diagnostics and speed-test sections ships from the Data menu. PDF export
