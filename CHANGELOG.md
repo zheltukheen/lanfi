@@ -15,6 +15,17 @@ public API instead of being compiled into the app target. Probe screens import
 the package; the Wi-Fi model layer stays in the app until it has a
 Foundation-only seam.
 
+### Accessibility
+- **The last hand-rolled charts now match every other chart.** MTR and the
+route-monitor heatmap drew a literal grid colour and 8 pt axis labels; both use
+`ChartStyle` and `AppPalette`, so they follow the colour-blind palette and the
+shared axis typography. The Help window hides its decorative symbols from
+VoiceOver and labels its search field.
+- **Design-pass status corrected.** The gap analysis now records D1, D4 and D8 as
+closed, keeps D7 open for the hands-on VoiceOver run and contrast audit, and
+records the measured fact that macOS ignores `dynamicTypeSize` instead of
+promising an in-app text-size switch that cannot work.
+
 ### Engineering
 - **CI covers the supported systems, the UI and performance.** The test job runs
 on macOS 15 and 26; GitHub no longer offers 13 or 14 runner images, so the

@@ -352,7 +352,9 @@ private struct RouteHeatmapChart: View {
             let hopStride = max(1, hops.count / 8)
             for (index, hop) in hops.enumerated() where index % hopStride == 0 {
                 context.draw(
-                    Text("\(hop)").font(.system(size: 8)).foregroundColor(.secondary),
+                    Text("\(hop)")
+                        .font(ChartStyle.axisLabelFont)
+                        .foregroundColor(ChartStyle.axisLabelColor),
                     at: CGPoint(
                         x: plot.minX - 6,
                         y: plot.minY + (CGFloat(index) + 0.5) * rowHeight),
@@ -365,12 +367,14 @@ private struct RouteHeatmapChart: View {
                 formatter.dateFormat = "HH:mm:ss"
                 context.draw(
                     Text(formatter.string(from: first))
-                        .font(.system(size: 8)).foregroundColor(.secondary),
+                        .font(ChartStyle.axisLabelFont)
+                        .foregroundColor(ChartStyle.axisLabelColor),
                     at: CGPoint(x: plot.minX, y: plot.maxY + 9), anchor: .leading)
                 if samples.count > 1 {
                     context.draw(
                         Text(formatter.string(from: last))
-                            .font(.system(size: 8)).foregroundColor(.secondary),
+                            .font(ChartStyle.axisLabelFont)
+                            .foregroundColor(ChartStyle.axisLabelColor),
                         at: CGPoint(x: plot.maxX, y: plot.maxY + 9), anchor: .trailing)
                 }
             }
@@ -385,7 +389,7 @@ private struct RouteHeatmapChart: View {
         case ..<(threshold * 0.5):
             return AppPalette.ok.opacity(0.75)
         case ..<threshold:
-            return Color.yellow.opacity(0.85)
+            return AppPalette.warning.opacity(0.65)
         case ..<(threshold * 2):
             return AppPalette.warning.opacity(0.9)
         default:

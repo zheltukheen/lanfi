@@ -295,18 +295,20 @@ private struct MTRHopChart: View {
                 width: max(1, size.width - leading - trailing),
                 height: max(1, size.height - top - bottom))
 
-            // Latency grid: three lines with ms labels on the left.
-            let gridColor = Color.secondary.opacity(0.25)
+            // Latency grid: three lines with ms labels on the left, drawn from
+            // the shared chart style so this graph matches every other chart.
             for step in 0...2 {
                 let fraction = CGFloat(step) / 2
                 let y = plot.maxY - plot.height * fraction
                 var line = Path()
                 line.move(to: CGPoint(x: plot.minX, y: y))
                 line.addLine(to: CGPoint(x: plot.maxX, y: y))
-                context.stroke(line, with: .color(gridColor), style: StrokeStyle(lineWidth: 0.5))
+                context.stroke(line, with: .color(ChartStyle.gridColor), style: ChartStyle.gridStroke)
                 let value = Int(latencyMax * Double(step) / 2)
                 context.draw(
-                    Text("\(value)").font(.system(size: 8)).foregroundColor(.secondary),
+                    Text("\(value)")
+                        .font(ChartStyle.axisLabelFont)
+                        .foregroundColor(ChartStyle.axisLabelColor),
                     at: CGPoint(x: leading - 12, y: y), anchor: .trailing)
             }
 
@@ -321,7 +323,7 @@ private struct MTRHopChart: View {
                 let height = plot.height * 0.33 * CGFloat(min(hop.lossPercent, 100) / 100)
                 let bar = CGRect(
                     x: x(index) - 2, y: plot.maxY - height, width: 4, height: max(1, height))
-                context.fill(Path(bar), with: .color(.orange.opacity(0.55)))
+                context.fill(Path(bar), with: .color(AppPalette.warning.opacity(0.55)))
             }
 
             // Average latency line with a dot per replied hop.
@@ -362,7 +364,7 @@ private struct MTRHopChart: View {
             if let last = dots.last, let value = hops.compactMap(\.averageMilliseconds).last {
                 context.draw(
                     Text(String(format: "%.1f ms", value))
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.caption2.weight(.semibold))
                         .foregroundColor(.primary),
                     at: CGPoint(x: min(last.x + 8, plot.maxX - 24), y: max(plot.minY + 6, last.y - 10)),
                     anchor: .leading)
@@ -372,7 +374,9 @@ private struct MTRHopChart: View {
             let stride = max(1, hops.count / 8)
             for (index, hop) in hops.enumerated() where index % stride == 0 {
                 context.draw(
-                    Text("\(hop.hop)").font(.system(size: 8)).foregroundColor(.secondary),
+                    Text("\(hop.hop)")
+                        .font(ChartStyle.axisLabelFont)
+                        .foregroundColor(ChartStyle.axisLabelColor),
                     at: CGPoint(x: x(index), y: plot.maxY + 9))
             }
         }

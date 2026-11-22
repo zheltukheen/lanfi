@@ -36,9 +36,12 @@ struct HelpView: View {
         NavigationSplitView {
             VStack(spacing: 0) {
                 HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass").foregroundColor(.secondary)
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                        .accessibilityHidden(true)
                     TextField(HelpContent.searchPlaceholder, text: $query)
                         .textFieldStyle(.plain)
+                        .accessibilityLabel(HelpContent.searchLabel)
                 }
                 .padding(DesignToken.Spacing.small)
                 .background(Color(nsColor: .controlBackgroundColor))
@@ -60,6 +63,7 @@ struct HelpView: View {
                             Image(systemName: selectedTopic.icon)
                                 .font(.system(size: 24))
                                 .foregroundColor(.accentColor)
+                                .accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(selectedTopic.title).font(.title2.bold())
                                 Text(selectedTopic.summary)
@@ -122,6 +126,7 @@ struct HelpView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 110)
             .appCardSurface(tint: .accentColor)
+            .accessibilityHidden(true)
             Text(topic.screenshotCaption)
                 .font(.caption2)
                 .foregroundColor(.secondary)
@@ -181,6 +186,7 @@ struct HelpSection: Identifiable {
 private enum HelpContent {
     static let isRussian = Locale.current.language.languageCode?.identifier == "ru"
     static var searchPlaceholder: String { isRussian ? "Поиск по задачам" : "Search tasks" }
+    static var searchLabel: String { isRussian ? "Поиск по справке" : "Search help" }
     static var sidebarTitle: String { isRussian ? "Что нужно сделать" : "What do you want to do?" }
     static var refresh: String { isRussian ? "Обновить скан" : "Refresh scan" }
     static var search: String { isRussian ? "Поиск сетей" : "Search networks" }

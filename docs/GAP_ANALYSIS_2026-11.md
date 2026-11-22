@@ -937,16 +937,21 @@ Everything below is about making delivered capability legible. It is not
 cosmetic polish at the end: D1 and D3 change files that every screen imports, so
 they should land early and in small slices.
 
-Current state: `Views/Toolkit/ToolkitComponents.swift` defines
-`ToolkitCard`, `ToolkitSectionLabel`, `ToolkitStatusPill` and `ToolkitTone`, but
-they are used only by toolkit screens. The Wi-Fi workspace and the settings
-windows repeat the same card recipe with different numbers (corner radius 8/10/12,
-stroke `Color.secondary.opacity(0.12)`/`0.15`/`0.2`, tinted `Color.orange
-.opacity(0.08..0.10)` warning blocks). There is no token layer, no shared
-stat/hero component, and no density option for the AppKit table.
+Current state (audited against the code 2026-11-22): the token layer exists.
+`Views/Theme.swift` holds spacing, radii, strokes, layout, typography, surfaces
+and the semantic palette, and `DesignToken`/`AppPalette` are typealiases of it,
+so 780+ call sites resolve to one definition. `AppCard` and `.appSectionLabel()`
+back `ToolkitCard`/`ToolkitSectionLabel`, `appCardSurface(tint:)` replaced the
+bespoke card recipes, and `Tests/DesignTokenLintTests` fails on a literal radius
+or role-named translucent fill anywhere in `Views/`. `ChartStyle` drives the
+history, occupancy, spectrum and toolkit charts, and `TableDensity` drives the
+AppKit row height and font. What the D-series still tracks is therefore not the
+token layer but the accessibility pass (D7): a hands-on VoiceOver run and a
+measured contrast audit.
 
-- [ ] **D1 — Design tokens and shared components.** Tokens, components and the
-      first consumer shipped 2026-11-16; migrating the remaining screens is open.
+- [x] **D1 — Design tokens and shared components.** Closed 2026-11-22: every
+      screen in `Views/` draws its cards, radii, strokes, fills and control
+      metrics from `Theme`, and the token lint enforces it.
       - [x] `DesignTokens`: spacing scale (4/8/12/16/24), corner radii (6/10/14),
             stroke opacities, control heights, and a semantic palette (`ok`,
             `warn`, `bad`, `info`, `muted`, band colours for 2.4/5/6 GHz,
@@ -998,9 +1003,9 @@ stat/hero component, and no density option for the AppKit table.
             is deliberately not written: it would need the view tree, and the
             classes it would catch are already impossible to add without failing
             the token lint.
-- [ ] **D2 — Hero RF overview, first run and empty states.** The overview,
-      first run and empty states shipped 2026-11-16; the menu-bar open target is
-      still open.
+- [x] **D2 — Hero RF overview, first run and empty states.** Closed 2026-11-22:
+      the overview, first-run screen, empty states and the menu-bar open target
+      all shipped.
       - [x] All-band overview (P1.10): 2.4/5/6 GHz columns, AP spans with overlap
             shading, connected AP highlighted, recommended channel as a marker,
             legend in plain words ("channels other networks also use are
@@ -1030,12 +1035,18 @@ stat/hero component, and no density option for the AppKit table.
             under 24 h, absolute otherwise; AirRadar's 8.0 note is exactly this.
       - [x] Wording audit with plain alternatives for domain terms next to the
             column header tooltips ("BSS Load", "PMF", "DFS", "puncturing").
-- [ ] **D4 — Chart and inspector visual language.**
+- [x] **D4 — Chart and inspector visual language.** Closed 2026-11-22; the last
+      two hand-rolled charts (MTR and the route-monitor heatmap) moved their
+      grid, axis fonts and threshold colours onto `ChartStyle`/`AppPalette`.
       - [x] One chart style used by the history, occupancy, Canvas spectrum and
             toolkit latency graphs: `ChartStyle` now drives grid colour/dash,
             axis labels, hover cursor and tooltip surfaces; Swift Charts screens
             share the same `AxisMarks`, and the Canvas spectrum draws its grid,
-            lane dividers, hover line and readouts from the tokens.
+            lane dividers, hover line and readouts from the tokens. The MTR
+            latency chart and the route-monitor heatmap previously kept a
+            literal grid colour and 8 pt axis labels; both now use
+            `ChartStyle.gridColor`/`gridStroke`/`axisLabelFont` and the palette
+            for their loss and threshold colours.
       - [x] Inspector restructure: the Link block is pinned above the scrolling
             detail sections and covers rate, PHY, width, band/channel, streams
             (NSS capability), noise, cipher and BSSID.
@@ -1058,18 +1069,23 @@ stat/hero component, and no density option for the AppKit table.
             remote sensors and uptime carries both a tooltip and an
             accessibility label; the `Planned` badge and the toolkit tone/dot
             palette now use the semantic `AppPalette` roles.
-- [ ] **D6 — Settings, Help and onboarding.**
+- [x] **D6 — Settings, Help and onboarding.** Closed 2026-11-22.
       - [x] Settings is no longer 11 tabs: a grouped sidebar (Application /
             Analysis / Integrations) with the last section remembered in
             `LanFi.settings.section`, over the unchanged screens. Deep links use
             the same settings window.
       - [x] Appearance, density and the menu-bar meter live in General, next to
             the display and toolbar options.
-      - [ ] Help window: task-oriented sections with one screenshot each, plus an
-            in-app "what is this?" popover on the main chart.
-- [ ] **D7 — Accessibility visual pass.** (partial: palette, reduce motion
-      and the inspector/protocol VoiceOver stops are done; text scaling and a
-      measured contrast audit remain open)
+      - [x] Help window: six task-oriented topics with sections and a caption
+            for each screen, plus the "What this chart shows" popover on the
+            All Bands chart. The help banner draws a symbol instead of a
+            screenshot on purpose: shipping pictures of a real network would
+            leak SSIDs and addresses.
+- [~] **D7 — Accessibility visual pass.** (partial: the colour-blind palette,
+      reduce motion, chart/help labels and the inspector/protocol VoiceOver
+      stops are done, and text scaling is resolved as a platform decision; a
+      hands-on VoiceOver run over the tool tables and help window, plus a
+      measured contrast audit, remain open)
       - [x] Colour-blind-safe palette option: Settings → Appearance toggles the
             Okabe–Ito blue/amber/magenta roles for status, quality and band.
             Semantic labels remain alongside colour. The flag is cached in
@@ -1082,14 +1098,23 @@ stat/hero component, and no density option for the AppKit table.
             `accessibilityReduceMotion` — the spectrum cross-fade, traceroute
             hop transitions, filter-bar expansion and the inspector slide
             (verified by grepping `.animation(`/`withAnimation`).
-      - [ ] In-app text scaling. `dynamicTypeSize` is documented as having no
-            effect on macOS text size (verified on a snapshot), so this needs a
-            custom font-metrics/whole-app pass rather than a dead switch.
+      - [x] Text scaling decision (2026-11-22): macOS has no Dynamic Type. The
+            environment key was measured in the running app with a real
+            hosting view: `.dynamicTypeSize(.large)` and `.accessibility2` both
+            laid the same string out at 76×16 pt, so a size switch would be a
+            dead control. macOS scales text at the display level (and through
+            Increase Contrast), which the app already respects; no in-app
+            font-metrics pass is shipped, and the reason is recorded here
+            instead of leaving an untested switch.
       - [~] VoiceOver pass: protocol block cards, MLO link rows, regulatory
-            facts and co-located radio buttons now expose one combined stop or
-            an explicit label; the tool tables and the help window still need a
-            hands-on run.
-- [ ] **D8 — Release visual assets.**
+            facts, co-located radio buttons, every Canvas chart and the help
+            window's search field and decorative symbols now expose a label or
+            are hidden. What remains is a hands-on VoiceOver run over the tool
+            tables and the help window on a GUI session; that cannot be done
+            from the headless build or CI, so it stays open.
+- [x] **D8 — Release visual assets.** Closed 2026-11-22: `docs/images/` and
+      `site/assets/` both carry the four refreshed toolkit captures, and
+      `scripts/visual-check.sh` regenerates them from seeded data.
       - [x] A repeatable screenshot script (seeded data, fixed window size, light
             and dark) so README, site and release notes never go stale.
             `scripts/visual-check.sh` passes `--demo`, which seeds Wi-Fi, survey
