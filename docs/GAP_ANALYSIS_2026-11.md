@@ -1,6 +1,36 @@
 # Gap analysis — November 2026
 
 Status: **active plan**. Baseline: LanFi 5.4.0 (build 71).
+Last audit: **2026-11-22, LanFi 5.6.30**. Checklist state: **144 closed, 9
+partial, 6 open**. The six open items are external or conditional: Developer ID
+signing/notarization (3), the persisted OUI binary index (only if startup
+profiling demands it), the `SMAppService` capture helper, and the separate
+sandboxed MAS build. The partial items are listed under “Remaining” at the end
+of this snapshot.
+
+### Remaining after the 2026-11-22 audit
+
+- **Decoder** — only the WFA Capabilities element body is undecoded; RSNE/RSNXE
+  Override, RSN Selection, 802.11bn versioning and the rest are in.
+- **Client Analytics** — per-client airtime and retries still need a
+  capture-based accounting pass; advertised load/utilization ship.
+- **Combined report** — scheduled scan snapshots exist in Settings → Automation,
+  but scheduling the combined handover report itself remains open.
+- **Shortcuts** — live capture and widgets remain open; scan/connected/speed/
+  connectivity/export intents ship.
+- **Spectrum hub** — live Wi-Spy and Zigbee remain open; remote WLAN Pi/NetAlly
+  import and classification ship.
+- **BLE** — beacon scanning ships; the Zigbee adapter does not.
+- **D7 accessibility** — full 4.5:1 contrast audit and a hands-on VoiceOver run
+  remain open; palette, reduce-motion, labels and scaling decisions ship.
+- **P4.4 DoQ** — needs QUIC rather than a TLS stream.
+- **P3.6 domain attribution** — per-app bytes ship; domain/URL attribution does
+  not.
+- **`LanFiCore` extraction** — settings/probes moved; models/parsers/stores
+  remain in the app target.
+
+Everything below is the original analysis; dates in item notes say when a
+sub-item was delivered.
 Scope: post-Netutilus parity, compared with WiFi Explorer Pro 3.10, NetSpot 6,
 Airtool 2, the public macOS Wi-Fi APIs, the menu-bar/utility segment covered in
 [`REFERENCE_APPS_REVIEW_2026-11.md`](REFERENCE_APPS_REVIEW_2026-11.md)
@@ -152,7 +182,8 @@ Tasks:
 - [x] Deauth-burst events from capture security reports, with an alert toggle
       and foreground notification.
 - [x] Roaming-failure events when a roam lands on a much weaker link
-      (≤ −80 dBm or >10 dB worse); a full Roaming Test is still open.
+      (≤ −80 dBm or >10 dB worse). The full Roaming Test shipped later and is
+      closed under P1.
 - [x] Notification rules with quiet hours and per-kind cooldown.
 - [x] Before/after comparison for the last 1 h / 6 h / 24 h.
 - [x] Timeline view, peer list and CSV exports (connected samples, visible
@@ -325,7 +356,9 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       Branding delivered 2026-11-22: the report title, client name and notes
       from the survey's report settings become the document heading, the
       "Prepared for" line and a Notes section, shared by HTML and PDF.
-      Scheduled delivery remains open.
+      Scheduled scan snapshots already exist in Settings → Automation (CSV/PDF
+      while the app runs); scheduling the combined handover report itself
+      remains open.
 - [~] **Shortcuts/App Intents/widgets** — scan, connected network, speed test
       and connectivity-state intents with Shortcut phrases ship. CSV export
       delivered 2026-11-22 (`LanFiExportScanIntent` returns a dated scan file to
