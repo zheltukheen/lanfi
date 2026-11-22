@@ -136,6 +136,8 @@ struct AppTable<Row: Identifiable>: View {
                 ascending: ascending))
     }
 
+    @Environment(\.cardContentPadding) private var cardContentPadding
+
     var body: some View {
         // The table fills its card. A plain ScrollView proposes nil width to
         // its content, which let every column fall back to its minimum and
@@ -150,6 +152,9 @@ struct AppTable<Row: Identifiable>: View {
                     .frame(minWidth: proxy.size.width, alignment: .leading)
             }
         }
+        // A table inside a padded card reaches the card's side edges; the
+        // cell inset still keeps text off the border.
+        .padding(.horizontal, -cardContentPadding)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Sortable table")
     }

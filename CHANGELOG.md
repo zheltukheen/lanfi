@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.6.22 — 2026-11-22
+
+### Added
+- **Known networks are now an inventory, not a list.** Each saved SSID shows
+  every visible BSSID with its best signal, band/channel, width, generation and
+  live security. Counts cover saved, in range, not in range, weak security and
+  visible-but-unsaved networks; filters and sorting apply to the list, CSV/JSON
+  export follows the current view, and the detail pane lists all access points
+  and warns about open, WEP or legacy WPA networks. Passwords are still never
+  read.
+- **802.11bn decoder versioning.** Protocol profiles stamp the tracked draft
+  (`802.11bn D1.4`) and say that Wi-Fi 7 is decoded as 802.11be/EHT.
+
+### Fixed
+- **Tables reach the edges of their cards.** A table inside a padded card used
+  to keep the card's side inset, leaving a narrow strip on both sides; tables
+  now bleed to the card edge while cell text keeps its inset.
+
 ## 5.6.21 — 2026-11-22
 
 ### Added

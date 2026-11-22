@@ -1817,3 +1817,16 @@
 "EAPOL-Key frames" = "EAPOL-Key-Frames";
 "Complete EAPOL handshakes" = "Vollständige EAPOL-Handshakes";
 "live" = "live";
+"All saved" = "Alle gespeicherten";
+"Not in range" = "Nicht in Reichweite";
+"Weak security" = "Schwache Sicherheit";
+"Visible, not saved" = "Sichtbar, nicht gespeichert";
+"Saved" = "Gespeichert";
+"Access points" = "Zugangspunkte";
+"Filter" = "Filter";
+"Sort" = "Sortierung";
+"The network is open; traffic is not encrypted over the air." = "Das Netz ist offen; der Verkehr wird nicht über die Luft verschlüsselt.";
+"WEP is cryptographically broken." = "WEP ist kryptografisch gebrochen.";
+"Legacy WPA should be replaced by WPA2/WPA3." = "Veraltetes WPA sollte durch WPA2/WPA3 ersetzt werden.";
+"These networks are in range but have no saved entry. Join them in System Settings if they belong to you." = "Diese Netze sind in Reichweite, aber nicht gespeichert. Verbinden Sie sie in den Systemeinstellungen, wenn sie Ihnen gehören.";
+"Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Gespeicherte Namen stammen aus den Systemeinstellungen, Live-Felder aus dem aktuellen Scan. Passwörter werden nie gelesen.";

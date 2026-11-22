@@ -191,6 +191,7 @@
 		2FEF958E0B3994C16FAB243D /* DNSComparisonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93278D5A9DA6EAFB8FCA6D2 /* DNSComparisonService.swift */; };
 		3005B4CD07139B5D503C304C /* ServiceBannerProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = F536E599811A0A3DE912A657 /* ServiceBannerProbe.swift */; };
 		30788EE62EC7A41A3E305947 /* GenericScanImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE025D061A57EC1E8346D308 /* GenericScanImporter.swift */; };
+		30C2E3F98CD947B7E9076908 /* KnownNetworkInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5DCC068CF7EE8C861B12AB /* KnownNetworkInsights.swift */; };
 		30D4B7086F7DBED7681C341A /* TrafficAccounting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA925AFC4FB4C71BCD5BAC0 /* TrafficAccounting.swift */; };
 		30F8A7623A9EC47D36E35653 /* RawDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91900D72A9CC042601EC0C7C /* RawDataView.swift */; };
 		3159A4C337911C7B71211D1F /* TablePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC7A369129025FC4EBB1BDFF /* TablePresentationTests.swift */; };
@@ -235,6 +236,7 @@
 		3C030589BF7826281E92336B /* LiveCaptureCounterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDAB2A1690004B3A1E607D1 /* LiveCaptureCounterService.swift */; };
 		3C1DB965D1AEA966BBC0515D /* MCPToolkit+Probes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE5BA4359C1337C93C571A6 /* MCPToolkit+Probes.swift */; };
 		3C4129BF2791C83851FE20B6 /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
+		3C5DADEFF1A4CA3FA3F554DD /* KnownNetworkInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5DCC068CF7EE8C861B12AB /* KnownNetworkInsights.swift */; };
 		3D4FA3244097A3098CED9D56 /* ToolRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B9A06947F3EA47D43A6C2D /* ToolRouting.swift */; };
 		3DF2A7A939AFD5AB14D817E3 /* HistoryChartMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949193F893D3DA5BDF9840CA /* HistoryChartMode.swift */; };
 		3E683683B0D3F663C66234DB /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC59D32F77002751B3EBB790 /* LocationManager.swift */; };
@@ -307,6 +309,7 @@
 		4C39FAD8D118D06DE4C94B95 /* LANScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFFFBD941DFDFB8D27C6B495 /* LANScannerTests.swift */; };
 		4C3A94BDFFC6520A734A2267 /* VisibilityAdvice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25EF7F7D1F0B2F95B8815BDB /* VisibilityAdvice.swift */; };
 		4C5B7504A4CBFB6A869490EA /* MonitorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07CE7C1EF74728BFAE416BD /* MonitorStore.swift */; };
+		4D87638B86FA52A7F4E57894 /* KnownNetworkInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5DCC068CF7EE8C861B12AB /* KnownNetworkInsights.swift */; };
 		4E7B1197B810D270A0854117 /* DNSMailLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EF96A4511D77B66707733 /* DNSMailLookupService.swift */; };
 		4F4893C113AE7BF184C44956 /* ProtocolDecoderVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35266E8DC3CAF14D8783A107 /* ProtocolDecoderVersion.swift */; };
 		4FE679E800BB23308E1461DA /* DNSComparisonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93278D5A9DA6EAFB8FCA6D2 /* DNSComparisonService.swift */; };
@@ -807,6 +810,7 @@
 		C49B2E3A88BF3C48B380B543 /* DomainAttributionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66B873A0F46FAE0E0F789DFB /* DomainAttributionTests.swift */; };
 		C5A54F9C0B89FD52FC77B6E9 /* DNSAddressEnricher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BE1220EDAEB7603F1786671 /* DNSAddressEnricher.swift */; };
 		C5C16FDE78800D3F5288C5DB /* LaunchAtLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE71D9536A0640EEF40187E /* LaunchAtLoginController.swift */; };
+		C5CDDC9D2B48F54D474638BA /* KnownNetworksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 637445AECFBDB281DFA304B6 /* KnownNetworksTests.swift */; };
 		C5EA01D6A5E29ED74FE4413E /* UptimeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191AA4ADCC07F10B59651B20 /* UptimeStore.swift */; };
 		C615DBE7A9C6752F28A84CA8 /* ScanCSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD2B6E034C7AB3AF12AD812 /* ScanCSVExporter.swift */; };
 		C661483485EF7D3F6F5C0081 /* ProtocolDecoderVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35266E8DC3CAF14D8783A107 /* ProtocolDecoderVersion.swift */; };
@@ -1222,6 +1226,7 @@
 		617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInterfaceTests.swift; sourceTree = "<group>"; };
 		62F59FFD2201E6DF45E53E7C /* ThroughputSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThroughputSample.swift; sourceTree = "<group>"; };
 		6325C3DDCA19ADC9BEA0533E /* SubnetCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubnetCalculator.swift; sourceTree = "<group>"; };
+		637445AECFBDB281DFA304B6 /* KnownNetworksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnownNetworksTests.swift; sourceTree = "<group>"; };
 		637EF802CD0C267B95EFCFD3 /* MCPLiveActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPLiveActionTests.swift; sourceTree = "<group>"; };
 		63FD6CF805C6D19A6AF08F53 /* HARTrafficAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HARTrafficAnalyzer.swift; sourceTree = "<group>"; };
 		648FEFFCCE62F69288760DDB /* PcapExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcapExporter.swift; sourceTree = "<group>"; };
@@ -1313,6 +1318,7 @@
 		8B7D2269C5BEE1E70B201B0B /* VisualTracerouteToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTracerouteToolView.swift; sourceTree = "<group>"; };
 		8BA0AC59BA4735B7937CF204 /* NetworkColumnFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkColumnFormatter.swift; sourceTree = "<group>"; };
 		8C3543F9C8415CBB18D3FC7D /* SecurityParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityParser.swift; sourceTree = "<group>"; };
+		8C5DCC068CF7EE8C861B12AB /* KnownNetworkInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnownNetworkInsights.swift; sourceTree = "<group>"; };
 		8E965BD39FCDDE9C537385FC /* GeoIPToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoIPToolView.swift; sourceTree = "<group>"; };
 		8F0A03041ABC10E57A0F43DC /* ConnectivityWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityWatchdog.swift; sourceTree = "<group>"; };
 		901A1E58A90C9AAFD381D03F /* HARTraffic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HARTraffic.swift; sourceTree = "<group>"; };
@@ -1682,6 +1688,7 @@
 				7A3EC5246EA379F51B08D298 /* InformationElementParserTests.swift */,
 				A8D00951A5C916B60C7FC160 /* Iperf3HistoryTests.swift */,
 				1231751D684779D89F4286E5 /* Iperf3Tests.swift */,
+				637445AECFBDB281DFA304B6 /* KnownNetworksTests.swift */,
 				CFFFBD941DFDFB8D27C6B495 /* LANScannerTests.swift */,
 				BBA9E7EE85645C41F0B1CCBD /* LinkAutomationTests.swift */,
 				3024B134790EE31F773A818D /* ListenerWatchTests.swift */,
@@ -2133,6 +2140,7 @@
 				EAD6178620E0E0F2B2F5174F /* Iperf3History.swift */,
 				169DFDE71C23DE4F36B21AA5 /* Iperf3Models.swift */,
 				4540DFB7C1F6D99785ABF64B /* KnownNetwork.swift */,
+				8C5DCC068CF7EE8C861B12AB /* KnownNetworkInsights.swift */,
 				CCCDD717115184E6E8F99044 /* LANModels.swift */,
 				6DE43F23C48DB987EFF9EFF4 /* LinkAutomation.swift */,
 				6923AC478E244EAF259A748C /* LinkTelemetry.swift */,
@@ -2499,6 +2507,7 @@
 				0CA80709F0A47037062A8D2E /* Iperf3History.swift in Sources */,
 				74F1177334E564F53A2C39A3 /* Iperf3Models.swift in Sources */,
 				A1672F5F12361408270F3AB9 /* KnownNetwork.swift in Sources */,
+				3C5DADEFF1A4CA3FA3F554DD /* KnownNetworkInsights.swift in Sources */,
 				B2E4DD881B462B1F8F6833B9 /* KnownNetworksService.swift in Sources */,
 				DA926C767E69C02CBF86E9DC /* LANModels.swift in Sources */,
 				0ACABA5D7DA42F3178A2C148 /* LANScannerService.swift in Sources */,
@@ -2796,7 +2805,9 @@
 				91C867E26BBB56B45AD34BE9 /* Iperf3Models.swift in Sources */,
 				F87ABA0C3327BD40BE52AE15 /* Iperf3Tests.swift in Sources */,
 				65D9BFA21607C468AA0177E6 /* KnownNetwork.swift in Sources */,
+				4D87638B86FA52A7F4E57894 /* KnownNetworkInsights.swift in Sources */,
 				C3B0639D56F6A560570D6EBB /* KnownNetworksService.swift in Sources */,
+				C5CDDC9D2B48F54D474638BA /* KnownNetworksTests.swift in Sources */,
 				6144E4DAC709AE2444225B83 /* LANModels.swift in Sources */,
 				4B509C51AB072386729337B9 /* LANScannerService.swift in Sources */,
 				4C39FAD8D118D06DE4C94B95 /* LANScannerTests.swift in Sources */,
@@ -3189,6 +3200,7 @@
 				41F8A11745E6B4E140B7E244 /* Iperf3ToolModel.swift in Sources */,
 				1C0DD63F5AA77D7EC289A4F2 /* Iperf3ToolView.swift in Sources */,
 				A4EE962E9482303A684D018B /* KnownNetwork.swift in Sources */,
+				30C2E3F98CD947B7E9076908 /* KnownNetworkInsights.swift in Sources */,
 				7CCB7440C6A25D4818AE5F0F /* KnownNetworksService.swift in Sources */,
 				EB61E392101FA412B8E990C0 /* KnownNetworksToolView.swift in Sources */,
 				7180D764DF0E0A7066DA89E0 /* LANModels.swift in Sources */,
@@ -3552,14 +3564,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 105;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 5.6.21;
+				MARKETING_VERSION = 5.6.22;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};
@@ -3669,14 +3681,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 105;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 5.6.21;
+				MARKETING_VERSION = 5.6.22;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.zheltukheen.LanFi;
 				SDKROOT = macosx;
 			};

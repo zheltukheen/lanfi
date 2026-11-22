@@ -2,6 +2,19 @@ import SwiftUI
 
 // MARK: - Surfaces
 
+/// Horizontal inset a card applies to its content. `AppTable` reads it so a
+/// table can bleed to the card's edges while ordinary text keeps the inset.
+private struct CardContentPaddingKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var cardContentPadding: CGFloat {
+        get { self[CardContentPaddingKey.self] }
+        set { self[CardContentPaddingKey.self] = newValue }
+    }
+}
+
 struct AppCard<Content: View>: View {
     private let content: Content
     private let padding: CGFloat
@@ -13,6 +26,7 @@ struct AppCard<Content: View>: View {
 
     var body: some View {
         content
+            .environment(\.cardContentPadding, padding)
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .appCardSurface()

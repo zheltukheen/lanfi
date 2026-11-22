@@ -1817,3 +1817,16 @@
 "EAPOL-Key frames" = "EAPOL-Key 帧";
 "Complete EAPOL handshakes" = "完整 EAPOL 握手";
 "live" = "实时";
+"All saved" = "所有已保存";
+"Not in range" = "不在范围内";
+"Weak security" = "弱安全";
+"Visible, not saved" = "可见但未保存";
+"Saved" = "已保存";
+"Access points" = "接入点";
+"Filter" = "筛选";
+"Sort" = "排序";
+"The network is open; traffic is not encrypted over the air." = "该网络开放；空口流量未加密。";
+"WEP is cryptographically broken." = "WEP 已被密码学攻破。";
+"Legacy WPA should be replaced by WPA2/WPA3." = "旧版 WPA 应替换为 WPA2/WPA3。";
+"These networks are in range but have no saved entry. Join them in System Settings if they belong to you." = "这些网络在范围内但没有保存记录。如果属于你，请在系统设置中连接。";
+"Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "已保存名称来自系统设置，实时字段来自当前扫描。从不读取密码。";

@@ -232,9 +232,13 @@ opens without a multi-gigabyte memory spike.
       `ReducedNeighborReport` decodes operating class, channel, BSSID, short
       SSID, BSS parameters, 20 MHz PSD and MLD parameters, and the IE view lists
       each neighbour with its band. Decoder-only, as planned.
-- [ ] Wi-Fi 8/802.11bn decoder versioning. Draft 2.0 entered working-group
+- [x] Wi-Fi 8/802.11bn decoder versioning. Draft 2.0 entered working-group
       ballot in August 2026; certification is expected in 2028, so this is
       future-proofing, not a current blocker.
+      Delivered 2026-11-22: `ProtocolDecoderVersion` stamps every protocol
+      profile with the tracked draft (`802.11bn D1.4`, decoder LanFi 1); Wi-Fi 7
+      profiles state that they are decoded as 802.11be/EHT, so no decode claims
+      the draft as supported. Covered by `ProtocolDecoderVersionTests`.
 
 ## P0.6 — Menu-bar live meter
 
@@ -298,7 +302,14 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       the Mac.
 - [x] **Known Networks / Wi-Fi QR** — saved-network inventory with security,
       live presence and a guest QR. Read-only: LanFi never edits or reads saved
-      Wi-Fi passwords.
+      Wi-Fi passwords. Expanded 2026-11-22: `KnownNetworkRow` groups every
+      visible BSSID per saved SSID and derives the best signal, channel/band,
+      BSSID count, width, generation and a weak-security flag;
+      `KnownNetworksAnalysis` adds in-range/out-of-range/weak-security filters,
+      name/signal/channel sorting, counts (saved, in range, not in range, weak,
+      visible-but-unsaved), CSV/JSON export and the list of visible networks
+      that have no saved entry. The detail pane lists every access point and
+      warns about open/WEP/legacy WPA.
 - [x] **Connections** — open TCP connections with process, PID, user, endpoints
       and state, grouped by process, from read-only `lsof` (never elevated;
       terminating the owning process is a separate explicit action, and no

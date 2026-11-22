@@ -1854,3 +1854,16 @@
 "EAPOL-Key frames" = "Кадры EAPOL-Key";
 "Complete EAPOL handshakes" = "Полные EAPOL-рукопожатия";
 "live" = "в реальном времени";
+"All saved" = "Все сохранённые";
+"Not in range" = "Вне зоны";
+"Weak security" = "Слабая защита";
+"Visible, not saved" = "Видны, но не сохранены";
+"Saved" = "Сохранено";
+"Access points" = "Точки доступа";
+"Filter" = "Фильтр";
+"Sort" = "Сортировка";
+"The network is open; traffic is not encrypted over the air." = "Сеть открыта; трафик не шифруется в эфире.";
+"WEP is cryptographically broken." = "WEP криптографически сломан.";
+"Legacy WPA should be replaced by WPA2/WPA3." = "Устаревший WPA стоит заменить на WPA2/WPA3.";
+"These networks are in range but have no saved entry. Join them in System Settings if they belong to you." = "Эти сети в зоне, но не сохранены. Подключитесь к ним в System Settings, если они ваши.";
+"Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Сохранённые имена берутся из System Settings, живые поля — из текущего сканирования. Пароли никогда не читаются.";
