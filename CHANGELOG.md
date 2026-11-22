@@ -1,11 +1,25 @@
 # Changelog
 
+## 5.6.34 — 2026-11-22
+
+### Fixed
+- **The supervised-process startup test no longer races the scheduler.**
+  `testChildThatExitsDuringStartupFailsTheStart` now yields in the readiness
+  probe before answering, so the child's exit is observable even on a loaded
+  CI runner. The flaky failure stopped the v5.6.33 release before any artifact
+  was published.
+
+### Changed
+- **First published release since 5.6.16.** This build ships every change from
+  5.6.17 through 5.6.33, and the release notes collect all of those sections
+  below this heading.
+
 ## 5.6.33 — 2026-11-22
 
 ### Changed
-- **First tagged release since 5.6.16.** The sixteen versions from 5.6.17 to
-  5.6.32 ship together in this build, and the release notes collect every one
-  of those sections below their own heading.
+- **Tagged, but never published.** The tag's release run failed on the flaky
+  supervised-process test above, so nothing was released. Its changes ship in
+  5.6.34 together with every version from 5.6.17 to 5.6.32.
 
 ## 5.6.32 — 2026-11-22
 

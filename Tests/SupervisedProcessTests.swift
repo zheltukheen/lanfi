@@ -38,7 +38,15 @@ final class SupervisedProcessTests: XCTestCase {
     }
 
     func testChildThatExitsDuringStartupFailsTheStart() async {
-        let process = makeProcess(script: "exit 1")
+        // The probe yields before answering so the exit is observable even on a
+        // loaded machine. A probe that answers instantly races the child's own
+        // shutdown and tests the scheduler, not the supervisor.
+        let process = makeProcess(
+            script: "exit 1",
+            isReady: {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                return true
+            })
         do {
             try await process.start()
             XCTFail("a child that exits must not report ready")
