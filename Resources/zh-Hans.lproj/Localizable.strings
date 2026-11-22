@@ -1865,3 +1865,11 @@
 "Calibrate from samples" = "根据采样校准";
 "Calibrate" = "校准";
 "Calibration %+.0f dB · %lld points · ±%.0f dB" = "校准 %+.0f dB · %lld 个点 · ±%.0f dB";
+"No-coverage area" = "无覆盖区域";
+"Cutout" = "挖空";
+"Finish Cutout" = "完成挖空";
+"Clear Cutouts" = "清除挖空";
+"Click the corners of an area with no coverage (outside the building, a shaft), then Finish Cutout." = "点击无覆盖区域（室外、竖井）的各个角，然后完成挖空。";
+"Cutout mode: click vertices, then Finish Cutout." = "挖空模式：点击顶点，然后完成挖空。";
+"Cutout added · %lld areas." = "已添加挖空 · %lld 个区域。";
+"No-coverage areas cleared." = "无覆盖区域已清除。";

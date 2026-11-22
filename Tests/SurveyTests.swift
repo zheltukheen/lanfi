@@ -26,6 +26,29 @@ final class SurveyTests: XCTestCase {
         XCTAssertEqual(store.imageData(for: latest), image)
     }
 
+    func testCutoutContainsOnlyItsInterior() {
+        let cutout = SurveyCutout.new(points: [
+            SurveyPoint(x: 0.2, y: 0.2), SurveyPoint(x: 0.4, y: 0.2),
+            SurveyPoint(x: 0.4, y: 0.4), SurveyPoint(x: 0.2, y: 0.4),
+        ])
+        XCTAssertTrue(cutout.contains(x: 0.3, y: 0.3))
+        XCTAssertFalse(cutout.contains(x: 0.1, y: 0.3))
+        XCTAssertFalse(cutout.contains(x: 0.5, y: 0.3))
+        XCTAssertFalse(SurveyCutout.new(points: []).contains(x: 0.3, y: 0.3))
+    }
+
+    func testProjectDecodesWithoutCutouts() throws {
+        var project = SurveyProject.new(name: "No cutouts")
+        project.imageFileName = nil
+        let encoded = try JSONEncoder().encode(project)
+        var object = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        object.removeValue(forKey: "cutouts")
+        let old = try JSONSerialization.data(withJSONObject: object)
+        let decoded = try JSONDecoder().decode(SurveyProject.self, from: old)
+        XCTAssertTrue(decoded.cutouts.isEmpty)
+    }
+
     func testSampleDecodesWithoutPointMeasurement() throws {
         let json = """
             {"id":"\(UUID().uuidString)","x":0.2,"y":0.3,"rssi":-61,"ssid":"Office",

@@ -54,6 +54,26 @@ final class SurveyPredictorTests: XCTestCase {
         XCTAssertGreaterThan(front, behind + 15)
     }
 
+    func testCutoutRemovesCoverage() throws {
+        let ap = SurveyAccessPoint.new(x: 0.5, y: 0.5)
+        let cutout = SurveyCutout.new(points: [
+            SurveyPoint(x: 0.7, y: 0.7), SurveyPoint(x: 0.9, y: 0.7),
+            SurveyPoint(x: 0.9, y: 0.9), SurveyPoint(x: 0.7, y: 0.9),
+        ])
+        XCTAssertNotNil(
+            SurveyPredictor.estimate(
+                x: 0.8, y: 0.8, accessPoints: [ap], walls: [], obstacles: [],
+                cutouts: []))
+        XCTAssertNil(
+            SurveyPredictor.estimate(
+                x: 0.8, y: 0.8, accessPoints: [ap], walls: [], obstacles: [],
+                cutouts: [cutout]))
+        XCTAssertNotNil(
+            SurveyPredictor.estimate(
+                x: 0.2, y: 0.2, accessPoints: [ap], walls: [], obstacles: [],
+                cutouts: [cutout]))
+    }
+
     func testCalibrationUsesTheMedianMeasuredOffset() throws {
         var project = SurveyProject.new(name: "Calibration")
         project.planWidthMeters = 20

@@ -170,7 +170,7 @@ private final class SurveyReportView: NSView {
                 if let rssi = SurveyPredictor.estimate(
                     x: nx, y: ny, accessPoints: project.accessPoints,
                     walls: project.walls, obstacles: project.obstacles, planWidthMeters: width,
-                    calibrationDb: calibration
+                    calibrationDb: calibration, cutouts: project.cutouts
                 ) {
                     color(for: rssi).withAlphaComponent(0.45).setFill()
                     NSRect(x: x, y: y, width: cell + 0.5, height: cell + 0.5).fill()

@@ -11,6 +11,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
     case walk
     case wall
     case room
+    case cutout
     case predictive
     case calibrate
 
@@ -22,6 +23,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
         case .walk: return String(localized: "Walk sampling")
         case .wall: return String(localized: "Draw wall")
         case .room: return String(localized: "Draw room")
+        case .cutout: return String(localized: "No-coverage area")
         case .predictive: return String(localized: "Predictive AP")
         case .calibrate: return String(localized: "Calibrate scale")
         }
@@ -34,6 +36,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
         case .walk: return String(localized: "Walk")
         case .wall: return String(localized: "Wall")
         case .room: return String(localized: "Room")
+        case .cutout: return String(localized: "Cutout")
         case .predictive: return String(localized: "AP")
         case .calibrate: return String(localized: "Scale")
         }
@@ -45,6 +48,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
         case .walk: return "figure.walk"
         case .wall: return "pencil.tip"
         case .room: return "rectangle.dashed"
+        case .cutout: return "rectangle.slash"
         case .predictive: return "antenna.radiowaves.left.and.right"
         case .calibrate: return "ruler"
         }
@@ -65,6 +69,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
         case .sample: return .accent
         case .walk: return .green
         case .wall, .room: return .orange
+        case .cutout: return .purple
         case .predictive: return .purple
         case .calibrate: return .cyan
         }
@@ -83,6 +88,11 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
         case .room:
             return String(
                 localized: "Click the room corners, then choose Finish Room from Structure.")
+        case .cutout:
+            return String(
+                localized:
+                    "Click the corners of an area with no coverage (outside the building, a shaft), then Finish Cutout."
+            )
         case .predictive:
             return String(
                 localized:
@@ -99,6 +109,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
         case .walk: return String(localized: "Walk mode: move the pointer over the plan to sample automatically.")
         case .wall: return String(localized: "Wall mode: click two points to draw a wall.")
         case .room: return String(localized: "Room mode: click vertices, then Finish Room.")
+        case .cutout: return String(localized: "Cutout mode: click vertices, then Finish Cutout.")
         case .predictive: return String(localized: "Predictive mode: click the plan to place an AP.")
         case .calibrate: return String(localized: "Calibration: click two points and enter the real distance.")
         }
@@ -106,6 +117,7 @@ enum SurveyToolMode: String, CaseIterable, Identifiable, Sendable {
 
     /// Modes that draw on the plan need a crosshair rather than an arrow.
     var isDrawing: Bool {
-        self == .wall || self == .room || self == .predictive || self == .calibrate || self == .walk
+        self == .wall || self == .room || self == .cutout || self == .predictive
+            || self == .calibrate || self == .walk
     }
 }

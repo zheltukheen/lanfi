@@ -1865,3 +1865,11 @@
 "Calibrate from samples" = "Calibrer d’après les mesures";
 "Calibrate" = "Calibrer";
 "Calibration %+.0f dB · %lld points · ±%.0f dB" = "Calibration %+.0f dB · %lld points · ±%.0f dB";
+"No-coverage area" = "Zone sans couverture";
+"Cutout" = "Découpe";
+"Finish Cutout" = "Terminer la découpe";
+"Clear Cutouts" = "Effacer les découpes";
+"Click the corners of an area with no coverage (outside the building, a shaft), then Finish Cutout." = "Cliquez les coins d’une zone sans couverture (extérieur, gaine), puis Terminer la découpe.";
+"Cutout mode: click vertices, then Finish Cutout." = "Mode découpe : cliquez les sommets, puis terminez.";
+"Cutout added · %lld areas." = "Découpe ajoutée · %lld zones.";
+"No-coverage areas cleared." = "Zones sans couverture effacées.";

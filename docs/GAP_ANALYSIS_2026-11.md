@@ -287,7 +287,7 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
 - [~] **Client Analytics** — advertised per-AP client load, utilization and
       insights from beacons plus captured client observations ship; per-client
       airtime and retries need a capture-based accounting pass.
-- [~] **Survey Planning 2.0** — free-space planner, grid layout, coverage
+- [x] **Survey Planning 2.0** — free-space planner, grid layout, coverage
       estimate, blank metre-grid plans and the active-survey advisor ship.
       Material-aware wall loss delivered 2026-11-22: the structure menu picks
       drywall/wood/glass/brick/concrete/metal and stores the preset with the
@@ -303,7 +303,10 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       compares each walk sample with the prediction at the same point, applies
       the median offset (and reports the residual), and the toggle “Calibrate
       from samples” feeds it into the plan heatmap, 3D view and PDF report.
-      Cutouts remain open.
+      Cutouts delivered 2026-11-22: `SurveyCutout` polygons mark no-coverage
+      areas (outside the building, shafts); the Cutout tool draws them, and
+      measured interpolation, predictive heatmap, 3D view and PDF report leave
+      those cells empty instead of painting invented signal.
 - [x] **Active Survey** — required samples, covered cells, gaps and the next
       target ship. Throughput/latency per point delivered 2026-11-22: “Measure”
       in the Points card runs one `networkQuality` pass and stores download and

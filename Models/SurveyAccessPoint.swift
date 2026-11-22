@@ -104,6 +104,7 @@ struct SurveyFloorInput {
     let walls: [SurveyWall]
     let obstacles: [SurveyObstacle]
     let accessPoints: [SurveyAccessPoint]
+    var cutouts: [SurveyCutout] = []
 }
 
 enum SurveyPredictor {
@@ -112,6 +113,11 @@ enum SurveyPredictor {
         planWidthMeters: Double = 30, floorAttenuationDb: Double = 12,
         calibrationDb: Double = 0
     ) -> Int? {
+        if let target = floors.first(where: { $0.floorLevel == targetFloorLevel }),
+            target.cutouts.contains(where: { $0.contains(x: x, y: y) })
+        {
+            return nil
+        }
         var strongest: Int?
         for floor in floors {
             for ap in floor.accessPoints {
@@ -149,9 +155,11 @@ enum SurveyPredictor {
     static func estimate(
         x: Double, y: Double, accessPoints: [SurveyAccessPoint],
         walls: [SurveyWall], obstacles: [SurveyObstacle], planWidthMeters: Double = 30,
-        planHeightMeters: Double? = nil, calibrationDb: Double = 0
+        planHeightMeters: Double? = nil, calibrationDb: Double = 0,
+        cutouts: [SurveyCutout] = []
     ) -> Int? {
         guard !accessPoints.isEmpty else { return nil }
+        guard !cutouts.contains(where: { $0.contains(x: x, y: y) }) else { return nil }
         let heightMeters = planHeightMeters ?? planWidthMeters
         var strongest: Int?
         for ap in accessPoints {

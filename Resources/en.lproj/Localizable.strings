@@ -1866,3 +1866,11 @@
 "Calibrate from samples" = "Calibrate from samples";
 "Calibrate" = "Calibrate";
 "Calibration %+.0f dB · %lld points · ±%.0f dB" = "Calibration %+.0f dB · %lld points · ±%.0f dB";
+"No-coverage area" = "No-coverage area";
+"Cutout" = "Cutout";
+"Finish Cutout" = "Finish Cutout";
+"Clear Cutouts" = "Clear Cutouts";
+"Click the corners of an area with no coverage (outside the building, a shaft), then Finish Cutout." = "Click the corners of an area with no coverage (outside the building, a shaft), then Finish Cutout.";
+"Cutout mode: click vertices, then Finish Cutout." = "Cutout mode: click vertices, then Finish Cutout.";
+"Cutout added · %lld areas." = "Cutout added · %lld areas.";
+"No-coverage areas cleared." = "No-coverage areas cleared.";

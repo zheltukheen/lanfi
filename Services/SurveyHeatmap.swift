@@ -22,6 +22,7 @@ struct SurveyHeatmapRequest: Sendable {
     /// Measured offset applied to the predictive model; zero keeps the raw
     /// free-space estimate.
     var calibrationDb: Double = 0
+    var cutouts: [SurveyCutout] = []
 
     var key: String {
         var parts = [
@@ -47,6 +48,10 @@ struct SurveyHeatmapRequest: Sendable {
         }
         parts.append("plan:\(planWidthMeters)x\(planHeightMeters)")
         parts.append("cal:\(calibrationDb)")
+        for cutout in cutouts {
+            parts.append("c:\(cutout.id.uuidString)")
+            for point in cutout.points { parts.append("\(point.x):\(point.y)") }
+        }
         return parts.joined(separator: "|")
     }
 
@@ -101,11 +106,13 @@ struct SurveyHeatmapRequest: Sendable {
     }
 
     private func estimate(nx: Double, ny: Double) -> Int? {
+        guard !cutouts.contains(where: { $0.contains(x: nx, y: ny) }) else { return nil }
         if predictiveMode && !accessPoints.isEmpty {
             return SurveyPredictor.estimate(
                 x: nx, y: ny, accessPoints: accessPoints, walls: walls,
                 obstacles: obstacles, planWidthMeters: planWidthMeters,
-                planHeightMeters: planHeightMeters, calibrationDb: calibrationDb)
+                planHeightMeters: planHeightMeters, calibrationDb: calibrationDb,
+                cutouts: cutouts)
         }
         guard !samples.isEmpty else { return nil }
         return SurveyInterpolator.estimate(

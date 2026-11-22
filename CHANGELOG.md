@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.6.30 — 2026-11-22
+
+### Added
+- **No-coverage cutouts in surveys.** A new Cutout tool draws polygons for the
+  outside of the building, lift shafts and sealed voids. Measured and predicted
+  heatmaps, the 3D view and the PDF report leave cut-out cells empty instead of
+  painting signal there. Old survey files decode with no cutouts.
+
 ## 5.6.29 — 2026-11-22
 
 ### Added

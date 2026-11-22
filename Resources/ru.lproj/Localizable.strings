@@ -1902,3 +1902,11 @@
 "Calibrate from samples" = "Калибровать по замерам";
 "Calibrate" = "Калибровка";
 "Calibration %+.0f dB · %lld points · ±%.0f dB" = "Калибровка %+.0f дБ · %lld точек · ±%.0f дБ";
+"No-coverage area" = "Зона без покрытия";
+"Cutout" = "Вырез";
+"Finish Cutout" = "Завершить вырез";
+"Clear Cutouts" = "Очистить вырезы";
+"Click the corners of an area with no coverage (outside the building, a shaft), then Finish Cutout." = "Отметьте углы зоны без покрытия (улица, шахта), затем «Завершить вырез».";
+"Cutout mode: click vertices, then Finish Cutout." = "Режим выреза: отметьте вершины, затем «Завершить вырез».";
+"Cutout added · %lld areas." = "Вырез добавлен · %lld зон.";
+"No-coverage areas cleared." = "Зоны без покрытия очищены.";

@@ -40,6 +40,7 @@ final class SurveyViewModel: ObservableObject {
     var samples: [SurveySample] { project.samples }
     var walls: [SurveyWall] { project.walls }
     var obstacles: [SurveyObstacle] { project.obstacles }
+    var cutouts: [SurveyCutout] { project.cutouts }
     var accessPoints: [SurveyAccessPoint] { project.accessPoints }
     var gpsTrack: [GeoPoint] { project.gpsTrack ?? [] }
 
@@ -168,6 +169,26 @@ final class SurveyViewModel: ObservableObject {
         project.updatedAt = Date()
         scheduleSave()
         statusMessage = String(format: String(localized: "Room added · %lld rooms."), project.obstacles.count)
+    }
+
+    func addCutout(points: [SurveyPoint]) {
+        guard points.count >= 3 else { return }
+        let clamped = points.map {
+            SurveyPoint(x: min(max($0.x, 0), 1), y: min(max($0.y, 0), 1))
+        }
+        project.cutouts.append(.new(points: clamped))
+        project.updatedAt = Date()
+        scheduleSave()
+        statusMessage = String(
+            format: String(localized: "Cutout added · %lld areas."), project.cutouts.count)
+    }
+
+    func clearCutouts() {
+        guard !project.cutouts.isEmpty else { return }
+        project.cutouts.removeAll()
+        project.updatedAt = Date()
+        save()
+        statusMessage = String(localized: "No-coverage areas cleared.")
     }
 
     func addAccessPoint(

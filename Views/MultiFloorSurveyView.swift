@@ -70,7 +70,8 @@ struct MultiFloorSurveyView: View {
                 floorHeightMeters: $0.floorHeightMeters,
                 walls: $0.walls,
                 obstacles: $0.obstacles,
-                accessPoints: $0.accessPoints
+                accessPoints: $0.accessPoints,
+                cutouts: $0.cutouts
             )
         }
     }

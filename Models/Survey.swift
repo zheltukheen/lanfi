@@ -90,6 +90,33 @@ struct SurveyWall: Codable, Identifiable, Equatable {
     }
 }
 
+/// Region with no coverage (outside the building, a lift shaft, a sealed void).
+/// Predictions and measured heatmaps leave it empty instead of inventing signal.
+struct SurveyCutout: Codable, Identifiable, Equatable {
+    let id: UUID
+    var points: [SurveyPoint]
+
+    static func new(points: [SurveyPoint]) -> SurveyCutout {
+        SurveyCutout(id: UUID(), points: points)
+    }
+
+    /// Ray casting; points exactly on an edge may land either way, which is
+    /// fine for a coverage mask.
+    func contains(x: Double, y: Double) -> Bool {
+        guard points.count >= 3 else { return false }
+        var inside = false
+        var previous = points[points.count - 1]
+        for point in points {
+            let intersects =
+                (point.y > y) != (previous.y > y)
+                && x < (previous.x - point.x) * (y - point.y) / (previous.y - point.y) + point.x
+            if intersects { inside.toggle() }
+            previous = point
+        }
+        return inside
+    }
+}
+
 struct SurveyProject: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
@@ -98,6 +125,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var walls: [SurveyWall]
     var obstacles: [SurveyObstacle]
     var accessPoints: [SurveyAccessPoint]
+    /// No-coverage regions. Optional in the initializer so old projects decode.
+    var cutouts: [SurveyCutout] = []
     var floorLevel: Int
     var floorHeightMeters: Double
     var planWidthMeters: Double?
@@ -119,8 +148,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, imageFileName, samples, walls, obstacles, accessPoints, floorLevel, floorHeightMeters,
-            planWidthMeters, planHeightMeters, gpsTrack
+        case id, name, imageFileName, samples, walls, obstacles, accessPoints, cutouts, floorLevel,
+            floorHeightMeters, planWidthMeters, planHeightMeters, gpsTrack
         case reportTitle, clientName, reportNotes, updatedAt
     }
 
@@ -132,6 +161,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         walls: [SurveyWall] = [],
         obstacles: [SurveyObstacle] = [],
         accessPoints: [SurveyAccessPoint] = [],
+        cutouts: [SurveyCutout] = [],
         floorLevel: Int = 0,
         floorHeightMeters: Double = 3.0,
         planWidthMeters: Double? = nil,
@@ -149,6 +179,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         self.walls = walls
         self.obstacles = obstacles
         self.accessPoints = accessPoints
+        self.cutouts = cutouts
         self.floorLevel = floorLevel
         self.floorHeightMeters = floorHeightMeters
         self.planWidthMeters = planWidthMeters
@@ -169,6 +200,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         walls = try container.decodeIfPresent([SurveyWall].self, forKey: .walls) ?? []
         obstacles = try container.decodeIfPresent([SurveyObstacle].self, forKey: .obstacles) ?? []
         accessPoints = try container.decodeIfPresent([SurveyAccessPoint].self, forKey: .accessPoints) ?? []
+        cutouts = try container.decodeIfPresent([SurveyCutout].self, forKey: .cutouts) ?? []
         floorLevel = try container.decodeIfPresent(Int.self, forKey: .floorLevel) ?? 0
         floorHeightMeters = try container.decodeIfPresent(Double.self, forKey: .floorHeightMeters) ?? 3.0
         planWidthMeters = try container.decodeIfPresent(Double.self, forKey: .planWidthMeters)

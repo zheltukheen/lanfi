@@ -12,6 +12,7 @@ struct SurveyView: View {
     @State private var antennaHeading = 0.0
     @State private var useCalibration = true
     @State private var roomPoints: [SurveyPoint] = []
+    @State private var cutoutPoints: [SurveyPoint] = []
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
     @AppStorage(AppSettingsKey.surveyHeatmapDetail.rawValue) private var heatmapDetail = "balanced"
@@ -227,6 +228,13 @@ struct SurveyView: View {
                 roomPoints = []
             }
             .disabled(survey.obstacles.isEmpty)
+            Button(String(localized: "Finish Cutout")) { finishCutout() }
+                .disabled(cutoutPoints.count < 3)
+            Button(String(localized: "Clear Cutouts"), role: .destructive) {
+                survey.clearCutouts()
+                cutoutPoints = []
+            }
+            .disabled(survey.cutouts.isEmpty)
             Button(String(localized: "Clear Predictive APs"), role: .destructive) {
                 survey.clearAccessPoints()
             }
@@ -563,6 +571,7 @@ struct SurveyView: View {
         mode = newMode
         if newMode != .calibrate { calibrationPoints = [] }
         if newMode != .room { roomPoints = [] }
+        if newMode != .cutout { cutoutPoints = [] }
         if newMode != .wall { pendingWallStart = nil }
         survey.statusMessage = newMode.activationMessage
     }
@@ -648,7 +657,8 @@ struct SurveyView: View {
                     // predicted coverage is drawn at the wrong scale.
                     planWidthMeters: planWidthMeters,
                     planHeightMeters: planHeightMeters,
-                    calibrationDb: calibrationOffset
+                    calibrationDb: calibrationOffset,
+                    cutouts: survey.project.cutouts
                 )
                 ZStack {
                     Color(nsColor: .underPageBackgroundColor)
@@ -676,6 +686,7 @@ struct SurveyView: View {
                             }
                             drawWalls(context: context, rect: sheet)
                             drawRooms(context: context, rect: sheet)
+                            drawCutouts(context: context, rect: sheet)
                             drawAccessPoints(context: context, rect: sheet)
                             drawCalibration(context: context, rect: sheet)
                         }
@@ -817,6 +828,10 @@ struct SurveyView: View {
             )
             return
         }
+        if mode == .cutout {
+            cutoutPoints.append(SurveyPoint(x: x, y: y))
+            return
+        }
         if mode == .room {
             roomPoints.append(SurveyPoint(x: x, y: y))
             survey.statusMessage = String(
@@ -918,17 +933,28 @@ struct SurveyView: View {
         mode = .sample
     }
 
+    private func finishCutout() {
+        guard cutoutPoints.count >= 3 else { return }
+        survey.addCutout(points: cutoutPoints)
+        cutoutPoints = []
+        mode = .sample
+    }
+
     /// Interpolates one grid cell. Predictive mode (placed access points)
     /// takes precedence over measured samples, matching the previous
     /// drawing behaviour.
     private func estimateRSSI(nx: Double, ny: Double) -> Int? {
+        guard !survey.project.cutouts.contains(where: { $0.contains(x: nx, y: ny) }) else {
+            return nil
+        }
         if mode == .predictive && !survey.accessPoints.isEmpty {
             return SurveyPredictor.estimate(
                 x: nx, y: ny, accessPoints: survey.accessPoints,
                 walls: survey.walls, obstacles: survey.obstacles,
                 planWidthMeters: survey.project.planWidthMeters ?? 30,
                 planHeightMeters: resolvedPlanHeightMeters,
-                calibrationDb: calibrationOffset
+                calibrationDb: calibrationOffset,
+                cutouts: survey.project.cutouts
             )
         }
         guard !displayedSamples.isEmpty else { return nil }
@@ -1025,6 +1051,31 @@ struct SurveyView: View {
                 context.fill(
                     Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6)), with: .color(.orange))
             }
+        }
+    }
+
+    private func drawCutouts(context: GraphicsContext, rect: CGRect) {
+        for cutout in survey.cutouts where cutout.points.count >= 3 {
+            var path = Path()
+            for (index, point) in cutout.points.enumerated() {
+                let p = CGPoint(
+                    x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                if index == 0 { path.move(to: p) } else { path.addLine(to: p) }
+            }
+            path.closeSubpath()
+            context.fill(path, with: .color(.purple.opacity(0.18)))
+            context.stroke(
+                path, with: .color(.purple.opacity(0.8)),
+                style: StrokeStyle(lineWidth: 1.5, dash: [5, 3]))
+        }
+        if cutoutPoints.count > 0 {
+            var path = Path()
+            for (index, point) in cutoutPoints.enumerated() {
+                let p = CGPoint(
+                    x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                if index == 0 { path.move(to: p) } else { path.addLine(to: p) }
+            }
+            context.stroke(path, with: .color(.purple), lineWidth: 2)
         }
     }
 
