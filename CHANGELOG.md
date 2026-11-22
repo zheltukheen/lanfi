@@ -1,5 +1,18 @@
 # Changelog
 
+## 5.6.24 — 2026-11-22
+
+### Added
+- **Material-aware survey walls.** The structure menu now draws walls as
+  drywall (3 dB), wood (4 dB), glass (6 dB), brick (10 dB), concrete (15 dB) or
+  metal (25 dB) at 5 GHz, and the preset is stored with the wall. Older survey
+  files and custom walls keep their 8 dB value.
+- **Adjustable inter-floor loss.** The 3D multi-floor prediction takes a
+  0–30 dB floor-loss value (default 12 dB) instead of the hard-coded term, so
+  stacked floors can be modelled for the building rather than a generic slab.
+- **Branded combined reports.** The survey's report title, client name and notes
+  now head the combined report and add a Notes section in both HTML and PDF.
+
 ## 5.6.23 — 2026-11-22
 
 ### Added

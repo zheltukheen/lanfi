@@ -52,7 +52,16 @@ struct CombinedReport: Equatable {
         let detail: String
     }
 
+    /// Per-site branding for a client handover. Optional so reports made from
+    /// an unnamed survey keep the generic LanFi header.
+    struct Branding: Equatable {
+        let title: String?
+        let clientName: String?
+        let notes: String?
+    }
+
     let generatedAt: Date
+    let branding: Branding?
     let networkCount: Int
     let averageQuality: Int
     let scan: [ScanRow]
@@ -135,8 +144,21 @@ enum CombinedReportBuilder {
             CombinedReport.EventRow(at: event.at, kind: event.kind.title, detail: event.detail)
         }
 
+        let branding = survey.flatMap { project -> CombinedReport.Branding? in
+            let title = project.reportTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let client = project.clientName?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let notes = project.reportNotes?.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !(title ?? "").isEmpty || !(client ?? "").isEmpty || !(notes ?? "").isEmpty
+            else { return nil }
+            return CombinedReport.Branding(
+                title: (title ?? "").isEmpty ? nil : title,
+                clientName: (client ?? "").isEmpty ? nil : client,
+                notes: (notes ?? "").isEmpty ? nil : notes)
+        }
+
         return CombinedReport(
             generatedAt: generatedAt,
+            branding: branding,
             networkCount: networks.count,
             averageQuality: analysis.averageQuality,
             scan: scan,

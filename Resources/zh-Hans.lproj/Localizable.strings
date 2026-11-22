@@ -1832,3 +1832,11 @@
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "已保存名称来自系统设置，实时字段来自当前扫描。从不读取密码。";
 "Export Combined Report as PDF…" = "将综合报告导出为 PDF…";
 "Could not export the PDF" = "无法导出 PDF";
+"Wall material" = "墙体材料";
+"Drywall" = "石膏板";
+"Wood" = "木材";
+"Glass" = "玻璃";
+"Brick" = "砖";
+"Concrete" = "混凝土";
+"Metal" = "金属";
+"Floor loss" = "楼层衰减";

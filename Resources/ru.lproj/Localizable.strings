@@ -1869,3 +1869,11 @@
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Сохранённые имена берутся из System Settings, живые поля — из текущего сканирования. Пароли никогда не читаются.";
 "Export Combined Report as PDF…" = "Экспортировать сводный отчёт в PDF…";
 "Could not export the PDF" = "Не удалось экспортировать PDF";
+"Wall material" = "Материал стены";
+"Drywall" = "Гипсокартон";
+"Wood" = "Дерево";
+"Glass" = "Стекло";
+"Brick" = "Кирпич";
+"Concrete" = "Бетон";
+"Metal" = "Металл";
+"Floor loss" = "Потери между этажами";

@@ -148,6 +148,23 @@ final class CombinedReportTests: XCTestCase {
         XCTAssertTrue(html.contains("Scan"))
     }
 
+    func testBrandingComesFromTheSurveyReportSettings() {
+        var project = SurveyProject.new(name: "HQ")
+        project.reportTitle = "Acme <HQ> survey"
+        project.clientName = "Acme & Co"
+        project.reportNotes = "Second floor\nNext visit in Q1"
+        let report = CombinedReportBuilder.make(
+            networks: [], analysis: .empty, survey: project, diagnostics: nil,
+            speedTests: [], events: [])
+        XCTAssertEqual(report.branding?.title, "Acme <HQ> survey")
+        XCTAssertEqual(report.branding?.clientName, "Acme & Co")
+        let html = CombinedReportExporter.html(for: report)
+        XCTAssertTrue(html.contains("Acme &lt;HQ&gt; survey"))
+        XCTAssertTrue(html.contains("Prepared for Acme &amp; Co"))
+        XCTAssertTrue(html.contains("Second floor<br>Next visit in Q1"))
+        XCTAssertFalse(html.contains("LanFi combined report"))
+    }
+
     func testEscapeHandlesAmpersandsAndQuotes() {
         XCTAssertEqual(CombinedReportExporter.escape("a&b <c> \"d\""), "a&amp;b &lt;c&gt; &quot;d&quot;")
     }

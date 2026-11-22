@@ -25,7 +25,8 @@ struct SurveyFloorInput {
 
 enum SurveyPredictor {
     static func estimate3D(
-        x: Double, y: Double, targetFloorLevel: Int, floors: [SurveyFloorInput], planWidthMeters: Double = 30
+        x: Double, y: Double, targetFloorLevel: Int, floors: [SurveyFloorInput],
+        planWidthMeters: Double = 30, floorAttenuationDb: Double = 12
     ) -> Int? {
         var strongest: Int?
         for floor in floors {
@@ -35,7 +36,8 @@ enum SurveyPredictor {
                 let distance = max(0.3, hypot(horizontal, vertical))
                 let frequency = frequencyMHz(band: ap.band, channel: ap.channel)
                 let fspl = 20 * log10(distance) + 20 * log10(frequency) - 27.55
-                let floorLoss = Double(abs(floor.floorLevel - targetFloorLevel)) * 12.0
+                let floorLoss =
+                    Double(abs(floor.floorLevel - targetFloorLevel)) * floorAttenuationDb
                 let wallLoss =
                     floors.first(where: { $0.floorLevel == targetFloorLevel })?.walls.reduce(0.0) {
                         total, wall in

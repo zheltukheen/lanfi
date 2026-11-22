@@ -28,6 +28,42 @@ struct SurveyObstacle: Codable, Identifiable, Equatable {
     }
 }
 
+/// Wall presets keep the loss realistic without asking for a dB value while
+/// drawing. The material is optional so older survey files still decode.
+enum SurveyWallMaterial: String, CaseIterable, Identifiable, Codable {
+    case drywall
+    case wood
+    case glass
+    case brick
+    case concrete
+    case metal
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .drywall: return String(localized: "Drywall")
+        case .wood: return String(localized: "Wood")
+        case .glass: return String(localized: "Glass")
+        case .brick: return String(localized: "Brick")
+        case .concrete: return String(localized: "Concrete")
+        case .metal: return String(localized: "Metal")
+        }
+    }
+
+    /// Typical 5 GHz attenuation, rounded to the values survey tools use.
+    var attenuationDb: Double {
+        switch self {
+        case .drywall: return 3
+        case .wood: return 4
+        case .glass: return 6
+        case .brick: return 10
+        case .concrete: return 15
+        case .metal: return 25
+        }
+    }
+}
+
 struct SurveyWall: Codable, Identifiable, Equatable {
     let id: UUID
     var x1: Double
@@ -35,9 +71,16 @@ struct SurveyWall: Codable, Identifiable, Equatable {
     var x2: Double
     var y2: Double
     var attenuationDb: Double
+    /// Material chosen when the wall was drawn; nil for files from before the
+    /// presets existed or for a custom attenuation.
+    var material: SurveyWallMaterial? = nil
 
-    static func new(x1: Double, y1: Double, x2: Double, y2: Double) -> SurveyWall {
-        SurveyWall(id: UUID(), x1: x1, y1: y1, x2: x2, y2: y2, attenuationDb: 8)
+    static func new(
+        x1: Double, y1: Double, x2: Double, y2: Double, material: SurveyWallMaterial? = nil
+    ) -> SurveyWall {
+        SurveyWall(
+            id: UUID(), x1: x1, y1: y1, x2: x2, y2: y2,
+            attenuationDb: material?.attenuationDb ?? 8, material: material)
     }
 }
 

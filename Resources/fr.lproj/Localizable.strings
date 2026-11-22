@@ -1832,3 +1832,11 @@
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Les noms enregistrés viennent de Réglages Système, les champs live du scan actuel. Les mots de passe ne sont jamais lus.";
 "Export Combined Report as PDF…" = "Exporter le rapport combiné en PDF…";
 "Could not export the PDF" = "Impossible d’exporter le PDF";
+"Wall material" = "Matériau du mur";
+"Drywall" = "Cloison sèche";
+"Wood" = "Bois";
+"Glass" = "Verre";
+"Brick" = "Brique";
+"Concrete" = "Béton";
+"Metal" = "Métal";
+"Floor loss" = "Perte entre étages";

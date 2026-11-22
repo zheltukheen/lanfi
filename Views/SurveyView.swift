@@ -7,6 +7,7 @@ struct SurveyView: View {
     @ObservedObject var survey: SurveyViewModel
     @State private var mode: SurveyToolMode = .sample
     @State private var pendingWallStart: CGPoint?
+    @State private var wallMaterial: SurveyWallMaterial = .drywall
     @State private var roomPoints: [SurveyPoint] = []
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
@@ -229,6 +230,11 @@ struct SurveyView: View {
                     select(.sample)
                 } else {
                     select(.calibrate)
+                }
+            }
+            Picker(String(localized: "Wall material"), selection: $wallMaterial) {
+                ForEach(SurveyWallMaterial.allCases) { material in
+                    Text("\(material.title) · \(Int(material.attenuationDb)) dB").tag(material)
                 }
             }
             Button(String(localized: "Clear Walls"), role: .destructive) {
@@ -759,7 +765,9 @@ struct SurveyView: View {
         }
         if mode == .wall {
             if let start = pendingWallStart {
-                survey.addWall(x1: Double(start.x), y1: Double(start.y), x2: x, y2: y)
+                survey.addWall(
+                    x1: Double(start.x), y1: Double(start.y), x2: x, y2: y,
+                    material: wallMaterial)
                 pendingWallStart = nil
             } else {
                 pendingWallStart = CGPoint(x: x, y: y)

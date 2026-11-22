@@ -7,6 +7,7 @@ struct MultiFloorSurveyView: View {
     @State private var tilt = 48.0
     @State private var spacing = 110.0
     @State private var showPrediction = true
+    @State private var floorAttenuation = 12.0
 
     private var floors: [SurveyProject] { survey.projects }
 
@@ -30,6 +31,11 @@ struct MultiFloorSurveyView: View {
                 Toggle("Coverage", isOn: $showPrediction)
                     .toggleStyle(.switch)
                     .controlSize(.small)
+                Label("Floor loss", systemImage: "arrow.up.arrow.down")
+                Slider(value: $floorAttenuation, in: 0...30, step: 1).frame(width: 120)
+                Text("\(Int(floorAttenuation)) dB")
+                    .monospacedDigit()
+                    .foregroundColor(.secondary)
             }
             .font(.caption)
             .padding(DesignToken.Spacing.compact)
@@ -75,7 +81,8 @@ struct MultiFloorSurveyView: View {
                     let ny = Double(y / max(size.height, 1))
                     if let rssi = SurveyPredictor.estimate3D(
                         x: nx, y: ny, targetFloorLevel: floor.floorLevel,
-                        floors: floorInputs, planWidthMeters: floor.planWidthMeters ?? 30
+                        floors: floorInputs, planWidthMeters: floor.planWidthMeters ?? 30,
+                        floorAttenuationDb: floorAttenuation
                     ) {
                         let t = min(max(Double(rssi + 90) / 50.0, 0), 1)
                         let color = Color(red: 0.9 - t * 0.8, green: 0.2 + t * 0.7, blue: 0.15)

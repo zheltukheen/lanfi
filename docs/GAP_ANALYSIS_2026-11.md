@@ -285,8 +285,13 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       airtime and retries need a capture-based accounting pass.
 - [~] **Survey Planning 2.0** — free-space planner, grid layout, coverage
       estimate, blank metre-grid plans and the active-survey advisor ship.
-      Antenna patterns, material-aware loss (the fixed 12 dB per-floor term is
-      still in place), cutouts and calibration against samples remain open.
+      Material-aware wall loss delivered 2026-11-22: the structure menu picks
+      drywall/wood/glass/brick/concrete/metal and stores the preset with the
+      wall (`SurveyWallMaterial`, 3–25 dB at 5 GHz), falling back to the old
+      8 dB for files and custom walls. The fixed 12 dB inter-floor term is now
+      the `floorAttenuationDb` prediction input, adjustable from 0–30 dB in the
+      multi-floor view. Antenna patterns, cutouts and calibration against
+      samples remain open.
 - [~] **Active Survey** — required samples, covered cells, gaps and the next
       target ship; throughput/latency per point, auto-walk and the multi-floor
       diff remain open.
@@ -295,7 +300,10 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       delivered 2026-11-22: the same HTML is rendered by `WKWebView` through
       `CombinedReportPDFExporter` and saved as a paginated PDF from the Data
       menu, so the handover document no longer needs the browser's print dialog.
-      Branding and scheduled delivery remain open.
+      Branding delivered 2026-11-22: the report title, client name and notes
+      from the survey's report settings become the document heading, the
+      "Prepared for" line and a Notes section, shared by HTML and PDF.
+      Scheduled delivery remains open.
 - [~] **Shortcuts/App Intents/widgets** — scan, connected network, speed test
       and connectivity-state intents with Shortcut phrases ship. CSV export
       delivered 2026-11-22 (`LanFiExportScanIntent` returns a dated scan file to

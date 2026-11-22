@@ -1833,3 +1833,11 @@
 "Saved names come from System Settings; live fields come from the current scan. Passwords are never read." = "Saved names come from System Settings; live fields come from the current scan. Passwords are never read.";
 "Export Combined Report as PDF…" = "Export Combined Report as PDF…";
 "Could not export the PDF" = "Could not export the PDF";
+"Wall material" = "Wall material";
+"Drywall" = "Drywall";
+"Wood" = "Wood";
+"Glass" = "Glass";
+"Brick" = "Brick";
+"Concrete" = "Concrete";
+"Metal" = "Metal";
+"Floor loss" = "Floor loss";

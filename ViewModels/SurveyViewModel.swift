@@ -108,11 +108,15 @@ final class SurveyViewModel: ObservableObject {
         statusMessage = String(format: String(localized: "Renamed to %@."), trimmed)
     }
 
-    func addWall(x1: Double, y1: Double, x2: Double, y2: Double) {
+    func addWall(
+        x1: Double, y1: Double, x2: Double, y2: Double,
+        material: SurveyWallMaterial? = nil
+    ) {
         project.walls.append(
             .new(
                 x1: min(max(x1, 0), 1), y1: min(max(y1, 0), 1),
-                x2: min(max(x2, 0), 1), y2: min(max(y2, 0), 1)
+                x2: min(max(x2, 0), 1), y2: min(max(y2, 0), 1),
+                material: material
             )
         )
         project.updatedAt = Date()

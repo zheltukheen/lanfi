@@ -6,6 +6,7 @@ enum CombinedReportExporter {
     static func html(for report: CombinedReport) -> String {
         var sections: [String] = []
         sections.append(summary(report))
+        if let notes = report.branding?.notes { sections.append(brandingNotes(notes)) }
         sections.append(scanSection(report.scan))
         if let survey = report.survey { sections.append(surveySection(survey)) }
         sections.append(findingsSection(CombinedReportBuilder.sortedFindings(report.findings)))
@@ -37,8 +38,8 @@ enum CombinedReportExporter {
             </style>
             </head>
             <body>
-            <h1>LanFi combined report</h1>
-            <div class="meta">Generated \(escape(dateText(report.generatedAt))) · Everything below was captured locally on this Mac.</div>
+            <h1>\(escape(report.branding?.title ?? "LanFi combined report"))</h1>
+            <div class="meta">\(brandingLine(report))Generated \(escape(dateText(report.generatedAt))) · Everything below was captured locally on this Mac.</div>
             \(sections.joined(separator: "\n"))
             <footer>LanFi · read-only Wi-Fi analysis, no telemetry.</footer>
             </body>
@@ -57,6 +58,15 @@ enum CombinedReportExporter {
           <div class="tile"><strong>\(report.diagnostics.count)</strong><span>diagnostic checks</span></div>
         </div>
         """
+    }
+
+    private static func brandingLine(_ report: CombinedReport) -> String {
+        guard let client = report.branding?.clientName else { return "" }
+        return "Prepared for \(escape(client)) · "
+    }
+
+    private static func brandingNotes(_ notes: String) -> String {
+        section("Notes", "<p>\(escape(notes).replacingOccurrences(of: "\n", with: "<br>"))</p>")
     }
 
     private static func scanSection(_ rows: [CombinedReport.ScanRow]) -> String {
