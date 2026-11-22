@@ -9,6 +9,7 @@ import SwiftUI
 struct ProcessTrafficToolView: View {
     @ObservedObject var rules: ConnectionRulesModel
     @StateObject private var appHistory = AppTrafficHistoryModel.shared
+    @StateObject private var domainAttribution = DomainAttributionModel.shared
 
     @AppStorage(AppSettingsKey.processTrafficEnabled.rawValue) private var enabled = false
     @State private var rows: [ProcessTrafficDelta] = []
@@ -110,6 +111,7 @@ struct ProcessTrafficToolView: View {
             if enabled {
                 summary
                 appHistoryCard
+                domainAttributionCard
                 table
             } else {
                 consentCard
@@ -278,6 +280,56 @@ struct ProcessTrafficToolView: View {
             Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
+    /// P3.6: host names per app, from HAR hints and cached reverse DNS.
+    private var domainAttributionCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "Contacted domains")
+                    if domainAttribution.isSampling { ProgressView().controlSize(.mini) }
+                    Spacer()
+                    AppButton("Refresh") {
+                        Task { await domainAttribution.sampleNow() }
+                    }
+                    AppButton("Export CSV…", systemImage: "square.and.arrow.up") {
+                        domainAttribution.exportCSV()
+                    }
+                }
+                let summaries = domainAttribution.attribution.appSummaries()
+                if summaries.isEmpty {
+                    Text(
+                        "No domains attributed yet. Names come from a HAR opened on HTTP Traffic and from cached reverse DNS of the remote endpoints in the connection list; sampling runs while Process Traffic is on."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    ForEach(summaries, id: \.app) { entry in
+                        HStack(spacing: DesignToken.Spacing.small) {
+                            Text(entry.app).font(.caption).lineLimit(1)
+                            Spacer(minLength: DesignToken.Spacing.small)
+                            Text(entry.domain)
+                                .font(.caption2.monospaced())
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Text("\(entry.hits)")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                                .frame(width: 34, alignment: .trailing)
+                        }
+                    }
+                }
+                Text(
+                    "Only host names are stored. Paths, query strings, cookies and payload are never read, and LanFi's own connections are excluded."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     /// P3.6: the week of hourly per-app totals this screen feeds.
     private var appHistoryCard: some View {
         ToolkitCard {
@@ -315,7 +367,7 @@ struct ProcessTrafficToolView: View {
                         }
                     }
                     Text(
-                        "Seven days of hourly byte totals per app, LanFi's own traffic excluded. No domains, URLs or payload are stored."
+                        "Seven days of hourly byte totals per app, LanFi's own traffic excluded. Byte totals only; contacted hosts are attributed separately above, never from payload."
                     )
                     .font(.caption2)
                     .foregroundColor(.secondary)

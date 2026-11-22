@@ -54,6 +54,10 @@ final class HTTPTrafficToolModel: ObservableObject {
                 }.value
                 if Task.isCancelled { return }
                 self.traffic = parsed
+                // The HAR contributes host names only (server IP → host); no
+                // URL, path or payload is kept. The index lets reverse-DNS
+                // attribution name apps' connections that the HAR saw.
+                DomainAttributionModel.shared.recordHTTPCapture(parsed)
                 self.fileName = url.lastPathComponent
                 self.hostFilter = ""
                 self.selectedEntryID = parsed.entries.first?.id

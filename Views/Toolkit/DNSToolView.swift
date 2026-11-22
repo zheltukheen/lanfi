@@ -7,6 +7,7 @@ struct DNSToolView: View {
     @ObservedObject var propagation: DNSPropagationToolModel
     @ObservedObject var toolkit: ToolkitViewModel
     @StateObject private var benchmark = DNSBenchmarkModel()
+    @StateObject private var resolverSwitch = DNSResolverSwitchModel()
 
     private enum Section: String, CaseIterable, Identifiable {
         case lookup, propagation
@@ -80,6 +81,10 @@ struct DNSToolView: View {
         .onAppear {
             syncSection(with: toolkit.selection)
             syncPropagationHost()
+            Task { await resolverSwitch.load() }
+        }
+        .sheet(item: $resolverSwitch.pendingPlan) { plan in
+            confirmationSheet(plan)
         }
         .onChange(of: toolkit.selection) { selection in syncSection(with: selection) }
         .onChange(of: model.host) { _ in syncPropagationHost() }
@@ -180,7 +185,7 @@ struct DNSToolView: View {
                     }
                 }
                 Text(
-                    "Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Only a measurement: LanFi does not change your DNS."
+                    "Median time to resolve three names, three rounds each, through the system, Cloudflare, Google and Quad9 resolvers. Measuring is read-only; switching is a separate opt-in below and always asks for the current and the pending servers first."
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)
@@ -199,6 +204,9 @@ struct DNSToolView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+
+                Divider()
+                switchControls
             }
         }
     }
@@ -250,7 +258,127 @@ struct DNSToolView: View {
                             .font(.caption2.monospacedDigit())
                             .foregroundColor(row.failures > 0 ? .orange : .secondary))
                 }),
+            AppTableColumn(
+                id: "switch", title: "System", minWidth: 86, isSortable: false,
+                value: { _ in .text("") },
+                cell: { row in
+                    if row.canSwitch {
+                        Button("Use…") {
+                            resolverSwitch.prepare(servers: row.switchServers, name: row.name)
+                        }
+                        .buttonStyle(.link)
+                        .font(.caption)
+                    } else {
+                        Text("—").font(.caption2).foregroundColor(.secondary)
+                    }
+                }),
         ]
+    }
+
+    /// P3.5: the current resolver, the service it belongs to, and the two
+    /// explicit actions. Nothing switches without the confirmation sheet.
+    private var switchControls: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+            HStack(spacing: DesignToken.Spacing.small) {
+                ToolkitSectionLabel(text: "System resolver")
+                Spacer()
+                if resolverSwitch.isWorking { ProgressView().controlSize(.small) }
+            }
+            HStack(spacing: DesignToken.Spacing.small) {
+                if resolverSwitch.services.count > 1 {
+                    Picker(
+                        "Service",
+                        selection: Binding(
+                            get: { resolverSwitch.selectedService },
+                            set: { value in Task { await resolverSwitch.selectService(value) } })
+                    ) {
+                        ForEach(resolverSwitch.services, id: \.self) { service in
+                            Text(service).tag(service)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 170)
+                } else {
+                    Text(resolverSwitch.selectedService)
+                        .font(.caption)
+                }
+                Text(resolverSwitch.currentLabel)
+                    .font(.caption.monospaced())
+                    .textSelection(.enabled)
+                Spacer()
+                AppButton("Revert to previous…", isEnabled: resolverSwitch.backup != nil) {
+                    resolverSwitch.prepareRevert()
+                }
+                AppButton("Refresh", tone: .quiet) {
+                    Task { await resolverSwitch.load() }
+                }
+            }
+            if let message = resolverSwitch.message {
+                Text(message).font(.caption2).foregroundColor(.secondary)
+            }
+            if let error = resolverSwitch.errorMessage {
+                Text(error).font(.caption2).foregroundColor(AppPalette.danger)
+            }
+            Text(
+                "Switching changes the DNS servers for the chosen network service, flushes the cache and asks macOS for administrator authorization. It is never automatic; Revert restores what was there before the change (DHCP when no manual servers were set)."
+            )
+            .font(.caption2)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func confirmationSheet(_ plan: DNSResolverPlan) -> some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            HStack(spacing: DesignToken.Spacing.small) {
+                Image(systemName: "network.badge.shield.half.filled")
+                    .font(.title2)
+                    .foregroundColor(.accentColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(plan.isRevertToAutomatic ? "Restore automatic DNS" : "Switch DNS resolver")
+                        .font(.headline)
+                    Text(plan.summary)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.tight) {
+                LabeledContent("Network service", value: plan.service)
+                LabeledContent(
+                    "Current",
+                    value: plan.currentServers.isEmpty
+                        ? "Automatic (DHCP)" : plan.currentServers.joined(separator: ", "))
+                LabeledContent(
+                    "Pending",
+                    value: plan.newServers.isEmpty
+                        ? "Automatic (DHCP)" : plan.newServers.joined(separator: ", "))
+            }
+            .font(.caption)
+            .padding(DesignToken.Spacing.small)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                Color(nsColor: .controlBackgroundColor),
+                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+            Text(
+                "macOS will ask for administrator authorization. The change persists across restarts; the DNS cache is flushed as part of it."
+            )
+            .font(.caption2)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Spacer()
+                Button("Cancel") { resolverSwitch.cancel() }
+                    .keyboardShortcut(.cancelAction)
+                    .disabled(resolverSwitch.pendingApply)
+                Button(plan.isRevertToAutomatic ? "Restore DHCP" : "Switch") {
+                    Task { await resolverSwitch.apply() }
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(resolverSwitch.pendingApply)
+            }
+        }
+        .padding(DesignToken.Spacing.section)
+        .frame(width: 460)
     }
 
     private static func milliseconds(_ value: Double?) -> String {

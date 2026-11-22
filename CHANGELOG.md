@@ -1,5 +1,28 @@
 # Changelog
 
+## 5.6.20 — 2026-11-22
+
+### Added
+- **Opt-in DNS switching.** The resolver benchmark now has a "System resolver"
+section: it shows the chosen network service and its current servers, and
+"Use…" on Cloudflare, Google or Quad9 opens a confirmation sheet with the
+current and the pending servers before anything happens. Confirming runs
+`networksetup -setdnsservers` plus the DNS cache flush through one macOS
+administrator prompt. The previous setting is recorded only after success, so
+"Revert to previous…" restores it, or DHCP when no manual servers were set.
+Nothing switches automatically.
+- **Contacted domains per app.** Process Traffic now attributes host names to
+apps from a HAR opened on HTTP Traffic (IP → host only) and from cached reverse
+DNS of connection endpoints, sampled every five minutes while Process Traffic
+is on. The card shows the strongest host per app, can export CSV, and keeps
+seven days. Only host names are stored; paths, query strings, cookies and
+payload are never read, and LanFi's own connections are excluded.
+
+### Changed
+- The "App history" note now separates byte totals from host attribution
+instead of claiming no domains are stored. New strings ship in all five
+locales.
+
 ## 5.6.19 — 2026-11-22
 
 ### Added

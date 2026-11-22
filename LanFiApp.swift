@@ -91,6 +91,7 @@ struct LanFiApp: App {
                     LinkAutomation.shared.start()
                     TrafficAccounting.shared.start()
                     AppTrafficHistoryModel.shared.start()
+                    DomainAttributionModel.shared.start()
                 }
                 .sheet(
                     isPresented: Binding(

@@ -529,11 +529,22 @@ Tasks:
       Cloudflare, Google, Quad9 and custom resolvers (IPv4 and IPv6 where
       available), three rounds, ranked. (Shipped for IPv4 resolvers; the
       resolver pool in the card is the four built-ins.)
-- [ ] Opt-in switching through `networksetup -setdnsservers` behind an admin or
+- [x] Opt-in switching through `networksetup -setdnsservers` behind an admin or
       Touch ID prompt, with a one-click revert and a cache flush
       (`dscacheutil -flushcache` and `killall -HUP mDNSResponder`).
-- [ ] Show the current resolver and the pending change before authorizing;
+- [x] Show the current resolver and the pending change before authorizing;
       never switch silently, never ship a preset as the default.
+
+Delivered 2026-11-22: `Models/DNSResolverSwitch.swift` (service/address
+parsing, validation, `networksetup` command construction, backup model),
+`Services/DNSResolverSwitchService.swift` (`networksetup` reads and one
+`osascript ... with administrator privileges` call for the change plus flush),
+`DNSResolverSwitchModel` and a "System resolver" section in the benchmark card
+with a confirmation sheet that shows current and pending servers, and a
+"Use…" action per switchable resolver. The previous setting is stored only
+after a successful change; revert restores it (or DHCP when none was set).
+Covered by `Tests/DNSResolverSwitchTests.swift` (7 tests). The
+`xcodebuild`/GUI authorization flow was not exercised here.
 
 Acceptance: the benchmark ranks resolvers in under five seconds; switching
 requires authorization, persists across a restart, and revert restores the DHCP
@@ -551,10 +562,21 @@ Tasks:
       accounting; retention 7 days, CSV export (`AppTrafficHistory`,
       `AppTrafficHistoryModel`, "App history" card on Process Traffic; LanFi's
       own traffic excluded).
-- [ ] Attribute contacted domains from HTTP capture and cached reverse DNS, not
+- [x] Attribute contacted domains from HTTP capture and cached reverse DNS, not
       payload; show the top domains per app.
-- [ ] Exclude LanFi's own traffic, keep the privacy note and drop query strings
+- [x] Exclude LanFi's own traffic, keep the privacy note and drop query strings
       from captured URLs.
+
+Delivered 2026-11-22: `Models/DomainAttribution.swift` (host normalization,
+`serverIPAddress` → host HAR index, endpoint parsing, per-app ranking and
+7-day pruning) and `Services/DomainAttributionService.swift` (5-minute sampling
+of `lsof` endpoints, cached reverse DNS via `getnameinfo`, persisted
+`app-domains.json`). Opening a HAR on HTTP Traffic feeds only host names into a
+local IP index; URLs, query strings and payload are never stored. The "App
+history" note and a new "Contacted domains" card on Process Traffic show the
+top hosts per app and leave LanFi's own connections out. Covered by
+`Tests/DomainAttributionTests.swift` (8 tests), including a HAR fixture that
+proves a query string is not retained.
 
 Acceptance: after one day the screen shows today's bytes per app and its top
 domains; no payload, cookies or full URLs are stored.
