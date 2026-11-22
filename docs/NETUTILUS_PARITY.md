@@ -4,40 +4,49 @@ _Researched 2026-11-10 against [netutilus.com](https://netutilus.com/) (Netutilu
 1.20.2, 16 Oct 2026) and the shipped source in this repository._
 
 Netutilus is a commercial, sandboxed, Mac App Store **general network toolkit**
-(20 tools in five groups, 13 free + a one-time Pro unlock). LanFi is a free,
-source-available **Wi-Fi analyzer** with a diagnostics tab. The overlap is real
-but narrow: Wi-Fi, a basic internet check, and an interface monitor. Everything
-else in Netutilus's catalogue is adjacent tooling LanFi does not have as a
-first-class feature.
+(20 tools in five groups, 13 free + a one-time Pro unlock). LanFi started as a
+free, source-available **Wi-Fi analyzer**; the toolkit expansion added most of
+the adjacent tooling as first-class screens. The overlap is no longer narrow —
+what differs is the probe layer and the distribution model.
 
 Full parity is therefore a **product-scope decision**, not a missing screen. This
-document separates what is genuinely absent from what only looks absent because
-it is a raw command wrapper today.
+document separates what is genuinely missing from what is delivered but still
+depends on an external binary.
+
+> **Status 2026-11-22 — long-term target, not a release checklist.** The toolkit
+> expansion shipped most of the catalogue as first-class screens, so the
+> original gap matrix below is history, not the current state. Parity is still
+> deliberately incomplete: the throughput test wraps Apple's `networkQuality`,
+> traceroute/MTR wrap `traceroute`, the LAN scanner reads ARP/route through
+> `Process` (the diagnostics gateway check still shells `ping`), and the app is
+> not notarized or sandboxed. The acceptance section marks each criterion as
+> met, partial or parked, with the code that decides it.
 
 ## Positioning
 
 | | Netutilus | LanFi |
 | --- | --- | --- |
-| Category | General network toolkit | Wi-Fi analyzer |
-| Tools | 20 across diagnostics, DNS/domains, network, monitoring | Wi-Fi analysis, diagnostics, survey, capture |
+| Category | General network toolkit | Wi-Fi analyzer + network toolkit |
+| Tools | 20 across diagnostics, DNS/domains, network, monitoring | Wi-Fi analysis, diagnostics, survey, capture, 20+ toolkit screens |
 | Price | Free + one-time Pro | Free, FSL-1.1-ALv2 |
-| Distribution | Mac App Store, sandboxed, notarized | DMG/ZIP + Homebrew, ad-hoc signed, notarization pending |
-| Networking | Network.framework, CoreWLAN, native ICMP, no shell-out | CoreWLAN, URLSession, `getaddrinfo`, `Process` for `ping`/`networkQuality`/`tcpdump` |
+| Distribution | Mac App Store, sandboxed, notarized | DMG/ZIP + Homebrew; ad-hoc or Developer ID signing, no notarization or sandbox yet |
+| Networking | Network.framework, CoreWLAN, native ICMP, no shell-out | CoreWLAN, URLSession, native ICMP/DNS/TLS/TCP probes; `Process` for `networkQuality`, `traceroute`/MTR, `tcpdump`, `arp`/`route` |
 | Platform | macOS 14.6+ | macOS 13+ |
 | Languages | English | 5 languages |
 
 The important architectural difference is the **Networking** row: Netutilus
-explicitly **never shells out**, while LanFi does for several core paths. That is
-the main reason "add the missing tools" is not a UI-only project.
+explicitly **never shells out**. LanFi's ping tool, DNS client, TLS inspector and
+port/path probes are native already; what still shells out is the throughput
+test, traceroute/MTR, packet capture and the ARP/route reads behind the LAN
+scanner. That residue is the main reason the last step to parity is not a
+UI-only project.
 
 ## Coverage matrix
 
-> **Update 2026-11-11:** the toolkit now also ships MTR, Uptime Monitor, LAN
-> Scanner with Network Guard, iperf3, speed-test history/scheduling, search and
-> recents, DNS Propagation, Whois/RDAP, GeoIP, Visual Traceroute and
-> five-language localisation. Remaining: notarization and a sandboxed MAS
-> build. The matrix below is the original gap analysis; see
-> [`TOOLKIT_SCREENSHOT_GAP.md`](TOOLKIT_SCREENSHOT_GAP.md) for current status.
+> **Re-audited 2026-11-22.** The matrix below describes the code as it ships,
+> not the 2026-11-10 gap. What still depends on an external binary is marked
+> Partial; nothing in the catalogue is absent any more. See
+> [`TOOLKIT_SCREENSHOT_GAP.md`](TOOLKIT_SCREENSHOT_GAP.md) for screenshots.
 
 Status legend: **Ahead** — LanFi has more than Netutilus; **Parity** — comparable;
 **Partial** — some real implementation, missing the product surface; **Wrapper** —
@@ -45,37 +54,38 @@ only an external command, no parsed result; **Absent** — nothing shipped.
 
 | # | Netutilus tool | Tier | LanFi today | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Internet Check | free | `DiagnosticsEngine` runs Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, latency, with per-check pass/warn/fail | **Partial** |
-| 2 | Ping | free | `/sbin/ping` parsed by `PingOutputParser`; fixed 3–10 probes | **Partial** |
-| 3 | Traceroute | free | `traceroute` entry in `ToolCatalog`; raw text only | **Wrapper** |
-| 4 | MTR | pro | `mtr` entry in `ToolCatalog`, requires `brew install mtr`; raw text only | **Wrapper** |
-| 5 | Visual Traceroute | pro | — | **Absent** |
-| 6 | Speed Test | free | `/usr/bin/networkQuality` parsed into down/up/latency/responsiveness | **Partial** |
-| 7 | DNS Lookup | free | `getaddrinfo` A/AAAA for one fixed host | **Partial** |
-| 8 | DNS Propagation | free | — | **Absent** |
-| 9 | Whois | free | — | **Absent** |
-| 10 | GeoIP | free | — (the OUI DB maps MAC prefixes, not IP addresses) | **Absent** |
-| 11 | SSL Certificate | free | HTTPS status code only; no chain, issuer or dates | **Absent** |
-| 12 | Port Scan | free | `nmap` entry in `ToolCatalog` (`-sn`, discovery only); raw text | **Wrapper** |
-| 13 | Path Check | free | HTTPS 443 check only; no arbitrary `host:port` | **Partial** |
-| 14 | Subnet Calculator | free | Prefix lengths parsed for interface display only | **Absent** |
-| 15 | iperf3 | pro | Menu item opens iperf.fr; no client | **Absent** |
+| 1 | Internet Check | free | `DiagnosticsEngine` runs Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, latency, with per-check pass/warn/fail and a one-line verdict with evidence | **Parity** |
+| 2 | Ping | free | Native unprivileged ICMP (`ICMPPingProbe`), live chart, jitter/loss, up to 10k probes; the diagnostics gateway check still uses `/sbin/ping` | **Ahead** |
+| 3 | Traceroute | free | Parsed hop table, per-hop latency, copy/export; runs `traceroute` and parses it | **Partial** |
+| 4 | MTR | pro | `MTRService` runs repeated traceroute rounds and aggregates per-hop loss/jitter | **Partial** |
+| 5 | Visual Traceroute | pro | MapKit route with hop list and inspector | **Parity** |
+| 6 | Speed Test | free | `/usr/bin/networkQuality` parsed into down/up/latency, bufferbloat grade, history and schedule | **Partial** |
+| 7 | DNS Lookup | free | Native UDP, DoH and DoT clients with record types and resolver choice | **Parity** |
+| 8 | DNS Propagation | free | Same query across public resolvers, compared side by side | **Parity** |
+| 9 | Whois | free | RDAP lookup; no `whois` shell | **Parity** |
+| 10 | GeoIP | free | Opt-in `ipwho.is` lookup, documented in `PRIVACY.md` | **Parity** |
+| 11 | SSL Certificate | free | `Security.framework` chain: issuer, validity, days left | **Parity** |
+| 12 | Port Scan | free | Native `NWConnection` connect scan with service map and cancellation | **Parity** |
+| 13 | Path Check | free | Arbitrary `host:port` over TCP/HTTPS | **Parity** |
+| 14 | Subnet Calculator | free | CIDR math and UI | **Ahead** |
+| 15 | iperf3 | pro | Client screen and parsed output; runs the user-installed `iperf3` binary | **Partial** |
 | 16 | Network Monitor | free | `InterfacesView` + `SystemInterfaceScanner`: addresses, gateway, DNS, VPN interfaces, RX/TX counters | **Parity** |
-| 17 | Uptime Monitor | pro | — (menu-bar alerts cover Wi-Fi only) | **Absent** |
-| 18 | LAN Scanner + Network Guard | pro | `LiveClientDiscoveryView` extracts MACs from a monitor-mode capture; no ARP/mDNS sweep, IPs, vendor table, ports or new-device alerts | **Partial** |
+| 17 | Uptime Monitor | pro | Scheduled HTTP/TCP checks, notifications, outage history and menu-bar status | **Parity** |
+| 18 | LAN Scanner + Network Guard | pro | ARP + Bonjour + TCP sweep: IP/MAC/vendor/latency/ports, new-device alerts; no monitor mode needed, but ARP/route are read through `Process` | **Partial** |
 | 19 | Wi-Fi Analyzer | pro | Quality score, RSSI/noise/SNR, security audit, diagnostics | **Ahead** |
 | 20 | Wi-Fi Networks | pro | Scan, IE decode, 6 GHz/Wi-Fi 7, ranked channel advice, survey | **Ahead** |
 
-Summary: **2 ahead, 1 at parity, 6 partial, 3 wrappers, 8 absent.**
+Summary: **4 ahead, 11 at parity, 5 partial, 0 absent.**
 
 Two caveats on this matrix:
 
-- `ToolConsoleView` is reachable from the toolbar **Tools** menu, but it only
-  runs a binary and prints raw text. The `ping`, `traceroute`, `mtr`, `nmap` and
-  `iperf3` entries have no parsed result table and no history.
-- Netutilus's free tier is broader than its Pro tier. LanFi's diagnostics cover
-  the *checks* of Internet Check but not its **one-line verdict**, which is the
-  actual product.
+- "Parity" means the tool is first-class; it does not mean identical probe
+  internals. Traceroute, MTR, speed test and iperf3 remain partial because they
+  still depend on an external binary, which is exactly the gap section 1 below
+  describes.
+- Internet Check now has the one-line verdict with evidence (`DiagnosticsVerdict`
+  and its verdict card), which was the missing product surface in the original
+  analysis.
 
 ## Cross-cutting gaps
 
@@ -83,11 +93,16 @@ These block parity regardless of how many tool screens are added.
 
 ### 1. Native probe layer instead of `Process`
 
-Current shell-outs: `/sbin/ping` (ping, gateway, latency), `/usr/bin/networkQuality`
-(speed test), `/usr/sbin/tcpdump` (capture), plus optional `nmap`/`mtr`/`iperf3`/`ssh`.
-Text parsing is locale- and macOS-version-fragile, and the approach cannot ship in
-a sandbox. Netutilus's claim — "sandboxed, never shells out, results are the app's
-own" — requires replacing those with:
+Current shell-outs (audited 2026-11-22): `/usr/bin/networkQuality` (speed test),
+`traceroute` (traceroute and the MTR rounds), `/usr/sbin/tcpdump` (capture),
+`/usr/sbin/arp` and `/sbin/route` (LAN scanner), `/sbin/ping` in the diagnostics
+transport (the Ping tool itself is native), plus optional `iperf3`/`ssh`/`nmap`.
+Text parsing is locale- and macOS-version-fragile, and none of it can ship in a
+sandbox. Already native, behind injectable protocols and covered without network
+access: unprivileged ICMP ping (`ICMPPingProbe`), the UDP/DoH/DoT DNS clients,
+the `Security.framework` TLS inspector and the `NWConnection` port/path probes.
+Netutilus's claim — "sandboxed, never shells out, results are the app's own" —
+still requires replacing the rest with:
 
 - ICMP echo over an unprivileged datagram ICMP socket, streaming per-probe results;
 - TCP connect probes over `NWConnection` (ping and path check);
@@ -97,9 +112,13 @@ own" — requires replacing those with:
 - a TTL-stepping traceroute/MTR engine with per-hop loss and jitter;
 - a bounded-concurrency TCP port prober with a service-name map.
 
-This layer is the prerequisite for roughly a dozen tools. Build it once, behind
-injectable protocols, with tests that never touch the network — the same pattern
-as `DiagnosticsTransport`.
+This layer is the prerequisite for the remaining partial tools. Build it once,
+behind injectable protocols, with tests that never touch the network — the same
+pattern as `DiagnosticsTransport` and `PingProbing`, which already exist. The
+throughput test is the one item with no public native API: `networkQuality` is
+Apple's own measurement service, so replacing it means either accepting the
+shell-out or writing a saturating transfer test that will not match Apple's
+numbers.
 
 ### 2. Distribution and sandbox
 
@@ -117,11 +136,11 @@ of its product.
 
 ### 3. Persistence and notifications
 
-There is no `UserNotifications` usage and no metrics store beyond the 12-entry
-diagnostics history. Uptime Monitor and scheduled speed tests need a timestamped
-store, notification authorization, and a menu-bar status item. `MenuBarExtra`
-and `MenuBarAlertEngine` are the right seams; the missing part is the scheduler
-and the store.
+This is no longer a gap: `UptimeMonitor` keeps a timestamped outage history and
+posts through `MonitorNotifier`, scheduled speed tests persist their runs, and
+`MenuBarExtra` shows the status. What remains is scale — the history is bounded
+and in memory/JSON, not a queryable metrics store — and that is a product
+decision rather than a parity blocker.
 
 ### 4. Third-party data sources and privacy
 
@@ -131,14 +150,18 @@ presses the corresponding action, and `PRIVACY.md` now documents each request.
 
 ### 5. Localization and accessibility
 
-Five languages and VoiceOver labels are part of the product standard. Twenty
-tools' worth of new strings (including dynamic technical text) is a real cost and
-should be budgeted per phase, not at the end.
+This is shipped: the toolkit expansion added its strings to all five locales and
+put accessibility labels on icon-only controls, charts and cards. The cost turned
+out to be real — it has to be paid per screen, not swept up at the end — which is
+why D7 in the gap analysis still wants a hands-on VoiceOver run.
 
 ## Roadmap to parity
 
 Estimates are order-of-magnitude person-days for one experienced macOS developer,
-including tests and localization but excluding review time.
+including tests and localization but excluding review time. They are the
+2026-11-10 estimate and are kept for scale: much of Phase 1 and 2 landed during
+the toolkit expansion, and Phase 0 is partly done (ping, DNS, TLS, port/path), so
+the remaining work is smaller and narrower than the table suggests.
 
 ### Phase 0 — Native probe layer (prerequisite)
 
@@ -147,7 +170,12 @@ injectable transports, no `Process` for ping or speed test.
 
 **Exit:** a pure-Swift `NetProbe` module with unit tests; `DiagnosticsEngine` and
 the new tools consume it; no shell parsing on the hot path.
-**Effort:** 10–15 days.
+**Status 2026-11-22:** partly met. `PingProbing`/`ICMPPingProbe`, the DNS clients,
+`TLSCertificateInspector`, `PortScanner` and the path probe are native and
+tested; traceroute/MTR, the diagnostics gateway ping, the LAN ARP/route reads and
+`networkQuality` are not.
+**Effort:** the remaining native work is 4–6 days; the original 10–15 assumed
+nothing had shipped.
 
 ### Phase 1 — Free-tool parity
 
@@ -165,27 +193,34 @@ the new tools consume it; no shell parsing on the hot path.
 | Speed Test | Bufferbloat grade, history, per-run comparison | 2–3 |
 
 **Exit:** all 13 free tools have first-class UI, parsed results and copy/export.
-**Effort:** 20–26 days.
+**Status 2026-11-22:** shipped except the native-probe part; traceroute, MTR and
+speed test have screens but still call external binaries. The remaining work is
+the Phase 0 residue, not new screens.
+**Effort:** 20–26 days originally; ~5 days left, all in native probes.
 
 ### Phase 2 — Monitoring and LAN (Pro-adjacent)
 
 Uptime Monitor (HTTP/TCP checks, interval, notifications, outage history, menu-bar
 status), scheduled speed tests, native LAN scanner (ARP table + mDNS/Bonjour +
 TCP probe, IP/MAC/vendor/latency, optional ports), Network Guard new-device alerts.
-**Effort:** 14–19 days.
+**Status 2026-11-22:** shipped. The LAN scanner still reads ARP and the default
+route through `Process`.
+**Effort:** 14–19 days originally.
 
 ### Phase 3 — Data and map
 
 Whois/RDAP, DNS propagation across public resolvers, GeoIP (bundled DB or opt-in
 API), visual traceroute with MapKit.
-**Effort:** 9–12 days.
+**Status 2026-11-22:** shipped (RDAP for whois, `ipwho.is` opt-in for GeoIP).
+**Effort:** 9–12 days originally.
 
 ### Phase 4 — Distribution
 
 Notarization and/or the sandboxed MAS split, privacy manifest, permissions copy.
 **Effort:** 8–12 days plus an Apple Developer Program account.
 
-**Full parity: roughly 61–84 person-days (12–17 weeks).**
+**Full parity: the original estimate was 61–84 person-days; what is left is the
+native probe residue (4–6 days) plus the distribution decision (8–12 days).**
 
 ## Recommended scope
 
@@ -196,29 +231,64 @@ chain that starts from "my Wi-Fi is bad":
 1. **Internet Check verdict** — connects LanFi's RF evidence to provider
    attribution. Neither Netutilus nor WiFi Explorer has LanFi's radio data, so
    this is the one place where parity becomes differentiation.
-2. **Ping + Traceroute + MTR**, native and charted — replaces the raw Tool
-   Console and is the everyday workflow.
-3. **DNS Lookup + Path Check + Port Scan + SSL** — share the Phase 0 probe layer;
-   cheap once the core exists.
-4. **Uptime Monitor** with menu-bar status — closest thing to a paid feature and
-   reuses the existing `MenuBarExtra`.
+2. **Ping + Traceroute + MTR**, native and charted — Ping is native and charted
+   already; traceroute/MTR are next.
+3. **DNS Lookup + Path Check + Port Scan + SSL** — native since the toolkit
+   expansion.
+4. **Uptime Monitor** with menu-bar status — shipped.
 
 **Superseded:** Whois, GeoIP, DNS Propagation, Visual Traceroute, LAN
-Scanner/Guard and scheduled speed tests have since shipped as part of the
-toolkit expansion.
+Scanner/Guard, Uptime Monitor and scheduled speed tests have since shipped as
+part of the toolkit expansion.
 
-This subset is Phase 0 plus about 25–30 days of Phase 1–2 work — roughly
-**8 weeks**, versus 3–4 months for the full catalogue.
+The recommended subset is delivered apart from the native traceroute/MTR engine
+and the distribution decision; the rest of this document explains what full
+parity would still cost.
 
 ## Acceptance criteria for "Netutilus parity"
 
-- [ ] No `Process` or shell-out for ping, speed test, DNS, port/path checks,
-      traceroute or TLS; every probe is sandbox-viable.
-- [ ] 13 free tools have first-class UI, parsed results, copy and export.
-- [ ] Internet Check returns a Wi-Fi/router/provider verdict with evidence.
-- [ ] Uptime Monitor runs scheduled checks, notifies, and keeps outage history.
-- [ ] Speed Test shows a bufferbloat grade and history.
-- [ ] LAN Scanner lists IP/MAC/vendor/latency/ports without monitor mode.
-- [ ] All new strings localized in the five shipped languages, with VoiceOver
-      labels.
-- [ ] Distribution is notarized and/or sandboxed for the Mac App Store.
+This is the **long-term target** that would justify the word "parity", not a
+release checklist. It is deliberately hard: three of these items are product
+decisions with real trade-offs, not pending tickets. State as of 2026-11-22:
+
+- [~] **No `Process` or shell-out for the probe paths, every probe
+      sandbox-viable.** Native and already injectable: the Ping tool
+      (unprivileged `SOCK_DGRAM` ICMP), DNS lookup/propagation (UDP/DoH/DoT),
+      TLS inspection (`Security.framework`), port scan and path check
+      (`NWConnection`). Still shell-based: speed test (`networkQuality`),
+      traceroute and MTR rounds, the diagnostics gateway ping, LAN-scanner ARP
+      and route reads, packet capture. Closing the traceroute/MTR and gateway
+      parts means a TTL-stepping ICMP engine; closing the speed-test part has no
+      native equivalent, because `networkQuality` **is** Apple's measurement
+      service.
+- [~] **13 free tools have first-class UI, parsed results, copy and export.**
+      All 14 free tools have a screen and parsed output; copy is present on
+      every result surface, export on the ones where a file is meaningful
+      (history, capture, survey, diagnostics). Per-screen export is not a
+      uniform contract, so this stays partial.
+- [x] **Internet Check returns a Wi-Fi/router/provider verdict with evidence.**
+      `DiagnosticsVerdict` turns the checks into one plain-language result and
+      exposes the checks that support it.
+- [x] **Uptime Monitor runs scheduled checks, notifies, and keeps outage
+      history.** `UptimeMonitor` schedules HTTP/TCP checks, `MonitorNotifier`
+      posts notifications with authorization, and the outage list is kept.
+- [x] **Speed Test shows a bufferbloat grade and history.** `ThroughputReport`
+      derives the grade from `networkQuality` responsiveness and groups the runs;
+      the probe itself remains the shell-out noted above.
+- [x] **LAN Scanner lists IP/MAC/vendor/latency/ports without monitor mode.**
+      `LANScannerService` reads the ARP table, browses Bonjour and probes TCP;
+      the ARP/route reads are the shell residue, not a monitor-mode requirement.
+- [x] **All new strings localized in the five shipped languages, with VoiceOver
+      labels.** `Resources/{en,ru,de,fr,zh-Hans}.lproj` carry the toolkit
+      strings, and icon-only controls, charts and cards expose accessibility
+      labels; the hands-on VoiceOver audit is tracked as D7 in
+      [`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md), not here.
+- [ ] **Distribution is notarized and/or sandboxed for the Mac App Store.**
+      Parked as a product decision: there is no entitlements file, `build.sh`
+      signs ad-hoc unless `CODESIGN_IDENTITY` is set, and the sandbox would
+      remove capture, SSH sensors and USB-serial spectrum. It needs an Apple
+      Developer Program account and a split Developer ID / MAS build — see
+      [`DISTRIBUTION.md`](DISTRIBUTION.md).
+
+None of the open items blocks the shipped product: they block the claim of
+"Netutilus parity", which remains a scope choice rather than a backlog.
