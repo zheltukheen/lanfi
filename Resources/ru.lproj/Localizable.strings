@@ -1770,3 +1770,33 @@
 "Per-hop latency and loss over time, with route-change events." = "Задержка и потери на каждом узле во времени, с событиями смены маршрута.";
 "Open the Route Monitor tool to choose a destination." = "Откройте инструмент «Монитор маршрута», чтобы выбрать назначение.";
 "The menu-bar graph follows the destination latency when the metric is Route." = "При метрике «Маршрут» график в строке меню показывает задержку до назначения.";
+
+/* GPS map and MCP live actions (2026-11-22) */
+"GPS Map" = "GPS-карта";
+"Pin scanned networks on a map and save walks as named trips." = "Отмечайте отсканированные сети на карте и сохраняйте прогулки как именованные маршруты.";
+"GPS network map" = "Карта сетей GPS";
+"Trip name" = "Название маршрута";
+"Start trip" = "Начать маршрут";
+"Stop" = "Остановить";
+"Locate" = "Определить";
+"Export" = "Экспорт";
+"Pinned networks" = "Отмеченные сети";
+"Saved trips" = "Сохранённые маршруты";
+"No trips saved yet." = "Пока нет сохранённых маршрутов.";
+"Networks" = "Сети";
+"Open" = "Открытая";
+"Secured" = "Защищённая";
+"Walk" = "Прогулка";
+"You" = "Вы";
+"Recording" = "Запись";
+"Start a trip and walk the area; each network is pinned at its strongest position." = "Начните маршрут и пройдите территорию: каждая сеть отмечается в точке самого сильного сигнала.";
+"Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade." = "Местоположение используется только во время записи маршрута, остаётся на этом Mac и не прикрепляется к живому скану. macOS вычисляет его по Wi-Fi, поэтому точность — до улицы, а не для сертификации.";
+"Idle. Nothing is recorded until you start a trip." = "Ожидание. Ничего не записывается, пока вы не начнёте маршрут.";
+"Recording. Walk the area at a normal pace." = "Запись. Пройдите территорию в обычном темпе.";
+"Trip %@" = "Маршрут %@";
+"Stopped. %lld networks pinned." = "Остановлено. Отмечено сетей: %lld.";
+"Recording · %lld networks · %lld track points" = "Запись · сетей: %lld · точек трека: %lld";
+"Exported %lld networks." = "Экспортировано сетей: %lld.";
+"Live actions" = "Живые действия";
+"Allow MCP clients to act on the running app" = "Разрешить MCP-клиентам действовать в запущенном приложении";
+"Off by default. When enabled, live actions are executed by the running app: a Wi-Fi scan, one bounded capture or a GPS tag on the newest survey sample. Requests stay on this Mac." = "По умолчанию выключено. Если включено, живые действия выполняет запущенное приложение: скан Wi-Fi, одна ограниченная запись трафика или GPS-метка на новейшем сэмпле обследования. Запросы остаются на этом Mac.";

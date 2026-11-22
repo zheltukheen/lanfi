@@ -1733,3 +1733,33 @@
 "Per-hop latency and loss over time, with route-change events." = "Latence et perte par saut dans le temps, avec des événements de changement de route.";
 "Open the Route Monitor tool to choose a destination." = "Ouvrez l'outil Moniteur de route pour choisir une destination.";
 "The menu-bar graph follows the destination latency when the metric is Route." = "Avec la métrique « Route », le graphique de la barre des menus suit la latence vers la destination.";
+
+/* GPS map and MCP live actions (2026-11-22) */
+"GPS Map" = "Carte GPS";
+"Pin scanned networks on a map and save walks as named trips." = "Épingler les réseaux scannés sur une carte et enregistrer les parcours comme trajets nommés.";
+"GPS network map" = "Carte réseau GPS";
+"Trip name" = "Nom du trajet";
+"Start trip" = "Démarrer le trajet";
+"Stop" = "Arrêter";
+"Locate" = "Localiser";
+"Export" = "Exporter";
+"Pinned networks" = "Réseaux épinglés";
+"Saved trips" = "Trajets enregistrés";
+"No trips saved yet." = "Aucun trajet enregistré.";
+"Networks" = "Réseaux";
+"Open" = "Ouvert";
+"Secured" = "Sécurisé";
+"Walk" = "Parcours";
+"You" = "Vous";
+"Recording" = "Enregistrement";
+"Start a trip and walk the area; each network is pinned at its strongest position." = "Démarrez un trajet et parcourez la zone ; chaque réseau est épinglé à sa position la plus forte.";
+"Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade." = "La position n'est utilisée que pendant un trajet, reste sur ce Mac et n'est jamais jointe au scan en direct. macOS la déduit du Wi-Fi : précision à l'échelle de la rue, pas de nivellement.";
+"Idle. Nothing is recorded until you start a trip." = "Inactif. Rien n'est enregistré tant que vous ne démarrez pas un trajet.";
+"Recording. Walk the area at a normal pace." = "Enregistrement. Parcourez la zone à allure normale.";
+"Trip %@" = "Trajet %@";
+"Stopped. %lld networks pinned." = "Arrêté. %lld réseaux épinglés.";
+"Recording · %lld networks · %lld track points" = "Enregistrement · %lld réseaux · %lld points";
+"Exported %lld networks." = "Exporté : %lld réseaux.";
+"Live actions" = "Actions en direct";
+"Allow MCP clients to act on the running app" = "Autoriser les clients MCP à agir sur l'app";
+"Off by default. When enabled, live actions are executed by the running app: a Wi-Fi scan, one bounded capture or a GPS tag on the newest survey sample. Requests stay on this Mac." = "Désactivé par défaut. Une fois activé, l'app exécute les actions : un scan Wi-Fi, une capture limitée ou un tag GPS sur le dernier échantillon. Les requêtes restent sur ce Mac.";

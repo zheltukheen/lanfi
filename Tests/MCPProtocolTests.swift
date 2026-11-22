@@ -10,6 +10,7 @@ final class MCPProtocolTests: XCTestCase {
         "lanfi_iperf3", "lanfi_speed_test", "lanfi_uptime", "lanfi_diagnostics", "lanfi_info",
         "lanfi_spectrum", "lanfi_devices", "lanfi_har", "lanfi_client_analytics",
         "lanfi_survey_plan", "lanfi_open_connections",
+        "lanfi_scan_now", "lanfi_start_capture", "lanfi_survey_sample",
     ]
 
     // MARK: - Handshake

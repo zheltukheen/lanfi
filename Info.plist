@@ -76,7 +76,7 @@
 	<key>NSLocationUsageDescription</key>
 	<string>LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac.</string>
+	<string>LanFi uses your location so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs), and only while you record a GPS trip so scanned networks can be pinned on a map. Location stays on this Mac.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

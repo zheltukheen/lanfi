@@ -20,6 +20,9 @@ public enum AppSettingsKey: String, CaseIterable, Sendable {
     case rowDensity = "LanFi.rowDensity"
     case highContrast = "LanFi.highContrast"
     case colorBlindSafe = "LanFi.colorBlindSafe"
+    /// Opt-in for MCP live actions (scan now, capture, survey sample). The
+    /// default is off: a read-only snapshot is the safe baseline.
+    case mcpLiveActions = "LanFi.mcp.liveActions"
 
     // MARK: Analyzer display
 

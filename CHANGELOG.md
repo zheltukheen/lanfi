@@ -1,5 +1,24 @@
 # Changelog
 
+## 5.6.19 — 2026-11-22
+
+### Added
+- **MCP live actions.** `lanfi_scan_now`, `lanfi_start_capture` and
+`lanfi_survey_sample` ask the running app to scan Wi-Fi, run one bounded
+capture or tag the newest survey sample with the current location. Requests
+travel through a local file mailbox (`MCPLiveActionStore`), are executed by
+`MCPLiveActionService` on the app's view models and never open a port. Off by
+default in Settings → MCP.
+- **GPS Map.** A new Wi-Fi tool pins scanned networks on MapKit while an opt-in
+trip records: open networks are red and secured ones green, the strongest
+position per BSSID wins, and saved trips can be reopened or exported as
+GeoJSON and CSV. Location is used only during a trip, stays local, and is never
+attached to the live scan.
+
+### Changed
+- **Location copy and localisation.** The usage description now also covers GPS
+trips, and the new GPS Map and live-action strings ship in all five locales.
+
 ## 5.6.18 — 2026-11-21
 
 ### Changed

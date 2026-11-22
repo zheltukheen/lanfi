@@ -182,6 +182,11 @@ enum ToolRegistry {
             tool: .siteSurvey, screen: .siteSurvey, mcpTools: ["lanfi_survey_plan"],
             title: String(localized: "Site Survey"),
             icon: "map", section: .wifi),
+        ToolDescriptor(
+            tool: .gpsMap, screen: .gpsMap, title: String(localized: "GPS Map"),
+            icon: "location.viewfinder", section: .wifi,
+            plannedDetail: String(
+                localized: "Pin scanned networks on a map and save walks as named trips.")),
     ]
 
     private static let byTool = Dictionary(

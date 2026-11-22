@@ -57,6 +57,7 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     case securityWatch
     case clientAnalytics
     case siteSurvey
+    case gpsMap
 
     var id: String { rawValue }
 

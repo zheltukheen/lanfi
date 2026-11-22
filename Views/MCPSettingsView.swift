@@ -7,6 +7,7 @@ import SwiftUI
 /// `lanfi-cli mcp` process, and this screen makes that hand-off visible.
 struct MCPSettingsView: View {
     @AppStorage(AppSettingsKey.mcpPublishSnapshot.rawValue) private var publishSnapshot = true
+    @AppStorage(AppSettingsKey.mcpLiveActions.rawValue) private var liveActions = false
     @AppStorage(AppSettingsKey.mcpClientName.rawValue) private var clientName = "lanfi"
     @AppStorage(AppSettingsKey.mcpCLIPath.rawValue) private var storedCLIPath = ""
 
@@ -60,6 +61,22 @@ struct MCPSettingsView: View {
                 }
                 Text(
                     "LanFi rewrites this file at most every five seconds while it runs. Agents read it without Location access or a second Wi-Fi scan. Turning this off leaves the file untouched."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            }
+
+            Section("Live actions") {
+                Toggle("Allow MCP clients to act on the running app", isOn: $liveActions)
+                    .onChange(of: liveActions) { value in
+                        if value {
+                            MCPLiveActionService.shared.start()
+                        } else {
+                            MCPLiveActionService.shared.stop()
+                        }
+                    }
+                Text(
+                    "Off by default. When enabled, `lanfi_scan_now`, `lanfi_start_capture` and `lanfi_survey_sample` are executed by the running app: a Wi-Fi scan, one bounded capture (macOS asks for administrator authorization) or a GPS tag on the newest survey sample. Requests travel through a local mailbox under Application Support and never leave the Mac."
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)

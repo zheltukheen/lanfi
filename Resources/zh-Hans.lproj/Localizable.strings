@@ -1733,3 +1733,33 @@
 "Per-hop latency and loss over time, with route-change events." = "随时间显示每一跳的延迟和丢包，并记录路由变化事件。";
 "Open the Route Monitor tool to choose a destination." = "打开路由监视器工具以选择目标。";
 "The menu-bar graph follows the destination latency when the metric is Route." = "指标为“路由”时，菜单栏图表显示到目标的延迟。";
+
+/* GPS map and MCP live actions (2026-11-22) */
+"GPS Map" = "GPS 地图";
+"Pin scanned networks on a map and save walks as named trips." = "在地图上标注扫描到的网络，并将行走记录保存为命名行程。";
+"GPS network map" = "GPS 网络地图";
+"Trip name" = "行程名称";
+"Start trip" = "开始行程";
+"Stop" = "停止";
+"Locate" = "定位";
+"Export" = "导出";
+"Pinned networks" = "已标注网络";
+"Saved trips" = "已保存行程";
+"No trips saved yet." = "尚未保存行程。";
+"Networks" = "网络";
+"Open" = "开放";
+"Secured" = "加密";
+"Walk" = "路程";
+"You" = "您";
+"Recording" = "记录中";
+"Start a trip and walk the area; each network is pinned at its strongest position." = "开始行程并走遍区域；每个网络会标注在信号最强的位置。";
+"Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade." = "仅在记录行程时使用位置，数据保留在此 Mac 上，不会附加到实时扫描。macOS 通过 Wi-Fi 推算位置，精度为街区级，不适合测绘。";
+"Idle. Nothing is recorded until you start a trip." = "空闲。开始行程前不会记录任何内容。";
+"Recording. Walk the area at a normal pace." = "记录中。请以正常步速走遍区域。";
+"Trip %@" = "行程 %@";
+"Stopped. %lld networks pinned." = "已停止。已标注 %lld 个网络。";
+"Recording · %lld networks · %lld track points" = "记录中 · %lld 个网络 · %lld 个轨迹点";
+"Exported %lld networks." = "已导出 %lld 个网络。";
+"Live actions" = "实时操作";
+"Allow MCP clients to act on the running app" = "允许 MCP 客户端操作正在运行的应用";
+"Off by default. When enabled, live actions are executed by the running app: a Wi-Fi scan, one bounded capture or a GPS tag on the newest survey sample. Requests stay on this Mac." = "默认关闭。启用后，实时操作由正在运行的应用执行：Wi-Fi 扫描、一次限时抓包或为最新测量样本添加 GPS 标记。请求不会离开此 Mac。";

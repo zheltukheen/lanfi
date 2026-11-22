@@ -159,6 +159,30 @@ printf '%s\n' \
   | lanfi-cli mcp
 ```
 
+### Live actions
+
+These tools do not read a file: they ask the **running app** to act. They are
+off by default. Enable **Settings → MCP → “Allow MCP clients to act on the
+running app”**, then keep LanFi open; the CLI writes a request into
+`~/Library/Application Support/LanFi/mcp/live/`, the app executes it on its own
+view models and writes the response back. Nothing listens on a port.
+
+| Tool | Arguments | Effect |
+| --- | --- | --- |
+| `lanfi_scan_now` | — | Runs a Wi-Fi scan in the app and returns the network count. |
+| `lanfi_start_capture` | `duration` (5–120 s), `interface`, `monitor`, `filter` | Runs one bounded `tcpdump` capture; macOS asks for administrator authorization. Returns the pcap path. |
+| `lanfi_survey_sample` | — | Tags the newest Site Survey sample with the Mac's current location. Needs an active survey and Location permission. |
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"lanfi_scan_now","arguments":{}}}' \
+  | lanfi-cli mcp
+```
+
+If live actions are disabled or the app is not running, the tool returns
+`isError: true` with the reason after a short timeout. Responses older than ten
+minutes are pruned automatically.
+
 ### App state
 
 | Tool | Purpose |

@@ -1734,3 +1734,33 @@
 "Per-hop latency and loss over time, with route-change events." = "Per-hop latency and loss over time, with route-change events.";
 "Open the Route Monitor tool to choose a destination." = "Open the Route Monitor tool to choose a destination.";
 "The menu-bar graph follows the destination latency when the metric is Route." = "The menu-bar graph follows the destination latency when the metric is Route.";
+
+/* GPS map and MCP live actions (2026-11-22) */
+"GPS Map" = "GPS Map";
+"Pin scanned networks on a map and save walks as named trips." = "Pin scanned networks on a map and save walks as named trips.";
+"GPS network map" = "GPS network map";
+"Trip name" = "Trip name";
+"Start trip" = "Start trip";
+"Stop" = "Stop";
+"Locate" = "Locate";
+"Export" = "Export";
+"Pinned networks" = "Pinned networks";
+"Saved trips" = "Saved trips";
+"No trips saved yet." = "No trips saved yet.";
+"Networks" = "Networks";
+"Open" = "Open";
+"Secured" = "Secured";
+"Walk" = "Walk";
+"You" = "You";
+"Recording" = "Recording";
+"Start a trip and walk the area; each network is pinned at its strongest position." = "Start a trip and walk the area; each network is pinned at its strongest position.";
+"Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade." = "Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade.";
+"Idle. Nothing is recorded until you start a trip." = "Idle. Nothing is recorded until you start a trip.";
+"Recording. Walk the area at a normal pace." = "Recording. Walk the area at a normal pace.";
+"Trip %@" = "Trip %@";
+"Stopped. %lld networks pinned." = "Stopped. %lld networks pinned.";
+"Recording · %lld networks · %lld track points" = "Recording · %lld networks · %lld track points";
+"Exported %lld networks." = "Exported %lld networks.";
+"Live actions" = "Live actions";
+"Allow MCP clients to act on the running app" = "Allow MCP clients to act on the running app";
+"Off by default. When enabled, live actions are executed by the running app: a Wi-Fi scan, one bounded capture or a GPS tag on the newest survey sample. Requests stay on this Mac." = "Off by default. When enabled, live actions are executed by the running app: a Wi-Fi scan, one bounded capture or a GPS tag on the newest survey sample. Requests stay on this Mac.";

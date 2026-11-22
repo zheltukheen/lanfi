@@ -37,4 +37,5 @@ enum ToolScreen: String, CaseIterable, Sendable {
     case securityWatch
     case clientAnalytics
     case siteSurvey
+    case gpsMap
 }

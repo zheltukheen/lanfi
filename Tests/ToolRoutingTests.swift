@@ -88,6 +88,6 @@ final class ToolRoutingTests: XCTestCase {
         XCTAssertTrue(names.contains("lanfi_scan_summary"))
         XCTAssertTrue(names.contains("lanfi_open_connections"))
         XCTAssertTrue(names.contains("lanfi_diagnostics"))
-        XCTAssertEqual(names.count, 30)
+        XCTAssertEqual(names.count, 33)
     }
 }

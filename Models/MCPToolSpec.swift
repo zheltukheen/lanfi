@@ -284,6 +284,36 @@ enum MCPToolRegistry {
         ]
     }
 
+    /// Live actions on the running app. They need Settings → MCP → live actions
+    /// enabled; the request travels through `MCPLiveActionStore`.
+    private static var liveTools: [MCPToolSpec] {
+        [
+            MCPToolSpec(
+                "lanfi_scan_now",
+                "Ask the running LanFi app to scan Wi-Fi now, wait for it and return the network count. Requires live actions in Settings → MCP.",
+                properties: [:]),
+            MCPToolSpec(
+                "lanfi_start_capture",
+                "Start one bounded capture in the running app and return the pcap path. macOS asks the user for administrator authorization. Requires live actions in Settings → MCP.",
+                properties: [
+                    "duration": ["type": "integer", "description": "Seconds (5-120, default 10)."],
+                    "interface": [
+                        "type": "string",
+                        "description": "Interface name; defaults to the current Wi-Fi interface.",
+                    ],
+                    "monitor": [
+                        "type": "boolean",
+                        "description": "Monitor mode (needs a monitor-capable adapter).",
+                    ],
+                    "filter": ["type": "string", "description": "Optional BPF filter."],
+                ]),
+            MCPToolSpec(
+                "lanfi_survey_sample",
+                "Tag the newest Site Survey sample with the Mac's current location in the running app. Requires an active survey and live actions in Settings → MCP.",
+                properties: [:]),
+        ]
+    }
+
     private static var infoTools: [MCPToolSpec] {
         [
             MCPToolSpec(
@@ -311,7 +341,7 @@ enum MCPToolRegistry {
     ]
 
     static var all: [MCPToolSpec] {
-        scanTools + deviceTools + probeTools + infoTools
+        scanTools + deviceTools + probeTools + liveTools + infoTools
     }
 
     static var names: [String] { all.map(\.name) }

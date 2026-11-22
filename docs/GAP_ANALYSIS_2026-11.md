@@ -289,8 +289,13 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
 - [~] **Shortcuts/App Intents/widgets** — scan, connected network and speed
       test intents with Shortcut phrases ship; export, capture and widgets
       remain open.
-- [ ] **MCP 2.0** — live actions (`scan now`, `start capture`, `survey sample`),
-      not only the read-only snapshot.
+- [x] **MCP 2.0** — live actions (`scan now`, `start capture`,
+      `survey sample`), not only the read-only snapshot. Delivered 2026-11-22:
+      `lanfi_scan_now`, `lanfi_start_capture` and `lanfi_survey_sample` ask the
+      running app through a file mailbox (`MCPLiveActionStore`), executed by
+      `MCPLiveActionService` on the app's own view models. Off by default in
+      Settings → MCP; no socket is opened and the request/response never leaves
+      the Mac.
 - [x] **Known Networks / Wi-Fi QR** — saved-network inventory with security,
       live presence and a guest QR. Read-only: LanFi never edits or reads saved
       Wi-Fi passwords.
@@ -306,11 +311,14 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       `traffic-accounting.json`, with a reset control and CSV export
       (`TrafficLedger`, `TrafficAccounting`, Data usage card in Network
       Monitor).
-- [ ] **GPS scan map** — pin scanned networks on MapKit, colour open networks
+- [x] **GPS scan map** — pin scanned networks on MapKit, colour open networks
       green and secured ones red, keep the best-signal position per BSSID, and
       save each trip as a named collection that can be reopened or exported
-      (GeoJSON + CSV). Requires `NSLocationWhenInUseUsageDescription` rationale
-      in `PRIVACY.md`; opt-in per trip, never automatic.
+      (GeoJSON + CSV). Delivered 2026-11-22 as the **GPS Map** tool:
+      `GPSTrip`/`GPSTripStore` keep named trips, `GPSTripRecorder` samples only
+      while a trip is running, and `GPSMapToolView` draws `MKMapView` pins plus
+      the walked track. Location is used only during a trip and stays local;
+      the usage description now says so.
 - [x] **RF overview** — one screen that draws 2.4, 5 and 6 GHz side by side with
       every AP's span, overlap shading and the recommended channel marked (see
       D2 for the visual treatment). This is the screenshot the Unstore guide

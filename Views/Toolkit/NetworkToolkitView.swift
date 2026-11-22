@@ -73,6 +73,11 @@ struct NetworkToolkitView: View {
             }
         }
         .onAppear {
+            MCPLiveActionService.shared.configure(
+                analyzer: analyzer, survey: survey, interfaces: interfaces)
+            if MCPLiveActionService.shared.isEnabled {
+                MCPLiveActionService.shared.start()
+            }
             #if DEBUG
                 ToolkitSnapshot.captureIfRequested(
                     toolkit: toolkit, analyzer: analyzer, survey: survey, uptime: uptime)
@@ -277,6 +282,8 @@ struct NetworkToolkitView: View {
             ClientAnalyticsToolView(analyzer: analyzer)
         case .siteSurvey:
             SurveyView(analyzer: analyzer, survey: survey)
+        case .gpsMap:
+            GPSMapToolView(analyzer: analyzer)
         }
     }
 }

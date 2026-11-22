@@ -66,6 +66,10 @@ enum MCPToolkit {
         case "lanfi_open_connections": return await openConnections(arguments)
         case "lanfi_uptime": return uptime()
         case "lanfi_diagnostics": return diagnostics()
+        // Live actions on the running app
+        case "lanfi_scan_now": return await liveAction(.scanNow, arguments: arguments)
+        case "lanfi_start_capture": return await liveAction(.startCapture, arguments: arguments)
+        case "lanfi_survey_sample": return await liveAction(.surveySample, arguments: arguments)
         case "lanfi_info": return info()
         default: return nil
         }
