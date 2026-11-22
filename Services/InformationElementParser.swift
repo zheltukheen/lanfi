@@ -885,6 +885,13 @@ struct InformationElementParser {
                         "Overrides the RSNXE capabilities for capable clients"
                     ]
                 )
+            case 0x23:
+                let capabilities = decodeWfaCapabilities(body)
+                return (
+                    name: "WFA Capabilities",
+                    summary: capabilities.summary,
+                    detailLines: capabilities.detailLines
+                )
             case 0x2C:
                 guard let variant = body.first else {
                     return (name: "RSN Selection", summary: "Empty", detailLines: ["Empty"])
@@ -904,6 +911,29 @@ struct InformationElementParser {
         }
 
         return (name: vendorName, summary: vendorName, detailLines: ["Vendor: \(vendorName)"])
+    }
+
+    /// Wi-Fi Alliance Capabilities element (OUI 50-6F-9A, type 0x23), used by
+    /// Wi-Fi QoS Management. Bits 0–2 of the Capabilities field are defined;
+    /// the rest is reserved and shown only as a raw count.
+    private static func decodeWfaCapabilities(_ data: Data) -> (summary: String, detailLines: [String]) {
+        guard let first = data.first else {
+            return ("WFA Capabilities: empty", ["Empty"])
+        }
+        let flags: [(UInt8, String)] = [
+            (1 << 0, "QoS Management DSCP Policy"),
+            (1 << 1, "Unsolicited DSCP Policy"),
+            (1 << 2, "Non-EHT SCS Traffic Description"),
+        ]
+        let enabled = flags.filter { first & $0.0 != 0 }.map(\.1)
+        let reserved = data.count > 1 ? " · \(data.count - 1) extra octet(s)" : ""
+        return (
+            enabled.isEmpty ? "WFA Capabilities: none" : "WFA Capabilities: \(enabled.joined(separator: ", "))",
+            [
+                "Capabilities: \(enabled.isEmpty ? "none advertised" : enabled.joined(separator: ", "))",
+                "Bitmap: \(hexString(data))" + reserved,
+            ]
+        )
     }
 
     private struct RsnxeInfo {

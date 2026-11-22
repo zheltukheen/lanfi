@@ -1,5 +1,16 @@
 # Changelog
 
+## 5.6.31 — 2026-11-22
+
+### Added
+- **Scheduled combined report.** Settings → Automation can now write the
+  combined handover report as HTML on the existing timer, using the latest
+  survey, current scan, speed history and monitor events. Scan CSV/PDF
+  snapshots stay available.
+- **WFA Capabilities decoding.** Wi-Fi Alliance vendor element 0x23 now names
+  QoS Management DSCP Policy, Unsolicited DSCP Policy and Non-EHT SCS Traffic
+  Description, with the raw bitmap and extra octets shown.
+
 ## 5.6.30 — 2026-11-22
 
 ### Added

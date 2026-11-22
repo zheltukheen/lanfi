@@ -243,6 +243,26 @@ final class RsnOverrideElementTests: XCTestCase {
         XCTAssertTrue(elements[1].detailLines.contains { $0.contains("Payload truncated") })
     }
 
+    func testWfaCapabilitiesDecodeQosManagementBits() throws {
+        var data = Data([221, 7])
+        data.append(contentsOf: [0x50, 0x6F, 0x9A, 0x23, 0x03, 0x00, 0x00])
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "WFA Capabilities" })
+        XCTAssertTrue(element.summary.contains("QoS Management DSCP Policy"))
+        XCTAssertTrue(element.summary.contains("Unsolicited DSCP Policy"))
+        XCTAssertFalse(element.summary.contains("Non-EHT"))
+        XCTAssertTrue(element.detailLines.contains { $0.contains("03 00 00") })
+    }
+
+    func testWfaCapabilitiesWithoutBitsIsNamed() throws {
+        var data = Data([221, 5])
+        data.append(contentsOf: [0x50, 0x6F, 0x9A, 0x23, 0x00])
+        let parsed = InformationElementParser.parse(data)
+        let element = try XCTUnwrap(parsed.elements.first { $0.name == "WFA Capabilities" })
+        XCTAssertTrue(element.summary.contains("none"))
+        XCTAssertTrue(element.detailLines.contains { $0.contains("none advertised") })
+    }
+
     func testRsnSelectionIsDecoded() throws {
         var data = Data([221, 5])
         data.append(contentsOf: [0x50, 0x6F, 0x9A, 0x2C, 0x02])

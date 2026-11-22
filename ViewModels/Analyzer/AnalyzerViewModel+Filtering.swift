@@ -31,10 +31,26 @@ extension AnalyzerViewModel {
             return
         }
         let format = defaults.string(forKey: AppSettingsKey.reportsFormat.rawValue) ?? "CSV"
-        let ext = format == "PDF" ? "pdf" : "csv"
+        let ext: String
+        switch format {
+        case "PDF": ext = "pdf"
+        case "Combined HTML": ext = "html"
+        default: ext = "csv"
+        }
         let url = URL(fileURLWithPath: folder, isDirectory: true)
             .appendingPathComponent("LanFi-Report-\(Self.fileTimestamp()).\(ext)")
-        if format == "PDF" {
+        if format == "Combined HTML" {
+            let report = CombinedReportBuilder.make(
+                networks: networks,
+                analysis: analysis,
+                survey: SurveyStore().latestProject(),
+                diagnostics: nil,
+                speedTests: ThroughputHistoryStore().load(),
+                events: monitor.events
+            )
+            try? CombinedReportExporter.html(for: report)
+                .write(to: url, atomically: true, encoding: .utf8)
+        } else if format == "PDF" {
             let data = ScanReportExporter.makePDF(
                 title: "LanFi scan report", networks: networks, columns: columnDefinitions
             ) { [weak self] id, network in

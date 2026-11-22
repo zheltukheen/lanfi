@@ -21,6 +21,7 @@ struct AutomationSettingsView: View {
                 Picker("Format", selection: $format) {
                     Text("CSV").tag("CSV")
                     Text("PDF").tag("PDF")
+                    Text("Combined HTML").tag("Combined HTML")
                 }
                 HStack {
                     Text(folder.isEmpty ? "No folder selected" : folder)
@@ -44,7 +45,7 @@ struct AutomationSettingsView: View {
             }
             Section {
                 Text(
-                    "Reports use the currently visible columns and write a CSV snapshot while LanFi is running. macOS does not run this timer when the app is closed."
+                    "Reports write the current scan (CSV/PDF) or the combined handover report (HTML with the latest survey, speed history and monitor events) while LanFi is running. macOS does not run this timer when the app is closed."
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)

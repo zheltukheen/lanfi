@@ -1,7 +1,7 @@
 # Gap analysis — November 2026
 
 Status: **active plan**. Baseline: LanFi 5.4.0 (build 71).
-Last audit: **2026-11-22, LanFi 5.6.30**. Checklist state: **144 closed, 9
+Last audit: **2026-11-22, LanFi 5.6.31**. Checklist state: **146 closed, 7
 partial, 6 open**. The six open items are external or conditional: Developer ID
 signing/notarization (3), the persisted OUI binary index (only if startup
 profiling demands it), the `SMAppService` capture helper, and the separate
@@ -10,12 +10,8 @@ of this snapshot.
 
 ### Remaining after the 2026-11-22 audit
 
-- **Decoder** — only the WFA Capabilities element body is undecoded; RSNE/RSNXE
-  Override, RSN Selection, 802.11bn versioning and the rest are in.
 - **Client Analytics** — per-client airtime and retries still need a
   capture-based accounting pass; advertised load/utilization ship.
-- **Combined report** — scheduled scan snapshots exist in Settings → Automation,
-  but scheduling the combined handover report itself remains open.
 - **Shortcuts** — live capture and widgets remain open; scan/connected/speed/
   connectivity/export intents ship.
 - **Spectrum hub** — live Wi-Spy and Zigbee remain open; remote WLAN Pi/NetAlly
@@ -243,17 +239,19 @@ opens without a multi-gigabyte memory spike.
 - [x] History statistics (min/avg/max/p95) in the inspector.
 - [x] SSID overhead as a percentage of airtime (beacon airtime already exists),
       shown in the inspector's technical specs as well as the column.
-- [~] Decoder to 802.11-2024/WPA3 v3.5: Extended BSS Load (193), Multiple
+- [x] Decoder to 802.11-2024/WPA3 v3.5: Extended BSS Load (193), Multiple
       BSSID/non-transmitted profiles (71), 320 MHz, MLO and RSNE are decoded.
       RSNE Override / RSNE Override 2 (OUI 50-6F-9A, types 0x29/0x2A) are decoded
       with the same RSNE parser, so a Wi-Fi 7 compatibility-mode AP shows its
       SAE/AKM-24 overrides (raw-IE view plus an "RSN override" fact in the
       security block); the same vendor OUI names Hotspot 2.0 (0x10) and SAE-PK
-      (0x1F). RSNXE Override (0x2B) is decoded from its RSNXE Information field
+      (0x1F). RSNXE       Override (0x2B) is decoded from its RSNXE Information field
       (field length nibble plus the extended-capability bits: Protected TWT,
       SAE H2E, SAE-PK, Protected WUR, Secure LTF/RTT, URNM-MFPR-X20, Protected
       Announcement, PBAC), and RSN Selection (0x2C) shows the selected variant.
-      The WFA Capabilities element body (capability bitmap) remains open.
+      WFA Capabilities (OUI type 0x23) delivered 2026-11-22: QoS Management
+      DSCP Policy, Unsolicited DSCP Policy and Non-EHT SCS Traffic Description
+      are named from the bitmap, with the raw bitmap and extra octets shown.
 - [x] 6 GHz PSC hints and a “why is this AP not visible” explanation
       (`VisibilityAdvisor`): PSC vs non-PSC channels, DFS sharing and hidden
       SSIDs, plus the same hint in the empty workspace.
@@ -348,7 +346,7 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       compares each floor's measured average with the 3D prediction sampled on
       an 8×8 grid, and the 3D view shows measured/predicted/delta chips per
       floor with the current floor-loss value.
-- [~] **Combined report** — the self-contained HTML report with scan, survey,
+- [x] **Combined report** — the self-contained HTML report with scan, survey,
       diagnostics and speed-test sections ships from the Data menu. PDF export
       delivered 2026-11-22: the same HTML is rendered by `WKWebView` through
       `CombinedReportPDFExporter` and saved as a paginated PDF from the Data
@@ -356,9 +354,10 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       Branding delivered 2026-11-22: the report title, client name and notes
       from the survey's report settings become the document heading, the
       "Prepared for" line and a Notes section, shared by HTML and PDF.
-      Scheduled scan snapshots already exist in Settings → Automation (CSV/PDF
-      while the app runs); scheduling the combined handover report itself
-      remains open.
+      Scheduled delivery delivered 2026-11-22: Settings → Automation gained a
+      “Combined HTML” format that writes the handover report (latest survey,
+      scan, speed history and monitor events) on the existing timer while the
+      app runs. Scan CSV/PDF snapshots remain available too.
 - [~] **Shortcuts/App Intents/widgets** — scan, connected network, speed test
       and connectivity-state intents with Shortcut phrases ship. CSV export
       delivered 2026-11-22 (`LanFiExportScanIntent` returns a dated scan file to
