@@ -31,6 +31,7 @@ enum ProtocolAnalyzer {
                 network.channelWidthLabel == "-" ? nil : "\(network.channelWidthLabel) MHz",
                 network.security,
             ].compactMap { $0 }.joined(separator: " · "),
+            decoderNote: ProtocolDecoderVersion.note(for: network.generation),
             band: network.band,
             blocks: blocks,
             warnings: warnings

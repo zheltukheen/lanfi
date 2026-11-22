@@ -68,6 +68,11 @@ struct ProtocolsView: View {
                 Text(profile.formatLine)
                     .font(.caption)
                     .foregroundColor(.secondary)
+                if let note = profile.decoderNote {
+                    Text(note)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             }
 
             Spacer()

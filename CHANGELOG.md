@@ -1,5 +1,32 @@
 # Changelog
 
+## 5.6.21 — 2026-11-22
+
+### Added
+- **Native diagnostics probe.** Ping no longer spawns `/sbin/ping`; LanFi
+  builds and checks ICMP echo packets itself on an unprivileged datagram
+  socket, so macOS cannot withdraw Local Network access from a child process.
+- **Live capture counters.** The capture footer updates deauth, disassoc,
+  EAPOL-Key, handshake, PMKID and burst counts once a second while tcpdump is
+  still writing the pcap.
+- **BLE beacon scanner.** Settings → Hardware passively decodes iBeacon and
+  Eddystone UID/URL/TLM advertisements (no connection, no write) and shows
+  RSSI, identifiers and telemetry. Zigbee is analysed as a 2.4 GHz coexistence
+  map with quiet channels.
+- **Spectrum hub.** Sweeps from RF Explorer, a Wi-Spy/Chanalyzer CSV, a remote
+  WLAN Pi or a NetAlly export share one classifier for Wi-Fi, microwave,
+  narrowband 2.4 GHz, cordless and wideband interferers; remote sources can be
+  fetched over HTTP from the Source menu.
+- **Router/NAS polling.** Read-only SNMP v2c GET of standard interface
+  counters and SSDP discovery in Settings → Hardware. The community is asked
+  per request and never stored.
+
+### Changed
+- Protocol profiles stamp the decoder draft (`802.11bn D1.4`) and state that
+  Wi-Fi 7 is decoded as 802.11be/EHT.
+- The Bluetooth usage description ships in Info.plist; new strings are in all
+  five locales.
+
 ## 5.6.20 — 2026-11-22
 
 ### Added

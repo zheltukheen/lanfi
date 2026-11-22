@@ -23,6 +23,7 @@ struct LiveCaptureView: View {
     @State private var triggerMode = 0
     @State private var triggerBSSID = ""
     @State private var waitingForTrigger = false
+    @StateObject private var liveCounter = LiveCaptureCounterModel()
     @State private var autoOpenWireshark = UserDefaults.standard.bool(
         forKey: AppSettingsKey.captureAutoWireshark.rawValue)
 
@@ -240,6 +241,9 @@ struct LiveCaptureView: View {
         VStack(spacing: 0) {
             Divider()
             HStack {
+                if isCapturing || !liveCounter.snapshot.isEmpty {
+                    liveThreatStrip
+                }
                 Spacer()
                 if isCapturing {
                     ProgressView().controlSize(.small)
@@ -259,6 +263,28 @@ struct LiveCaptureView: View {
             .padding(.horizontal, embedded ? 10 : 18)
             .padding(.vertical, DesignToken.Spacing.small)
         }
+    }
+
+    /// P2: counters while tcpdump is still writing, not after the capture ends.
+    private var liveThreatStrip: some View {
+        let snapshot = liveCounter.snapshot
+        return HStack(spacing: 12) {
+            Label("\(snapshot.deauth)", systemImage: "bolt.slash")
+                .help("Deauthentication frames")
+            Label("\(snapshot.disassoc)", systemImage: "wifi.slash")
+                .help("Disassociation frames")
+            Label("\(snapshot.eapolKeyFrames)", systemImage: "key")
+                .help("EAPOL-Key frames")
+            if snapshot.completeHandshakes > 0 {
+                Label("\(snapshot.completeHandshakes)", systemImage: "exclamationmark.triangle")
+                    .foregroundColor(.orange)
+                    .help("Complete EAPOL handshakes")
+            }
+            Text("live")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .font(.caption.monospacedDigit())
     }
 
     private func openInWireshark() {
@@ -319,18 +345,21 @@ struct LiveCaptureView: View {
             channel: pinnedChannel
         )
         isCapturing = true
+        liveCounter.start(url: outputURL)
         Task {
             do {
                 let result = try await Task.detached(priority: .userInitiated) {
                     try await LiveCaptureService.capture(options)
                 }.value
                 await MainActor.run {
+                    liveCounter.stop()
                     isCapturing = false
                     completedURL = result
                     if autoOpenWireshark { openInWireshark() }
                 }
             } catch {
                 await MainActor.run {
+                    liveCounter.stop()
                     isCapturing = false
                     errorMessage = error.localizedDescription
                 }

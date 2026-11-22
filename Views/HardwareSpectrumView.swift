@@ -12,6 +12,10 @@ struct HardwareSpectrumView: View {
     @State private var selectedPort: String?
     @State private var statusText = WispyDetector.statusText
     @State private var importError: String?
+    @State private var showingRemoteSource = false
+    @State private var remoteURL = ""
+    @State private var remoteError: String?
+    @State private var remoteLoading = false
 
     private let plotInsets = EdgeInsets(top: 24, leading: 56, bottom: 26, trailing: 16)
     private let amplitudeRange: ClosedRange<Double> = -110...(-20)
@@ -21,14 +25,18 @@ struct HardwareSpectrumView: View {
             header
             Divider()
             if let sweep = controller.latestSweep {
-                chart(sweep: sweep)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(DesignToken.Spacing.small)
+                VStack(spacing: 0) {
+                    chart(sweep: sweep)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(DesignToken.Spacing.small)
+                    interfererStrip(sweep: sweep)
+                }
             } else {
                 emptyState
             }
         }
         .frame(minWidth: embedded ? 0 : 900, minHeight: embedded ? 0 : 520)
+        .sheet(isPresented: $showingRemoteSource) { remoteSourceSheet }
     }
 
     // MARK: - Header
@@ -52,6 +60,7 @@ struct HardwareSpectrumView: View {
                     statusText = WispyDetector.statusText
                 }
                 Divider()
+                Button("Remote WLAN Pi / NetAlly URL…") { showingRemoteSource = true }
                 Button("Import CSV Trace…") { importCSV() }
             } label: {
                 Label("Source", systemImage: "cable.connector")
@@ -126,6 +135,104 @@ struct HardwareSpectrumView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Interferers
+
+    private func interfererStrip(sweep: SpectrumSweep) -> some View {
+        let interferers = SpectrumClassifier.classify(sweep)
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                Text("Interferer classification")
+                    .font(.caption.weight(.semibold))
+                Text("\(sweep.source) · \(sweep.pointCount) points")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            if interferers.isEmpty {
+                Text("No lobe rises 6 dB above the sweep median.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            } else {
+                HStack(spacing: 14) {
+                    ForEach(interferers.prefix(4)) { interferer in
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(interferer.confidence == .high ? Color.orange : Color.secondary)
+                                .frame(width: 5, height: 5)
+                            Text(interferer.kind.label).font(.caption2)
+                            Text(
+                                String(
+                                    format: "%.0f MHz · %.0f dBm",
+                                    interferer.frequencyMHz, interferer.levelDBM)
+                            )
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                    Spacer()
+                }
+            }
+            if sweep.startMHz < 2500, sweep.endMHz > 2400 {
+                Text(
+                    "Zigbee coexistence: quiet 2.4 GHz channels \(ZigbeeCoexistence.quietChannels.map(String.init).joined(separator: ", "))."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            }
+        }
+        .padding(.horizontal, DesignToken.Spacing.compact)
+        .padding(.bottom, DesignToken.Spacing.compact)
+    }
+
+    private var remoteSourceSheet: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Remote spectrum source").font(.headline)
+            Text(
+                "WLAN Pi and NetAlly exports both end in a frequency/dBm table. Enter an http(s) URL that serves CSV or {\"startMHz\",\"stepMHz\",\"amplitudes\"} JSON."
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            TextField("http://wlanpi.local:8080/sweep.csv", text: $remoteURL)
+                .textFieldStyle(.roundedBorder)
+            if let remoteError {
+                Text(remoteError).font(.caption).foregroundColor(.red)
+            }
+            HStack {
+                Spacer()
+                Button("Cancel") { showingRemoteSource = false }
+                Button(remoteLoading ? "Fetching…" : "Fetch") { fetchRemoteSource() }
+                    .disabled(remoteLoading || remoteURL.isEmpty)
+            }
+        }
+        .padding(DesignToken.Spacing.section)
+        .frame(width: 460)
+    }
+
+    private func fetchRemoteSource() {
+        guard let url = URL(string: remoteURL.trimmingCharacters(in: .whitespaces)) else {
+            remoteError = RemoteSpectrumSource.FetchError.invalidURL.errorDescription
+            return
+        }
+        remoteLoading = true
+        remoteError = nil
+        Task {
+            do {
+                let sweep = try await RemoteSpectrumSource.fetch(url: url)
+                await MainActor.run {
+                    controller.loadImport(sweep)
+                    remoteLoading = false
+                    showingRemoteSource = false
+                }
+            } catch {
+                await MainActor.run {
+                    remoteError = error.localizedDescription
+                    remoteLoading = false
+                }
+            }
+        }
     }
 
     // MARK: - Chart

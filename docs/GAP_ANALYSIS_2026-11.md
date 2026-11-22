@@ -331,22 +331,22 @@ product does not need.
 
 ## P2 — Hardware and platform
 
-- [ ] Spectrum hub: live Wi-Spy, remote WLAN Pi spectrum, NetAlly NXT-2000,
+- [~] Spectrum hub: live Wi-Spy, remote WLAN Pi spectrum, NetAlly NXT-2000,
       and interferer classification.
-- [ ] BLE iBeacon/Eddystone scanner; Zigbee adapter support.
+- [~] BLE iBeacon/Eddystone scanner; Zigbee adapter support.
 - [ ] Privileged helper for capture (`SMAppService`) instead of an admin
       password per capture; multi-channel/dwell capture plan; orchestration of
       multiple remote sensors.
-- [ ] Live deauth/disassoc/EAPOL counters during a capture, not only after the
+- [x] Live deauth/disassoc/EAPOL counters during a capture, not only after the
       file is analyzed.
 - [ ] Split a sandboxed Mac App Store build from the Developer ID build rather
       than trying to make one binary do both.
-- [ ] Native probe layer for diagnostics (today `DiagnosticsEngine` shells out
+- [x] Native probe layer for diagnostics (today `DiagnosticsEngine` shells out
       to `/sbin/ping`; macOS 26 child processes can lose Local Network access).
 - [x] Speed test: keep `networkQuality` as the transport; the bufferbloat grade
       and the per-network history over time (grouped by SSID, with deltas and
       averages) are delivered.
-- [ ] Connected-link telemetry: poll `CWWiFiClient().interface()` for
+- [x] Connected-link telemetry: poll `CWWiFiClient().interface()` for
       `transmitRate()`, `noise()`, `ssid()`, `bssid()` and the negotiated PHY on
       a slow timer (5 s) and keep it in the Monitor store next to RSSI, so the
       Link inspector can show rate, PHY, width, streams and MCS/NSS over time.
@@ -362,10 +362,53 @@ product does not need.
 - [x] Wi-Fi card selection: `WiFiScanner` accepts a preferred interface name and
       Settings → Wi-Fi picks it; the workspace toolbar now shows a "Scanning
       with <interface>" label next to the scan controls (system default included).
-- [ ] SNMP/UPnP polling for router/NAS targets (PeakHour pattern): read-only
+- [x] SNMP/UPnP polling for router/NAS targets (PeakHour pattern): read-only
       v2c GET of standard interface counters plus SSDP discovery, with a strict
       timeout and no credential storage. Later bucket; only if the menu-bar
       meter proves useful.
+
+Delivered 2026-11-22 (partial where hardware or signing is required):
+
+- **Native ICMP.** `Models/NativePing.swift` builds and verifies echo
+  requests; `Services/NativePingService.swift` sends them on an unprivileged
+  `SOCK_DGRAM`/`IPPROTO_ICMP` socket with `poll` timeouts. `DiagnosticsEngine`
+  no longer spawns `/sbin/ping`.
+- **Live capture counters.** `Models/LiveThreatCounter.swift` and
+  `Services/LiveCaptureCounterService.swift` re-read the growing pcap once a
+  second and publish deauth, disassoc, EAPOL-Key, handshake, PMKID and burst
+  counts in the capture footer while tcpdump is still writing.
+- **BLE and Zigbee coexistence.** `Models/BLEAdvertisement.swift` decodes
+  iBeacon and Eddystone UID/URL/TLM payloads; `Services/BLEScanner.swift`
+  listens passively through CoreBluetooth (no connection, no write) and
+  Settings → Hardware lists beacons. Zigbee is handled as a 2.4 GHz coexistence
+  map (`ZigbeeCoexistence`); LanFi does not drive an 802.15.4 adapter.
+- **Spectrum hub.** `Models/SpectrumInterference.swift` classifies sweep lobes
+  as Wi-Fi, microwave, narrowband 2.4 GHz, DECT/cordless or wideband, and
+  `Services/RemoteSpectrumSource.swift` imports a remote WLAN Pi or NetAlly
+  CSV/JSON sweep over one HTTP request. RF Explorer stays live over USB-serial;
+  Wi-Spy remains USB detection plus Chanalyzer CSV import because no
+  user-space USB driver ships. NetAlly remains file/URL import, not a native
+  protocol driver.
+- **SNMP/UPnP.** `Models/SNMP.swift` implements the BER subset for a v2c
+  GetRequest/GetResponse; `Services/RouterPollingService.swift` performs one
+  read-only GET with a two-second timeout. SSDP discovery reuses the existing
+  `SSDPDiscovery.advertisements` from the LAN scanner. Settings → Hardware has
+  the community field in a `SecureField`; it is never persisted.
+- **802.11bn versioning.** `Models/ProtocolDecoderVersion.swift` stamps the
+  draft (`802.11bn D1.4`) the decoder tracks; Wi-Fi 7 profiles show that
+  802.11be/EHT is decoded while 802.11bn is not.
+- **P2.6 verified.** `ConnectedLinkMonitor` polls every 5 s and
+  `LinkTelemetrySummary` feeds the Link inspector; the existing
+  `Tests/RoamingAndReportTests.swift` covers rate statistics and the
+  capability label.
+
+Still open, with the blocker rather than a silent claim: the `SMAppService`
+privileged capture helper needs a separately signed daemon target and
+provisioning that this repository cannot produce or test; the sandboxed Mac App
+Store build needs App Store provisioning and a second bundle identifier; the
+multi-channel/dwell plan and remote-sensor orchestration remain tied to that
+helper. New tests: `Tests/P2PlatformTests.swift` and
+`Tests/RouterPollingTests.swift`.
 
 ## P3 — Menu-bar network utilities (On My Menubar, 2026-11-18)
 

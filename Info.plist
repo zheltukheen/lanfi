@@ -43,6 +43,8 @@
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>LanFi listens for iBeacon and Eddystone advertisements only when you start a beacon scan. Nothing is connected, written or sent off this Mac.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_http._tcp</string>

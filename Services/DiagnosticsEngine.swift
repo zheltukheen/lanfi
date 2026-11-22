@@ -155,24 +155,10 @@ protocol DiagnosticsTransport {
 }
 
 struct SystemDiagnosticsTransport: DiagnosticsTransport {
+    /// Native ICMP: no `/sbin/ping` child, so macOS cannot withdraw Local
+    /// Network access from the probe. One second per packet, like `-W 1000`.
     func ping(host: String, count: Int) async -> PingResult? {
-        await Task.detached(priority: .utility) {
-            guard FileManager.default.isExecutableFile(atPath: "/sbin/ping") else { return nil }
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/sbin/ping")
-            process.arguments = ["-c", "\(max(1, count))", "-n", "-q", "-W", "1000", host]
-            let pipe = Pipe()
-            process.standardOutput = pipe
-            process.standardError = pipe
-            do {
-                try process.run()
-                process.waitUntilExit()
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                return PingOutputParser.parse(String(decoding: data, as: UTF8.self))
-            } catch {
-                return nil
-            }
-        }.value
+        await NativePing.ping(host: host, count: count, timeoutMilliseconds: 1000)
     }
 
     func resolve(host: String) async -> DNSResult? {

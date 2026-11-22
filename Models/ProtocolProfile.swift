@@ -44,6 +44,10 @@ struct ProtocolProfile: Equatable {
     let title: String
     let subtitle: String
     let formatLine: String
+    /// Draft the decode follows; see `ProtocolDecoderVersion`.
+    var decoderVersion: String = ProtocolDecoderVersion.current.shortLabel
+    /// Set when the generation needs a draft caveat (Wi-Fi 7 today).
+    var decoderNote: String? = nil
     let band: WiFiBand
     let blocks: [ProtocolBlock]
     let warnings: [String]

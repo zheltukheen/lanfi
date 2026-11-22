@@ -68,8 +68,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
-        MARKETING_VERSION: "5.6.20"
-        CURRENT_PROJECT_VERSION: "103"
+        MARKETING_VERSION: "5.6.21"
+        CURRENT_PROJECT_VERSION: "104"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Info.plist
     info:
@@ -85,6 +85,7 @@ targets:
         NSLocationUsageDescription: "LanFi uses your location only so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs). No location data leaves your Mac."
         NSLocationWhenInUseUsageDescription: "LanFi uses your location so macOS can reveal Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs), and only while you record a GPS trip so scanned networks can be pinned on a map. Location stays on this Mac."
         NSLocalNetworkUsageDescription: "LanFi scans your local network for the LAN Scanner and connects to remote sensors over SSH when you ask it to."
+        NSBluetoothAlwaysUsageDescription: "LanFi listens for iBeacon and Eddystone advertisements only when you start a beacon scan. Nothing is connected, written or sent off this Mac."
         NSBonjourServices:
           - _http._tcp
           - _https._tcp
