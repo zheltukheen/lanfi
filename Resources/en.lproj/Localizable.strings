@@ -1841,3 +1841,13 @@
 "Concrete" = "Concrete";
 "Metal" = "Metal";
 "Floor loss" = "Floor loss";
+"Start Loss Probe" = "Start Loss Probe";
+"Stop Loss Probe" = "Stop Loss Probe";
+"Measured roam impact" = "Measured roam impact";
+"Probe off" = "Probe off";
+"Gateway" = "Gateway";
+"Loss" = "Loss";
+"Reconnect" = "Reconnect";
+"Roams measured" = "Roams measured";
+"Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window.";
+"No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first.";

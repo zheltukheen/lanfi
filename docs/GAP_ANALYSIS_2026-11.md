@@ -277,9 +277,13 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
 - [x] **Security Watch** — rogue AP/evil twin, security downgrade and
       randomized BSSIDs from the live scan, plus captured deauth bursts; no
       framing, injection or deauth, as designed.
-- [~] **Roaming Test** — BSSID transitions, 802.11k/v/r capability detection,
-      sticky client and band-steering verdicts ship; reconnect time and packet
-      loss per roam remain open.
+- [x] **Roaming Test** — BSSID transitions, 802.11k/v/r capability detection,
+      sticky client and band-steering verdicts ship. Reconnect time and packet
+      loss delivered 2026-11-22: “Start Loss Probe” pings the default gateway
+      once a second with native ICMP while a walk test runs, and
+      `RoamProbeAnalyzer` attaches the loss over ±3 s and the gap between the
+      last pre-roam and first post-roam reply to every transition (table
+      columns, plus average loss and worst reconnect in the card).
 - [~] **Client Analytics** — advertised per-AP client load, utilization and
       insights from beacons plus captured client observations ship; per-client
       airtime and retries need a capture-based accounting pass.

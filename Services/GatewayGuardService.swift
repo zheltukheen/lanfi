@@ -75,7 +75,7 @@ final class GatewayGuard: PollingGuard {
 
     // MARK: - System reads
 
-    private static func defaultGateway() -> String? {
+    static func defaultGateway() -> String? {
         guard
             let store = SCDynamicStoreCreate(
                 nil, "LanFi.GatewayGuard" as CFString, nil, nil),

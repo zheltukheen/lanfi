@@ -61,8 +61,15 @@ struct RoamingAssessment: Equatable {
     let failureCount: Int
     let verdicts: [RoamingVerdict]
     let lastRoamAt: Date?
+    /// Measured loss and reconnect time per transition, when the walk test ran
+    /// with the gateway probe on.
+    let impacts: [RoamImpact]
 
     var isSticky: Bool { verdicts.contains { $0.kind == .sticky } }
+
+    func impact(for transition: RoamTransition) -> RoamImpact? {
+        impacts.first { $0.transitionID == transition.id }
+    }
 }
 
 enum RoamingAnalyzer {
@@ -166,7 +173,7 @@ enum RoamingAnalyzer {
 
     static func assess(
         connected: NetworkModel?, visible: [NetworkModel], samples: [MonitorSample],
-        now: Date = Date()
+        probes: [RoamProbeSample] = [], now: Date = Date()
     ) -> RoamingAssessment? {
         guard let connected else { return nil }
         let transitions = transitions(from: samples)
@@ -179,7 +186,8 @@ enum RoamingAnalyzer {
             transitions: transitions,
             failureCount: failures,
             verdicts: verdicts(connected: connected, visible: visible),
-            lastRoamAt: transitions.last?.at
+            lastRoamAt: transitions.last?.at,
+            impacts: RoamProbeAnalyzer.impacts(transitions: transitions, probes: probes)
         )
     }
 }

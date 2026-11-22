@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.6.25 — 2026-11-22
+
+### Added
+- **Measured roam impact.** Roaming Test can now start a gateway loss probe:
+  native ICMP once a second while walking. Every BSSID transition gains its
+  packet loss over ±3 s and the reconnect gap between the last reply before the
+  roam and the first reply after it, shown per roam and as average loss and
+  worst reconnect in the summary card.
+
 ## 5.6.24 — 2026-11-22
 
 ### Added

@@ -6,6 +6,7 @@ import SwiftUI
 struct RoamingTestToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
 
+    @StateObject private var probe = RoamPingProbe()
     @State private var walkStart: Date?
 
     private var samples: [MonitorSample] {
@@ -17,7 +18,8 @@ struct RoamingTestToolView: View {
         RoamingAnalyzer.assess(
             connected: analyzer.connectedNetwork,
             visible: analyzer.networks,
-            samples: samples
+            samples: samples,
+            probes: probe.samples
         )
     }
 
@@ -34,6 +36,7 @@ struct RoamingTestToolView: View {
                 controls
                 if let assessment {
                     currentLink(assessment)
+                    measuredImpact(assessment)
                     capabilities(assessment)
                     verdicts(assessment)
                     transitions(assessment)
@@ -58,7 +61,23 @@ struct RoamingTestToolView: View {
                     text: "Walk test since \(walkStart.formatted(date: .omitted, time: .shortened))",
                     tone: .running)
             }
+            if let gateway = probe.gateway {
+                Text("\(gateway) · \(probe.samples.count) probes")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundColor(.secondary)
+            }
             Spacer()
+            AppButton(
+                probe.isRunning ? "Stop Loss Probe" : "Start Loss Probe",
+                systemImage: probe.isRunning ? "stop.circle" : "waveform.path.ecg",
+                tone: probe.isRunning ? .quiet : .secondary
+            ) {
+                if probe.isRunning {
+                    probe.stop()
+                } else {
+                    probe.start()
+                }
+            }
             AppButton("Start Walk Test", systemImage: "figure.walk") {
                 walkStart = Date()
             }
@@ -101,6 +120,61 @@ struct RoamingTestToolView: View {
                 }
             }
         }
+    }
+
+    private func measuredImpact(_ assessment: RoamingAssessment) -> some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    ToolkitSectionLabel(text: "Measured roam impact")
+                    Spacer()
+                    ToolkitStatusPill(
+                        text: probe.isRunning ? "Probing \(probe.gateway ?? "gateway")" : "Probe off",
+                        tone: probe.isRunning ? .running : .neutral)
+                }
+                if let gateway = probe.gateway {
+                    HStack(spacing: 24) {
+                        ToolkitMetric(
+                            title: "Gateway", value: gateway)
+                        ToolkitMetric(
+                            title: "Loss",
+                            value: averageLoss(assessment).map {
+                                String(format: "%.0f%%", $0)
+                            } ?? "—",
+                            tint: (averageLoss(assessment) ?? 0) > 0 ? .orange : .green)
+                        ToolkitMetric(
+                            title: "Reconnect",
+                            value: worstReconnect(assessment).map { "\($0) ms" } ?? "—",
+                            tint: (worstReconnect(assessment) ?? 0) > 1_000 ? .orange : .green)
+                        ToolkitMetric(
+                            title: "Roams measured",
+                            value: "\(assessment.impacts.count)")
+                        Spacer()
+                    }
+                    Text(
+                        "Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                } else {
+                    Text(
+                        "No default gateway was found, so a loss probe cannot run. Connect to a network with a router first."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+
+    private func averageLoss(_ assessment: RoamingAssessment) -> Double? {
+        guard !assessment.impacts.isEmpty else { return nil }
+        return assessment.impacts.map(\.packetLossPercent).reduce(0, +)
+            / Double(assessment.impacts.count)
+    }
+
+    private func worstReconnect(_ assessment: RoamingAssessment) -> Int? {
+        assessment.impacts.compactMap(\.reconnectMilliseconds).max()
     }
 
     private func capabilities(_ assessment: RoamingAssessment) -> some View {
@@ -215,6 +289,24 @@ struct RoamingTestToolView: View {
                                     .font(.caption2.monospacedDigit())
                                     .foregroundColor(
                                         transition.isFailure ? .red : .secondary)
+                            },
+                            AppTableColumn(
+                                id: "loss", title: "Loss", minWidth: 70,
+                                value: { .number(assessment.impact(for: $0)?.packetLossPercent ?? -1) }
+                            ) { transition in
+                                let loss = assessment.impact(for: transition)?.packetLossPercent
+                                Text(loss.map { String(format: "%.0f%%", $0) } ?? "—")
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor((loss ?? 0) > 0 ? .orange : .secondary)
+                            },
+                            AppTableColumn(
+                                id: "reconnect", title: "Reconnect", minWidth: 90,
+                                value: { .number(Double(assessment.impact(for: $0)?.reconnectMilliseconds ?? -1)) }
+                            ) { transition in
+                                let reconnect = assessment.impact(for: transition)?.reconnectMilliseconds
+                                Text(reconnect.map { "\($0) ms" } ?? "—")
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor((reconnect ?? 0) > 1_000 ? .orange : .secondary)
                             },
                         ],
                         rows: Array(assessment.transitions.prefix(20)),

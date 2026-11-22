@@ -1840,3 +1840,13 @@
 "Concrete" = "Béton";
 "Metal" = "Métal";
 "Floor loss" = "Perte entre étages";
+"Start Loss Probe" = "Lancer la sonde de perte";
+"Stop Loss Probe" = "Arrêter la sonde de perte";
+"Measured roam impact" = "Impact mesuré de l’itinérance";
+"Probe off" = "Sonde désactivée";
+"Gateway" = "Passerelle";
+"Loss" = "Pertes";
+"Reconnect" = "Reconnexion";
+"Roams measured" = "Itinérances mesurées";
+"Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "Lancez la sonde avant une marche. Elle ping la passerelle une fois par seconde et associe pertes et temps de reconnexion à chaque changement de BSSID dans cette fenêtre.";
+"No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "Aucune passerelle par défaut trouvée, la sonde ne peut pas fonctionner. Connectez-vous d’abord à un réseau avec un routeur.";

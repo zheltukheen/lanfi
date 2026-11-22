@@ -1840,3 +1840,13 @@
 "Concrete" = "Beton";
 "Metal" = "Metall";
 "Floor loss" = "Geschossdämpfung";
+"Start Loss Probe" = "Verlustprobe starten";
+"Stop Loss Probe" = "Verlustprobe stoppen";
+"Measured roam impact" = "Gemessene Roaming-Auswirkung";
+"Probe off" = "Probe aus";
+"Gateway" = "Gateway";
+"Loss" = "Verlust";
+"Reconnect" = "Neuverbindung";
+"Roams measured" = "Gemessene Roamings";
+"Start the loss probe before a walk. It pings the gateway once a second and attaches loss and reconnect time to each BSSID change in this window." = "Starten Sie die Verlustprobe vor dem Rundgang. Sie pingt das Gateway einmal pro Sekunde und ordnet jedem BSSID-Wechsel in diesem Fenster Verlust und Neuverbindungszeit zu.";
+"No default gateway was found, so a loss probe cannot run. Connect to a network with a router first." = "Kein Standard-Gateway gefunden, die Verlustprobe kann nicht laufen. Verbinden Sie sich zuerst mit einem Netzwerk mit Router.";
