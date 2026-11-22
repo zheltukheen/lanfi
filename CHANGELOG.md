@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.6.29 — 2026-11-22
+
+### Added
+- **Multi-floor measured/predicted diff.** The 3D survey view now shows a chip
+  per floor with its measured average, its predicted average from an 8×8 grid
+  and the delta, coloured when the model is off by more than 6 dB. It follows
+  the floor-loss slider, so a whole-building comparison stays consistent with
+  the coverage overlay above it.
+
 ## 5.6.28 — 2026-11-22
 
 ### Added

@@ -44,6 +44,8 @@ struct MultiFloorSurveyView: View {
             .font(.caption)
             .padding(DesignToken.Spacing.compact)
             Divider()
+            floorDiffStrip
+            Divider()
 
             GeometryReader { geo in
                 ZStack {
@@ -70,6 +72,45 @@ struct MultiFloorSurveyView: View {
                 obstacles: $0.obstacles,
                 accessPoints: $0.accessPoints
             )
+        }
+    }
+
+    private var comparisons: [SurveyFloorComparison] {
+        SurveyFloorComparator.compare(
+            floors: floors, floorAttenuationDb: floorAttenuation)
+    }
+
+    private var floorDiffStrip: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(comparisons) { comparison in
+                    HStack(spacing: 6) {
+                        Text(comparison.floorName)
+                            .font(.caption.bold())
+                            .lineLimit(1)
+                        Text(
+                            "M \(comparison.measuredAverage.map(String.init) ?? "—") · P \(comparison.predictedAverage.map(String.init) ?? "—")"
+                        )
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(.secondary)
+                        if let delta = comparison.delta {
+                            Text(String(format: "%+d dB", delta))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(abs(delta) > 6 ? .orange : .green)
+                        }
+                    }
+                    .padding(.horizontal, DesignToken.Spacing.small)
+                    .padding(.vertical, 4)
+                    .appCardSurface(radius: Theme.Radius.badge)
+                    .help("Measured vs predicted average RSSI")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(
+                        "Measured \(comparison.measuredAverage.map(String.init) ?? "none"), predicted \(comparison.predictedAverage.map(String.init) ?? "none")"
+                    )
+                }
+            }
+            .padding(.horizontal, DesignToken.Spacing.card)
+            .padding(.vertical, 5)
         }
     }
 

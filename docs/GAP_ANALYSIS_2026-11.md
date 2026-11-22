@@ -304,13 +304,16 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       the median offset (and reports the residual), and the toggle “Calibrate
       from samples” feeds it into the plan heatmap, 3D view and PDF report.
       Cutouts remain open.
-- [~] **Active Survey** — required samples, covered cells, gaps and the next
+- [x] **Active Survey** — required samples, covered cells, gaps and the next
       target ship. Throughput/latency per point delivered 2026-11-22: “Measure”
       in the Points card runs one `networkQuality` pass and stores download and
       latency on the newest sample (`SurveySample.downloadMbps`/`latencyMilliseconds`),
       shown inline and persisted with the project. Walk sampling is auto-walk:
       the Walk tool records a point every 0.8 s while the pointer moves over the
-      plan, so no separate mode is needed. The multi-floor diff remains open.
+      plan. Multi-floor diff delivered 2026-11-22: `SurveyFloorComparator`
+      compares each floor's measured average with the 3D prediction sampled on
+      an 8×8 grid, and the 3D view shows measured/predicted/delta chips per
+      floor with the current floor-loss value.
 - [~] **Combined report** — the self-contained HTML report with scan, survey,
       diagnostics and speed-test sections ships from the Data menu. PDF export
       delivered 2026-11-22: the same HTML is rendered by `WKWebView` through
