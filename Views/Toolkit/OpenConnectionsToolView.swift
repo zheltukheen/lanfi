@@ -272,7 +272,8 @@ struct OpenConnectionsToolView: View {
         }
         .padding(DesignToken.Spacing.compact)
         .background(
-            Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+            DesignToken.Surface.warningFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private var table: some View {
@@ -949,41 +950,16 @@ struct BlockRuleEditorSheet: View {
         let isSelected =
             scope == target.scope
             && value.compare(target.value, options: .caseInsensitive) == .orderedSame
-        return Button {
+        return AppListRow(
+            title: target.name,
+            subtitle: target.detail,
+            trailingText: target.scope.title,
+            isSelected: isSelected,
+            help: target.detail
+        ) {
             scope = target.scope
             value = target.value
-        } label: {
-            HStack(spacing: DesignToken.Spacing.small) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .accentColor : .secondary.opacity(0.6))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(target.name)
-                        .font(.callout)
-                        .lineLimit(1)
-                    Text(target.detail)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                Spacer(minLength: DesignToken.Spacing.tight)
-                Text(target.scope.title)
-                    .font(.system(size: 9))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .fixedSize()
-                    .layoutPriority(1)
-            }
-            .padding(.horizontal, DesignToken.Spacing.small)
-            .padding(.vertical, DesignToken.Spacing.tight)
-            .contentShape(Rectangle())
-            .background(
-                isSelected ? Color.accentColor.opacity(0.10) : Color.clear
-            )
         }
-        .buttonStyle(.plain)
-        .help(target.detail)
     }
 
     private func loadTargets() async {

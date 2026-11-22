@@ -128,7 +128,7 @@ struct DiagnosticsView: View {
         .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
         .overlay(
             RoundedRectangle(cornerRadius: DesignToken.Radius.control).stroke(
-                Color.secondary.opacity(0.12), lineWidth: 1))
+                DesignToken.Surface.border, lineWidth: DesignToken.Stroke.hairline))
     }
 
     private var divider: some View {

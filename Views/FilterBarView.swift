@@ -189,36 +189,14 @@ struct FilterBarView: View {
     }
 
     private var categoriesButton: some View {
-        Button {
+        AppChip(
+            title: String(localized: "Filters"),
+            systemImage: "slider.horizontal.3",
+            isOn: !viewModel.quickFilters.isEmpty,
+            badge: viewModel.quickFilters.isEmpty ? nil : "\(viewModel.quickFilters.count)"
+        ) {
             showCategoryFilters = true
-        } label: {
-            HStack(spacing: 5) {
-                Image(systemName: "slider.horizontal.3")
-                Text("Filters")
-                if !viewModel.quickFilters.isEmpty {
-                    Text("\(viewModel.quickFilters.count)")
-                        .font(.system(size: 9, weight: .bold))
-                        .padding(.horizontal, DesignToken.Spacing.tight)
-                        .padding(.vertical, 1)
-                        .background(Color.accentColor.opacity(0.22), in: Capsule())
-                }
-            }
-            .font(.caption)
-            .foregroundColor(.accentColor)
-            .padding(.horizontal, DesignToken.Spacing.compact)
-            .padding(.vertical, DesignToken.Spacing.tight)
-            .background(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                    .fill(Color.accentColor.opacity(viewModel.quickFilters.isEmpty ? 0.10 : 0.20))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                    .stroke(
-                        Color.accentColor.opacity(viewModel.quickFilters.isEmpty ? 0.30 : 0.60),
-                        lineWidth: 1)
-            )
         }
-        .buttonStyle(.plain)
         .popover(isPresented: $showCategoryFilters, arrowEdge: .bottom) {
             categoryPopover
         }
@@ -357,7 +335,7 @@ private struct FilterCategorySection: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: DesignToken.Radius.badge)
-                    .fill(isSelected ? Color.accentColor.opacity(0.10) : Color.clear)
+                    .fill(isSelected ? DesignToken.Surface.selectionFill : Color.clear)
             )
             .contentShape(Rectangle())
         }

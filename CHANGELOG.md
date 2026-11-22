@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.6.32 — 2026-11-22
+
+### Changed
+- **One chip and one list row.** Band filters, scan-mode chips and the filter
+  popover button now share `AppChip`; Uptime targets and connection-rule targets
+  use `AppListRow`. Selection, tint, height and stroke no longer drift between
+  the analyzer bar and the toolkit.
+- **Surface tokens instead of repeated colours.** Warning banners, connected-
+  network pills, scanner blocks and chart bars use `DesignToken.Surface`
+  (`warningFill`, `dangerFill`, `tintFill`, `selectionFill`, `border`) instead of
+  per-screen opacity literals.
+
 ## 5.6.31 — 2026-11-22
 
 ### Added

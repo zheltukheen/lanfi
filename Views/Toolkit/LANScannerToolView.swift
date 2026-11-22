@@ -169,7 +169,9 @@ struct LANScannerToolView: View {
             Spacer()
         }
         .padding(DesignToken.Spacing.compact)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .background(
+            DesignToken.Surface.warningFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func summary(_ result: LANScanResult) -> some View {
@@ -220,7 +222,9 @@ struct LANScannerToolView: View {
         }
         .padding(DesignToken.Spacing.compact)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .background(
+            DesignToken.Surface.warningFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func devicesTable(_ result: LANScanResult) -> some View {
@@ -311,7 +315,7 @@ struct LANScannerToolView: View {
                     Text("NEW")
                         .font(.system(size: 8, weight: .bold))
                         .padding(.horizontal, DesignToken.Spacing.tight)
-                        .background(Color.orange.opacity(0.2), in: Capsule())
+                        .background(DesignToken.Surface.tintFill(AppPalette.warning), in: Capsule())
                 }
             }
         case "hostname":
@@ -396,14 +400,14 @@ struct LANScannerToolView: View {
                             .font(.caption2)
                             .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 2)
-                            .background(Color.accentColor.opacity(0.14), in: Capsule())
+                            .background(DesignToken.Surface.selectionFill, in: Capsule())
                     }
                     if device.isThisMac {
                         Text("This Mac")
                             .font(.caption2)
                             .padding(.horizontal, DesignToken.Spacing.tight)
                             .padding(.vertical, 2)
-                            .background(Color.green.opacity(0.14), in: Capsule())
+                            .background(DesignToken.Surface.tintFill(AppPalette.ok), in: Capsule())
                     }
                     Divider()
                     inspectorRow("Kind", device.kindLabel)

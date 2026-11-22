@@ -179,8 +179,11 @@ struct CompactPermissionBanner: View {
         }
         .padding(.horizontal, DesignToken.Spacing.compact)
         .padding(.vertical, DesignToken.Spacing.tight)
-        .background(Color.orange.opacity(0.1))
-        .overlay(Rectangle().frame(height: 1).foregroundColor(Color.orange.opacity(0.2)), alignment: .bottom)
+        .background(DesignToken.Surface.warningFill)
+        .overlay(
+            Rectangle().frame(height: 1)
+                .foregroundColor(DesignToken.Surface.tintStroke(AppPalette.warning)),
+            alignment: .bottom)
     }
 }
 
@@ -216,7 +219,10 @@ struct ScanHealthBanner: View {
         .padding(.horizontal, DesignToken.Spacing.compact)
         .padding(.vertical, DesignToken.Spacing.tight)
         .background(DesignToken.Surface.dangerFill)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(Color.red.opacity(0.2)), alignment: .bottom)
+        .overlay(
+            Rectangle().frame(height: 1)
+                .foregroundColor(DesignToken.Surface.tintStroke(AppPalette.danger)),
+            alignment: .bottom)
     }
 }
 

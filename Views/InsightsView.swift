@@ -27,7 +27,7 @@ struct QualityScoreView: View {
             if !compact {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(Color.secondary.opacity(0.15))
+                        Capsule().fill(DesignToken.Surface.controlFill)
                         Capsule()
                             .fill(color)
                             .frame(width: max(4, geo.size.width * CGFloat(score) / 100))
@@ -76,7 +76,7 @@ struct ScoreRow: View {
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.secondary.opacity(0.12))
+                    Capsule().fill(DesignToken.Surface.border)
                     Capsule()
                         .fill(color)
                         .frame(width: max(3, geo.size.width * CGFloat(score) / 100))
@@ -258,7 +258,7 @@ struct InsightsView: View {
                     .foregroundColor(.green)
                     .padding(.horizontal, DesignToken.Spacing.small)
                     .padding(.vertical, 3)
-                    .background(Color.green.opacity(0.1))
+                    .background(DesignToken.Surface.tintFill(AppPalette.ok))
                     .clipShape(Capsule())
             } else {
                 Text("No active connection")

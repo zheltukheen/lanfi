@@ -139,6 +139,55 @@ struct BandChip: View {
     }
 }
 
+/// One toggle chip for filters, bands and scan modes. The selected state uses
+/// the tinted surface pair, so a chip in the analyzer bar and one in the filter
+/// popover read as the same control.
+struct AppChip: View {
+    let title: String
+    var systemImage: String? = nil
+    var tint: Color = .accentColor
+    var isOn: Bool
+    var badge: String? = nil
+
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: DesignToken.Spacing.tight) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                }
+                Text(verbatim: title)
+                    .lineLimit(1)
+                if let badge {
+                    Text(verbatim: badge)
+                        .font(Theme.Typography.badge)
+                        .padding(.horizontal, DesignToken.Spacing.tight)
+                        .padding(.vertical, 1)
+                        .background(DesignToken.Surface.tintFill(tint), in: Capsule())
+                }
+            }
+            .font(Theme.Typography.chip)
+            .foregroundColor(isOn ? tint : .secondary)
+            .padding(.horizontal, DesignToken.Spacing.tight)
+            .frame(minWidth: DesignToken.Control.chipMinWidth, minHeight: DesignToken.Toolbar.height)
+            .background(
+                isOn ? DesignToken.Surface.tintFill(tint) : Color(nsColor: .controlBackgroundColor),
+                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignToken.Radius.control)
+                    .stroke(
+                        isOn ? DesignToken.Surface.tintStroke(tint) : DesignToken.Surface.border,
+                        lineWidth: DesignToken.Stroke.hairline)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityValue(isOn ? "On" : "Off")
+    }
+}
+
 // MARK: - Toolbar
 
 extension View {

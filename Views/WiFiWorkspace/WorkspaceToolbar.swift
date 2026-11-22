@@ -8,25 +8,10 @@ struct BandFilterChip: View {
     @Binding var isOn: Bool
 
     var body: some View {
-        Button {
+        AppChip(title: title, tint: color, isOn: isOn) {
             isOn.toggle()
-        } label: {
-            Text(title)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .foregroundColor(isOn ? color : .secondary)
-                .frame(minWidth: 30, minHeight: 24)
-                .background(
-                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                        .fill(isOn ? color.opacity(0.16) : Color(nsColor: .controlBackgroundColor))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                        .stroke(isOn ? color.opacity(0.55) : Color.secondary.opacity(0.18), lineWidth: 1)
-                )
         }
-        .buttonStyle(.plain)
         .accessibilityLabel("Filter \(title)")
-        .accessibilityValue(isOn ? "On" : "Off")
     }
 }
 
@@ -39,37 +24,11 @@ struct ScanModeChip: View {
     let action: () -> Void
 
     var body: some View {
-        Button {
-            action()
-        } label: {
-            Text(mode.title)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .lineLimit(1)
-                .foregroundColor(isOn ? .accentColor : .secondary)
-                .padding(.horizontal, DesignToken.Spacing.tight)
-                .frame(minWidth: 30, minHeight: DesignToken.Toolbar.height)
-                .fixedSize()
-                .background(
-                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                        .fill(
-                            isOn
-                                ? Color.accentColor.opacity(0.16)
-                                : Color(nsColor: .controlBackgroundColor))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                        .stroke(
-                            isOn
-                                ? Color.accentColor.opacity(0.55)
-                                : Color.secondary.opacity(0.18),
-                            lineWidth: 1)
-                )
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .help(mode.title)
-        .accessibilityLabel(Text(mode.title))
-        .accessibilityAddTraits(isOn ? .isSelected : [])
+        AppChip(title: mode.title, isOn: isOn, action: action)
+            .fixedSize()
+            .help(mode.title)
+            .accessibilityLabel(Text(mode.title))
+            .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 }
 
@@ -256,14 +215,14 @@ struct ToolbarView: View {
         .frame(height: DesignToken.Toolbar.height)
         .background(
             isRefreshHovering
-                ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor)
+                ? DesignToken.Surface.accentFill : Color(nsColor: .controlBackgroundColor)
         )
         .cornerRadius(DesignToken.Radius.control)
         .overlay(
             RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                 .stroke(
                     isRefreshHovering
-                        ? Color.accentColor.opacity(0.6)
+                        ? DesignToken.Surface.tintStroke(AppPalette.info)
                         : Color.secondary.opacity(DesignToken.Toolbar.strokeOpacity),
                     lineWidth: DesignToken.Stroke.hairline)
         )
@@ -434,7 +393,7 @@ struct ToolbarView: View {
                 }
                 .padding(.horizontal, DesignToken.Spacing.small)
                 .padding(.vertical, DesignToken.Spacing.tight)
-                .background(Color.green.opacity(0.10))
+                .background(DesignToken.Surface.tintFill(AppPalette.ok))
                 .clipShape(Capsule())
             }
 

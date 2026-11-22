@@ -77,38 +77,15 @@ struct UptimeToolView: View {
 
     private func targetRow(_ target: UptimeTarget) -> some View {
         let state = monitor.state(for: target)
-        let selected = selectedTarget?.id == target.id
-        return Button {
+        return AppListRow(
+            statusColor: tone(for: state.isUp).color,
+            title: target.name,
+            subtitle: target.address,
+            trailingText: state.uptimePercent.map { String(format: "%.1f%%", $0) },
+            isSelected: selectedTarget?.id == target.id
+        ) {
             selectedID = target.id
-        } label: {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(tone(for: state.isUp).color)
-                    .frame(width: 8, height: 8)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(target.name)
-                        .font(.caption.weight(.medium))
-                        .lineLimit(1)
-                    Text(target.address)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 4)
-                Text(state.uptimePercent.map { String(format: "%.1f%%", $0) } ?? "—")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, DesignToken.Spacing.small)
-            .padding(.vertical, DesignToken.Spacing.tight)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                selected ? Color.accentColor.opacity(0.14) : Color.clear,
-                in: RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-            )
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
     }
 
     @ViewBuilder

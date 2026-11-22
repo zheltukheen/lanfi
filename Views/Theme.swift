@@ -96,6 +96,8 @@ enum Theme {
         static let controlIcon = Font.system(size: 11, weight: .semibold)
         /// Icons inside icon-only toolbar buttons.
         static let toolbarIcon = Font.system(size: 12, weight: .medium)
+        /// Filter and mode chips.
+        static let chip = Font.system(size: 11, weight: .semibold, design: .rounded)
         /// Large numbers: stat tiles and summary blocks.
         static let metric = Font.system(size: 17, weight: .semibold, design: .rounded)
         /// Addresses, MACs, ports and other machine text.
@@ -141,6 +143,7 @@ enum Theme {
     enum Control {
         static let height = Toolbar.height
         static let iconWidth = Toolbar.iconWidth
+        static let chipMinWidth: CGFloat = 30
         static let horizontalPadding = Spacing.small
         static let iconSpacing = Spacing.tight
         static let borderWidth = Stroke.hairline

@@ -179,13 +179,12 @@ struct ConnectionRulesView: View {
                                 .padding(.vertical, DesignToken.Spacing.tight)
                                 .background(
                                     RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                                        .fill(Color(nsColor: .controlBackgroundColor))
+                                        .fill(DesignToken.Surface.panel)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: DesignToken.Radius.control)
                                         .stroke(
-                                            Color.secondary.opacity(
-                                                DesignToken.Toolbar.strokeOpacity),
+                                            DesignToken.Surface.border,
                                             lineWidth: DesignToken.Stroke.hairline)
                                 )
                             }

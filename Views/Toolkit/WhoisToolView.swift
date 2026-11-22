@@ -91,7 +91,7 @@ struct WhoisToolView: View {
                                 .padding(.horizontal, DesignToken.Spacing.tight)
                                 .padding(.vertical, 2)
                                 .background(
-                                    Color.orange.opacity(0.12),
+                                    DesignToken.Surface.warningFill,
                                     in: RoundedRectangle(cornerRadius: DesignToken.Radius.badge))
                         }
                     }

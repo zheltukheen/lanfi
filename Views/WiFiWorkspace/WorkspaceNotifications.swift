@@ -19,7 +19,10 @@ struct ErrorBanner: View {
             .accessibilityLabel("Dismiss message")
         }
         .padding(DesignToken.Spacing.small)
-        .background(Color.yellow.opacity(0.15))
-        .overlay(Rectangle().frame(height: 1).foregroundColor(Color.yellow.opacity(0.3)), alignment: .bottom)
+        .background(DesignToken.Surface.warningFill)
+        .overlay(
+            Rectangle().frame(height: 1)
+                .foregroundColor(DesignToken.Surface.tintStroke(AppPalette.warning)),
+            alignment: .bottom)
     }
 }

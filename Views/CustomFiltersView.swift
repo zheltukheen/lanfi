@@ -111,7 +111,7 @@ struct CustomFiltersView: View {
                                 .font(.system(size: 8, weight: .bold))
                                 .padding(.horizontal, DesignToken.Spacing.tight)
                                 .padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.12))
+                                .background(DesignToken.Surface.selectionFill)
                                 .clipShape(Capsule())
                         }
                         Spacer()

@@ -142,7 +142,9 @@ struct ToolConsoleView: View {
             }
         }
         .padding(DesignToken.Spacing.small)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        .background(
+            DesignToken.Surface.warningFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     private func install(_ package: String) {

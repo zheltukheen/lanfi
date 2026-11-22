@@ -93,7 +93,7 @@ struct MainTableView: View {
                                 .font(.caption)
                                 .padding(.horizontal, DesignToken.Spacing.compact)
                                 .padding(.vertical, DesignToken.Spacing.tight)
-                                .background(Color.orange.opacity(0.10))
+                                .background(DesignToken.Surface.warningFill)
                             }
 
                             if viewModel.isLocationAuthorized || !viewModel.networks.isEmpty {

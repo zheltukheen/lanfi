@@ -277,7 +277,8 @@ struct ProcessTrafficToolView: View {
         }
         .padding(DesignToken.Spacing.compact)
         .background(
-            Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+            DesignToken.Surface.warningFill,
+            in: RoundedRectangle(cornerRadius: DesignToken.Radius.control))
     }
 
     /// P3.6: host names per app, from HAR hints and cached reverse DNS.

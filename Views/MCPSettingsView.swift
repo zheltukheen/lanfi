@@ -119,7 +119,7 @@ struct MCPSettingsView: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignToken.Radius.control)
-                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
+                            .stroke(DesignToken.Surface.divider, lineWidth: DesignToken.Stroke.hairline))
 
                 Button(copiedConfig ? "Copied" : "Copy client configuration") {
                     copy(configuration)

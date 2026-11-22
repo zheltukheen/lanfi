@@ -549,7 +549,7 @@ struct SurveyView: View {
             Text(number)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .frame(width: 15, height: 15)
-                .background(Color.accentColor.opacity(0.14), in: Circle())
+                .background(DesignToken.Surface.selectionFill, in: Circle())
             Text(text)
                 .font(.caption2)
                 .foregroundColor(.secondary)

@@ -145,6 +145,8 @@ struct AppIconButton: View {
 /// share it so the selection colour, padding and type scale never drift.
 struct AppListRow: View {
     var icon: String?
+    /// Optional leading status dot, used by monitors and live lists.
+    var statusColor: Color?
     let title: String
     var subtitle: String?
     var trailingText: String?
@@ -157,7 +159,11 @@ struct AppListRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: DesignToken.Spacing.small) {
-                if let icon {
+                if let statusColor {
+                    Circle()
+                        .fill(statusColor)
+                        .frame(width: 8, height: 8)
+                } else if let icon {
                     Image(systemName: icon)
                         .font(.system(size: 12))
                         .frame(width: 17)
