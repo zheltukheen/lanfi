@@ -1892,3 +1892,10 @@
 "Run a speed test at the newest point" = "Запустить тест скорости в последней точке";
 "Point measured · %@ · %@" = "Точка измерена · %@ · %@";
 "Point measurement failed: %@" = "Не удалось измерить точку: %@";
+"Antenna" = "Антенна";
+"Heading" = "Направление";
+"Apply antenna to all APs" = "Применить антенну ко всем AP";
+"Antenna applied to %lld APs." = "Антенна применена к %lld AP.";
+"Omni" = "Всенаправленная";
+"Directional 90°" = "Направленная 90°";
+"Panel 60°" = "Панельная 60°";

@@ -170,13 +170,33 @@ final class SurveyViewModel: ObservableObject {
         statusMessage = String(format: String(localized: "Room added · %lld rooms."), project.obstacles.count)
     }
 
-    func addAccessPoint(x: Double, y: Double, band: String, channel: Int) {
+    func addAccessPoint(
+        x: Double, y: Double, band: String, channel: Int,
+        pattern: SurveyAntennaPattern = .omni, headingDegrees: Double = 0
+    ) {
         project.accessPoints.append(
-            .new(x: min(max(x, 0), 1), y: min(max(y, 0), 1), band: band, channel: channel)
+            .new(
+                x: min(max(x, 0), 1), y: min(max(y, 0), 1), band: band, channel: channel,
+                pattern: pattern, headingDegrees: headingDegrees)
         )
         project.updatedAt = Date()
         scheduleSave()
         statusMessage = String(format: String(localized: "Predictive AP added · %lld APs."), project.accessPoints.count)
+    }
+
+    func setAntennaForAllAccessPoints(
+        pattern: SurveyAntennaPattern, headingDegrees: Double
+    ) {
+        guard !project.accessPoints.isEmpty else { return }
+        for index in project.accessPoints.indices {
+            project.accessPoints[index].pattern = pattern
+            project.accessPoints[index].headingDegrees = headingDegrees
+        }
+        project.updatedAt = Date()
+        save()
+        statusMessage = String(
+            format: String(localized: "Antenna applied to %lld APs."),
+            project.accessPoints.count)
     }
 
     /// Survey Planning 2.0 writes the suggested layout into the project.

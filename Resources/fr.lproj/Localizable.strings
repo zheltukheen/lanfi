@@ -1855,3 +1855,10 @@
 "Run a speed test at the newest point" = "Lancer un test de débit au dernier point";
 "Point measured · %@ · %@" = "Point mesuré · %@ · %@";
 "Point measurement failed: %@" = "Échec de la mesure du point : %@";
+"Antenna" = "Antenne";
+"Heading" = "Orientation";
+"Apply antenna to all APs" = "Appliquer l’antenne à tous les AP";
+"Antenna applied to %lld APs." = "Antenne appliquée à %lld AP.";
+"Omni" = "Omnidirectionnelle";
+"Directional 90°" = "Directionnelle 90°";
+"Panel 60°" = "Panneau 60°";

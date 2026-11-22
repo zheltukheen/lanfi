@@ -1856,3 +1856,10 @@
 "Run a speed test at the newest point" = "Run a speed test at the newest point";
 "Point measured · %@ · %@" = "Point measured · %@ · %@";
 "Point measurement failed: %@" = "Point measurement failed: %@";
+"Antenna" = "Antenna";
+"Heading" = "Heading";
+"Apply antenna to all APs" = "Apply antenna to all APs";
+"Antenna applied to %lld APs." = "Antenna applied to %lld APs.";
+"Omni" = "Omni";
+"Directional 90°" = "Directional 90°";
+"Panel 60°" = "Panel 60°";

@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.6.27 — 2026-11-22
+
+### Added
+- **Antenna patterns in the predictive survey.** New access points can be omni,
+  90° directional or 60° panel with an eight-way heading. The predictor applies
+  a smooth off-axis loss (up to 15/20 dB behind), and “Apply antenna to all APs”
+  updates an existing layout. Survey files without antenna fields decode as
+  omni.
+
 ## 5.6.26 — 2026-11-22
 
 ### Added

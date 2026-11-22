@@ -27,6 +27,43 @@ final class SurveyPredictorTests: XCTestCase {
         XCTAssertEqual(wall.attenuationDb, 8)
     }
 
+    func testAntennaPatternLossGrowsBehindTheBeam() {
+        XCTAssertEqual(
+            SurveyAntennaPattern.panel.lossDb(bearingDegrees: 10, headingDegrees: 0), 0)
+        XCTAssertEqual(
+            SurveyAntennaPattern.panel.lossDb(bearingDegrees: 180, headingDegrees: 0),
+            SurveyAntennaPattern.panel.backLossDb, accuracy: 0.001)
+        XCTAssertGreaterThan(
+            SurveyAntennaPattern.directional.lossDb(bearingDegrees: 120, headingDegrees: 0),
+            SurveyAntennaPattern.directional.lossDb(bearingDegrees: 0, headingDegrees: 0))
+        XCTAssertEqual(
+            SurveyAntennaPattern.omni.lossDb(bearingDegrees: 180, headingDegrees: 0), 0)
+    }
+
+    func testDirectionalAntennaWeakensTheSideBehindIt() throws {
+        let ap = SurveyAccessPoint.new(
+            x: 0.5, y: 0.5, pattern: .panel, headingDegrees: 0)
+        let front = try XCTUnwrap(
+            SurveyPredictor.estimate(
+                x: 0.8, y: 0.5, accessPoints: [ap], walls: [], obstacles: [],
+                planWidthMeters: 30, planHeightMeters: 30))
+        let behind = try XCTUnwrap(
+            SurveyPredictor.estimate(
+                x: 0.2, y: 0.5, accessPoints: [ap], walls: [], obstacles: [],
+                planWidthMeters: 30, planHeightMeters: 30))
+        XCTAssertGreaterThan(front, behind + 15)
+    }
+
+    func testAccessPointWithoutAntennaFieldsDecodesAsOmni() throws {
+        let json = """
+            {"id":"\(UUID().uuidString)","x":0.5,"y":0.5,"band":"5GHz",
+             "channel":36,"txPowerDbm":20}
+            """
+        let ap = try JSONDecoder().decode(SurveyAccessPoint.self, from: Data(json.utf8))
+        XCTAssertEqual(ap.antennaPattern, .omni)
+        XCTAssertEqual(ap.antennaHeading, 0)
+    }
+
     func testFloorAttenuationAffectsThreeDPrediction() throws {
         let floor = SurveyFloorInput(
             floorLevel: 0, floorHeightMeters: 3, walls: [], obstacles: [], accessPoints: [])

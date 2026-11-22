@@ -294,8 +294,12 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       wall (`SurveyWallMaterial`, 3–25 dB at 5 GHz), falling back to the old
       8 dB for files and custom walls. The fixed 12 dB inter-floor term is now
       the `floorAttenuationDb` prediction input, adjustable from 0–30 dB in the
-      multi-floor view. Antenna patterns, cutouts and calibration against
-      samples remain open.
+      multi-floor view. Antenna patterns delivered 2026-11-22: new predictive
+      APs can be omni, 90° directional or 60° panel with an eight-way compass
+      heading (`SurveyAntennaPattern`), the predictor subtracts the off-axis
+      loss so a wall-mounted panel stops painting coverage behind itself, and
+      “Apply antenna to all APs” updates an existing layout. Cutouts and
+      calibration against samples remain open.
 - [~] **Active Survey** — required samples, covered cells, gaps and the next
       target ship. Throughput/latency per point delivered 2026-11-22: “Measure”
       in the Points card runs one `networkQuality` pass and stores download and

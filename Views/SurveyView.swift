@@ -8,6 +8,8 @@ struct SurveyView: View {
     @State private var mode: SurveyToolMode = .sample
     @State private var pendingWallStart: CGPoint?
     @State private var wallMaterial: SurveyWallMaterial = .drywall
+    @State private var antennaPattern: SurveyAntennaPattern = .omni
+    @State private var antennaHeading = 0.0
     @State private var roomPoints: [SurveyPoint] = []
     @State private var lastWalkSample = Date.distantPast
     @State private var showReportSettings = false
@@ -237,6 +239,22 @@ struct SurveyView: View {
                     Text("\(material.title) · \(Int(material.attenuationDb)) dB").tag(material)
                 }
             }
+            Picker(String(localized: "Antenna"), selection: $antennaPattern) {
+                ForEach(SurveyAntennaPattern.allCases) { pattern in
+                    Text(pattern.title).tag(pattern)
+                }
+            }
+            Picker(String(localized: "Heading"), selection: $antennaHeading) {
+                ForEach(Array(stride(from: 0.0, to: 360.0, by: 45.0)), id: \.self) { heading in
+                    Text(headingLabel(heading)).tag(heading)
+                }
+            }
+            .disabled(antennaPattern == .omni)
+            Button(String(localized: "Apply antenna to all APs")) {
+                survey.setAntennaForAllAccessPoints(
+                    pattern: antennaPattern, headingDegrees: antennaHeading)
+            }
+            .disabled(survey.accessPoints.isEmpty)
             Button(String(localized: "Clear Walls"), role: .destructive) {
                 survey.clearWalls()
                 pendingWallStart = nil
@@ -410,6 +428,12 @@ struct SurveyView: View {
                 }
             }
         }
+    }
+
+    private func headingLabel(_ degrees: Double) -> String {
+        let directions = ["E", "SE", "S", "SW", "W", "NW", "N", "NE"]
+        let index = Int((degrees / 45).rounded()) % directions.count
+        return "\(Int(degrees))° \(directions[index])"
     }
 
     private func measurementLabel(_ sample: SurveySample) -> String {
@@ -771,7 +795,8 @@ struct SurveyView: View {
             survey.addAccessPoint(
                 x: x, y: y,
                 band: network?.band.label ?? "5GHz",
-                channel: network?.channel ?? 36
+                channel: network?.channel ?? 36,
+                pattern: antennaPattern, headingDegrees: antennaHeading
             )
             return
         }

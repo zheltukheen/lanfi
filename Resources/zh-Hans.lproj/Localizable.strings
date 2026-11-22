@@ -1855,3 +1855,10 @@
 "Run a speed test at the newest point" = "在最新点运行速度测试";
 "Point measured · %@ · %@" = "已测量点 · %@ · %@";
 "Point measurement failed: %@" = "点位测量失败：%@";
+"Antenna" = "天线";
+"Heading" = "朝向";
+"Apply antenna to all APs" = "将天线应用到所有 AP";
+"Antenna applied to %lld APs." = "已将天线应用到 %lld 个 AP。";
+"Omni" = "全向";
+"Directional 90°" = "定向 90°";
+"Panel 60°" = "面板 60°";

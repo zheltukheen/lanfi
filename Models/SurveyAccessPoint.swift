@@ -1,5 +1,54 @@
 import Foundation
 
+/// Antenna shape used by the predictive planner. Omni is the default; the
+/// directional presets are modelled as a beam with extra loss outside it, so a
+/// wall-mounted panel behind a partition does not paint coverage through it.
+enum SurveyAntennaPattern: String, CaseIterable, Identifiable, Codable {
+    case omni
+    case directional
+    case panel
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .omni: return String(localized: "Omni")
+        case .directional: return String(localized: "Directional 90°")
+        case .panel: return String(localized: "Panel 60°")
+        }
+    }
+
+    var beamwidthDegrees: Double {
+        switch self {
+        case .omni: return 360
+        case .directional: return 90
+        case .panel: return 60
+        }
+    }
+
+    /// Loss straight behind the antenna, relative to the main lobe.
+    var backLossDb: Double {
+        switch self {
+        case .omni: return 0
+        case .directional: return 15
+        case .panel: return 20
+        }
+    }
+
+    /// Extra loss for a bearing away from the antenna heading. The main lobe is
+    /// flat, then loss grows smoothly to `backLossDb` at the rear.
+    func lossDb(bearingDegrees: Double, headingDegrees: Double) -> Double {
+        guard self != .omni else { return 0 }
+        var difference = abs(bearingDegrees - headingDegrees).truncatingRemainder(dividingBy: 360)
+        if difference > 180 { difference = 360 - difference }
+        let half = beamwidthDegrees / 2
+        guard difference > half else { return 0 }
+        let outside = (difference - half) / max(1, 180 - half)
+        // Smooth the edge so a cell just outside the beam is not a cliff.
+        return backLossDb * (0.5 - 0.5 * cos(outside * .pi))
+    }
+}
+
 struct SurveyAccessPoint: Codable, Identifiable, Equatable {
     let id: UUID
     var x: Double
@@ -7,11 +56,45 @@ struct SurveyAccessPoint: Codable, Identifiable, Equatable {
     var band: String
     var channel: Int
     var txPowerDbm: Double
+    /// Optional so surveys written before antenna patterns decode as omni.
+    var pattern: SurveyAntennaPattern? = nil
+    /// Compass-style heading in degrees: 0° points along +X (east).
+    var headingDegrees: Double? = nil
 
-    static func new(x: Double, y: Double, band: String = "5GHz", channel: Int = 36, txPowerDbm: Double = 20)
-        -> SurveyAccessPoint
+    static func new(
+        x: Double, y: Double, band: String = "5GHz", channel: Int = 36,
+        txPowerDbm: Double = 20, pattern: SurveyAntennaPattern = .omni,
+        headingDegrees: Double = 0
+    ) -> SurveyAccessPoint {
+        SurveyAccessPoint(
+            id: UUID(), x: x, y: y, band: band, channel: channel, txPowerDbm: txPowerDbm,
+            pattern: pattern, headingDegrees: headingDegrees)
+    }
+
+    var antennaPattern: SurveyAntennaPattern { pattern ?? .omni }
+    var antennaHeading: Double { headingDegrees ?? 0 }
+
+    /// Bearing from the AP to a point, in the same convention as the heading.
+    func bearingDegrees(toX x: Double, y: Double, planWidthMeters: Double, planHeightMeters: Double)
+        -> Double
     {
-        SurveyAccessPoint(id: UUID(), x: x, y: y, band: band, channel: channel, txPowerDbm: txPowerDbm)
+        let dx = (x - self.x) * planWidthMeters
+        let dy = (y - self.y) * planHeightMeters
+        guard dx != 0 || dy != 0 else { return 0 }
+        var degrees = atan2(dy, dx) * 180 / .pi
+        if degrees < 0 { degrees += 360 }
+        return degrees
+    }
+
+    func antennaLossDb(
+        toX x: Double, y: Double, planWidthMeters: Double, planHeightMeters: Double
+    ) -> Double {
+        guard antennaPattern != .omni else { return 0 }
+        let bearing = bearingDegrees(
+            toX: x, y: y, planWidthMeters: planWidthMeters,
+            planHeightMeters: planHeightMeters)
+        return antennaPattern.lossDb(
+            bearingDegrees: bearing, headingDegrees: antennaHeading)
     }
 }
 
@@ -47,7 +130,11 @@ enum SurveyPredictor {
                         )
                         return total + (hit ? wall.attenuationDb : 0)
                     } ?? 0
-                let rssi = Int((ap.txPowerDbm - fspl - floorLoss - wallLoss).rounded())
+                let antennaLoss = ap.antennaLossDb(
+                    toX: x, y: y, planWidthMeters: planWidthMeters,
+                    planHeightMeters: planWidthMeters)
+                let rssi = Int(
+                    (ap.txPowerDbm - fspl - floorLoss - wallLoss - antennaLoss).rounded())
                 strongest = max(strongest ?? rssi, rssi)
             }
         }
@@ -91,7 +178,10 @@ enum SurveyPredictor {
                     }
                     return total + (hit ? obstacle.attenuationDb : 0)
                 }
-            let rssi = Int((ap.txPowerDbm - fspl - attenuation).rounded())
+            let antennaLoss = ap.antennaLossDb(
+                toX: x, y: y, planWidthMeters: planWidthMeters,
+                planHeightMeters: heightMeters)
+            let rssi = Int((ap.txPowerDbm - fspl - attenuation - antennaLoss).rounded())
             strongest = max(strongest ?? rssi, rssi)
         }
         return strongest
