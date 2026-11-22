@@ -165,6 +165,28 @@ final class RouteMonitorTests: XCTestCase {
             RouteMonitorCadence.backgroundInterval)
     }
 
+    // MARK: - Restart generation
+
+    @MainActor
+    func testRestartingTheTargetLetsTheNewLoopKeepRunning() async throws {
+        let monitor = RouteMonitor(
+            traceroute: DelayedTraceroute(slowHost: "old.example"),
+            post: { _, _, _ in })
+        monitor.start(host: "old.example")
+        // Let the old loop enter its slow traceroute call.
+        try await Task.sleep(nanoseconds: 80_000_000)
+        monitor.start(host: "new.example")
+        XCTAssertEqual(monitor.target, "new.example")
+        // The old round finishes after the restart; its defer must not clear
+        // the new monitor's state.
+        try await Task.sleep(nanoseconds: 500_000_000)
+        XCTAssertTrue(monitor.isRunning)
+        XCTAssertFalse(monitor.isSampling)
+        XCTAssertEqual(monitor.target, "new.example")
+        monitor.stop()
+        XCTAssertFalse(monitor.isRunning)
+    }
+
     // MARK: - Fixtures
 
     private func path(_ hops: [Int: String]) -> RoutePath {
@@ -195,5 +217,29 @@ final class RouteMonitorTests: XCTestCase {
 
     private func report(_ hops: [MTRHop]) -> MTRReport {
         MTRReport(host: "target", rounds: 1, startedAt: Date(), hops: hops)
+    }
+}
+
+/// Returns quickly for every host except the one whose round is meant to
+/// outlive a monitor restart.
+private final class DelayedTraceroute: TracerouteRunning, @unchecked Sendable {
+    let slowHost: String
+
+    init(slowHost: String) {
+        self.slowHost = slowHost
+    }
+
+    func trace(
+        host: String, maxHops: Int, waitSeconds: Int, probes: Int, resolveNames: Bool
+    ) async throws -> TracerouteReport {
+        if host == slowHost {
+            try await Task.sleep(nanoseconds: 300_000_000)
+        }
+        return TracerouteReport(
+            host: host,
+            hops: [
+                TracerouteHop(ttl: 1, address: "192.0.2.1", milliseconds: [1])
+            ],
+            startedAt: Date())
     }
 }

@@ -41,6 +41,10 @@ final class RouteMonitor: ObservableObject {
     private let traceroute: any TracerouteRunning
     private let post: @MainActor (String, String, String) -> Void
     private var task: Task<Void, Never>?
+    /// Bumped on every start and stop. A loop only owns the published state
+    /// while its generation is still current, so a finishing old loop (its
+    /// `defer`) cannot mark a newly started monitor as stopped.
+    private var generation = 0
     private var changeDetector = RouteChangeDetector()
     private var thresholdTracker = RouteThresholdTracker()
     private var isApplicationActive = true
@@ -80,12 +84,15 @@ final class RouteMonitor: ObservableObject {
         changeDetector.reset()
         thresholdTracker.reset()
         isRunning = true
+        generation += 1
+        let current = generation
         task = Task { [weak self] in
-            await self?.runLoop()
+            await self?.runLoop(generation: current)
         }
     }
 
     func stop() {
+        generation += 1
         task?.cancel()
         task = nil
         isRunning = false
@@ -119,13 +126,15 @@ final class RouteMonitor: ObservableObject {
 
     // MARK: - Sampling
 
-    private func runLoop() async {
+    private func runLoop(generation: Int) async {
         defer {
-            isRunning = false
-            isSampling = false
+            if self.generation == generation {
+                isRunning = false
+                isSampling = false
+            }
         }
         while !Task.isCancelled {
-            await sampleOnce()
+            await sampleOnce(generation: generation)
             if Task.isCancelled { break }
             do {
                 try await Task.sleep(nanoseconds: UInt64(cadence * 1_000_000_000))
@@ -135,17 +144,19 @@ final class RouteMonitor: ObservableObject {
         }
     }
 
-    private func sampleOnce() async {
-        guard isRunning, !target.isEmpty else { return }
+    private func sampleOnce(generation: Int) async {
+        guard isRunning, self.generation == generation, !target.isEmpty else { return }
         isSampling = true
-        defer { isSampling = false }
+        defer {
+            if self.generation == generation { isSampling = false }
+        }
 
         let service = MTRService(runner: traceroute)
         do {
             let report = try await service.run(
                 host: target, rounds: 1, maxHops: Self.maxHops, waitSeconds: 1
             ) { _ in }
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, self.generation == generation else { return }
             ingest(report)
             errorMessage = nil
         } catch is CancellationError {

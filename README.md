@@ -43,15 +43,19 @@ surfaced with severity and remediation hints.
 | Security | Open/WEP/legacy WPA findings, WPS and PMF (802.11w) detection, severity levels and remediation text |
 | Charts | Per-band spectrum view and 3-minute signal history with hover/click selection |
 | Raw data | 802.11 information-element table with expandable decoded fields (RSN, WPS, HT/VHT/HE, country, BSS Load…) |
-| Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), all BSD interface analysis, live PCAP capture, remote SSH sensors, column profiles, search, filters, menu bar extra |
+| Workflow | Categorized bottom panel (Overview / RF / Network / Troubleshoot), Network Monitor for BSD interfaces, live + offline PCAP capture, remote SSH sensors, GPS map, column profiles, search, filters, menu bar extra |
 | Protocols | Block-oriented PHY, security, roaming, spectrum, format and vendor analysis; per-network capability coverage |
 | Diagnostics | Wi-Fi link, IPv4/IPv6, gateway ICMP, DNS, captive portal, HTTPS and latency checks with 60-second monitoring |
 | Toolkit | One window with search and recents: Internet Check verdict, native ICMP/TCP ping, traceroute, visual traceroute, MTR, DNS lookup, DNS propagation, Whois/RDAP, GeoIP, port scan, path check, SSL certificate, subnet calculator, iperf3, speed-test history/schedule and network monitor |
-| Monitoring | Wi-Fi Monitor timeline for the connected link plus all-BSSID aggregates (roaming, channel, PMF/WPS and security events, CSV, quiet-hour alerts); Uptime Monitor for HTTP/TCP targets with notifications and menu-bar status; LAN Scanner with ARP/ICMP/TCP, Bonjour names, OUI vendors, open ports and Network Guard |
+| Monitoring | Wi-Fi Monitor timeline for the connected link plus all-BSSID aggregates (roaming, channel, PMF/WPS and security events, CSV, quiet-hour alerts); Route Monitor with per-hop heatmap and route-change alerts; connectivity watchdog with online/captive/offline verdicts; VPN and DNS/IPv6 leak indicators; Uptime Monitor; LAN Scanner with ARP/ICMP/TCP, Bonjour names, OUI vendors, open ports and Network Guard |
+| Traffic & connections | Per-process byte totals, seven-day per-app history, contacted host names, open TCP/UDP sockets, listener watch with exposure class and change alerts |
+| DNS & domains | Record types, DoH/DoT, resolver benchmark and comparison, propagation, opt-in system resolver switching with revert, Whois/RDAP and GeoIP |
+| Spectrum & sensors | RF Explorer live sweep, Wi-Spy detection with Chanalyzer CSV import, remote WLAN Pi/NetAlly CSV/JSON import, interferer classification, passive BLE iBeacon/Eddystone decoding, Zigbee coexistence map, SNMP/SSDP router and NAS polling |
 | Management | Editable aliases/tags/notes, grouping by SSID/band/vendor/security, saved sessions, annotations |
-| Survey | Floor-plan import, click-to-sample RSSI and a heatmap overlay (survey-lite) |
+| Survey | Floor-plan import, click-to-sample RSSI, IDW heatmap with walls, predictive coverage, multi-floor plans, PDF reports and GPX export |
 | Vendors | 58k-prefix offline OUI database from IEEE and Wireshark, with 24/28/36-bit longest-prefix matching ([sources](docs/VENDOR_DATA.md)) |
-| Export | CSV, JSON and synthetic 802.11 beacon PCAP for offline inspection |
+| Export | CSV, JSON, synthetic and live PCAP, HAR analysis, protocol and diagnostics reports |
+| Automation | Command palette, `lanfi://` deep links, `lanfi-cli` (summary/protocols/pcap/har/mcp) and a local MCP server |
 | Updates | Sparkle 2 signed appcast, Homebrew cask, universal builds |
 | Privacy | No analytics/accounts/telemetry; only update and optional diagnostic requests; see [PRIVACY.md](PRIVACY.md) |
 
@@ -80,7 +84,7 @@ Download the latest build directly:
 
 Those three links always point at the newest release. Every tagged release
 keeps the same unversioned names, for example
-`https://github.com/zheltukheen/lanfi/releases/download/v4.12.0/LanFi.dmg`,
+`https://github.com/zheltukheen/lanfi/releases/download/v5.6.16/LanFi.dmg`,
 which stays immutable for pinning. Browse everything in
 [Releases](https://github.com/zheltukheen/lanfi/releases).
 
@@ -99,9 +103,9 @@ brew trust zheltukheen/lanfi
 brew install --cask lanfi
 ```
 
-LanFi is the renamed LanFi. Existing preferences, Sparkle updates and local
-annotation/session/survey data are migrated automatically; macOS may ask for
-Location Services again. If both apps are installed, remove the old `LanFi.app`.
+Existing preferences, Sparkle updates and local annotation, session and survey
+data are preserved across updates; macOS may ask for Location Services again
+after an update or a bundle change.
 
 On first launch, allow Location Services when macOS asks. If the prompt was
 dismissed, enable it in
@@ -214,49 +218,62 @@ which adds the P3 items (listener watch, route monitor, connectivity watchdog,
 VPN leak checks, DNS benchmark, per-app history, ARP/DNS hijack, link
 automation, SSH launch, plain-language services).
 
-Delivered through 4.12.1: protocol blocks, all-interface analysis, diagnostics
+Delivered through 5.6.16: protocol blocks, all-interface analysis, diagnostics
 with persisted monitoring history, annotations, grouping, sessions, column
 profiles, multi-select, synthetic + live + offline PCAP/PCAPNG, IDW survey
-heatmaps with walls and PDF reports, SSH remote sensors with polling, AP-name
-detection, EHT/320 MHz and Multi-Link IE decoding, menu-bar alerts, vendor DB
-updates, filter profiles, CLI, URL scheme, Sparkle, Homebrew cask, expanded
-localization and VoiceOver chart descriptors, plus the Network Toolkit
-(verdicts, ping, traceroute, MTR, DNS, ports, SSL, subnet, iperf3, speed-test
-history, Uptime Monitor and LAN Scanner).
+heatmaps with walls, predictive coverage, multi-floor plans and PDF reports,
+SSH remote sensors with polling, AP-name detection, EHT/320 MHz and Multi-Link
+IE decoding, menu-bar alerts, vendor DB updates, filter profiles, CLI, URL
+scheme, Sparkle, Homebrew cask, expanded localization and VoiceOver chart
+descriptors, plus the Network Toolkit (verdicts, ping, traceroute, MTR, DNS,
+ports, SSL, subnet, iperf3, speed-test history, Uptime Monitor and LAN
+Scanner). The same line also carries listener watch, Route Monitor,
+connectivity watchdog, VPN leak checks, DNS benchmark and comparison,
+per-app traffic history, ARP/DNS-hijack detection, link automation, SSH
+launch, plain-language services and the device shelf.
+
+5.6.17–5.6.21 add MCP live actions and the GPS map, opt-in DNS switching with
+revert, per-app domain attribution, the native ICMP probe, live capture
+counters, passive BLE beacon decoding, spectrum interferer classification with
+remote WLAN Pi/NetAlly import, SNMP/SSDP router polling and 802.11bn decoder
+versioning.
 
 Remaining outside the shipped code: actual Apple notarization (no Developer
-Program account/Developer ID certificate), hardware spectrum analyzer
-integration, full per-link MLO BSSID sets, external USB adapter measurement
-beyond CoreWLAN, and a manual VoiceOver audit of the remaining screens. The
-DNS Propagation, Whois/RDAP, GeoIP and Visual Traceroute are now implemented;
-running LAN Scanner needs Local Network permission for MAC, vendor and TCP
-results.
-Multi-select comparison/bulk edit, dynamic technical localization,
-PCAPNG/offline analysis, vendor DB updates, CLI, URL automation, alerts,
-survey reports and app-wide settings are implemented.
+Program account/Developer ID certificate), live vendor spectrum protocols for
+Wi-Spy and NetAlly (RF Explorer is live over USB-serial; the others import
+CSV/URL traces), a Zigbee radio adapter, full per-link MLO BSSID sets, external
+USB adapter measurement beyond CoreWLAN, the privileged `SMAppService` capture
+helper and a sandboxed Mac App Store build, and a manual VoiceOver audit of the
+remaining screens. Running LAN Scanner needs Local Network permission for MAC,
+vendor and TCP results.
 
 ## Project structure
 
 ```text
 LanFiApp.swift        App entry, window, menu bar extra
-Models/                      NetworkModel and value types
+App/                         Sparkle updater and app-only glue
+Models/                      NetworkModel and shared value types
 Services/
   WiFiScanner.swift          CoreWLAN scan + model construction
-  InformationElementParser   Pure 802.11 IE decoding
+  InformationElementParser.swift  Pure 802.11 IE decoding
   NetworkAnalyzer.swift      Quality, overlap, recommendations, security
   ProtocolAnalyzer.swift     Block-oriented protocol profile
-  DiagnosticsEngine.swift    Link, gateway, DNS, internet and latency checks
-  PcapExporter.swift         Synthetic beacon pcap export
-  NetworkColumnFormatter.swift  Pure table formatting/sorting
-ViewModels/                  Analyzer, diagnostics and survey state
-Views/                       SwiftUI + AppKit table, charts, protocols, diagnostics, survey
-Packages/LanFiCore/          SwiftPM library seed: typed AppSettings + store
-Utils/                       Location permission, OUI vendor lookup
-Resources/                   OUI database, privacy manifest, Russian localization
-Casks/lanfi.rb                Homebrew cask (tap: zheltukheen/lanfi)
-CLI/LanFiCLI.swift            Offline CLI target (lanfi-cli)
+  DiagnosticsEngine.swift    Link, gateway, DNS, internet and native ICMP checks
+  LiveCaptureService.swift   tcpdump/BPF capture, authorization and validation
+  PcapAnalyzer.swift         PCAP/PCAPNG decoding for captures and beacons
+  RouteMonitorService.swift  Single continuous traceroute monitor
+  DNSResolverSwitchService.swift  Opt-in networksetup switching and revert
+  DomainAttributionService.swift  HAR and reverse-DNS host attribution
+  RemoteCaptureService.swift SSH sensors and remote capture
+ViewModels/                  Analyzer, diagnostics, toolkit, survey and monitor state
+Views/                       SwiftUI + AppKit table, charts, toolkit, protocols, survey
+Packages/LanFiCore/          SwiftPM library: typed AppSettings, ToolTarget and shared parsing
+Utils/                       Location permission, OUI vendor lookup, notifications
+Resources/                   OUI database, privacy manifest, five localizations
+Casks/lanfi.rb               Homebrew cask (tap: zheltukheen/lanfi)
+CLI/                         lanfi-cli entry point and the in-app MCP server
 Tests/                       XCTest coverage for pure logic and parsing
-scripts/autopush.sh          Commit/push automation
+scripts/                     Formatting, lint, UI smoke, release and autopush helpers
 ```
 
 `project.yml` is the source of truth for the Xcode project. Regenerate it with
@@ -321,6 +338,8 @@ lanfi-cli summary scan.json
 lanfi-cli summary scan.json --json
 lanfi-cli protocols scan.json
 lanfi-cli pcap capture.pcapng --json
+lanfi-cli har capture.har
+lanfi-cli mcp
 ```
 
 Deep links: `lanfi://toolkit/wifiAnalyzer`, `lanfi://toolkit/networkMonitor`,

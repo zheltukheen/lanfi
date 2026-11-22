@@ -9,12 +9,14 @@ final class MTRToolModel: ObservableObject {
     @Published var host = "1.1.1.1"
     @Published var rounds = 10
     @Published var maxHops = 20
-    @Published var continuous = false
     @Published private(set) var report: MTRReport?
     @Published private(set) var isRunning = false
     @Published var errorMessage: String?
 
     private var task: Task<Void, Never>?
+    /// Bumped on start and stop so a cancelled run cannot clear the state of
+    /// the run that replaced it.
+    private var runID = 0
 
     func run() {
         guard !isRunning else { return }
@@ -29,34 +31,35 @@ final class MTRToolModel: ObservableObject {
         let totalRounds = rounds
         let hops = maxHops
         let service = MTRService(runner: SystemTracerouteRunner())
+        runID += 1
+        let current = runID
         task = Task { [weak self] in
             guard let self else { return }
-            repeat {
-                do {
-                    let result = try await service.run(
-                        host: target.host, rounds: totalRounds, maxHops: hops, waitSeconds: 1
-                    ) { update in
-                        Task { @MainActor [weak self] in
-                            self?.report = update
-                        }
+            do {
+                let result = try await service.run(
+                    host: target.host, rounds: totalRounds, maxHops: hops, waitSeconds: 1
+                ) { update in
+                    Task { @MainActor [weak self] in
+                        guard let self, self.runID == current else { return }
+                        self.report = update
                     }
-                    if Task.isCancelled { break }
-                    self.report = result
-                } catch is CancellationError {
-                    break
-                } catch {
-                    self.errorMessage = error.localizedDescription
-                    break
                 }
-                if !self.continuous { break }
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-            } while self.continuous && !Task.isCancelled
+                guard !Task.isCancelled, self.runID == current else { return }
+                self.report = result
+            } catch is CancellationError {
+                return
+            } catch {
+                guard self.runID == current else { return }
+                self.errorMessage = error.localizedDescription
+            }
+            guard self.runID == current else { return }
             self.isRunning = false
             self.task = nil
         }
     }
 
     func stop() {
+        runID += 1
         task?.cancel()
         task = nil
         isRunning = false

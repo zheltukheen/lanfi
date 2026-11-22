@@ -1,11 +1,12 @@
 import SwiftUI
 
-/// One Traceroute screen with a second tab for continuous MTR.
+/// One Traceroute screen with a second tab for MTR.
 ///
 /// The classic trace, the map and the sortable hop table were already one view;
 /// MTR is the same question asked repeatedly (per-hop loss and jitter over
 /// time), so it sits behind the same target field instead of a second sidebar
-/// entry. A deep link to `mtr` still lands here, on the Continuous tab.
+/// entry. A deep link to `mtr` still lands here, on the MTR tab. Continuous
+/// monitoring itself lives in the single shared Route Monitor.
 struct TracerouteTabsView: View {
     @ObservedObject var visual: VisualTracerouteToolModel
     @ObservedObject var mtr: MTRToolModel
@@ -19,7 +20,7 @@ struct TracerouteTabsView: View {
         var title: LocalizedStringKey {
             switch self {
             case .trace: return "Route"
-            case .continuous: return "Continuous"
+            case .continuous: return "MTR"
             }
         }
         var icon: String {

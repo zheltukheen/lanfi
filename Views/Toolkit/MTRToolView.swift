@@ -46,8 +46,10 @@ struct MTRToolView: View {
                             .font(.caption)
                     }
                     .fixedSize()
-                    Toggle("Continuous", isOn: $model.continuous)
-                        .font(.caption)
+                    AppButton("Route Monitor", systemImage: "waveform.path.ecg", tone: .secondary) {
+                        RouteMonitor.shared.start(host: model.host)
+                    }
+                    .help("Continuous monitoring runs in the single shared Route Monitor.")
                     Spacer()
                     if model.isRunning {
                         AppButton("Stop", tone: .secondary) { model.stop() }

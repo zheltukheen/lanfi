@@ -45,15 +45,19 @@ LanFi — бесплатный анализатор Wi‑Fi для macOS с до
 | Безопасность | Находки по открытым сетям/WEP/старому WPA, определение WPS и PMF (802.11w), уровни серьёзности и текст исправлений |
 | Графики | Спектр по диапазонам и история сигнала за 3 минуты с наведением и выбором |
 | Сырые данные | Таблица информационных элементов 802.11 с раскрываемыми декодированными полями (RSN, WPS, HT/VHT/HE, страна, BSS Load…) |
-| Рабочий процесс | Категории нижней панели (Overview / RF / Network), профили колонок, поиск, фильтры, иконка в строке меню |
+| Рабочий процесс | Категории нижней панели (Overview / RF / Network / Troubleshoot), Network Monitor для интерфейсов BSD, живой и офлайн-захват PCAP, удалённые SSH-сенсоры, GPS-карта, профили колонок, поиск, фильтры, иконка в строке меню |
 | Протоколы | Блочный анализ PHY, безопасности, роуминга, спектра, формата и вендора; покрытие возможностей по каждой сети |
 | Диагностика | Wi‑Fi-линк, IPv4/IPv6, ICMP до шлюза, DNS, captive portal, HTTPS и задержка с мониторингом каждые 60 секунд |
 | Тулкит | Одно окно с поиском и недавними: вердикт Internet Check, нативный ICMP/TCP ping, traceroute, визуальный traceroute, MTR, DNS lookup, распространение DNS, Whois/RDAP, GeoIP, сканирование портов, Path Check, SSL-сертификат, калькулятор подсетей, iperf3, история и расписание speed-тестов, монитор сети |
-| Мониторинг | Uptime Monitor для HTTP/TCP-целей с уведомлениями и статусом в строке меню; LAN Scanner с ARP/ICMP/TCP, именами Bonjour, вендорами OUI, открытыми портами и Network Guard |
+| Мониторинг | Wi-Fi Monitor с таймлайном подключённого линка и агрегатами по BSSID (роуминг, канал, PMF/WPS и события безопасности, CSV, тихие часы); Route Monitor с тепловой картой по хопам и оповещениями о смене маршрута; watchdog связи с вердиктами online/captive/offline; индикаторы утечек VPN и DNS/IPv6; Uptime Monitor; LAN Scanner с ARP/ICMP/TCP, именами Bonjour, вендорами OUI, открытыми портами и Network Guard |
+| Трафик и соединения | Байты по процессам, семидневная история по приложениям, домены подключений, открытые TCP/UDP-сокеты, наблюдение за слушателями с классом экспозиции и оповещениями |
+| DNS и домены | Типы записей, DoH/DoT, бенчмарк и сравнение резолверов, propagation, opt-in переключение системного резолвера с возвратом, Whois/RDAP и GeoIP |
+| Спектр и сенсоры | Живая развёртка RF Explorer, детект Wi-Spy с импортом CSV Chanalyzer, удалённый импорт CSV/JSON WLAN Pi/NetAlly, классификация помех, пассивное декодирование BLE iBeacon/Eddystone, карта сосуществования Zigbee, SNMP/SSDP-опрос роутера и NAS |
 | Управление | Редактируемые псевдонимы/теги/заметки, группировка по SSID/диапазону/вендору/безопасности, сохранённые сеансы, аннотации |
-| Обследование | Импорт плана помещения, запись RSSI по клику и тепловая карта (упрощённое обследование) |
+| Обследование | Импорт плана помещения, запись RSSI по клику, IDW-тепловая карта со стенами, предиктивное покрытие, несколько этажей, PDF-отчёты и экспорт GPX |
 | Вендоры | Офлайн-база OUI на 58 тыс. префиксов из IEEE и Wireshark с поиском по самому длинному префиксу 24/28/36 бит ([источники](docs/VENDOR_DATA.md)) |
-| Экспорт | CSV, JSON и синтетический PCAP beacon-кадров 802.11 для офлайн-разбора |
+| Экспорт | CSV, JSON, синтетический и живой PCAP, разбор HAR, отчёты протоколов и диагностики |
+| Автоматизация | Командная палитра, deep links `lanfi://`, `lanfi-cli` (summary/protocols/pcap/har/mcp) и локальный MCP-сервер |
 | Обновления | Подписанный appcast Sparkle 2, Homebrew cask, universal-сборки |
 | Приватность | Без аналитики/аккаунтов/телеметрии; только обновления и опциональные диагностические запросы; см. [PRIVACY.md](PRIVACY.md) |
 
@@ -82,7 +86,7 @@ LanFi — бесплатный анализатор Wi‑Fi для macOS с до
 
 Эти ссылки всегда указывают на самый новый релиз. В каждом релизе сохраняются
 одинаковые имена без версии, например
-`https://github.com/zheltukheen/lanfi/releases/download/v4.12.0/LanFi.dmg`,
+`https://github.com/zheltukheen/lanfi/releases/download/v5.6.16/LanFi.dmg`,
 поэтому их можно закреплять. Все релизы — в
 [Releases](https://github.com/zheltukheen/lanfi/releases).
 
@@ -101,10 +105,9 @@ brew trust zheltukheen/lanfi
 brew install --cask lanfi
 ```
 
-LanFi — новое имя приложения. Существующие настройки,
-обновления Sparkle и локальные данные аннотаций/сеансов/обследований
-переносятся автоматически; macOS может снова запросить Location Services. Если
-установлены обе версии, удалите старый `LanFi.app`.
+Существующие настройки, обновления Sparkle и локальные данные
+аннотаций/сеансов/обследований сохраняются между обновлениями; после обновления
+или смены bundle macOS может снова запросить Location Services.
 
 При первом запуске разрешите Location Services. Если запрос был отклонён,
 включите доступ в
@@ -206,46 +209,62 @@ LanFi уже лидирует в интерпретации (качество, �
 рабочий процесс и обследование. Приоритетный план с источниками и критериями
 готовности — в [`docs/COMMERCIAL_GAP.md`](docs/COMMERCIAL_GAP.md).
 
-Реализовано к 4.12.1: блоки протоколов, анализ всех интерфейсов, диагностика с
+Реализовано к 5.6.16: блоки протоколов, анализ всех интерфейсов, диагностика с
 сохранённой историей мониторинга, аннотации, группировка, сеансы, профили
 колонок, мультивыбор, синтетический + живой + офлайн PCAP/PCAPNG, IDW-тепловые
-карты со стенами и PDF-отчётами, удалённые SSH-сенсоры с опросом, определение
-имени AP, декодирование EHT/320 МГц и Multi-Link IE, оповещения в строке меню,
-обновление базы вендоров, профили фильтров, CLI, URL-схема, Sparkle, Homebrew
-cask, расширенная локализация и VoiceOver-описания графиков, а также сетевой
-тулкит (вердикты, ping, traceroute, MTR, DNS, порты, SSL, подсети, iperf3,
-история speed-тестов, Uptime Monitor и LAN Scanner).
+карты со стенами, предиктивное покрытие, несколько этажей и PDF-отчёты,
+удалённые SSH-сенсоры с опросом, определение имени AP, декодирование EHT/320 МГц
+и Multi-Link IE, оповещения в строке меню, обновление базы вендоров, профили
+фильтров, CLI, URL-схема, Sparkle, Homebrew cask, расширенная локализация и
+VoiceOver-описания графиков, а также сетевой тулкит (вердикты, ping, traceroute,
+MTR, DNS, порты, SSL, подсети, iperf3, история speed-тестов, Uptime Monitor и
+LAN Scanner). В этой же линии — наблюдение за слушателями, Route Monitor,
+watchdog связи, проверки утечек VPN, бенчмарк и сравнение DNS, история трафика
+по приложениям, обнаружение ARP/DNS-подмены, автоматизация линка, SSH-запуск,
+простые описания сервисов и полка устройств.
+
+5.6.17–5.6.21 добавляют MCP live actions и GPS-карту, opt-in переключение DNS с
+возвратом, атрибуцию доменов по приложениям, нативный ICMP, живые счётчики
+захвата, пассивное декодирование BLE-маяков, классификацию спектральных помех с
+удалённым импортом WLAN Pi/NetAlly, SNMP/SSDP-опрос роутера и версионирование
+декодера 802.11bn.
 
 Вне готового кода остаются: фактическая нотаризация Apple (нет аккаунта
-Developer Program и сертификата Developer ID), интеграция аппаратного
-спектроанализатора, полные наборы BSSID по линкам MLO, измерение через внешний
-USB-адаптер beyond CoreWLAN и ручной аудит VoiceOver оставшихся экранов. DNS Propagation, Whois/RDAP, GeoIP и Visual Traceroute уже реализованы; для
-MAC, вендора и TCP-результатов LAN Scanner нужно разрешение Local Network.
-Мультивыбор и массовое редактирование, динамическая техническая
-локализация, анализ PCAPNG/офлайн, обновление базы вендоров, CLI, URL-автоматизация,
-оповещения, отчёты обследования и общие настройки приложения реализованы.
+Developer Program и сертификата Developer ID), живые вендорские протоколы
+спектра Wi-Spy и NetAlly (RF Explorer работает вживую по USB-serial, остальные
+импортируют CSV/URL), радиомодуль Zigbee, полные наборы BSSID по линкам MLO,
+измерение через внешний USB-адаптер beyond CoreWLAN, привилегированный хелпер
+захвата `SMAppService` и sandboxed-сборка Mac App Store, а также ручной аудит
+VoiceOver оставшихся экранов. Для MAC, вендора и TCP-результатов LAN Scanner
+нужно разрешение Local Network.
 
 ## Структура проекта
 
 ```text
 LanFiApp.swift               Точка входа, окно, иконка в строке меню
-Models/                      NetworkModel и типы значений
+App/                         Sparkle и код, нужный только приложению
+Models/                      NetworkModel и общие типы значений
 Services/
   WiFiScanner.swift          Сканирование CoreWLAN + построение модели
-  InformationElementParser   Чистое декодирование IE 802.11
+  InformationElementParser.swift  Чистое декодирование IE 802.11
   NetworkAnalyzer.swift      Качество, перекрытие, рекомендации, безопасность
   ProtocolAnalyzer.swift     Блочный профиль протоколов
-  DiagnosticsEngine.swift    Проверки линка, шлюза, DNS, интернета и задержки
-  PcapExporter.swift         Экспорт синтетического PCAP beacon-кадров
-  NetworkColumnFormatter.swift  Чистое форматирование/сортировка таблицы
-ViewModels/                  Состояние анализатора, диагностики и обследования
-Views/                       SwiftUI + таблица AppKit, графики, протоколы, диагностика, обследование
-Utils/                       Разрешение Location, поиск вендора по OUI
-Resources/                   База OUI, privacy manifest, русская локализация
-Casks/lanfi.rb                Homebrew cask (tap: zheltukheen/lanfi)
-CLI/LanFiCLI.swift            Офлайн CLI-цель (lanfi-cli)
+  DiagnosticsEngine.swift    Линк, шлюз, DNS, интернет и нативный ICMP
+  LiveCaptureService.swift   Захват tcpdump/BPF, авторизация и проверка
+  PcapAnalyzer.swift         Разбор PCAP/PCAPNG для захватов и beacon-кадров
+  RouteMonitorService.swift  Единственный непрерывный монитор traceroute
+  DNSResolverSwitchService.swift  Opt-in смена networksetup и возврат
+  DomainAttributionService.swift  Домены из HAR и reverse DNS
+  RemoteCaptureService.swift SSH-сенсоры и удалённый захват
+ViewModels/                  Состояние анализатора, диагностики, тулкита, обследования и мониторов
+Views/                       SwiftUI + таблица AppKit, графики, тулкит, протоколы, обследование
+Packages/LanFiCore/          SwiftPM-библиотека: AppSettings, ToolTarget и общий парсинг
+Utils/                       Разрешение Location, поиск вендора по OUI, уведомления
+Resources/                   База OUI, privacy manifest, пять локализаций
+Casks/lanfi.rb               Homebrew cask (tap: zheltukheen/lanfi)
+CLI/                         Точка входа lanfi-cli и MCP-сервер внутри приложения
 Tests/                       XCTest для чистой логики и парсинга
-scripts/autopush.sh          Автоматизация commit/push
+scripts/                     Форматирование, lint, UI smoke, релиз и autopush
 ```
 
 `project.yml` — источник истины для Xcode-проекта. После добавления или
@@ -313,6 +332,8 @@ lanfi-cli summary scan.json
 lanfi-cli summary scan.json --json
 lanfi-cli protocols scan.json
 lanfi-cli pcap capture.pcapng --json
+lanfi-cli har capture.har
+lanfi-cli mcp
 ```
 
 Deep links: `lanfi://toolkit/wifiAnalyzer`, `lanfi://toolkit/networkMonitor`,
