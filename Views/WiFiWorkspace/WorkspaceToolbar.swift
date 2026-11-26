@@ -1,5 +1,6 @@
 import LanFiCore
 import AppKit
+import PostHog
 import SwiftUI
 
 struct BandFilterChip: View {
@@ -286,6 +287,7 @@ struct ToolbarView: View {
                     label: "Refresh scan",
                     help: "Refresh now"
                 ) {
+                    PostHogSDK.shared.capture("wifi_scan_refreshed")
                     viewModel.refresh()
                 }
 

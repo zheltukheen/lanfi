@@ -1,3 +1,4 @@
+import PostHog
 import SwiftUI
 
 struct RemoteCaptureSheet: View {
@@ -72,6 +73,12 @@ struct RemoteCaptureSheet: View {
                 await MainActor.run {
                     isCapturing = false
                     savedURL = url
+                    PostHogSDK.shared.capture(
+                        "remote_capture_completed",
+                        properties: [
+                            "duration_seconds": duration,
+                            "monitor_mode": monitorMode,
+                        ])
                 }
             } catch {
                 await MainActor.run {
