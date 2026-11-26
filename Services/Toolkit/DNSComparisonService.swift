@@ -8,13 +8,15 @@ struct DNSComparisonService: Sendable {
     var udpClient: any DNSLookuping = UDPDNSClient()
     var dohClient: DoHDNSClient = DoHDNSClient()
     var dotClient: DoTDNSClient = DoTDNSClient()
+    var doqClient: DoQDNSClient = DoQDNSClient()
 
     func compare(
         host: String,
         type: DNSRecordType,
         udpResolvers: [DNSResolver] = DNSResolver.builtIn,
         dohResolvers: [DoHResolver] = DoHResolver.builtIn,
-        dotResolvers: [DoTResolver] = DoTResolver.builtIn
+        dotResolvers: [DoTResolver] = DoTResolver.builtIn,
+        doqResolvers: [DoQResolver] = DoQResolver.builtIn
     ) async -> DNSComparison {
         await withTaskGroup(of: DNSComparisonEntry.self) { group in
             for resolver in udpResolvers {
@@ -66,6 +68,24 @@ struct DNSComparisonService: Sendable {
                     } catch {
                         return DNSComparisonEntry(
                             id: "dot:\(resolver.id)", name: resolver.name, transport: .dot,
+                            records: [], milliseconds: Int(Date().timeIntervalSince(started) * 1000),
+                            failure: error.localizedDescription)
+                    }
+                }
+            }
+            for resolver in doqResolvers {
+                group.addTask {
+                    let started = Date()
+                    do {
+                        let result = try await doqClient.lookup(
+                            host: host, type: type, resolver: resolver, timeout: 6)
+                        return DNSComparisonEntry(
+                            id: "doq:\(resolver.id)", name: resolver.name, transport: .doq,
+                            records: result.records, milliseconds: result.milliseconds,
+                            failure: nil)
+                    } catch {
+                        return DNSComparisonEntry(
+                            id: "doq:\(resolver.id)", name: resolver.name, transport: .doq,
                             records: [], milliseconds: Int(Date().timeIntervalSince(started) * 1000),
                             failure: error.localizedDescription)
                     }

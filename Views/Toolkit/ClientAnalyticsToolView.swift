@@ -205,6 +205,26 @@ struct ClientAnalyticsToolView: View {
                         value: { .number($0.frames) }
                     ) { Text("\($0.frames)").monospacedDigit() },
                     AppTableColumn(
+                        id: "retries", title: "Retries", minWidth: 80,
+                        value: { column in
+                            let rate =
+                                column.frames > 0
+                                ? Int((Double(column.retries) / Double(column.frames) * 100).rounded())
+                                : 0
+                            return .number(rate * 1000 + min(column.retries, 999))
+                        }
+                    ) { row in
+                        Text(
+                            row.frames > 0
+                                ? "\(row.retries) (\(Int((Double(row.retries) / Double(row.frames) * 100).rounded()))%)"
+                                : "—"
+                        ).monospacedDigit()
+                    },
+                    AppTableColumn(
+                        id: "airtime", title: "Airtime", minWidth: 80,
+                        value: { .number($0.airtimeMicroseconds) }
+                    ) { Text("\($0.airtimeMicroseconds / 1000) ms").monospacedDigit() },
+                    AppTableColumn(
                         id: "rssi", title: "RSSI", minWidth: 70,
                         value: { .number($0.rssi) }
                     ) { Text($0.rssi.map { "\($0) dBm" } ?? "—") },
@@ -276,7 +296,9 @@ struct ClientAnalyticsToolView: View {
                             vendor: OUIParser.vendor(for: client.mac),
                             rssi: client.rssi,
                             frames: client.frameCount,
-                            probes: client.probeSSIDs
+                            probes: client.probeSSIDs,
+                            retries: client.retryFrames,
+                            airtimeMicroseconds: client.airtimeMicroseconds
                         )
                     }
                     if observations.isEmpty {

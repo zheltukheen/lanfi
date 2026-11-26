@@ -10,9 +10,14 @@ struct ClientObservation: Identifiable, Equatable {
     let rssi: Int?
     let frames: Int
     let probes: [String]
+    /// Frames retransmitted by this client (802.11 Retry bit).
+    let retries: Int
+    /// Airtime this client reserved, summed from the Duration/ID fields.
+    let airtimeMicroseconds: Int
 
     init(
-        mac: String, bssid: String, vendor: String, rssi: Int?, frames: Int, probes: [String] = []
+        mac: String, bssid: String, vendor: String, rssi: Int?, frames: Int,
+        probes: [String] = [], retries: Int = 0, airtimeMicroseconds: Int = 0
     ) {
         self.id = mac + "|" + bssid
         self.mac = mac
@@ -21,6 +26,8 @@ struct ClientObservation: Identifiable, Equatable {
         self.rssi = rssi
         self.frames = frames
         self.probes = probes
+        self.retries = retries
+        self.airtimeMicroseconds = airtimeMicroseconds
     }
 }
 
@@ -47,6 +54,22 @@ struct ClientAnalyticsSnapshot: Equatable {
         var id: String { value }
     }
 
+    /// P1.3 capture accounting: what one client actually cost the medium.
+    struct ClientLoad: Identifiable, Equatable {
+        let mac: String
+        let vendor: String
+        let frames: Int
+        let retries: Int
+        let airtimeMicroseconds: Int
+        /// Airtime as a fraction of all captured airtime, when the capture
+        /// carried any duration values at all.
+        let airtimeShare: Double?
+
+        var id: String { mac }
+        var retryRate: Double? { frames > 0 ? Double(retries) / Double(frames) : nil }
+        var airtimeMilliseconds: Int { airtimeMicroseconds / 1000 }
+    }
+
     let advertisedClients: Int
     let accessPointCount: Int
     let capturedClients: Int
@@ -56,6 +79,9 @@ struct ClientAnalyticsSnapshot: Equatable {
     let idleAccessPoints: Int
     let vendorMix: [ValueCount]
     let probeSSIDs: [ValueCount]
+    /// Per-client airtime and retry accounting, busiest first.
+    let clientLoads: [ClientLoad]
+    let totalAirtimeMicroseconds: Int
     let insights: [String]
 
     static func build(
@@ -101,6 +127,43 @@ struct ClientAnalyticsSnapshot: Equatable {
                 probeCounts[probe, default: 0] += 1
             }
         }
+
+        // A client can appear once per BSSID, so the accounting adds those
+        // rows together before ranking: airtime belongs to the radio, not to
+        // the association.
+        struct LoadTotals {
+            var vendor: String
+            var frames = 0
+            var retries = 0
+            var airtime = 0
+        }
+        var totals: [String: LoadTotals] = [:]
+        for observation in observations {
+            var entry = totals[observation.mac] ?? LoadTotals(vendor: observation.vendor)
+            entry.frames += observation.frames
+            entry.retries += observation.retries
+            entry.airtime += observation.airtimeMicroseconds
+            if entry.vendor.isEmpty { entry.vendor = observation.vendor }
+            totals[observation.mac] = entry
+        }
+        let totalAirtime = totals.values.reduce(0) { $0 + $1.airtime }
+        let clientLoads = totals.map { mac, entry in
+            ClientLoad(
+                mac: mac,
+                vendor: entry.vendor.isEmpty ? "Unknown" : entry.vendor,
+                frames: entry.frames,
+                retries: entry.retries,
+                airtimeMicroseconds: entry.airtime,
+                airtimeShare: totalAirtime > 0 ? Double(entry.airtime) / Double(totalAirtime) : nil
+            )
+        }
+        .sorted { left, right in
+            if left.airtimeMicroseconds != right.airtimeMicroseconds {
+                return left.airtimeMicroseconds > right.airtimeMicroseconds
+            }
+            if left.frames != right.frames { return left.frames > right.frames }
+            return left.mac < right.mac
+        }
         let probes = probeCounts.map { ValueCount(value: $0.key, count: $0.value) }
             .sorted { lhs, rhs in
                 if lhs.count != rhs.count { return lhs.count > rhs.count }
@@ -141,6 +204,19 @@ struct ClientAnalyticsSnapshot: Equatable {
                 "Captured clients average \(average) dBm. They are far from the sensor, not necessarily from the AP."
             )
         }
+        if let worst = clientLoads.first(where: { ($0.retryRate ?? 0) >= 0.1 && $0.frames >= 20 }) {
+            let percent = Int(((worst.retryRate ?? 0) * 100).rounded())
+            insights.append(
+                "\(percent)% of \(worst.mac)'s frames were retries. That points at a weak uplink or a hidden interferer."
+            )
+        }
+        if clientLoads.count >= 3, let busiest = clientLoads.first,
+            let share = busiest.airtimeShare, share >= 0.4
+        {
+            insights.append(
+                "One client used \(Int((share * 100).rounded()))% of the captured airtime. Throttling it would free the channel for everyone else."
+            )
+        }
 
         return ClientAnalyticsSnapshot(
             advertisedClients: advertised,
@@ -152,6 +228,8 @@ struct ClientAnalyticsSnapshot: Equatable {
             idleAccessPoints: max(0, networks.count - loads.count),
             vendorMix: vendors,
             probeSSIDs: probes,
+            clientLoads: clientLoads,
+            totalAirtimeMicroseconds: totalAirtime,
             insights: insights
         )
     }

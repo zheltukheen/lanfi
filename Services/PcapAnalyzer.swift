@@ -416,6 +416,17 @@ struct CapturedClient: Identifiable, Equatable {
     var eapolFrames: Int = 0
     /// SSIDs this client probed for, in capture order.
     var probeSSIDs: [String] = []
+    /// Data/management frames with the 802.11 Retry bit set.
+    var retryFrames: Int = 0
+    /// Sum of the Duration/ID field over this client's frames. The field is the
+    /// airtime the transmitter asked the medium to reserve, which is the
+    /// closest estimate a passive capture can give without decoding rates.
+    var airtimeMicroseconds: Int = 0
+
+    /// Share of this client's frames that were retransmissions.
+    var retryRate: Double? {
+        frameCount > 0 ? Double(retryFrames) / Double(frameCount) : nil
+    }
 }
 
 /// Everything a single pass over a capture can produce. Decoding a large
@@ -483,6 +494,10 @@ extension PcapAnalyzer {
             let bssid = isMulticast(resolved) ? "" : resolved
             let probeSSID = fields.isProbeRequest ? ssidElement(frame, from: 24) : nil
             let eapol = fields.type == 2 ? parseEAPOLKey(frame) : nil
+            // Duration/ID sits right after the frame-control field; the Retry
+            // bit is bit 3 of the second frame-control octet.
+            let duration = Int(frame.uint16(at: 2, littleEndian: true))
+            let isRetry = frame.count >= 2 && (frame[frame.startIndex + 1] & 0x08) != 0
             for address in candidates where address != bssid {
                 var entry =
                     entries[address]
@@ -491,6 +506,8 @@ extension PcapAnalyzer {
                         isAccessPoint: false, lastSeen: timestamp
                     )
                 entry.frameCount += 1
+                entry.airtimeMicroseconds += duration
+                if isRetry { entry.retryFrames += 1 }
                 if entry.bssid.isEmpty, !bssid.isEmpty { entry.bssid = bssid }
                 if timestamp > entry.lastSeen { entry.lastSeen = timestamp }
                 if let rssi { entry.rssi = max(entry.rssi ?? rssi, rssi) }

@@ -87,6 +87,45 @@ final class OUIParserTests: XCTestCase {
         XCTAssertNotEqual(OUIParser.vendor(for: "00:1A:2C:1A:11:22"), "Long Prefix")
     }
 
+    func testPersistedIndexRoundTrip() throws {
+        let index = OUIParser.packedIndex(from: [
+            "001A2B": "24-bit Vendor",
+            "001A2B0": "28-bit Vendor",
+            "001A2B0C1": "36-bit Vendor",
+        ])
+        let fingerprint = OUIParser.fingerprint(
+            of: ["001A2B": "24-bit Vendor", "001A2B0": "28-bit Vendor", "001A2B0C1": "36-bit Vendor"])
+        let data = OUIParser.encodeIndex(index, fingerprint: fingerprint)
+        let decoded = try XCTUnwrap(OUIParser.decodeIndex(data))
+        XCTAssertEqual(decoded.fingerprint, fingerprint)
+        XCTAssertEqual(decoded.index, index)
+        XCTAssertEqual(
+            OUIParser.lookupPacked(mac: "00:1A:2B:0C:11:22", in: decoded.index), "36-bit Vendor")
+    }
+
+    func testFingerprintTracksVendorChanges() {
+        let first = OUIParser.fingerprint(of: ["001A2B": "Vendor A"])
+        let renamed = OUIParser.fingerprint(of: ["001A2B": "Vendor B"])
+        let added = OUIParser.fingerprint(of: ["001A2B": "Vendor A", "001A2C": "Vendor C"])
+        XCTAssertNotEqual(first, renamed)
+        XCTAssertNotEqual(first, added)
+        XCTAssertEqual(first, OUIParser.fingerprint(of: ["001A2B": "Vendor A"]))
+    }
+
+    func testCorruptPersistedIndexIsRejected() {
+        let index = OUIParser.packedIndex(from: ["001A2B": "Apple"])
+        let data = OUIParser.encodeIndex(index, fingerprint: 42)
+
+        var truncated = data.prefix(data.count - 2)
+        XCTAssertNil(OUIParser.decodeIndex(truncated))
+
+        truncated = data
+        truncated[0] = 0x00
+        XCTAssertNil(OUIParser.decodeIndex(truncated), "the magic must match")
+
+        XCTAssertNil(OUIParser.decodeIndex(Data()))
+    }
+
     func testMacNormalizationAcceptsCommonFormats() {
         XCTAssertEqual(OUIParser.normalizedMAC("00:1a:2b:0c:11:22"), "001A2B0C1122")
         XCTAssertEqual(OUIParser.normalizedMAC("00-1A-2B-0C-11-22"), "001A2B0C1122")
