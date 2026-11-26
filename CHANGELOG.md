@@ -3,6 +3,17 @@
 ## Unreleased
 
 ### Added
+- **Client card and a signal locator.** The Captured clients table now opens a
+  detail sheet for one client: vendor, SSID/BSSID, first and last frame, frames,
+  retries, airtime and probes, plus the PHY generations, MIMO order, supported
+  rates, 802.11r and PMF capability decoded from its association request (its
+  AP's beacon is used, and labelled as such, when no association frame is in the
+  capture). The same sheet has a locator: it samples the BSSID's RSSI as fast as
+  CoreWLAN returns scans, shows a smoothed large readout with a trend line and a
+  sparkline, reports “signal lost” after three seconds of silence, and can ping
+  when the signal gets stronger. It is labelled signal guidance, not direction
+  finding, and states that it follows the access point because macOS exposes
+  per-client RSSI only during a privileged monitor capture.
 - **Per-BSSID airtime and a legacy 802.11b flag.** A capture now attributes the
   airtime each access point reserved (Duration/ID of its transmitted frames) and
   ranks the BSSIDs, so “the channel is busy” becomes “the neighbour's AP took

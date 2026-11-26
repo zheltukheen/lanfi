@@ -1,8 +1,8 @@
 # Competitor gap analysis — second pass, 26 November 2026
 
 Status: **active backlog**. Baseline: LanFi 5.6.34 (build 117). G1, G2, G4, G4b,
-G5, G6, G7 and G9 shipped on 2026-11-26 and are marked below; the next slice is
-G8.
+G5, G6, G7, G8 and G9 shipped on 2026-11-26 and are marked below; the next slice
+is G15.
 
 This is the second pass. [`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) asked *"can we
 sell this?"*; [`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md) asked *"what
@@ -70,8 +70,8 @@ code and `CHANGELOG.md`, not against the marketing table.
 | "A new AP appeared" indicator / environment baseline | inSSIDer, NetAlly discovery diff, LanFi | ✅ baseline with one-time alert | delivered |
 | Per-BSSID airtime attribution ("my network or the neighbours?") | inSSIDer, MetaGeek App, Chanalyzer, LanFi | ✅ transmitter-side airtime per BSSID + insight | delivered |
 | Legacy 802.11b presence on a channel | inSSIDer, Chanalyzer, LanFi | ✅ basic-rate flag, legacy data-rate count, column + inspector | delivered |
-| Client inventory with capabilities from monitor mode | Acrylic, MetaGeek App, NetAlly | ◐ captured clients table | **G8** |
-| RSSI "radar" to physically locate one AP or client | WiFi Lens 1.6, Acrylic | — | **G8b** |
+| Client inventory with capabilities from monitor mode | Acrylic, MetaGeek App, NetAlly | ✅ captured clients + capability card from association IEs | delivered (G8) |
+| RSSI "radar" to physically locate one AP or client | WiFi Lens 1.6, Acrylic | ✅ smoothed RSSI locator on the captured BSSID, labelled signal guidance | delivered (G8b, not direction finding) |
 | 20+ heatmap visualisations (SNR, noise, SIR, AP count, band) | NetSpot, iBwave, NetAlly AirMapper | ◐ measured RSSI heatmap + pass/fail overlay; SNR/noise live in the scan, not per survey point | partly delivered (G9), layers open |
 | User-defined pass/fail validation profiles | NetAlly AutoTest, Sidos, Ekahau, iBwave, LanFi | ✅ per-floor profile (RSSI, throughput, latency) with PDF/HTML verdict | delivered |
 | Network reliability score and problem history | WiFi Lens Pro | ◐ event log, statistics | **G10** |
@@ -391,6 +391,23 @@ not direction finding" (WiFi Lens makes the same disclaimer).
 **Acceptance.** The locator's sampler is unit-tested for smoothing and for the
 signal-lost state; the client sheet renders from a fixture capture. The audio
 and the walk are GUI checks and stay unverified in CI.
+
+**Delivered 2026-11-26.** `ClientCapabilitySummary` (in `LanFiCore`) decodes
+the association/reassociation request body — supported rates, HT/VHT presence and
+stream counts, HE/EHT extension elements, 802.11r and RSN MFPC — and falls back
+to the AP beacon, labelled as a fallback, when the capture has no association
+frames. `PcapAnalyzer` attaches the summary and first/last-seen timestamps to
+`CapturedClient`; Client Analytics opens `ClientDetailView` from a row or its
+info button. `SignalLocator` (also `LanFiCore`) is an EMA plus a windowed
+least-squares trend and a signal-lost timer; the sheet feeds it from CoreWLAN
+scans of the client's BSSID at up to 4 Hz (a scan decides the real cadence),
+draws a sparkline, and offers an optional “Tink” ping when the smoothed value
+rises by 3 dBm. Covered by `LanFiCoreTests.ClientSignalCoreTests` and
+`Tests/ClientCapabilityCaptureTests`; the walk, the audio and the on-screen card
+are GUI checks and remain unverified. The locator follows the AP, not the
+client's own transmitter, because macOS only exposes per-client RSSI during a
+privileged monitor capture — the sheet says so instead of implying direction
+finding.
 
 ### G9 — Survey visualisations and pass/fail validation (P1, M)
 

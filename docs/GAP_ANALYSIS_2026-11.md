@@ -329,7 +329,13 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       the Captured clients table gains Retries and Airtime columns, and two new
       insights cover a ≥10% retry rate and one client holding ≥40% of the
       captured airtime. Covered by `Tests/ClientAirtimeCaptureTests` and
-      `Tests/ClientAirtimeAnalyticsTests`.
+      `Tests/ClientAirtimeAnalyticsTests`. Client cards and an RSSI locator
+      delivered 2026-11-26: `ClientCapabilitySummary` decodes the association
+      request's rates, HT/VHT/HE/EHT elements, streams, FT and PMF (with a
+      labelled AP-beacon fallback), and `SignalLocator` smooths an RSSI stream
+      with a trend and signal-lost state for the sheet's locator. The locator
+      tracks the client's BSSID because per-client RSSI needs a monitor capture;
+      it is labelled signal guidance, not direction finding.
 - [x] **Survey Planning 2.0** — free-space planner, grid layout, coverage
       estimate, blank metre-grid plans and the active-survey advisor ship.
       Material-aware wall loss delivered 2026-11-22: the structure menu picks

@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 /// One client seen during a monitor capture, decoupled from the pcap parser so
 /// the aggregation stays pure and testable.
@@ -14,10 +15,16 @@ struct ClientObservation: Identifiable, Equatable {
     let retries: Int
     /// Airtime this client reserved, summed from the Duration/ID fields.
     let airtimeMicroseconds: Int
+    let firstSeen: Date?
+    let lastSeen: Date?
+    /// G8: capabilities from its association request, or the AP beacon fallback.
+    let capabilities: ClientCapabilitySummary?
 
     init(
         mac: String, bssid: String, vendor: String, rssi: Int?, frames: Int,
-        probes: [String] = [], retries: Int = 0, airtimeMicroseconds: Int = 0
+        probes: [String] = [], retries: Int = 0, airtimeMicroseconds: Int = 0,
+        firstSeen: Date? = nil, lastSeen: Date? = nil,
+        capabilities: ClientCapabilitySummary? = nil
     ) {
         self.id = mac + "|" + bssid
         self.mac = mac
@@ -28,6 +35,9 @@ struct ClientObservation: Identifiable, Equatable {
         self.probes = probes
         self.retries = retries
         self.airtimeMicroseconds = airtimeMicroseconds
+        self.firstSeen = firstSeen
+        self.lastSeen = lastSeen
+        self.capabilities = capabilities
     }
 }
 

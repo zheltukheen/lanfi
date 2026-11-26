@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 struct CapturedBeacon: Identifiable, Equatable {
     let id: String
@@ -16,11 +17,15 @@ struct CapturedBeacon: Identifiable, Equatable {
     /// recorded it. 6 GHz beacons have no DS Parameter Set, so this is the
     /// only reliable way to place them in the right band.
     let frequencyMHz: Int?
+    /// G8: what this beacon advertises. Used as the fallback capability view
+    /// for a client whose own association frames are not in the capture.
+    let capabilities: ClientCapabilitySummary?
 
     init(
         id: String, bssid: String, ssid: String, channel: Int?, rssi: Int?,
         security: String, isEHT: Bool, informationElements: [InformationElement],
-        clientCount: Int?, timestamp: Date, source: String, frequencyMHz: Int? = nil
+        clientCount: Int?, timestamp: Date, source: String, frequencyMHz: Int? = nil,
+        capabilities: ClientCapabilitySummary? = nil
     ) {
         self.id = id
         self.bssid = bssid
@@ -34,6 +39,7 @@ struct CapturedBeacon: Identifiable, Equatable {
         self.timestamp = timestamp
         self.source = source
         self.frequencyMHz = frequencyMHz
+        self.capabilities = capabilities
     }
 }
 
@@ -262,7 +268,8 @@ enum PcapAnalyzer {
             channel: channel, rssi: rssi, security: security,
             isEHT: isEHT, informationElements: parsedIE.elements,
             clientCount: parsedIE.clients, timestamp: timestamp, source: source,
-            frequencyMHz: frequencyMHz
+            frequencyMHz: frequencyMHz,
+            capabilities: ClientCapabilitySummary.decode(ieBytes: ies, source: .beacon)
         )
     }
 
@@ -411,7 +418,8 @@ struct CapturedClient: Identifiable, Equatable {
     var bssid: String
     var frameCount: Int
     let isAccessPoint: Bool
-    /// Last frame timestamp for this MAC in the capture.
+    /// First and last frame timestamps for this MAC in the capture.
+    var firstSeen: Date = .distantFuture
     var lastSeen: Date = .distantPast
     /// Strongest RSSI seen for the client, from radiotap.
     var rssi: Int? = nil
@@ -427,6 +435,9 @@ struct CapturedClient: Identifiable, Equatable {
     /// airtime the transmitter asked the medium to reserve, which is the
     /// closest estimate a passive capture can give without decoding rates.
     var airtimeMicroseconds: Int = 0
+    /// G8: capabilities from this client's association request, or from its
+    /// access point's beacon when the capture has no association frames.
+    var capabilities: ClientCapabilitySummary? = nil
 
     /// Share of this client's frames that were retransmissions.
     var retryRate: Double? {
@@ -544,6 +555,13 @@ extension PcapAnalyzer {
         beacons: [CapturedBeacon], packets: P
     ) -> [CapturedClient] where P.Element == (UInt32, Data, Date) {
         let accessPointMACs = Set(beacons.map { $0.bssid.uppercased() })
+        var beaconCapabilities: [String: ClientCapabilitySummary] = [:]
+        for beacon in beacons {
+            let key = beacon.bssid.uppercased()
+            if beaconCapabilities[key] == nil, let capabilities = beacon.capabilities {
+                beaconCapabilities[key] = capabilities
+            }
+        }
         var entries: [String: CapturedClient] = [:]
         for (linkType, packet, timestamp) in packets {
             guard linkType == 127 || linkType == 105 else { continue }
@@ -569,17 +587,39 @@ extension PcapAnalyzer {
             // bit is bit 3 of the second frame-control octet.
             let duration = Int(frame.uint16(at: 2, littleEndian: true))
             let isRetry = frame.count >= 2 && (frame[frame.startIndex + 1] & 0x08) != 0
+            // G8: an association/reassociation request is the client's own
+            // statement of what it supports.
+            var clientCapabilities: ClientCapabilitySummary?
+            if fields.type == 0, fields.subtype == 0 || fields.subtype == 2 {
+                // Both bodies start with capability info and listen interval;
+                // a reassociation request adds the current AP address.
+                let offset = fields.subtype == 0 ? 28 : 34
+                if frame.count > offset {
+                    clientCapabilities = ClientCapabilitySummary.decode(
+                        ieBytes: frame.subdata(in: offset..<frame.count),
+                        source: fields.subtype == 0
+                            ? .associationRequest : .reassociationRequest)
+                }
+            }
             for address in candidates where address != bssid {
                 var entry =
                     entries[address]
                     ?? CapturedClient(
                         id: address, mac: address, bssid: bssid, frameCount: 0,
-                        isAccessPoint: false, lastSeen: timestamp
+                        isAccessPoint: false, firstSeen: timestamp, lastSeen: timestamp,
+                        capabilities: beaconCapabilities[bssid.uppercased()]
                     )
                 entry.frameCount += 1
                 entry.airtimeMicroseconds += duration
                 if isRetry { entry.retryFrames += 1 }
                 if entry.bssid.isEmpty, !bssid.isEmpty { entry.bssid = bssid }
+                if entry.capabilities == nil {
+                    entry.capabilities = beaconCapabilities[bssid.uppercased()]
+                }
+                if address == fields.address2, let clientCapabilities {
+                    entry.capabilities = clientCapabilities
+                }
+                if timestamp < entry.firstSeen { entry.firstSeen = timestamp }
                 if timestamp > entry.lastSeen { entry.lastSeen = timestamp }
                 if let rssi { entry.rssi = max(entry.rssi ?? rssi, rssi) }
                 switch fields.type {

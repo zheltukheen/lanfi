@@ -15,6 +15,7 @@ struct ClientAnalyticsToolView: View {
     @State private var interfaces: [String] = []
     @State private var selectedInterface = "en0"
     @State private var selection: String?
+    @State private var selectedClient: ClientObservation?
 
     private var snapshot: ClientAnalyticsSnapshot {
         ClientAnalyticsSnapshot.build(
@@ -37,6 +38,13 @@ struct ClientAnalyticsToolView: View {
                 insights
             }
             .appContentPadding()
+        }
+        .sheet(item: $selectedClient) { client in
+            ClientDetailView(
+                observation: client,
+                network: analyzer.networks.first {
+                    $0.bssid.caseInsensitiveCompare(client.bssid) == .orderedSame
+                })
         }
         .onAppear {
             interfaces = LiveCaptureService.interfaceNames()
@@ -303,12 +311,29 @@ struct ClientAnalyticsToolView: View {
                             .lineLimit(1)
                             .help(row.probes.joined(separator: "\n"))
                     },
+                    AppTableColumn(
+                        id: "details", title: "", minWidth: 40, isSortable: false,
+                        value: { _ in .text("") }
+                    ) { row in
+                        Button {
+                            selectedClient = row
+                        } label: {
+                            Image(systemName: "info.circle")
+                        }
+                        .buttonStyle(.plain)
+                        .help("Client card, capabilities and signal locator")
+                    },
                 ],
                 rows: observations, initialKey: "frames", ascending: false,
                 selection: $selection
             )
             .frame(height: ToolkitTableHeight.rows(observations.count))
             .appTableSurface()
+            .onChange(of: selection) { id in
+                guard let id, let match = observations.first(where: { $0.id == id })
+                else { return }
+                selectedClient = match
+            }
         }
     }
 
@@ -367,7 +392,10 @@ struct ClientAnalyticsToolView: View {
                             frames: client.frameCount,
                             probes: client.probeSSIDs,
                             retries: client.retryFrames,
-                            airtimeMicroseconds: client.airtimeMicroseconds
+                            airtimeMicroseconds: client.airtimeMicroseconds,
+                            firstSeen: client.firstSeen,
+                            lastSeen: client.lastSeen,
+                            capabilities: client.capabilities
                         )
                     }
                     if observations.isEmpty {
