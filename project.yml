@@ -60,6 +60,10 @@ targets:
       - CLI/ScanExport.swift
       - path: Resources
         buildPhase: resources
+      # The support sheet reads the same file GitHub renders as its Sponsor
+      # button, copied into the bundle at build time so nothing is fetched.
+      - path: .github/FUNDING.yml
+        buildPhase: resources
       - path: Assets.xcassets
         buildPhase: resources
     dependencies:

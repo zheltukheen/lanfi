@@ -1,8 +1,14 @@
 # Changelog
 
-## Unreleased
+## 5.7.0 — 2026-11-26
 
 ### Added
+- **A “Support LanFi” button at the bottom of the sidebar.** It opens a sheet
+  with one button per support destination (Boosty and DonationAlerts today),
+  read from the same `.github/FUNDING.yml` that GitHub renders for the
+  repository's Sponsor button.
+  The file is copied into the app at build time, so the list changes with a
+  rebuild and nothing is downloaded at run time.
 - **Client card and a signal locator.** The Captured clients table now opens a
   detail sheet for one client: vendor, SSID/BSSID, first and last frame, frames,
   retries, airtime and probes, plus the PHY generations, MIMO order, supported

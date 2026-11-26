@@ -16,6 +16,7 @@ struct NetworkToolkitView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
     @State private var showingPalette = false
+    @State private var showingSupport = false
     @AppStorage(AppSettingsKey.toolkitSidebarWidth.rawValue) private var storedSidebarWidth: Double = 228
     @State private var sidebarDragOffset: CGFloat = 0
 
@@ -61,6 +62,9 @@ struct NetworkToolkitView: View {
             CommandPaletteView { item in
                 perform(item)
             }
+        }
+        .sheet(isPresented: $showingSupport) {
+            SupportLanFiView()
         }
         .onReceive(NotificationCenter.default.publisher(for: .lanfiShowCommandPalette)) { _ in
             showingPalette = true
@@ -140,9 +144,37 @@ struct NetworkToolkitView: View {
                 }
                 .padding(DesignToken.Spacing.small)
             }
+            supportButton
         }
         .frame(width: currentSidebarWidth)
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    /// Sponsorship lives at the bottom of the sidebar, out of the tool list and
+    /// always one click away.
+    private var supportButton: some View {
+        VStack(spacing: 0) {
+            Divider()
+            Button {
+                showingSupport = true
+            } label: {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    Image(systemName: "heart.fill")
+                        .foregroundColor(.pink)
+                    Text("Support LanFi")
+                        .font(.callout)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, DesignToken.Spacing.compact)
+                .padding(.vertical, DesignToken.Spacing.small)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Sponsorship and support links")
+            .accessibilityLabel("Support LanFi")
+        }
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .padding(.bottom, DesignToken.Spacing.small)
     }
 
     private var sidebarResizer: some View {
