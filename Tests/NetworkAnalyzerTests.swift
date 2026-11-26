@@ -182,7 +182,8 @@ func makeNetwork(
     stations: Int? = nil,
     wpsEnabled: Bool? = false,
     pmfRequired: Bool? = true,
-    informationElements: [InformationElement] = []
+    informationElements: [InformationElement] = [],
+    basicRates: [Double]? = [6, 12, 24]
 ) -> NetworkModel {
     NetworkModel(
         id: id,
@@ -199,7 +200,7 @@ func makeNetwork(
         signal: signal,
         noise: noise,
         snr: snr,
-        basicRates: [6, 12, 24],
+        basicRates: basicRates,
         minBasicRate: 6,
         maxBasicRate: 24,
         minRate: 6,

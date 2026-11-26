@@ -82,10 +82,13 @@ struct ClientAnalyticsSnapshot: Equatable {
     /// Per-client airtime and retry accounting, busiest first.
     let clientLoads: [ClientLoad]
     let totalAirtimeMicroseconds: Int
+    /// G7: transmitter-side airtime per BSSID, busiest first.
+    let channelAirtime: [ChannelAirtimeEntry]
     let insights: [String]
 
     static func build(
-        networks: [NetworkModel], observations: [ClientObservation] = []
+        networks: [NetworkModel], observations: [ClientObservation] = [],
+        channelAirtime: [ChannelAirtimeEntry] = []
     ) -> ClientAnalyticsSnapshot {
         let loads =
             networks
@@ -217,6 +220,22 @@ struct ClientAnalyticsSnapshot: Equatable {
                 "One client used \(Int((share * 100).rounded()))% of the captured airtime. Throttling it would free the channel for everyone else."
             )
         }
+        if channelAirtime.count >= 2, let top = channelAirtime.first,
+            let share = top.share, share >= 0.4
+        {
+            insights.append(
+                "\(top.ssid) (\(top.bssid)) reserved \(Int((share * 100).rounded()))% of the captured airtime. That is the access point to look at first, not the client list."
+            )
+        }
+        if let legacy = channelAirtime.first(where: \.isLegacy) {
+            insights.append(
+                "\(legacy.ssid) sent \(legacy.legacyFrames) data frames at 802.11b rates. One legacy device keeps the whole channel slow."
+            )
+        } else if let network = networks.first(where: { LegacyWiFiDetector.flag($0) }),
+            let summary = LegacyWiFiDetector.summary(for: network)
+        {
+            insights.append(summary)
+        }
 
         return ClientAnalyticsSnapshot(
             advertisedClients: advertised,
@@ -230,6 +249,7 @@ struct ClientAnalyticsSnapshot: Equatable {
             probeSSIDs: probes,
             clientLoads: clientLoads,
             totalAirtimeMicroseconds: totalAirtime,
+            channelAirtime: channelAirtime,
             insights: insights
         )
     }

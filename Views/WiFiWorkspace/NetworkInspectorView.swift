@@ -188,6 +188,11 @@ struct NetworkInspectorView: View {
                                     label: "Width",
                                     value: network.channelWidthLabel == "-" ? "-" : "\(network.channelWidthLabel) MHz")
                                 DetailRow(label: "Generation", value: network.generationLabel)
+                                if LegacyWiFiDetector.flag(network) {
+                                    DetailRow(
+                                        label: "Legacy 802.11b",
+                                        value: "Only 1/2/5.5/11 Mbit/s basic rates")
+                                }
                                 DetailRow(
                                     label: "Max Rate",
                                     value: network.maxRateLabel == "-" ? "-" : "\(network.maxRateLabel) Mbps")

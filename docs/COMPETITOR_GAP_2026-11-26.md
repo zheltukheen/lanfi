@@ -1,7 +1,8 @@
 # Competitor gap analysis — second pass, 26 November 2026
 
 Status: **active backlog**. Baseline: LanFi 5.6.34 (build 117). G1, G2, G4, G4b,
-G5, G6 and G9 shipped on 2026-11-26 and are marked below; the next slice is G7.
+G5, G6, G7 and G9 shipped on 2026-11-26 and are marked below; the next slice is
+G8.
 
 This is the second pass. [`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) asked *"can we
 sell this?"*; [`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md) asked *"what
@@ -67,8 +68,8 @@ code and `CHANGELOG.md`, not against the marketing table.
 | Cloud upload of captures | Airtool 2 (CloudShark, Packets) | — | non-goal (privacy stance) |
 | Named scan snapshots, diff between two scans | inSSIDer, NetSpot, WiFi Explorer, LanFi | ✅ named snapshots + diff + CSV | delivered |
 | "A new AP appeared" indicator / environment baseline | inSSIDer, NetAlly discovery diff, LanFi | ✅ baseline with one-time alert | delivered |
-| Per-BSSID airtime attribution ("my network or the neighbours?") | inSSIDer, MetaGeek App, Chanalyzer | ◐ client airtime from capture, beacon airtime | **G7** |
-| Legacy 802.11b presence on a channel | inSSIDer, Chanalyzer | — | **G7b** |
+| Per-BSSID airtime attribution ("my network or the neighbours?") | inSSIDer, MetaGeek App, Chanalyzer, LanFi | ✅ transmitter-side airtime per BSSID + insight | delivered |
+| Legacy 802.11b presence on a channel | inSSIDer, Chanalyzer, LanFi | ✅ basic-rate flag, legacy data-rate count, column + inspector | delivered |
 | Client inventory with capabilities from monitor mode | Acrylic, MetaGeek App, NetAlly | ◐ captured clients table | **G8** |
 | RSSI "radar" to physically locate one AP or client | WiFi Lens 1.6, Acrylic | — | **G8b** |
 | 20+ heatmap visualisations (SNR, noise, SIR, AP count, band) | NetSpot, iBwave, NetAlly AirMapper | ◐ measured RSSI heatmap + pass/fail overlay; SNR/noise live in the scan, not per survey point | partly delivered (G9), layers open |
@@ -352,6 +353,21 @@ Analytics.
 sum to 100% (± rounding); a beacon with only 802.11b basic rates raises the
 legacy flag, and a mixed-mode beacon does not.
 
+**Delivered 2026-11-26.** `PcapAnalyzer.channelAirtime` attributes every frame to
+its transmitting BSSID using Duration/ID and ranks the result; the radiotap Rate
+field (now parsed, 500 kbit/s units) marks directed data frames at 1–11 Mbit/s.
+`ChannelAirtimeEntry` carries frames, airtime, data frames, legacy frames and a
+share; `LegacyWiFiDetector` flags a network whose basic rates are all 802.11b.
+Client Analytics gained a Channel airtime table with a legacy marker plus two
+insights (busiest BSSID share, legacy frames), the scan table gained a “Legacy
+802.11b” column with a sort comparator, and the inspector shows the flag in
+Technical Specs. Covered by `Tests/ChannelAirtimeTests`.
+
+Not delivered: the survey report has no per-network model to flag (samples
+store SSID/BSSID only), and airtime here is the reserved Duration/ID sum, not
+measured time-on-air — it is an estimate that ranks BSSIDs correctly, not a
+replacement for a spectrum analyzer.
+
 ### G8 — Client inventory and RSSI locator (P1, M)
 
 **Evidence.** Acrylic shows clients with a "radar" view for locating a device;
@@ -542,10 +558,10 @@ risk, in order:
 3. ~~**G9 — pass/fail survey requirements.**~~ Delivered 2026-11-26, together
    with G4b (import aliases and the unmapped-column report).
 
-G4 (field catalogue) shipped on 2026-11-26 with G4b. The next slice is G7
-(per-BSSID airtime attribution and the legacy-rate flag): the capture pass
-already parses every frame, so the missing piece is aggregation and one clear
-insight, not new plumbing. G8 (client inventory and RSSI locator) follows.
+G4 (field catalogue) and G7 (airtime attribution, legacy flag) shipped on
+2026-11-26 with G4b. The next slice is G8: a client detail sheet from a capture
+and an RSSI locator with an honest “signal guidance, not direction finding”
+label. G15 (SNMP bridge/VLAN path) is the next larger one after that.
 
 ## Sources
 

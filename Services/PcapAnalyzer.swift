@@ -284,7 +284,7 @@ enum PcapAnalyzer {
 
     private static func parseRadiotap(
         _ packet: Data
-    ) -> (headerLength: Int, rssi: Int?, frequencyMHz: Int?)? {
+    ) -> (headerLength: Int, rssi: Int?, frequencyMHz: Int?, rateMbps: Double?)? {
         guard packet.count >= 8, packet[0] == 0 else { return nil }
         let headerLength = Int(packet.uint16(at: 2, littleEndian: true))
         guard headerLength >= 8, headerLength <= packet.count else { return nil }
@@ -292,6 +292,7 @@ enum PcapAnalyzer {
         var offset = 8
         var rssi: Int?
         var frequencyMHz: Int?
+        var rateMbps: Double?
         for bit in 0..<32 {
             guard present & (1 << UInt32(bit)) != 0 else { continue }
             let alignment: Int
@@ -314,11 +315,11 @@ enum PcapAnalyzer {
             case 21: alignment = 2; size = 12
             case 22: alignment = 8; size = 12
             case 23, 24: alignment = 2; size = 12
-            default: return (headerLength, rssi, frequencyMHz)
+            default: return (headerLength, rssi, frequencyMHz, rateMbps)
             }
             offset = (offset + alignment - 1) & ~(alignment - 1)
             guard offset + size <= headerLength else {
-                return (headerLength, rssi, frequencyMHz)
+                return (headerLength, rssi, frequencyMHz, rateMbps)
             }
             if bit == 5 {
                 rssi = Int(Int8(bitPattern: packet[offset]))
@@ -326,9 +327,13 @@ enum PcapAnalyzer {
             if bit == 3, offset + 2 <= packet.count {
                 frequencyMHz = Int(packet.uint16(at: offset, littleEndian: true))
             }
+            if bit == 2, offset < packet.count {
+                // Radiotap Rate is in 500 kbit/s units.
+                rateMbps = Double(packet[offset]) * 0.5
+            }
             offset += size
         }
-        return (headerLength, rssi, frequencyMHz)
+        return (headerLength, rssi, frequencyMHz, rateMbps)
     }
 
     private static func rsnSecurity(_ data: Data) -> String {
@@ -435,6 +440,8 @@ struct CaptureSummary: Equatable {
     var beacons: [CapturedBeacon] = []
     var clients: [CapturedClient] = []
     var security: CaptureSecurityReport = .empty
+    /// G7: per-BSSID transmitted airtime, busiest first.
+    var channelAirtime: [ChannelAirtimeEntry] = []
 }
 
 extension PcapAnalyzer {
@@ -444,7 +451,8 @@ extension PcapAnalyzer {
         return CaptureSummary(
             beacons: beacons,
             clients: clients(beacons: beacons, packets: index),
-            security: securityReport(beacons: beacons, packets: index)
+            security: securityReport(beacons: beacons, packets: index),
+            channelAirtime: channelAirtime(beacons: beacons, packets: index)
         )
     }
 
@@ -463,6 +471,69 @@ extension PcapAnalyzer {
     static func clients(data: Data) throws -> [CapturedClient] {
         let beacons = try parse(data: data)
         return clients(beacons: beacons, packets: try rawPackets(data))
+    }
+
+    // MARK: - Channel airtime
+
+    static func channelAirtime(data: Data) throws -> [ChannelAirtimeEntry] {
+        let beacons = try parse(data: data)
+        return channelAirtime(beacons: beacons, packets: try rawPackets(data))
+    }
+
+    /// G7: attributes every transmitted frame to its BSSID using Duration/ID as
+    /// the reserved airtime, and counts data frames sent at 802.11b rates. The
+    /// result is transmitter-side evidence, so it does not double-count the
+    /// client table's receiver-side accounting.
+    static func channelAirtime<P: Sequence>(
+        beacons: [CapturedBeacon], packets: P
+    ) -> [ChannelAirtimeEntry] where P.Element == (UInt32, Data, Date) {
+        var entries: [String: ChannelAirtimeEntry] = [:]
+        for beacon in beacons where !beacon.bssid.isEmpty {
+            let bssid = beacon.bssid.uppercased()
+            if entries[bssid] == nil {
+                entries[bssid] = ChannelAirtimeEntry(
+                    bssid: bssid,
+                    ssid: beacon.ssid.isEmpty
+                        ? String(localized: "Hidden network") : beacon.ssid)
+            }
+        }
+        for (linkType, packet, _) in packets {
+            guard linkType == 127 || linkType == 105 else { continue }
+            var frame = packet
+            var rate: Double?
+            if linkType == 127 {
+                guard let info = parseRadiotap(packet), info.headerLength < packet.count else {
+                    continue
+                }
+                frame = packet.subdata(in: info.headerLength..<packet.count)
+                rate = info.rateMbps
+            }
+            guard let fields = frameFields(frame) else { continue }
+            guard fields.type == 0 || fields.type == 2 else { continue }
+            let transmitter = fields.address2.uppercased()
+            guard var entry = entries[transmitter] else { continue }
+            entry.frames += 1
+            entry.airtimeMicroseconds += Int(frame.uint16(at: 2, littleEndian: true))
+            if fields.type == 2 {
+                entry.dataFrames += 1
+                if let rate, LegacyWiFiDetector.isLegacyRate(rate) {
+                    entry.legacyFrames += 1
+                }
+            }
+            entries[transmitter] = entry
+        }
+        let total = entries.values.reduce(0) { $0 + $1.airtimeMicroseconds }
+        return entries.values.map { entry in
+            var result = entry
+            result.share =
+                total > 0 ? Double(entry.airtimeMicroseconds) / Double(total) : nil
+            return result
+        }.sorted { lhs, rhs in
+            if lhs.airtimeMicroseconds != rhs.airtimeMicroseconds {
+                return lhs.airtimeMicroseconds > rhs.airtimeMicroseconds
+            }
+            return lhs.bssid < rhs.bssid
+        }
     }
 
     // MARK: - Clients

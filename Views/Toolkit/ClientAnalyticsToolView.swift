@@ -8,6 +8,7 @@ struct ClientAnalyticsToolView: View {
     @ObservedObject var analyzer: AnalyzerViewModel
 
     @State private var observations: [ClientObservation] = []
+    @State private var channelAirtime: [ChannelAirtimeEntry] = []
 
     @State private var isCapturing = false
     @State private var captureError: String?
@@ -16,7 +17,9 @@ struct ClientAnalyticsToolView: View {
     @State private var selection: String?
 
     private var snapshot: ClientAnalyticsSnapshot {
-        ClientAnalyticsSnapshot.build(networks: analyzer.networks, observations: observations)
+        ClientAnalyticsSnapshot.build(
+            networks: analyzer.networks, observations: observations,
+            channelAirtime: channelAirtime)
     }
 
     var body: some View {
@@ -25,6 +28,9 @@ struct ClientAnalyticsToolView: View {
                 summary
                 captureBar
                 apTable
+                if !channelAirtime.isEmpty {
+                    channelAirtimeTable
+                }
                 if !observations.isEmpty {
                     clientTable
                 }
@@ -93,8 +99,11 @@ struct ClientAnalyticsToolView: View {
                         capture()
                     }
                     Spacer()
-                    if !observations.isEmpty {
-                        AppButton("Clear capture", tone: .quiet) { observations = [] }
+                    if !observations.isEmpty || !channelAirtime.isEmpty {
+                        AppButton("Clear capture", tone: .quiet) {
+                            observations = []
+                            channelAirtime = []
+                        }
                     }
                 }
                 Text(
@@ -177,6 +186,64 @@ struct ClientAnalyticsToolView: View {
                 .frame(height: ToolkitTableHeight.rows(snapshot.busiestAccessPoints.count))
                 .appTableSurface()
             }
+        }
+    }
+
+    /// G7: who actually reserved the channel's airtime. Transmitter-side, so
+    /// it answers "is the congestion mine?" without opening Wireshark.
+    private var channelAirtimeTable: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+            HStack {
+                SectionLabel(text: "Channel airtime")
+                Spacer()
+                if channelAirtime.contains(where: \.isLegacy) {
+                    Text("Legacy 802.11b present")
+                        .font(.caption2.bold())
+                        .foregroundColor(AppPalette.warning)
+                }
+            }
+            AppTable(
+                columns: [
+                    AppTableColumn(
+                        id: "ssid", title: "SSID", minWidth: 120,
+                        value: { .text($0.ssid) }
+                    ) { Text($0.ssid).lineLimit(1) },
+                    AppTableColumn(
+                        id: "bssid", title: "BSSID", minWidth: 140,
+                        value: { .text($0.bssid) }
+                    ) { Text($0.bssid).font(.caption.monospaced()) },
+                    AppTableColumn(
+                        id: "frames", title: "Frames", minWidth: 60,
+                        value: { .number($0.frames) }
+                    ) { Text("\($0.frames)").monospacedDigit() },
+                    AppTableColumn(
+                        id: "airtime", title: "Airtime", minWidth: 80,
+                        value: { .number($0.airtimeMicroseconds) }
+                    ) { Text("\($0.airtimeMilliseconds) ms").monospacedDigit() },
+                    AppTableColumn(
+                        id: "share", title: "Share", minWidth: 70,
+                        value: { .number($0.share.map { Int(($0 * 100).rounded()) }) }
+                    ) { row in
+                        Text(row.share.map { "\(Int(($0 * 100).rounded()))%" } ?? "—")
+                            .monospacedDigit()
+                            .foregroundColor((row.share ?? 0) >= 0.4 ? AppPalette.warning : .secondary)
+                    },
+                    AppTableColumn(
+                        id: "legacy", title: "11b", minWidth: 50,
+                        value: { .text($0.isLegacy ? "Yes" : "No") }
+                    ) { row in
+                        Text(row.isLegacy ? "Yes" : "—")
+                            .foregroundColor(row.isLegacy ? AppPalette.warning : .secondary)
+                            .help(
+                                row.isLegacy
+                                    ? "\(row.legacyFrames) directed data frames at 1–11 Mbit/s"
+                                    : "No legacy-rate data frames")
+                    },
+                ],
+                rows: snapshot.channelAirtime, initialKey: "airtime", ascending: false
+            )
+            .frame(height: ToolkitTableHeight.rows(snapshot.channelAirtime.count))
+            .appTableSurface()
         }
     }
 
@@ -274,6 +341,7 @@ struct ClientAnalyticsToolView: View {
         isCapturing = true
         captureError = nil
         observations = []
+        channelAirtime = []
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("lanfi-analytics-\(UUID().uuidString).pcap")
         let options = LiveCaptureOptions(
@@ -284,11 +352,12 @@ struct ClientAnalyticsToolView: View {
                     try await LiveCaptureService.capture(options)
                 }.value
                 let data = try PcapAnalyzer.mappedData(at: url)
-                let clients = try await Task.detached(priority: .userInitiated) {
-                    try PcapAnalyzer.clients(data: data)
+                let (clients, airtime) = try await Task.detached(priority: .userInitiated) {
+                    (try PcapAnalyzer.clients(data: data), try PcapAnalyzer.channelAirtime(data: data))
                 }.value
                 await MainActor.run {
                     isCapturing = false
+                    channelAirtime = airtime
                     observations = clients.map { client in
                         ClientObservation(
                             mac: client.mac,

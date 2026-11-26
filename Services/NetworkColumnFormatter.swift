@@ -49,6 +49,7 @@ struct NetworkColumnFormatter {
         case .ieCount: return formatOptionalInt(network.ieCount)
         case .ieTotalLength: return formatOptionalInt(network.ieTotalLength)
         case .lastSeen: return Self.formatSeen(network.lastSeen)
+        case .legacy: return LegacyWiFiDetector.flag(network) ? "Yes" : "No"
         case .maxBasicRate: return network.maxBasicRateLabel
         case .maxRate: return network.maxRateLabel
         case .minBasicRate: return network.minBasicRateLabel
@@ -126,6 +127,8 @@ struct NetworkColumnFormatter {
             return compareOptional(first.ieTotalLength, second.ieTotalLength)
         case .lastSeen:
             return compareDates(first.lastSeen, second.lastSeen)
+        case .legacy:
+            return boolToInt(LegacyWiFiDetector.flag(first)) < boolToInt(LegacyWiFiDetector.flag(second))
         case .maxBasicRate:
             return compareOptional(first.maxBasicRate, second.maxBasicRate)
         case .maxRate:

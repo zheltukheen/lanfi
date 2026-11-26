@@ -3,6 +3,13 @@
 ## Unreleased
 
 ### Added
+- **Per-BSSID airtime and a legacy 802.11b flag.** A capture now attributes the
+  airtime each access point reserved (Duration/ID of its transmitted frames) and
+  ranks the BSSIDs, so “the channel is busy” becomes “the neighbour's AP took
+  68% of it”. Client Analytics gains a Channel airtime table and an insight for
+  the busiest BSSID. A new **Legacy 802.11b** column and inspector row flag an AP
+  that advertises only 1/2/5.5/11 Mbit/s basic rates, and directed data frames
+  sent at those rates are counted from the radiotap rate.
 - **Decoded-field catalogue and field-backed columns.** Data → “Decoded
   Fields…” lists every value LanFi decoded but does not tabulate — frequency,
   DFS/PSC, puncturing, beacon timing, basic rates, WPS model, PMF, 6 GHz power

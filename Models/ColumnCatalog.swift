@@ -28,6 +28,7 @@ enum ColumnId: String, CaseIterable, Codable {
     case ieCount
     case ieTotalLength
     case lastSeen
+    case legacy
     case maxBasicRate
     case maxRate
     case minBasicRate
@@ -76,6 +77,7 @@ enum ColumnId: String, CaseIterable, Codable {
         case .ieCount: return String(localized: "IE Count")
         case .ieTotalLength: return String(localized: "IE Total Length")
         case .lastSeen: return String(localized: "Last Seen")
+        case .legacy: return String(localized: "Legacy 802.11b")
         case .maxBasicRate: return String(localized: "Max Basic Rate")
         case .maxRate: return String(localized: "Max Rate")
         case .minBasicRate: return String(localized: "Min Basic Rate")
@@ -161,6 +163,11 @@ enum ColumnId: String, CaseIterable, Codable {
             return String(localized: "Total length of the advertised information elements in bytes.")
         case .lastSeen:
             return String(localized: "When the network was last heard. Relative under a day, absolute after that.")
+        case .legacy:
+            return String(
+                localized:
+                    "Yes when every advertised basic rate is an 802.11b rate (1/2/5.5/11 Mbit/s). One such device slows the whole channel."
+            )
         case .protectionMode:
             return String(
                 localized:
@@ -208,6 +215,8 @@ enum ColumnId: String, CaseIterable, Codable {
             return 70
         case .count, .seen, .clients, .stations, .streams, .noise, .snr, .wideChannel:
             return 70
+        case .legacy:
+            return 100
         case .band:
             return 75
         case .generation, .mode:
@@ -248,7 +257,7 @@ enum ColumnId: String, CaseIterable, Codable {
             .maxBasicRate, .minBasicRate, .ieCount, .ieTotalLength, .uptime, .quality, .congestion,
             .ssidOverhead:
             return .right
-        case .wideChannel, .fastTransition:
+        case .wideChannel, .fastTransition, .legacy:
             return .center
         default:
             return .left
@@ -273,7 +282,7 @@ enum ColumnId: String, CaseIterable, Codable {
         .seen, .lastSeen, .firstSeen, .uptime, .congestion, .channelUtilization,
         .clients, .stations, .streams, .countryCode, .fastTransition,
         .protectionMode, .beaconInterval, .beaconRate, .beaconAirtime, .ssidOverhead,
-        .wideChannel,
+        .wideChannel, .legacy,
         .centerFrequency, .basicRates, .minRate, .minBasicRate,
         .maxBasicRate, .amendments, .annotations, .apName, .count, .ieCount,
         .ieTotalLength, .type, .beaconMode, .puncturing,

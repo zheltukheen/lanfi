@@ -90,7 +90,8 @@ enum TableMicroVisualFactory {
             .beaconInterval, .beaconMode, .beaconRate, .centerFrequency, .channel,
             .channelUtilization, .channelWidth, .clients, .congestion, .count, .countryCode,
             .fastTransition, .firstSeen, .generation, .ieCount, .ieTotalLength, .lastSeen,
-            .maxBasicRate, .maxRate, .minBasicRate, .minRate, .mode, .networkName, .noise,
+            .legacy, .maxBasicRate, .maxRate, .minBasicRate, .minRate, .mode, .networkName,
+            .noise,
             .protectionMode, .puncturing, .seen, .snr, .ssidOverhead, .stations, .streams,
             .type, .uptime, .vendor, .wideChannel:
             return nil
