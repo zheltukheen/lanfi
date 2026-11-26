@@ -1,5 +1,5 @@
-import LanFiCore
 import Foundation
+import LanFiCore
 
 struct CaptureProfile: Codable, Identifiable, Equatable {
     let id: UUID
@@ -13,6 +13,12 @@ struct CaptureProfile: Codable, Identifiable, Equatable {
     /// hops across channels while in monitor mode, so the interface is only
     /// pinned when exactly one channel is listed.
     var channels: [Int]? = nil
+    /// Size cap and frame slicing for this profile.
+    var limits: CaptureLimits? = nil
+    /// Dwell per channel when the profile lists more than one.
+    var dwellMilliseconds: Int? = nil
+    /// Keep only preferred scanning channels in the 6 GHz band.
+    var sixGHzPreferredOnly: Bool? = nil
 
     /// The single channel the capture would pin, if the profile describes one.
     var pinnedChannel: Int? {
@@ -27,12 +33,15 @@ struct CaptureProfile: Codable, Identifiable, Equatable {
 
     static func new(
         name: String, interfaceName: String, duration: Int, monitorMode: Bool, filter: String,
-        channel: Int? = nil, channels: [Int]? = nil
+        channel: Int? = nil, channels: [Int]? = nil,
+        limits: CaptureLimits? = nil, dwellMilliseconds: Int? = nil,
+        sixGHzPreferredOnly: Bool? = nil
     ) -> CaptureProfile {
         CaptureProfile(
-            id: UUID(), name: name, interfaceName: interfaceName,
-            duration: duration, monitorMode: monitorMode, filter: filter, channel: channel,
-            channels: channels
+            id: UUID(), name: name, interfaceName: interfaceName, duration: duration,
+            monitorMode: monitorMode, filter: filter, channel: channel, channels: channels,
+            limits: limits, dwellMilliseconds: dwellMilliseconds,
+            sixGHzPreferredOnly: sixGHzPreferredOnly
         )
     }
 
@@ -46,12 +55,18 @@ struct CaptureProfile: Codable, Identifiable, Equatable {
             .filter { (1...233).contains($0) && seen.insert($0).inserted }
     }
 
-    /// Channels of the given bands among the channels the radio supports.
-    static func channels(for bands: Set<WiFiBand>, available: [SupportedChannel]) -> [Int] {
+    static func channels(
+        for bands: Set<WiFiBand>, available: [SupportedChannel], pscOnly: Bool = false
+    ) -> [Int] {
         var seen = Set<Int>()
         return
             available
-            .filter { bands.contains($0.band) }
+            .filter { channel in
+                guard bands.contains(channel.band) else { return false }
+                guard pscOnly, channel.band == .band6 else { return true }
+                return ScanChannelRegulation.isPrimaryScanningChannel(
+                    band: channel.band, channel: channel.channel)
+            }
             .map(\.channel)
             .sorted()
             .filter { seen.insert($0).inserted }

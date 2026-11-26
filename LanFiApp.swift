@@ -181,6 +181,17 @@ struct LanFiApp: App {
                 .frame(minWidth: 1100, minHeight: 650)
         }
 
+        Window("Decoded Fields", id: "fields") {
+            FieldCatalogView(viewModel: viewModel)
+        }
+        .defaultSize(width: 780, height: 620)
+
+        Window("Scan Snapshots", id: "snapshots") {
+            SnapshotComparisonView(viewModel: viewModel)
+                .environmentObject(toolkit)
+        }
+        .defaultSize(width: 900, height: 620)
+
         Window("LanFi Help", id: "help") {
             HelpView()
                 .environment(\.lanFiHighContrast, highContrast)

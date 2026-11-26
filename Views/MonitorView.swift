@@ -363,6 +363,7 @@ struct MonitorView: View {
         case .dnsMismatch: return "questionmark.circle"
         case .vpnDropped: return "lock.slash"
         case .vpnLeak: return "lock.trianglebadge.exclamationmark"
+        case .newAccessPoint: return "plus.circle"
         }
     }
 
@@ -380,6 +381,7 @@ struct MonitorView: View {
         case .dnsMismatch: return .orange
         case .vpnDropped: return .red
         case .vpnLeak: return .orange
+        case .newAccessPoint: return .blue
         }
     }
 

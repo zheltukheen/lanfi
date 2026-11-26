@@ -54,6 +54,8 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
     case vpnDropped
     /// P3.4: DNS or IPv6 appears to bypass the tunnel.
     case vpnLeak
+    /// G6: a BSSID that was not in the environment baseline appeared.
+    case newAccessPoint
 
     var title: String {
         switch self {
@@ -69,6 +71,7 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
         case .dnsMismatch: return String(localized: "DNS answer mismatch")
         case .vpnDropped: return String(localized: "VPN dropped")
         case .vpnLeak: return String(localized: "Possible VPN leak")
+        case .newAccessPoint: return String(localized: "New access point")
         }
     }
 }

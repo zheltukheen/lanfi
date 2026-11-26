@@ -282,6 +282,16 @@ final class SurveyViewModel: ObservableObject {
             format: String(localized: "Calibrated: plan width %.1f m."), project.planWidthMeters ?? 0)
     }
 
+    /// G9: the pass/fail profile lives in the project, so it travels with the
+    /// floor and is saved with the survey.
+    var requirement: SurveyRequirement { project.requirement }
+
+    func updateRequirement(_ requirement: SurveyRequirement) {
+        project.requirement = requirement
+        project.updatedAt = Date()
+        scheduleSave()
+    }
+
     func updateReportMetadata(title: String, client: String, planWidth: String, notes: String) {
         project.reportTitle = title.isEmpty ? nil : title
         project.clientName = client.isEmpty ? nil : client

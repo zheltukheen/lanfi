@@ -188,10 +188,25 @@ struct LanFiCommands: Commands {
 
             Divider()
 
+            Button("Save Scan Snapshot…") {
+                ScanSnapshotActions.promptSave(networks: viewModel.networks)
+            }
+            Button("Compare Snapshots…") {
+                openWindow(id: "snapshots")
+            }
+            Button("Decoded Field Catalogue…") {
+                openWindow(id: "fields")
+            }
+
+            Divider()
+
             Button("Export CSV…") {
                 viewModel.exportCSV()
             }
             .keyboardShortcut("e", modifiers: [.command, .shift])
+            Button("Export CSV (All Decoded Fields)…") {
+                viewModel.exportDecodedFieldsCSV()
+            }
             Button("Export JSON…") {
                 viewModel.exportJSON()
             }

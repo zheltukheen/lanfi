@@ -294,6 +294,7 @@ struct SurveyView: View {
             VStack(alignment: .leading, spacing: 12) {
                 headerCard
                 metricsCard
+                validationCard
                 toolCard
                 networkCard
                 if survey.hasPlan {
@@ -364,6 +365,153 @@ struct SurveyView: View {
                 }
             }
         }
+    }
+
+    /// G9: the requirement is off until chosen, and the verdict is computed
+    /// from the same samples the heatmap draws.
+    private var validationCard: some View {
+        let requirement = survey.requirement
+        let report = SurveyValidator.evaluate(
+            samples: displayedSamples, requirement: requirement)
+        return ToolkitCard {
+            VStack(alignment: .leading, spacing: 6) {
+                ToolkitSectionLabel(text: "Pass/fail")
+                Toggle(
+                    "Validate against requirement",
+                    isOn: Binding(
+                        get: { survey.requirement.isEnabled },
+                        set: { enabled in
+                            var updated = survey.requirement
+                            updated.isEnabled = enabled
+                            survey.updateRequirement(updated)
+                        })
+                )
+                .font(.caption2)
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+
+                if requirement.isEnabled {
+                    Stepper(
+                        value: requirementBinding(\.minRSSI),
+                        in: (-90)...(-40)
+                    ) {
+                        Text("Min RSSI \(requirement.minRSSI) dBm")
+                            .font(.caption2.monospacedDigit())
+                    }
+                    Toggle(
+                        "Check throughput",
+                        isOn: Binding(
+                            get: { survey.requirement.judgesThroughput },
+                            set: { enabled in
+                                var updated = survey.requirement
+                                updated.minThroughputMbps = enabled ? 50 : nil
+                                survey.updateRequirement(updated)
+                            })
+                    )
+                    .font(.caption2)
+                    if requirement.judgesThroughput {
+                        Stepper(
+                            value: Binding(
+                                get: { survey.requirement.minThroughputMbps ?? 50 },
+                                set: { value in
+                                    var updated = survey.requirement
+                                    updated.minThroughputMbps = value
+                                    survey.updateRequirement(updated)
+                                }),
+                            in: 5...500, step: 5
+                        ) {
+                            Text("Min \(Int(requirement.minThroughputMbps ?? 50)) Mbps")
+                                .font(.caption2.monospacedDigit())
+                        }
+                    }
+                    Toggle(
+                        "Check latency",
+                        isOn: Binding(
+                            get: { survey.requirement.judgesLatency },
+                            set: { enabled in
+                                var updated = survey.requirement
+                                updated.maxLatencyMilliseconds = enabled ? 100 : nil
+                                survey.updateRequirement(updated)
+                            })
+                    )
+                    .font(.caption2)
+                    if requirement.judgesLatency {
+                        Stepper(
+                            value: Binding(
+                                get: { survey.requirement.maxLatencyMilliseconds ?? 100 },
+                                set: { value in
+                                    var updated = survey.requirement
+                                    updated.maxLatencyMilliseconds = value
+                                    survey.updateRequirement(updated)
+                                }),
+                            in: 10...300, step: 10
+                        ) {
+                            Text("Max \(Int(requirement.maxLatencyMilliseconds ?? 100)) ms")
+                                .font(.caption2.monospacedDigit())
+                        }
+                    }
+                    Text(requirement.summary)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Divider()
+                    if let report {
+                        Text(report.verdict)
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(report.isPassing ? .green : .orange)
+                        if let worst = report.worstRegion {
+                            Text("Worst: \(worst)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        let unmeasured = max(
+                            report.unmeasuredThroughput, report.unmeasuredLatency)
+                        if unmeasured > 0 {
+                            Text(
+                                "\(unmeasured) points have no throughput/latency measurement and are not judged on it."
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
+                    } else {
+                        Text("Record points to see a verdict.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    Text(
+                        "Off by default. Turn it on to judge sampled points against your own thresholds; the PDF and HTML report then carry the verdict."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func requirementBinding(_ keyPath: WritableKeyPath<SurveyRequirement, Int>)
+        -> Binding<Int>
+    {
+        Binding(
+            get: { survey.requirement[keyPath: keyPath] },
+            set: { value in
+                var updated = survey.requirement
+                updated[keyPath: keyPath] = value
+                survey.updateRequirement(updated)
+            })
+    }
+
+    private func drawFailureRing(
+        context: GraphicsContext, rect: CGRect, failure: SurveyValidationReport.Failure
+    ) {
+        let point = CGPoint(
+            x: rect.minX + failure.x * rect.width,
+            y: rect.minY + failure.y * rect.height)
+        context.stroke(
+            Path(ellipseIn: CGRect(x: point.x - 7, y: point.y - 7, width: 14, height: 14)),
+            with: .color(.red), lineWidth: 2)
     }
 
     private var toolCard: some View {
@@ -683,6 +831,16 @@ struct SurveyView: View {
                                     y: sheet.minY + sample.y * sheet.height
                                 )
                                 drawSample(context: context, at: point, rssi: sample.rssi)
+                            }
+                            if survey.requirement.isEnabled,
+                                let validation = SurveyValidator.evaluate(
+                                    samples: displayedSamples,
+                                    requirement: survey.requirement)
+                            {
+                                for failure in validation.failures {
+                                    drawFailureRing(
+                                        context: context, rect: sheet, failure: failure)
+                                }
                             }
                             drawWalls(context: context, rect: sheet)
                             drawRooms(context: context, rect: sheet)
@@ -1088,6 +1246,9 @@ struct SurveyView: View {
             Text("-40 dBm").font(.caption2).foregroundColor(.secondary)
             Text("· walls/rooms -8 dB").font(.caption2).foregroundColor(.secondary)
             if mode == .predictive { Text("· predictive").font(.caption2).foregroundColor(.purple) }
+            if survey.requirement.isEnabled {
+                Text("· red ring = fails requirement").font(.caption2).foregroundColor(.red)
+            }
         }
         .padding(DesignToken.Spacing.small)
         .appCardSurface(radius: Theme.Radius.control)

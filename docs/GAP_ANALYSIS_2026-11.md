@@ -1,17 +1,14 @@
 # Gap analysis — November 2026
 
 Status: **active plan**. Baseline: LanFi 5.4.0 (build 71).
-Last audit: **2026-11-22, LanFi 5.6.31**. Checklist state: **146 closed, 7
-partial, 6 open**. The six open items are external or conditional: Developer ID
-signing/notarization (3), the persisted OUI binary index (only if startup
-profiling demands it), the `SMAppService` capture helper, and the separate
+Last audit: **2026-11-26, LanFi 5.6.34**. Checklist state: **148 closed, 5
+partial, 5 open**. The five open items are external: Developer ID
+signing/notarization (3), the `SMAppService` capture helper, and the separate
 sandboxed MAS build. The partial items are listed under “Remaining” at the end
 of this snapshot.
 
-### Remaining after the 2026-11-22 audit
+### Remaining after the 2026-11-26 audit
 
-- **Client Analytics** — per-client airtime and retries still need a
-  capture-based accounting pass; advertised load/utilization ship.
 - **Shortcuts** — live capture and widgets remain open; scan/connected/speed/
   connectivity/export intents ship.
 - **Spectrum hub** — live Wi-Spy and Zigbee remain open; remote WLAN Pi/NetAlly
@@ -19,11 +16,16 @@ of this snapshot.
 - **BLE** — beacon scanning ships; the Zigbee adapter does not.
 - **D7 accessibility** — full 4.5:1 contrast audit and a hands-on VoiceOver run
   remain open; palette, reduce-motion, labels and scaling decisions ship.
-- **P4.4 DoQ** — needs QUIC rather than a TLS stream.
-- **P3.6 domain attribution** — per-app bytes ship; domain/URL attribution does
-  not.
 - **`LanFiCore` extraction** — settings/probes moved; models/parsers/stores
   remain in the app target.
+
+A second, competitor-driven pass (2026-11-26) lives in
+[`COMPETITOR_GAP_2026-11-26.md`](COMPETITOR_GAP_2026-11-26.md): it compares the
+2026 shipping products feature by feature and tracks its own C-series backlog
+(capture rotation/frame slicing, live Wireshark streaming, named scan snapshots
+with a diff, and an environment baseline with a new-AP alert delivered
+2026-11-26; multi-sensor merge, field catalogue, airtime attribution, validation
+profiles and discovery path remain). It does not reopen anything closed below.
 
 Everything below is the original analysis; dates in item notes say when a
 sub-item was delivered.
@@ -196,8 +198,13 @@ timeline and at least one correctly deduplicated event per real change.
 - [x] Preload the 1.7 MB OUI database on a background task at launch.
 - [x] Pack the OUI database into an integer-key index; lookup no longer allocates
       four prefix strings per BSSID.
-- [ ] Move the index to a persisted binary file if startup parsing becomes a
-      bottleneck.
+- [x] Move the index to a persisted binary file. Delivered 2026-11-26:
+      `OUIParser.encodeIndex`/`decodeIndex` keep the packed table in
+      `~/Library/Application Support/LanFi/oui-index.bin` behind an FNV-1a
+      fingerprint of the text database, so an OUI refresh rebuilds the file and
+      an unchanged database loads without parsing text. A corrupt or truncated
+      file is ignored and the index is rebuilt. Covered by `Tests/OUIParserTests`
+      (round-trip, fingerprint invalidation, corrupt file).
 - [x] `NetworkAnalyzer.analyze` filters the whole network list per network and
       looks up findings with `first(where:)`; group by band once and index by
       id.
@@ -313,9 +320,16 @@ same numbers, and the sampler costs no measurable battery on an idle Mac.
       `RoamProbeAnalyzer` attaches the loss over ±3 s and the gap between the
       last pre-roam and first post-roam reply to every transition (table
       columns, plus average loss and worst reconnect in the card).
-- [~] **Client Analytics** — advertised per-AP client load, utilization and
-      insights from beacons plus captured client observations ship; per-client
-      airtime and retries need a capture-based accounting pass.
+- [x] **Client Analytics** — advertised per-AP client load, utilization and
+      insights from beacons plus captured client observations ship. Per-client
+      airtime and retries delivered 2026-11-26: the capture pass sums the
+      Duration/ID field and counts the 802.11 Retry bit per client
+      (`CapturedClient.airtimeMicroseconds`/`retryFrames`), Client Analytics
+      aggregates them per radio across BSSIDs (`ClientAnalyticsSnapshot.ClientLoad`),
+      the Captured clients table gains Retries and Airtime columns, and two new
+      insights cover a ≥10% retry rate and one client holding ≥40% of the
+      captured airtime. Covered by `Tests/ClientAirtimeCaptureTests` and
+      `Tests/ClientAirtimeAnalyticsTests`.
 - [x] **Survey Planning 2.0** — free-space planner, grid layout, coverage
       estimate, blank metre-grid plans and the active-survey advisor ship.
       Material-aware wall loss delivered 2026-11-22: the structure menu picks
@@ -981,8 +995,17 @@ the honest local equivalent of Bettbox's hosts/fake-ip/outbound note — and say
 when the addresses belong to several networks, which is what a content network
 looks like. Every rule is pure and covered by `Tests/DNSAnswerExplanationTests`;
 the second query runs in the background with a 3 s timeout and its failure is
-silence, not an error row. Still open from this item: DoQ (needs QUIC, not just
-a TLS stream).
+silence, not an error row.
+
+*Delivered in 5.6.34 (DoQ):* `Services/Toolkit/DoQDNSClient.swift` resolves over
+DNS-over-QUIC (RFC 9250) with `NWProtocolQUIC` and the `doq` ALPN, reusing the
+DoT two-octet length prefix and the same wire parser, so the comparison still
+compares answers rather than encodings. The row order is plain → DoH → DoT →
+DoQ, a network that blocks QUIC produces a failed row instead of a silently
+missing transport, and AdGuard and Google are built in while `quic://host:port`
+accepts a custom resolver. `Tests/DoQClientTests` pins resolver parsing, the
+shared framing and the rank; the live probe is opt-in behind
+`LANFI_LIVE_TESTS=1`.
 
 ### P4.4 — NAT type and STUN reachability test
 

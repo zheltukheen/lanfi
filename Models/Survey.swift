@@ -138,6 +138,9 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     var reportTitle: String?
     var clientName: String?
     var reportNotes: String?
+    /// G9 pass/fail profile. Off by default so a report never invents a
+    /// requirement; older files decode to `.off`.
+    var requirement: SurveyRequirement = .off
     var updatedAt: Date
 
     static func new(name: String = String(localized: "Untitled survey")) -> SurveyProject {
@@ -150,7 +153,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case id, name, imageFileName, samples, walls, obstacles, accessPoints, cutouts, floorLevel,
             floorHeightMeters, planWidthMeters, planHeightMeters, gpsTrack
-        case reportTitle, clientName, reportNotes, updatedAt
+        case reportTitle, clientName, reportNotes, requirement, updatedAt
     }
 
     init(
@@ -170,6 +173,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         reportTitle: String? = nil,
         clientName: String? = nil,
         reportNotes: String? = nil,
+        requirement: SurveyRequirement = .off,
         updatedAt: Date
     ) {
         self.id = id
@@ -188,6 +192,7 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         self.reportTitle = reportTitle
         self.clientName = clientName
         self.reportNotes = reportNotes
+        self.requirement = requirement
         self.updatedAt = updatedAt
     }
 
@@ -209,6 +214,8 @@ struct SurveyProject: Codable, Identifiable, Equatable {
         reportTitle = try container.decodeIfPresent(String.self, forKey: .reportTitle)
         clientName = try container.decodeIfPresent(String.self, forKey: .clientName)
         reportNotes = try container.decodeIfPresent(String.self, forKey: .reportNotes)
+        requirement =
+            try container.decodeIfPresent(SurveyRequirement.self, forKey: .requirement) ?? .off
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
     }
 }

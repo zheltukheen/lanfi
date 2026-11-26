@@ -95,6 +95,22 @@ private final class SurveyReportView: NSView {
             )
         }
 
+        // G9: the verdict is the reason the report exists — it sits directly
+        // above the notes, in the same band, so it is never cropped.
+        if project.requirement.isEnabled,
+            let validation = SurveyValidator.evaluate(
+                samples: samples, requirement: project.requirement)
+        {
+            let line =
+                "Requirement: \(project.requirement.summary) — \(validation.reportLine)"
+            line.draw(
+                at: NSPoint(x: 28, y: 66),
+                withAttributes: [
+                    .font: NSFont.systemFont(ofSize: 8, weight: .medium),
+                    .foregroundColor: validation.isPassing ? NSColor.systemGreen : NSColor.systemRed,
+                ])
+        }
+
         if let notes = project.reportNotes, !notes.isEmpty {
             notes.draw(
                 at: NSPoint(x: 28, y: 54),

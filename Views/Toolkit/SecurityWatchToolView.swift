@@ -7,6 +7,7 @@ struct SecurityWatchToolView: View {
     @ObservedObject var monitor: MonitorViewModel
     @StateObject private var gatewayGuard = GatewayGuard.shared
     @StateObject private var vpnGuard = VPNGuard.shared
+    @StateObject private var baseline = NetworkBaselineService.shared
 
     private var report: SecurityWatchReport {
         SecurityWatchEvaluator.evaluate(networks: analyzer.networks, events: monitor.events)
@@ -23,6 +24,7 @@ struct SecurityWatchToolView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 summary
+                baselineCard
                 integrityCard
                 vpnCard
                 if report.alerts.isEmpty {
@@ -68,6 +70,70 @@ struct SecurityWatchToolView: View {
                 )
                 .font(.caption2)
                 .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    /// G6: what appeared since the environment baseline was seeded.
+    private var baselineCard: some View {
+        ToolkitCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: DesignToken.Spacing.small) {
+                    ToolkitSectionLabel(text: "New since baseline")
+                    Spacer()
+                    Text(baseline.isSeeded ? "Watching" : "Waiting for the first scan")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                HStack(spacing: 24) {
+                    ToolkitMetric(
+                        title: "Known APs", value: "\(baseline.knownCount)", tint: .primary)
+                    ToolkitMetric(
+                        title: "New", value: "\(baseline.pending.count)",
+                        tint: baseline.pending.isEmpty ? .secondary : AppPalette.warning)
+                    Spacer()
+                }
+                if baseline.pending.isEmpty {
+                    Text(
+                        "No access point outside the baseline. The first scan of a place becomes the baseline; reset it when you move to a different site."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    ForEach(baseline.pending.prefix(6)) { entry in
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "plus.circle")
+                                .foregroundColor(AppPalette.warning)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(
+                                    "\(entry.ssid) · ch \(entry.channel) · \(entry.signal) dBm"
+                                )
+                                .font(.caption2)
+                                Text(entry.bssid)
+                                    .font(.caption2.monospaced())
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            if let network = analyzer.networks.first(where: {
+                                $0.bssid.caseInsensitiveCompare(entry.bssid) == .orderedSame
+                            }) {
+                                AppButton("Show") {
+                                    analyzer.selectedNetworkId = network.id
+                                }
+                            }
+                        }
+                    }
+                    if baseline.pending.count > 6 {
+                        Text("and \(baseline.pending.count - 6) more")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    HStack(spacing: 8) {
+                        AppButton("Accept all as known") { baseline.acceptPending() }
+                        AppButton("Reset baseline") { baseline.reset() }
+                    }
+                }
             }
         }
     }

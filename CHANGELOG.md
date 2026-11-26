@@ -1,5 +1,73 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Decoded-field catalogue and field-backed columns.** Data → “Decoded
+  Fields…” lists every value LanFi decoded but does not tabulate — frequency,
+  DFS/PSC, puncturing, beacon timing, basic rates, WPS model, PMF, 6 GHz power
+  mode, MLO links and each information element including vendor IEs. Any field
+  can be promoted to a real column by its stable key (`radio.frequency`,
+  `mlo.apmld`, `ie.element.221.0`). “Export CSV (All Decoded Fields)…” writes
+  one column per field key across the whole scan, with absent values left
+  empty rather than guessed.
+- **Survey pass/fail requirement.** Surveys can be judged against the user's own
+  thresholds (minimum RSSI, optional minimum download and maximum latency). The
+  profile is off until chosen, the plan marks failing points with a red ring,
+  the inspector shows pass percentage, failing points and the worst area, and
+  the PDF and combined HTML report carry the requirement and its verdict. Noise
+  and SNR are not recorded per point, so they are not judged or invented.
+- **Foreign scan CSV files import with their own column names.** The importer
+  now recognises AirPort Utility, Aruba Utilities, Analiti and Mobile Eye style
+  headers, units in cells (`-52 dBm`, `80 MHz`), frequency-only exports
+  (channel and band derived), and reports the columns it could not map instead
+  of dropping them silently.
+- **Scan snapshots and a diff between two of them.** Data → “Save Scan
+  Snapshot…” stores the visible scan under a name, and “Compare Snapshots…”
+  opens a window where A is the older scan and B the newer one: added, removed
+  and changed BSSIDs, with channel, width, security, generation and a signal
+  shift of 10 dBm or more. The diff exports to CSV; snapshots live in
+  `~/Library/Application Support/LanFi/scan-snapshots.json` and are never
+  uploaded.
+- **Environment baseline with a “new access point” alert.** The first scan of a
+  place seeds a local baseline of BSSIDs; later scans report BSSIDs outside it
+  once — in the Monitor event log, as an optional notification, and as a card in
+  Security Watch with Accept / Reset actions. Pending BSSIDs survive a
+  relaunch; moving to a different site is one Reset away. New alerts are on by
+  default and share the existing per-kind cooldown.
+- **Capture limits: size cap, rotated parts and data-frame slicing.** A live
+  capture can now rotate the file at 50/100/250/500 MB (tcpdump `-C`); the
+  numbered parts are merged back into the single file the rest of the app reads,
+  so analysis, MCP and profiles keep working unchanged. “Data frames” truncates
+  data-frame payloads to 128/256/512 bytes after the capture while leaving every
+  management and control frame whole, so IE decoding is unaffected. Captures can
+  also run up to 10 minutes now, not 2.
+- **Live Wireshark streaming and a Stop button.** With Wireshark installed, the
+  capture is tailed into a `wireshark -k -i -` session while tcpdump is still
+  writing, so frames appear live without running Wireshark as root; the file is
+  still saved. Stop writes a marker next to the capture that the privileged
+  shell checks once a second, which ends the run without a second password
+  prompt.
+- **Multi-channel capture control.** A channel list longer than one is now tuned
+  by LanFi during the capture (100/150/250/500 ms dwell) instead of being left
+  to macOS, with the band kept alongside the channel number so a 6 GHz PSC and a
+  2.4 GHz channel with the same number are not confused. “6 GHz: preferred
+  scanning channels only” filters the band’s channel list to PSC.
+- **DNS-over-QUIC in the DNS console.** The Compare card now queries AdGuard and
+  Google over DoQ (RFC 9250) next to the UDP, DoH and DoT rows, with
+  `quic://host:port` for a custom resolver. A blocked QUIC path is shown as a
+  failed row, not dropped.
+- **Per-client airtime and retries in Client Analytics.** The capture pass sums
+  each client's Duration/ID field and counts retransmissions, so the clients
+  table shows Retries and Airtime per client and the insights call out a high
+  retry rate and a single client that dominates the channel.
+
+### Changed
+- **The OUI vendor index is cached as a binary file.** The packed lookup table
+  is written to `oui-index.bin` and reused while its fingerprint matches the
+  text database, so a cold launch no longer reparses the 1.7 MB list before the
+  first scan can name a vendor.
+
 ## 5.6.34 — 2026-11-22
 
 ### Fixed

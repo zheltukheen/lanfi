@@ -25,6 +25,22 @@ extension AnalyzerViewModel {
         )
     }
 
+    /// G4: one column per decoded field, header is the stable key, so nothing
+    /// the decoder understood is lost between the table and the file.
+    func exportDecodedFieldsCSV() {
+        guard !networks.isEmpty else {
+            presentError("There are no visible networks to export.")
+            return
+        }
+        let exporter = DecodedFieldCSVExporter()
+        let rows = networks
+        presentSavePanel(
+            defaultName: "LanFi-decoded-fields-\(Self.fileTimestamp()).csv",
+            contentType: .commaSeparatedText,
+            content: { exporter.make(networks: rows) }
+        )
+    }
+
     func exportJSON() {
         exportJSON(networks: networks, suffix: "scan")
     }
@@ -218,11 +234,13 @@ extension AnalyzerViewModel {
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
-            let networks = try GenericScanImporter.load(url)
+            let result = try GenericScanImporter.loadDetailed(url)
+            let networks = result.networks
             guard !networks.isEmpty else {
                 presentError("The import contained no usable networks.")
                 return
             }
+            presentUnmappedColumns(result.unmappedColumns)
             let session = ScanSession(
                 id: UUID(), name: "Imported \(url.lastPathComponent)",
                 createdAt: Date(), networks: networks, annotations: annotations
@@ -260,9 +278,11 @@ extension AnalyzerViewModel {
                             NSLocalizedDescriptionKey: "HTTP \(http.statusCode)"
                         ])
                 }
-                let networks = try GenericScanImporter.load(
+                let result = try GenericScanImporter.loadDetailed(
                     data: data, filename: url.lastPathComponent.isEmpty ? "scan.json" : url.lastPathComponent
                 )
+                let networks = result.networks
+                presentUnmappedColumns(result.unmappedColumns)
                 guard !networks.isEmpty else {
                     presentError("The import contained no usable networks.")
                     return
@@ -363,6 +383,19 @@ extension AnalyzerViewModel {
                 }
             }
         }
+    }
+
+    /// G4b: imported files often carry columns LanFi has no use for. Naming
+    /// them is better than a silent drop that looks like data loss.
+    func presentUnmappedColumns(_ columns: [String]) {
+        guard !columns.isEmpty else { return }
+        let notice = NSAlert()
+        notice.alertStyle = .informational
+        notice.messageText = "Some columns were not imported"
+        notice.informativeText =
+            "No LanFi field matched: \(columns.prefix(12).joined(separator: ", "))"
+            + (columns.count > 12 ? " and \(columns.count - 12) more." : ".")
+        notice.runModal()
     }
 
     func presentError(_ message: String) {

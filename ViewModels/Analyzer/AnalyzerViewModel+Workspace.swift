@@ -29,8 +29,30 @@ extension AnalyzerViewModel {
                 expression.template, network: net, metrics: analysis.metrics(for: net.id)
             )
         }
+        if id.hasPrefix("field:") {
+            let key = String(id.dropFirst("field:".count))
+            return DecodedFieldCatalog.value(for: key, network: net) ?? "-"
+        }
         guard let column = ColumnId(rawValue: id) else { return "-" }
         return columnFormatter.text(for: column, network: net)
+    }
+
+    /// G4: promotes one decoded field to a real table column. The id carries
+    /// the stable key, so the column survives a reload and exports like any
+    /// other column.
+    func addDecodedFieldColumn(key: String, title: String) {
+        let id = "field:\(key)"
+        guard !columnDefinitions.contains(where: { $0.id == id }) else { return }
+        let order = (columnDefinitions.map(\.order).max() ?? 0) + 1
+        columnDefinitions.append(
+            ColumnDefinition(
+                id: id, title: title, width: 150, isVisible: true, order: order))
+        saveColumnSettings()
+        objectWillChange.send()
+    }
+
+    func hasDecodedFieldColumn(key: String) -> Bool {
+        columnDefinitions.contains { $0.id == "field:\(key)" }
     }
 
     var columnFormatter: NetworkColumnFormatter {

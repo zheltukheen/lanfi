@@ -95,9 +95,21 @@ enum CombinedReportExporter {
             "Survey",
             """
             <p><strong>\(escape(survey.name))</strong> · \(survey.sampleCount) samples</p>
+            \(verdictHTML(survey))
             <table><thead><tr><th>Average</th><th>Strongest</th><th>Weakest</th></tr></thead>\
             <tbody><tr><td>\(average)</td><td>\(strongest)</td><td>\(weakest)</td></tr></tbody></table>
             """)
+    }
+
+    /// G9: the requirement and its verdict, or nothing at all when the survey
+    /// has no pass/fail profile.
+    private static func verdictHTML(_ survey: CombinedReport.SurveySummary) -> String {
+        guard let verdict = survey.verdict else { return "" }
+        let requirement =
+            survey.requirementSummary.map {
+                "<p>Requirement: \(escape($0))</p>"
+            } ?? ""
+        return requirement + "<p><strong>\(escape(verdict))</strong></p>"
     }
 
     private static func findingsSection(_ findings: [CombinedReport.Finding]) -> String {

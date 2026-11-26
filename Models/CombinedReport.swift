@@ -22,6 +22,9 @@ struct CombinedReport: Equatable {
         let averageRSSI: Int?
         let weakestRSSI: Int?
         let strongestRSSI: Int?
+        /// G9 verdict, absent when no requirement is enabled.
+        var requirementSummary: String? = nil
+        var verdict: String? = nil
     }
 
     struct Finding: Equatable {
@@ -101,13 +104,17 @@ enum CombinedReportBuilder {
 
         let surveySummary: CombinedReport.SurveySummary? = survey.map { project in
             let values = project.samples.map(\.rssi)
+            let validation = SurveyValidator.evaluate(
+                samples: project.samples, requirement: project.requirement)
             return CombinedReport.SurveySummary(
                 name: project.name,
                 sampleCount: values.count,
                 averageRSSI: values.isEmpty
                     ? nil : Int((Double(values.reduce(0, +)) / Double(values.count)).rounded()),
                 weakestRSSI: values.min(),
-                strongestRSSI: values.max()
+                strongestRSSI: values.max(),
+                requirementSummary: validation.map(\.requirement.summary),
+                verdict: validation?.reportLine
             )
         }
 

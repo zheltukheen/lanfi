@@ -28,6 +28,10 @@ struct ScanCSVExporter {
             return ExpressionEvaluator.evaluate(
                 expression.template, network: network, metrics: metrics[network.id])
         }
+        if columnID.hasPrefix("field:") {
+            let key = String(columnID.dropFirst("field:".count))
+            return DecodedFieldCatalog.value(for: key, network: network) ?? "-"
+        }
         guard let column = ColumnId(rawValue: columnID) else { return "-" }
         return formatter.text(for: column, network: network)
     }

@@ -13,7 +13,7 @@ final class LiveCaptureTests: XCTestCase {
         XCTAssertTrue(command.contains("/usr/sbin/tcpdump"))
         XCTAssertTrue(command.contains("-I -y IEEE802_11_RADIO"))
         XCTAssertTrue(command.contains("/tmp/LanFi test.pcap"))
-        XCTAssertTrue(command.contains("sleep 15"))
+        XCTAssertTrue(command.contains("$i -lt 15"))
         XCTAssertTrue(command.contains("kill -TERM $PID"))
         XCTAssertTrue(command.contains("type mgt"))
         XCTAssertTrue(command.contains("sleep 5"))
@@ -41,9 +41,37 @@ final class LiveCaptureTests: XCTestCase {
 
     func testRejectsOutOfRangeDuration() {
         let options = LiveCaptureOptions(
-            interfaceName: "en0", duration: 500,
+            interfaceName: "en0", duration: 900,
             outputURL: URL(fileURLWithPath: "/tmp/x.pcap"), monitorMode: false
         )
         XCTAssertThrowsError(try LiveCaptureService.validate(options))
+    }
+
+    func testSizeCapAddsRotationAndStopFileCheck() {
+        let url = URL(fileURLWithPath: "/tmp/rotating.pcap")
+        let options = LiveCaptureOptions(
+            interfaceName: "en0", duration: 300, outputURL: url, monitorMode: true,
+            limits: CaptureLimits(maxFileSizeMB: 50, sliceDataFrameBytes: nil))
+        let command = LiveCaptureService.shellCommand(for: options)
+        XCTAssertTrue(command.contains("-C 50"), command)
+        XCTAssertTrue(command.contains("/tmp/rotating.pcap.stop"), command)
+        XCTAssertTrue(command.contains("$i -lt 300"), command)
+        // The rotation applies to the named file and its numbered siblings.
+        XCTAssertTrue(command.contains("'/tmp/rotating.pcap'*"), command)
+    }
+
+    func testStreamingSkipsRotationBecauseWiresharkTailsOneFile() {
+        let options = LiveCaptureOptions(
+            interfaceName: "en0", duration: 30,
+            outputURL: URL(fileURLWithPath: "/tmp/stream.pcap"), monitorMode: true,
+            limits: CaptureLimits(maxFileSizeMB: 50, sliceDataFrameBytes: nil),
+            streamToWireshark: true)
+        let command = LiveCaptureService.shellCommand(for: options)
+        XCTAssertFalse(command.contains("-C 50"), command)
+    }
+
+    func testStopFileSitsNextToTheCapture() {
+        let url = URL(fileURLWithPath: "/tmp/stop.pcap")
+        XCTAssertEqual(LiveCaptureService.stopURL(for: url).path, "/tmp/stop.pcap.stop")
     }
 }

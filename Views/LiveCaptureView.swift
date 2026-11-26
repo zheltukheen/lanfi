@@ -26,6 +26,11 @@ struct LiveCaptureView: View {
     @StateObject private var liveCounter = LiveCaptureCounterModel()
     @State private var autoOpenWireshark = UserDefaults.standard.bool(
         forKey: AppSettingsKey.captureAutoWireshark.rawValue)
+    @State private var maxFileSizeMB: Int?
+    @State private var sliceDataFrameBytes: Int?
+    @State private var dwellMilliseconds = 150
+    @State private var sixGHzPreferredOnly = false
+    @State private var streamToWireshark = false
 
     var body: some View {
         Group {
@@ -117,12 +122,31 @@ struct LiveCaptureView: View {
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 240)
                         Text(
-                            "Monitor mode hops across channels. List one channel to pin the interface; a longer list is kept with the profile and used when the capture is analyzed."
+                            "Monitor mode hops across channels. One channel pins the interface; a longer list is tuned by LanFi while it captures, staying on each channel for the dwell below."
                         )
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .frame(width: 300, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
+                        Toggle("6 GHz: preferred scanning channels only", isOn: $sixGHzPreferredOnly)
+                            .toggleStyle(.checkbox)
+                            .font(.caption)
+                            .disabled(!selectedBands.contains(.band6))
+                            .onChange(of: sixGHzPreferredOnly) { _ in rebuildChannels() }
+                        if CaptureProfile.parseChannels(channelText).count > 1 {
+                            HStack(spacing: 8) {
+                                Text("Hop every")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Picker("", selection: $dwellMilliseconds) {
+                                    ForEach(CaptureChannelPlan.dwellChoices, id: \.self) { value in
+                                        Text("\(value) ms").tag(value)
+                                    }
+                                }
+                                .labelsHidden()
+                                .frame(width: 100)
+                            }
+                        }
                     }
                 }
                 GridRow {
@@ -132,9 +156,54 @@ struct LiveCaptureView: View {
                         Text("20 seconds").tag(20)
                         Text("30 seconds").tag(30)
                         Text("60 seconds").tag(60)
+                        Text("2 minutes").tag(120)
+                        Text("5 minutes").tag(300)
                     }
                     .labelsHidden()
                     .frame(width: 220)
+                }
+                GridRow {
+                    Text("File size").foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Picker("", selection: $maxFileSizeMB) {
+                            Text("Single file").tag(Int?.none)
+                            ForEach(CaptureLimits.sizeChoices, id: \.self) { size in
+                                Text("\(size) MB per file").tag(Int?.some(size))
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(width: 220)
+                        .disabled(streamToWireshark)
+                        Text(
+                            streamToWireshark
+                                ? "A live stream reads one file, so the size cap is off while Wireshark is watching."
+                                : "tcpdump rotates the file at this size; LanFi merges the parts back into one capture."
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(width: 300, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                GridRow {
+                    Text("Data frames").foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Picker("", selection: $sliceDataFrameBytes) {
+                            Text("Keep full frames").tag(Int?.none)
+                            ForEach(CaptureLimits.sliceChoices, id: \.self) { size in
+                                Text("≤ \(size) bytes").tag(Int?.some(size))
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(width: 220)
+                        Text(
+                            "Truncates data-frame payloads after the capture; management and control frames stay whole, so IE decoding is unaffected."
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(width: 300, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 GridRow {
                     Text("Trigger").foregroundColor(.secondary)
@@ -183,6 +252,21 @@ struct LiveCaptureView: View {
                             .controlSize(.small)
                     }
                 }
+            }
+
+            Toggle("Stream into Wireshark while capturing", isOn: $streamToWireshark)
+                .disabled(!WiresharkLiveStream.isAvailable)
+            if !WiresharkLiveStream.isAvailable {
+                Text("Install Wireshark to watch frames live; the capture still writes a file.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            } else if streamToWireshark {
+                Text(
+                    "Wireshark opens a live capture that follows the file as tcpdump writes it. No packet data leaves this Mac."
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             }
 
             Toggle("Open capture in Wireshark when finished", isOn: $autoOpenWireshark)
@@ -250,6 +334,8 @@ struct LiveCaptureView: View {
                     Text("Capturing… authorize the macOS prompt.")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                    Button("Stop") { LiveCaptureService.requestStop(for: outputURL) }
+                        .controlSize(.small)
                 }
                 if waitingForTrigger {
                     Button("Cancel trigger") { waitingForTrigger = false }
@@ -335,6 +421,20 @@ struct LiveCaptureView: View {
         errorMessage = nil
         completedURL = nil
         if !customOutput { outputURL = Self.defaultOutputURL() }
+        let channels = CaptureProfile.parseChannels(channelText)
+        let refs = channels.map { number -> CaptureChannelRef in
+            let match = viewModel.supportedChannels.first { channel in
+                channel.channel == number
+                    && (selectedBands.isEmpty || selectedBands.contains(channel.band))
+            }
+            return CaptureChannelRef(band: match?.band, channel: number)
+        }
+        let plan: CaptureChannelPlan? =
+            refs.count > 1
+            ? CaptureChannelPlan(channels: refs, dwellMilliseconds: dwellMilliseconds) : nil
+        let limits = CaptureLimits(
+            maxFileSizeMB: streamToWireshark ? nil : maxFileSizeMB,
+            sliceDataFrameBytes: sliceDataFrameBytes)
         let options = LiveCaptureOptions(
             interfaceName: selectedInterface,
             duration: duration,
@@ -342,7 +442,10 @@ struct LiveCaptureView: View {
             monitorMode: monitorMode && selectedInterface.hasPrefix("en"),
             filter: filter,
             startDelay: startDelay,
-            channel: pinnedChannel
+            channel: pinnedChannel,
+            channelPlan: plan,
+            limits: limits,
+            streamToWireshark: streamToWireshark && WiresharkLiveStream.isAvailable
         )
         isCapturing = true
         liveCounter.start(url: outputURL)
@@ -379,9 +482,17 @@ struct LiveCaptureView: View {
         } else {
             selectedBands.insert(band)
         }
-        channelText = CaptureProfile.channels(for: selectedBands, available: viewModel.supportedChannels)
-            .map(String.init)
-            .joined(separator: ",")
+        rebuildChannels()
+    }
+
+    private func rebuildChannels() {
+        guard !selectedBands.isEmpty else { return }
+        channelText = CaptureProfile.channels(
+            for: selectedBands, available: viewModel.supportedChannels,
+            pscOnly: sixGHzPreferredOnly
+        )
+        .map(String.init)
+        .joined(separator: ",")
     }
 
     private func apply(_ profile: CaptureProfile) {
@@ -391,6 +502,10 @@ struct LiveCaptureView: View {
         filter = profile.filter
         channelText = (profile.channels ?? profile.channel.map { [$0] } ?? []).map(String.init)
             .joined(separator: ",")
+        maxFileSizeMB = profile.limits?.maxFileSizeMB
+        sliceDataFrameBytes = profile.limits?.sliceDataFrameBytes
+        dwellMilliseconds = profile.dwellMilliseconds ?? 150
+        sixGHzPreferredOnly = profile.sixGHzPreferredOnly ?? false
         selectedBands = []
     }
 
@@ -408,7 +523,11 @@ struct LiveCaptureView: View {
         let profile = CaptureProfile.new(
             name: name, interfaceName: selectedInterface, duration: duration,
             monitorMode: monitorMode, filter: filter,
-            channel: pinnedChannel, channels: CaptureProfile.parseChannels(channelText)
+            channel: pinnedChannel, channels: CaptureProfile.parseChannels(channelText),
+            limits: CaptureLimits(
+                maxFileSizeMB: maxFileSizeMB, sliceDataFrameBytes: sliceDataFrameBytes),
+            dwellMilliseconds: dwellMilliseconds,
+            sixGHzPreferredOnly: sixGHzPreferredOnly
         )
         if let index = profiles.firstIndex(where: { $0.name == name }) {
             profiles[index] = profile

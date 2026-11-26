@@ -29,6 +29,7 @@ struct MonitorAlertSettingsView: View {
                     Toggle("DNS answer mismatch", isOn: $monitor.alerts.dnsMismatch)
                     Toggle("VPN dropped", isOn: $monitor.alerts.vpnDrop)
                     Toggle("Possible VPN leak", isOn: $monitor.alerts.vpnLeak)
+                    Toggle("New access point since baseline", isOn: $monitor.alerts.newAccessPoint)
                 }
 
                 Section("Quiet hours") {

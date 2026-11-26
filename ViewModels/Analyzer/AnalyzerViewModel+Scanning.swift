@@ -205,6 +205,9 @@ extension AnalyzerViewModel {
         } else {
             monitor.ingest(connected: nil, visible: visible)
         }
+        // G6: the environment baseline learns this scan and reports BSSIDs it
+        // has never seen. The first scan only seeds it.
+        NetworkBaselineService.shared.observe(visible)
 
         analysis = NetworkAnalyzer.analyze(networks: Array(persistentNetworks.values))
         applyFilters()

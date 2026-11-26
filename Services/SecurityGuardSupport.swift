@@ -9,9 +9,11 @@ extension Notification.Name {
 /// One place that turns a guard finding into a monitor event, so both guards
 /// post the same shape and `MonitorViewModel` keeps one channel to read.
 enum SecurityEvent {
-    static func post(_ kind: MonitorEventKind, subject: String, detail: String) {
+    static func post(
+        _ kind: MonitorEventKind, subject: String, detail: String, bssid: String = ""
+    ) {
         let event = MonitorEvent(
-            at: Date(), kind: kind, bssid: "", ssid: subject, detail: detail)
+            at: Date(), kind: kind, bssid: bssid, ssid: subject, detail: detail)
         NotificationCenter.default.post(
             name: .lanFiSecurityEvent, object: nil, userInfo: ["event": event])
     }
