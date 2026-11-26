@@ -1,3 +1,4 @@
+import PostHog
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -573,6 +574,13 @@ struct OfflineCaptureView: View {
                     clients = summary.clients
                     security = summary.security
                     monitor?.ingestCapture(summary.security)
+                    PostHogSDK.shared.capture(
+                        "packet_capture_loaded",
+                        properties: [
+                            "beacon_count": summary.beacons.count,
+                            "client_count": summary.clients.count,
+                            "has_security_findings": !summary.security.findings.isEmpty,
+                        ])
                     if summary.beacons.isEmpty { errorMessage = "No beacons or probe responses found." }
                 }
             } catch {
@@ -669,7 +677,12 @@ struct OfflineCaptureView: View {
         panel.nameFieldStringValue = "LanFi-Capture.json"
         panel.allowedContentTypes = [.json]
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        try? data.write(to: url, options: .atomic)
+        do {
+            try data.write(to: url, options: .atomic)
+            captureExport(format: "json")
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func copyIEs(_ beacon: CapturedBeacon) {
@@ -698,7 +711,22 @@ struct OfflineCaptureView: View {
                     + "\(counters?.deauth ?? 0),\(counters?.disassoc ?? 0)"
             )
         }
-        try? lines.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)
+        do {
+            try lines.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)
+            captureExport(format: "csv")
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func captureExport(format: String) {
+        PostHogSDK.shared.capture(
+            "packet_capture_exported",
+            properties: [
+                "export_format": format,
+                "beacon_count": beacons.count,
+                "client_count": clients.count,
+            ])
     }
 
     private static func timeLabel(_ date: Date) -> String {

@@ -3,6 +3,7 @@ import Combine
 import CoreWLAN
 import LanFiCore
 import AppKit
+import PostHog
 import SwiftUI
 import CoreLocation
 import UniformTypeIdentifiers
@@ -21,6 +22,7 @@ extension AnalyzerViewModel {
         presentSavePanel(
             defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).csv",
             contentType: .commaSeparatedText,
+            eventProperties: ["export_format": "csv", "network_count": networks.count],
             content: { exporter.make(networks: networks) }
         )
     }
@@ -37,6 +39,7 @@ extension AnalyzerViewModel {
         presentSavePanel(
             defaultName: "LanFi-decoded-fields-\(Self.fileTimestamp()).csv",
             contentType: .commaSeparatedText,
+            eventProperties: ["export_format": "decoded_fields_csv", "network_count": rows.count],
             content: { exporter.make(networks: rows) }
         )
     }
@@ -50,6 +53,7 @@ extension AnalyzerViewModel {
         presentSavePanel(
             defaultName: "LanFi-\(suffix)-\(Self.fileTimestamp()).json",
             contentType: .json,
+            eventProperties: ["export_format": "json", "network_count": networks.count],
             content: {
                 let payload = exporter.make(networks: networks)
                 guard JSONSerialization.isValidJSONObject(payload) else {
@@ -246,6 +250,9 @@ extension AnalyzerViewModel {
                 createdAt: Date(), networks: networks, annotations: annotations
             )
             loadSession(session)
+            PostHogSDK.shared.capture(
+                "external_scan_imported",
+                properties: ["import_source": "file", "network_count": networks.count])
         } catch {
             presentError("Import failed: \(error.localizedDescription)")
         }
@@ -293,6 +300,9 @@ extension AnalyzerViewModel {
                         createdAt: Date(), networks: networks, annotations: annotations
                     )
                 )
+                PostHogSDK.shared.capture(
+                    "external_scan_imported",
+                    properties: ["import_source": "url", "network_count": networks.count])
             } catch {
                 presentError("Import failed: \(error.localizedDescription)")
             }
@@ -362,7 +372,8 @@ extension AnalyzerViewModel {
     }
 
     func presentSavePanel(
-        defaultName: String, contentType: UTType, content: @escaping () throws -> String
+        defaultName: String, contentType: UTType, eventProperties: [String: Any],
+        content: @escaping () throws -> String
     ) {
         guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
         let savePanel = NSSavePanel()
@@ -372,10 +383,18 @@ extension AnalyzerViewModel {
         savePanel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = savePanel.url else { return }
             Task.detached(priority: .utility) {
+                let exportFormat = eventProperties["export_format"] as? String ?? "unknown"
+                let networkCount = eventProperties["network_count"] as? Int ?? 0
                 do {
                     let text = try content()
                     try text.write(to: url, atomically: true, encoding: .utf8)
+                    PostHogSDK.shared.capture("scan_exported", properties: eventProperties)
+                    PostHogSDK.shared.logger?.info(
+                        "scan export completed",
+                        attributes: ["export_format": exportFormat, "network_count": networkCount])
                 } catch {
+                    PostHogSDK.shared.logger?.error(
+                        "scan export failed", attributes: ["export_format": exportFormat])
                     let message = "Could not save the file: \(error.localizedDescription)"
                     await MainActor.run {
                         self?.presentError(message)

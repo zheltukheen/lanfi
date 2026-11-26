@@ -1,3 +1,4 @@
+import PostHog
 import SwiftUI
 
 struct ControllersSettingsView: View {
@@ -123,6 +124,9 @@ struct ControllersSettingsView: View {
                 ControllerKeychain.save(token, for: account.id)
                 ControllerAccountStore().save(accounts)
                 selectedID = account.id
+                PostHogSDK.shared.capture(
+                    "controller_added",
+                    properties: ["controller_type": account.kind.title])
             }
         }
     }
@@ -140,6 +144,12 @@ struct ControllersSettingsView: View {
                 await MainActor.run {
                     loading = false
                     aps = result
+                    PostHogSDK.shared.capture(
+                        "controller_access_points_fetched",
+                        properties: [
+                            "controller_type": account.kind.title,
+                            "access_point_count": result.count,
+                        ])
                 }
             } catch {
                 await MainActor.run {

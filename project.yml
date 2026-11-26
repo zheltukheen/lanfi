@@ -5,6 +5,9 @@ packages:
     exactVersion: 2.10.1
   LanFiCore:
     path: Packages/LanFiCore
+  PostHog:
+    url: https://github.com/PostHog/posthog-ios.git
+    from: 3.59.3
 
 options:
   bundleIdPrefix: ru.zheltukheen
@@ -22,6 +25,8 @@ settings:
     CODE_SIGN_STYLE: Manual
     CODE_SIGN_IDENTITY: "-"
     ENABLE_HARDENED_RUNTIME: YES
+    POSTHOG_PROJECT_TOKEN: phc_pSsRUw2jNhqza7rTFBWMWKxDX2BuM8oev2Xtj63wUwjb
+    POSTHOG_HOST: https://eu.i.posthog.com
 
 # Sources compiled by the app, the CLI and the test bundle. They are listed
 # once here instead of being repeated in all three targets; the CLI used to
@@ -69,6 +74,7 @@ targets:
     dependencies:
       - package: Sparkle
       - package: LanFiCore
+      - package: PostHog
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.zheltukheen.LanFi
@@ -82,6 +88,8 @@ targets:
         CFBundleDisplayName: LanFi
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        POSTHOG_PROJECT_TOKEN: "$(POSTHOG_PROJECT_TOKEN)"
+        POSTHOG_HOST: "$(POSTHOG_HOST)"
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
         CFBundleLocalizations: [en, ru, de, fr, zh-Hans]

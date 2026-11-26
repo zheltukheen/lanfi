@@ -26,6 +26,8 @@ enum LanFiMain {
 
 struct LanFiApp: App {
     init() {
+        PostHogConfiguration.setup()
+
         Task.detached(priority: .utility) {
             OUIParser.preload()
         }
