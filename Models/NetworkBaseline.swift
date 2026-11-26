@@ -1,58 +1,12 @@
 import Foundation
+import LanFiCore
 
-/// One BSSID remembered by the environment baseline.
-struct NetworkBaselineEntry: Codable, Equatable, Identifiable {
-    let bssid: String
-    let ssid: String
-    let vendor: String
-    let channel: Int
-    let signal: Int
-    let firstSeen: Date
-
-    var id: String { bssid }
-}
-
-struct NetworkBaselineState: Codable, Equatable {
-    /// Nil until the first scan has been absorbed; that first scan seeds the
-    /// baseline silently instead of announcing every network as new.
-    var seededAt: Date?
-    var baseline: [String: NetworkBaselineEntry] = [:]
-    /// BSSIDs discovered since the baseline was accepted, newest last.
-    var pending: [String: NetworkBaselineEntry] = [:]
-
-    static let empty = NetworkBaselineState()
-}
-
-/// Persists the baseline so "new since last time" survives a relaunch.
-struct NetworkBaselineStore {
-    let url: URL
-
-    init(url: URL = NetworkBaselineStore.defaultURL) {
-        self.url = url
-    }
-
-    static var defaultURL: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LanFi", isDirectory: true)
-            .appendingPathComponent("network-baseline.json")
-    }
-
-    func load() -> NetworkBaselineState {
-        guard let data = try? Data(contentsOf: url) else { return .empty }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return (try? decoder.decode(NetworkBaselineState.self, from: data)) ?? .empty
-    }
-
-    func save(_ state: NetworkBaselineState) throws {
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        try encoder.encode(state).write(to: url, options: .atomic)
-    }
-}
+// Baseline values and their JSON store live in LanFiCore so the app, the CLI
+// and tests agree on one format. The evaluator stays here because it needs the
+// Wi-Fi model, which has not moved yet.
+typealias NetworkBaselineEntry = LanFiCore.NetworkBaselineEntry
+typealias NetworkBaselineState = LanFiCore.NetworkBaselineState
+typealias NetworkBaselineStore = LanFiCore.NetworkBaselineStore
 
 enum NetworkBaselineEvaluator {
     /// BSSIDs in this scan that are neither known nor already pending. Empty

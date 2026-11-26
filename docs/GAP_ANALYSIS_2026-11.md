@@ -1338,6 +1338,13 @@ locales.
       Wi-Fi model layer (`NetworkModel`, `InformationElement`) and the
       analyzers/stores, which reach into CoreWLAN, AppKit and the scanner and
       need a Foundation-only seam before they can move.
+      Delivered 2026-11-26: the change-detection value layer moved too —
+      `ScanSnapshot`, its diff and JSON store, `NetworkBaselineEntry`/`State`/
+      `Store`, `ChannelAirtimeEntry`, `SurveyRequirement` and
+      `SurveyValidationReport` are public `LanFiCore` types with package tests
+      (`ChangeDetectionCoreTests`). The app keeps thin type aliases plus the
+      `NetworkModel`/`SurveySample`-aware evaluators, which cannot move until
+      the Wi-Fi model layer does.
 - [x] Stop listing sources three times in `project.yml`; app, tests and CLI
       depend on packages instead. `targetTemplates.shared` lists `Models`,
       `Services` and `Utils` once, and the three targets inherit it. The only

@@ -514,6 +514,10 @@ transitions/stores, LAN ARP/subnet/guard logic, speed history and iperf3 JSON.
 `Packages/LanFiCore` holds the typed settings layer and builds in the Swift 6
 language mode:
 
+- `ScanSnapshotModels`, `NetworkBaselineModels`, `ChannelAirtimeModel`,
+  `SurveyRequirementModels` — change detection values and their JSON stores,
+  with the package's own tests. The app aliases them and keeps only the
+  `NetworkModel`/`SurveySample`-aware evaluators.
 - `AppSettings` — Codable sections (appearance, scan, alerts, monitor, capture,
   survey, reports, MCP, automation, display, interface, layout). New sections
 decode with defaults, so an older settings file still loads.

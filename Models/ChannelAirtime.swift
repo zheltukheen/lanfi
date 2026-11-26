@@ -1,25 +1,9 @@
 import Foundation
+import LanFiCore
 
-/// G7: what one BSSID cost the channel in a capture, measured from the
-/// Duration/ID field of the frames it transmitted. Neither Wireshark nor a scan
-/// gives this for a passive capture, and it answers "is the load mine or the
-/// neighbour's?".
-struct ChannelAirtimeEntry: Identifiable, Equatable {
-    let bssid: String
-    let ssid: String
-    var frames: Int = 0
-    var airtimeMicroseconds: Int = 0
-    var dataFrames: Int = 0
-    /// Directed data frames transmitted at 1, 2, 5.5 or 11 Mbit/s.
-    var legacyFrames: Int = 0
-    /// Share of all transmitted airtime in this capture, when any frame carried
-    /// a duration.
-    var share: Double? = nil
-
-    var id: String { bssid }
-    var airtimeMilliseconds: Int { airtimeMicroseconds / 1000 }
-    var isLegacy: Bool { legacyFrames > 0 }
-}
+// The airtime value lives in LanFiCore; the detector stays here because it
+// reads the Wi-Fi model, which has not moved yet.
+typealias ChannelAirtimeEntry = LanFiCore.ChannelAirtimeEntry
 
 /// G7: legacy-rate detection. A BSSID that advertises only 802.11b basic rates
 /// drags every client on its channel down to DSSS rates, which is the single
