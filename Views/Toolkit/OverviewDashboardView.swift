@@ -19,10 +19,12 @@ struct OverviewDashboardView: View {
     @StateObject private var gateway = GatewayGuard.shared
     @StateObject private var vpn = VPNGuard.shared
     @StateObject private var automation = LinkAutomation.shared
+    @StateObject private var locationAccess = LocationAccessCenter.shared
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignToken.Spacing.card) {
+                attentionCard
                 heroRow
                 keyMetrics
                 liveRow
@@ -31,6 +33,165 @@ struct OverviewDashboardView: View {
                 footer
             }
             .appContentPadding()
+        }
+    }
+
+    // MARK: - Plain-language summary
+
+    /// What an ordinary user should look at first. Every item is a check the
+    /// app already runs; the card only ranks them and links to the tool that
+    /// explains the number, instead of leaving the reader to read five tiles.
+    private enum Destination {
+        case tool(ToolboxTool)
+        case settings
+    }
+
+    private struct Issue: Identifiable {
+        let id: String
+        let title: String
+        let detail: String
+        let icon: String
+        let tone: ToolkitTone
+        let destination: Destination
+    }
+
+    private var issues: [Issue] {
+        var found: [Issue] = []
+        switch connectivity.verdict {
+        case .offline:
+            found.append(
+                Issue(
+                    id: "offline", title: String(localized: "No internet"),
+                    detail: String(localized: "The router answers but nothing beyond it does."),
+                    icon: "wifi.exclamationmark", tone: .bad,
+                    destination: .tool(.internetCheck)))
+        case .captivePortal:
+            found.append(
+                Issue(
+                    id: "portal", title: String(localized: "Sign-in page waiting"),
+                    detail: String(localized: "This network asks you to sign in before it works."),
+                    icon: "hand.raised", tone: .warning, destination: .tool(.internetCheck)))
+        case .online, .unknown:
+            break
+        }
+        if vpn.report.hasLeak {
+            found.append(
+                Issue(
+                    id: "vpn-leak", title: String(localized: "VPN leak"),
+                    detail: String(localized: "Traffic escapes the tunnel while the VPN is up."),
+                    icon: "exclamationmark.shield", tone: .bad,
+                    destination: .tool(.securityWatch)))
+        }
+        if case .mismatch = gateway.resolverCheck.verdict {
+            found.append(
+                Issue(
+                    id: "dns", title: String(localized: "DNS answers differ"),
+                    detail: String(localized: "A public resolver disagrees with this network's DNS."),
+                    icon: "questionmark.circle", tone: .warning,
+                    destination: .tool(.internetCheck)))
+        }
+        if let network = connected, network.signal < -75 {
+            found.append(
+                Issue(
+                    id: "signal", title: String(localized: "Weak Wi-Fi signal"),
+                    detail: String(localized: "Move closer to the access point for a stable link."),
+                    icon: "cellularbars", tone: .warning,
+                    destination: .tool(.wifiAnalyzer)))
+        }
+        if let network = connected, isInsecure(network) {
+            found.append(
+                Issue(
+                    id: "security", title: String(localized: "This network is not protected"),
+                    detail: String(localized: "Traffic is not encrypted over the air on this network."),
+                    icon: "lock.open", tone: .warning,
+                    destination: .tool(.wifiAnalyzer)))
+        }
+        if !locationAccess.isAuthorized {
+            found.append(
+                Issue(
+                    id: "location", title: String(localized: "Network names are hidden"),
+                    detail: String(
+                        localized:
+                            "macOS needs Location access before LanFi can show SSIDs and channels."),
+                    icon: "location.slash", tone: .warning, destination: .settings))
+        }
+        return found
+    }
+
+    private func isInsecure(_ network: NetworkModel) -> Bool {
+        let security = network.security.lowercased()
+        return security.contains("open") || security.contains("none")
+            || security.contains("wep")
+    }
+
+    @ViewBuilder
+    private var attentionCard: some View {
+        let issues = self.issues
+        if issues.isEmpty {
+            if connectivity.verdict == .online {
+                HStack(spacing: DesignToken.Spacing.tight) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundColor(AppPalette.ok)
+                    Text("Everything looks fine: online, stable signal and no leaks.")
+                        .font(.caption)
+                    Spacer()
+                }
+                .padding(.vertical, DesignToken.Spacing.tight)
+                .padding(.horizontal, DesignToken.Spacing.small)
+            }
+        } else {
+            ToolkitCard {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
+                    HStack {
+                        ToolkitSectionLabel(text: "Worth a look")
+                        Spacer()
+                        Text(verbatim: "\(issues.count)")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary)
+                    }
+                    ForEach(issues.prefix(3)) { issue in
+                        HStack(alignment: .top, spacing: DesignToken.Spacing.small) {
+                            Image(systemName: issue.icon)
+                                .foregroundColor(issue.tone.color)
+                                .frame(width: 18)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(issue.title)
+                                    .font(.callout.weight(.medium))
+                                Text(issue.detail)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: DesignToken.Spacing.small)
+                            AppButton("Open", tone: .quiet) { open(issue.destination) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func open(_ destination: Destination) {
+        switch destination {
+        case .tool(let tool): toolkit.select(tool)
+        case .settings: SettingsRouter.shared.open(.general)
+        }
+    }
+
+    private func signalWord(_ rssi: Int) -> String {
+        switch rssi {
+        case (-55)...: return String(localized: "Excellent signal")
+        case (-67)..<(-55): return String(localized: "Good signal")
+        case (-75)..<(-67): return String(localized: "Fair signal")
+        default: return String(localized: "Weak signal")
+        }
+    }
+
+    private func signalTone(_ rssi: Int) -> ToolkitTone {
+        switch rssi {
+        case (-67)...: return .good
+        case (-75)..<(-67): return .warning
+        default: return .bad
         }
     }
 
@@ -214,10 +375,13 @@ struct OverviewDashboardView: View {
                 detail: rateText, icon: "arrow.up.arrow.down", tone: .neutral
             ) { toolkit.select(.processTraffic) }
             metricTile(
-                title: "Automation", value: automation.isEnabled ? onOff(true) : onOff(false),
-                detail: wifiAutomationLine, icon: "wand.and.stars",
-                tone: automationTone
-            ) { SettingsRouter.shared.open(.general) }
+                title: "Signal",
+                value: connected.map { "\($0.signal) dBm" } ?? "—",
+                detail: connected.map { signalWord($0.signal) }
+                    ?? String(localized: "No Wi-Fi connection"),
+                icon: "cellularbars",
+                tone: connected.map { signalTone($0.signal) } ?? .neutral
+            ) { toolkit.select(.wifiAnalyzer) }
         }
     }
 
@@ -251,10 +415,6 @@ struct OverviewDashboardView: View {
         }
         .frame(maxWidth: .infinity)
         .dashboardLink(action)
-    }
-
-    private func onOff(_ value: Bool) -> String {
-        value ? String(localized: "On") : String(localized: "Off")
     }
 
     private var automationTone: ToolkitTone {

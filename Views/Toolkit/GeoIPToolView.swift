@@ -4,37 +4,53 @@ import LanFiCore
 
 struct GeoIPToolView: View {
     @ObservedObject var model: GeoIPToolModel
+    /// False when the merged Whois & GeoIP screen owns the query field and the
+    /// scroll view.
+    var showsControls = true
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                controls
-                if let error = model.errorMessage {
-                    ToolkitErrorBanner(message: error)
-                }
-                if let report = model.report {
-                    header(report)
-                    HStack(alignment: .top, spacing: 12) {
-                        locationCard(report)
-                        networkCard(report)
+        Group {
+            if showsControls {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+                        controls
+                        results
                     }
-                    coordinatesCard(report)
-                } else if !model.isRunning {
-                    ToolkitEmptyState(
-                        icon: "globe",
-                        title: "Locate an IP address",
-                        message:
-                            "Type an IP or hostname, or use My IP. Hostnames are resolved locally first; only the address is sent to ipwho.is."
-                    )
+                    .appContentPadding()
                 }
+            } else {
+                results
             }
-            .appContentPadding()
         }
         .task {
             // Show something useful as soon as the tool opens instead of an
             // empty form: look up this Mac's public address automatically.
             if model.report == nil, !model.isRunning, model.errorMessage == nil {
                 model.run(myIP: true)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var results: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            if let error = model.errorMessage {
+                ToolkitErrorBanner(message: error)
+            }
+            if let report = model.report {
+                header(report)
+                HStack(alignment: .top, spacing: DesignToken.Spacing.medium) {
+                    locationCard(report)
+                    networkCard(report)
+                }
+                coordinatesCard(report)
+            } else if !model.isRunning, showsControls {
+                ToolkitEmptyState(
+                    icon: "globe",
+                    title: "Locate an IP address",
+                    message:
+                        "Type an IP or hostname, or use My IP. Hostnames are resolved locally first; only the address is sent to ipwho.is."
+                )
             }
         }
     }

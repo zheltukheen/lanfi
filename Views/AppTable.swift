@@ -144,11 +144,13 @@ struct AppTable<Row: Identifiable>: View {
         // left the card half empty; the reader supplies the width floor and
         // the ScrollView still takes over once a column is dragged wider.
         GeometryReader { proxy in
-            let widths = columnWidths(fitting: proxy.size.width - 2 * TableMetrics.cellInset)
+            // Columns fill the whole card width: no horizontal padding around
+            // the table itself, so a table never shows a gap between its card
+            // edge and the first or last column. Each cell keeps its own inset.
+            let widths = columnWidths(fitting: proxy.size.width)
             ScrollView([.horizontal, .vertical]) {
                 table(widths: widths)
                     .frame(width: max(widths.reduce(0, +), 1), alignment: .leading)
-                    .padding(.horizontal, TableMetrics.cellInset)
                     .frame(minWidth: proxy.size.width, alignment: .leading)
             }
         }

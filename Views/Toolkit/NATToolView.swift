@@ -24,6 +24,9 @@ struct NATToolView: View {
                 )
             }
         }
+        // Without this the stack sizes to its widest card and the window
+        // centres the whole screen, which put the target field in the middle.
+        .frame(maxWidth: .infinity, alignment: .leading)
         .appContentPadding()
     }
 

@@ -15,20 +15,22 @@ struct GPSMapToolView: View {
     @State private var exportError: String?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignToken.Spacing.card) {
-                controls
-                map
-                summary
-                pinsTable
-                tripsCard
-                Text(
-                    "Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade."
-                )
-                .font(.caption2)
-                .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            header
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.card) {
+                    map
+                    summary
+                    pinsTable
+                    tripsCard
+                    Text(
+                        "Location is used only while a trip is recording, stays on this Mac, and is never attached to the live scan or sent anywhere. macOS derives it from Wi-Fi, so expect street-level accuracy, not survey-grade."
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+                .appContentPadding()
             }
-            .padding(DesignToken.Spacing.section)
         }
         .onAppear {
             recorder.networks = { [weak analyzer] in analyzer?.networks ?? [] }
@@ -43,36 +45,32 @@ struct GPSMapToolView: View {
         }
     }
 
-    private var controls: some View {
-        HStack(spacing: DesignToken.Spacing.small) {
-            TextField("Trip name", text: $tripName)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 220)
-            if recorder.isRecording {
-                Button {
-                    recorder.stop()
-                } label: {
-                    Label("Stop", systemImage: "stop.circle.fill")
+    /// The same header strip every toolkit screen uses: controls on the left,
+    /// export on the right, one height and one inset.
+    private var header: some View {
+        ToolkitHeaderBar {
+            HStack(spacing: DesignToken.Spacing.small) {
+                Text("GPS map")
+                    .font(.headline)
+                TextField("Trip name", text: $tripName)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 200)
+                if recorder.isRecording {
+                    AppButton("Stop", systemImage: "stop.circle.fill", tone: .primary) {
+                        recorder.stop()
+                    }
+                } else {
+                    AppButton("Start trip", systemImage: "record.circle", tone: .primary) {
+                        location.request()
+                        recorder.start(name: tripName)
+                        tripName = ""
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(AppPalette.danger)
-            } else {
-                Button {
+                AppButton("Locate", systemImage: "location", isEnabled: !location.isRequesting) {
                     location.request()
-                    recorder.start(name: tripName)
-                    tripName = ""
-                } label: {
-                    Label("Start trip", systemImage: "record.circle")
                 }
-                .buttonStyle(.borderedProminent)
             }
-            Button {
-                location.request()
-            } label: {
-                Label("Locate", systemImage: "location")
-            }
-            .disabled(location.isRequesting)
-            Spacer()
+        } trailing: {
             Menu {
                 Button("GeoJSON…") { export(.geoJSON) }
                 Button("CSV…") { export(.csv) }
@@ -81,8 +79,6 @@ struct GPSMapToolView: View {
             }
             .disabled(recorder.displayedTrip == nil)
         }
-        .appCardSurface()
-        .padding(DesignToken.Spacing.medium)
     }
 
     private var map: some View {

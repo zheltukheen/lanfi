@@ -76,21 +76,14 @@ struct KnownNetworksToolView: View {
 
     private var header: some View {
         ToolkitHeaderBar {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 14) {
-                    metric("\(summary.saved)", "Saved")
-                    metric("\(summary.inRange)", "In range", tint: AppPalette.ok)
-                    metric("\(summary.outOfRange)", "Not in range")
-                    metric(
-                        "\(summary.insecure)", "Weak security",
-                        tint: summary.insecure > 0 ? AppPalette.warning : .secondary)
-                    metric("\(summary.unsavedVisible)", "Visible, not saved")
-                }
-                Text(
-                    "Saved names come from System Settings; live fields come from the current scan. Passwords are never read."
-                )
-                .font(.caption2)
-                .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Known networks")
+                    .font(.headline)
+                Text(summaryLine)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
         } trailing: {
             HStack(spacing: 8) {
@@ -119,11 +112,23 @@ struct KnownNetworksToolView: View {
         }
     }
 
-    private func metric(_ value: String, _ label: String, tint: Color = .primary) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(value).font(.callout.weight(.semibold).monospacedDigit()).foregroundColor(tint)
-            Text(label).font(.caption2).foregroundColor(.secondary)
+    /// One plain caption instead of five figures squeezed into a fixed-height
+    /// toolbar, where the block used to overflow its row and lose the top gap.
+    private var summaryLine: String {
+        var parts = [
+            String(format: String(localized: "%lld saved"), summary.saved),
+            String(format: String(localized: "%lld in range"), summary.inRange),
+        ]
+        if summary.insecure > 0 {
+            parts.append(
+                String(format: String(localized: "%lld weak security"), summary.insecure))
         }
+        if summary.unsavedVisible > 0 {
+            parts.append(
+                String(format: String(localized: "%lld visible, not saved"), summary.unsavedVisible))
+        }
+        parts.append(String(localized: "Passwords are never read."))
+        return parts.joined(separator: " · ")
     }
 
     private var list: some View {
@@ -182,7 +187,7 @@ struct KnownNetworksToolView: View {
     private var detail: some View {
         if let row = selectedRow {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
                     detailHeader(row)
                     securityCard(row)
                     radioDetails(row)

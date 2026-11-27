@@ -2,7 +2,30 @@
 
 ## Unreleased
 
+### Changed
+- **The Overview answers “is anything wrong?” first.** A plain-language card lists
+  what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
+  weak signal, unprotected network, hidden SSIDs) and links straight to the tool
+  that explains it; when nothing is wrong it says so in one line. The Automation
+  tile that most people never opened is now a Signal tile with the dBm value and
+  a word for it, and the connection card names the signal in words as well.
+- **Whois and GeoIP share one page instead of two tabs.** One target field runs
+  both lookups and both answers are visible at once, so the location is no
+  longer hidden behind a tab that also hid the registration.
+- **The site survey map can be moved.** The plan now pans with a drag and zooms
+  with a pinch or the new −/+/reset buttons, instead of a drag being swallowed
+  and nothing moving. Clicking still records a point, and the heat map, overlays
+  and calibration stay in plan coordinates.
+- **Known Networks, GPS map, the site survey and NAT now use the shared header,
+  padding and card components.** Known Networks moved five figures out of a
+  fixed-height toolbar into one caption; the survey and GPS screens use
+  `ToolkitHeaderBar` instead of hand-built strips; NAT no longer centres its
+  controls, which is why its target field used to sit in the middle.
+
 ### Fixed
+- **Tables span their card.** Columns now fill the width, with no gap between
+  the card edge and the first or last column; the density and per-cell inset are
+  unchanged.
 - **Network Guard inventory follows the network it was scanned on.** Entries
   now remember their subnet and scan interface, so a laptop that moves between
   networks no longer reports another network's devices as "known devices were

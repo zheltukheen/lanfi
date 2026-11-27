@@ -1,91 +1,107 @@
 import SwiftUI
 
-/// One screen for Whois and GeoIP: one target field, two answers.
+/// One screen for Whois and GeoIP: one target field, both answers on one page.
 ///
 /// Both tools take the same input (a domain, host or address) and are usually
 /// consulted together — "who owns this name and where does it live" — so they
-/// share one tab strip instead of two sidebar rows. The query is mirrored
-/// between the models, so switching tabs keeps the target.
+/// share one page instead of a tab strip that hid half the answer. The query is
+/// mirrored between the models, so a lookup runs against the same target.
 struct WhoisGeoIPToolView: View {
     @ObservedObject var whois: WhoisToolModel
     @ObservedObject var geo: GeoIPToolModel
     @ObservedObject var toolkit: ToolkitViewModel
 
-    private enum Tab: String, CaseIterable, Identifiable {
-        case whois
-        case geo
-
-        var id: String { rawValue }
-        var title: LocalizedStringKey {
-            switch self {
-            case .whois: return "Whois"
-            case .geo: return "GeoIP"
-            }
-        }
-        var icon: String {
-            switch self {
-            case .whois: return "doc.text.magnifyingglass"
-            case .geo: return "mappin.and.ellipse"
-            }
-        }
-    }
-
-    @State private var tab: Tab = .whois
+    private var isRunning: Bool { whois.isRunning || geo.isRunning }
 
     var body: some View {
         VStack(spacing: 0) {
             ToolkitHeaderBar {
-                AppTabBar(
-                    sections: [
-                        .init(
-                            id: "whoisGeoIP", title: nil,
-                            items: Tab.allCases.map {
-                                .init(id: $0.rawValue, title: $0.title, icon: $0.icon)
-                            })
-                    ],
-                    selection: Binding(
-                        get: { tab.rawValue },
-                        set: { tab = Tab(rawValue: $0) ?? tab }),
-                    showsGroupTitles: false)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Whois & GeoIP")
+                        .font(.headline)
+                    Text("Registration and location for one target, on one page.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             } trailing: {
-                Text(targetLine)
-                    .font(.caption2.monospaced())
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                if isRunning {
+                    ProgressView().controlSize(.small)
+                }
             }
 
-            switch tab {
-            case .whois:
-                WhoisToolView(model: whois)
-            case .geo:
-                GeoIPToolView(model: geo)
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+                    targetCard
+                    WhoisToolView(model: whois, showsControls: false)
+                    Divider()
+                    GeoIPToolView(model: geo, showsControls: false)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .appContentPadding()
             }
         }
-        .onAppear { syncTab(with: toolkit.selection) }
-        .onChange(of: toolkit.selection) { selection in syncTab(with: selection) }
+        .onAppear { autoRunForDeepLink() }
+        .onChange(of: toolkit.selection) { _ in autoRunForDeepLink() }
         .onChange(of: whois.query) { value in
-            if !value.isEmpty { geo.query = value }
+            if !value.isEmpty, geo.query != value { geo.query = value }
         }
         .onChange(of: geo.query) { value in
-            if !value.isEmpty { whois.query = value }
+            if !value.isEmpty, whois.query != value { whois.query = value }
         }
     }
 
-    /// A deep link to either tool opens its own tab; the sidebar row opens the
-    /// last tab the user chose.
-    private func syncTab(with tool: ToolboxTool) {
-        switch tool {
-        case .geoIP: tab = .geo
-        case .whois: tab = .whois
-        default: break
+    private var targetCard: some View {
+        ToolkitCard {
+            HStack(spacing: DesignToken.Spacing.small) {
+                ToolTargetField(
+                    text: $whois.query, placeholder: "Domain, host or IP address",
+                    onSubmit: runBoth
+                )
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: DesignToken.Layout.controlWidthLarge)
+                .onSubmit(runBoth)
+                AppButton("Look Up", tone: .primary) { runBoth() }
+                    .disabled(isRunning)
+                AppButton("My IP", systemImage: "location") { geo.run(myIP: true) }
+                    .disabled(isRunning)
+                AppButton("Clear", tone: .quiet) {
+                    whois.clear()
+                    geo.clear()
+                }
+                .disabled(isRunning)
+                Spacer()
+                ToolkitStatusPill(text: statusText, tone: statusTone)
+            }
         }
     }
 
-    private var targetLine: String {
-        switch tab {
-        case .whois: return whois.query.isEmpty ? String(localized: "No target yet") : whois.query
-        case .geo: return geo.query.isEmpty ? String(localized: "No target yet") : geo.query
+    private var statusText: String {
+        if isRunning { return String(localized: "Looking up…") }
+        let target = whois.report?.name ?? geo.report?.ip ?? whois.query
+        return target.isEmpty ? String(localized: "Ready") : target
+    }
+
+    private var statusTone: ToolkitTone {
+        if isRunning { return .running }
+        return whois.report == nil && geo.report == nil ? .neutral : .good
+    }
+
+    private func runBoth() {
+        geo.query = whois.query
+        whois.run()
+        geo.run()
+    }
+
+    /// A deep link to either tool should show its answer without a second
+    /// click; the merged page never hides one behind a tab.
+    private func autoRunForDeepLink() {
+        switch toolkit.selection {
+        case .geoIP:
+            if geo.report == nil, !geo.isRunning { geo.run(myIP: true) }
+        case .whois:
+            if whois.report == nil, !whois.isRunning, !whois.query.isEmpty { whois.run() }
+        default:
+            break
         }
     }
 }

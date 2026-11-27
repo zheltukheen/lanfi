@@ -23,6 +23,13 @@ struct SurveyView: View {
     @State private var showingPlanning = false
     @State private var showingMap = false
     @State private var heatGrid: HeatGridCache.Grid?
+    /// Pan and zoom of the plan view. The heat grid is still built for the
+    /// fitted sheet; these only transform what is drawn, so sampling and the
+    /// overlay geometry keep working in plan coordinates.
+    @State private var planZoom: CGFloat = 1
+    @State private var planPan: CGSize = .zero
+    @State private var panStart: CGSize?
+    @State private var zoomStart: CGFloat?
 
     private var selectedNetwork: NetworkModel? {
         guard let id = survey.selectedNetworkId else { return nil }
@@ -86,69 +93,63 @@ struct SurveyView: View {
     /// the tool header, which cost a third of the window before the plan even
     /// started; the actions that do not belong in a header live in two menus.
     private var header: some View {
-        HStack(spacing: DesignToken.Spacing.small) {
-            Picker(
-                String(localized: "Floor"),
-                selection: Binding(
-                    get: { survey.project.id },
-                    set: { survey.selectProject(id: $0) }
-                )
-            ) {
-                ForEach(survey.projects) { project in
-                    Text(project.name).tag(project.id)
+        ToolkitHeaderBar {
+            HStack(spacing: DesignToken.Spacing.small) {
+                Picker(
+                    String(localized: "Floor"),
+                    selection: Binding(
+                        get: { survey.project.id },
+                        set: { survey.selectProject(id: $0) }
+                    )
+                ) {
+                    ForEach(survey.projects) { project in
+                        Text(project.name).tag(project.id)
+                    }
+                }
+                .frame(width: 150)
+                .controlSize(.small)
+
+                ToolbarIconButton(
+                    systemImage: "plus.rectangle.on.rectangle", label: "New floor",
+                    help: "New floor"
+                ) { survey.newFloor() }
+
+                ToolbarIconButton(
+                    systemImage: "square.3.layers.3d", label: "Multi-floor 3D view",
+                    help: "Multi-floor 3D view"
+                ) { show3DFloors = true }
+
+                Divider().frame(height: 18)
+
+                ToolbarIconButton(
+                    systemImage: "square.grid.3x3.topleft.filled", label: "Plan",
+                    help: "Plan AP placement and track the active survey"
+                ) { showingPlanning = true }
+
+                ToolbarIconButton(
+                    systemImage: "map", label: "Map",
+                    help: "GPS-tagged samples and GPX tracks"
+                ) { showingMap = true }
+
+                Divider().frame(height: 18)
+
+                networkMenu
+
+                if let selectedNetwork {
+                    Text(
+                        "\(selectedNetwork.signal) dBm · \(selectedNetwork.bandLabel) · ch \(selectedNetwork.channel)"
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
                 }
             }
-            .frame(width: 150)
-            .controlSize(.small)
-
-            ToolbarIconButton(
-                systemImage: "plus.rectangle.on.rectangle", label: "New floor",
-                help: "New floor"
-            ) { survey.newFloor() }
-
-            ToolbarIconButton(
-                systemImage: "square.3.layers.3d", label: "Multi-floor 3D view",
-                help: "Multi-floor 3D view"
-            ) { show3DFloors = true }
-
-            Divider().frame(height: 18)
-
-            ToolbarIconButton(
-                systemImage: "square.grid.3x3.topleft.filled", label: "Plan",
-                help: "Plan AP placement and track the active survey"
-            ) { showingPlanning = true }
-
-            ToolbarIconButton(
-                systemImage: "map", label: "Map",
-                help: "GPS-tagged samples and GPX tracks"
-            ) { showingMap = true }
-
-            Divider().frame(height: 18)
-
-            networkMenu
-
-            if let selectedNetwork {
-                Text(
-                    "\(selectedNetwork.signal) dBm · \(selectedNetwork.bandLabel) · ch \(selectedNetwork.channel)"
-                )
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
+        } trailing: {
+            HStack(spacing: DesignToken.Spacing.small) {
+                fileMenu
+                overflowMenu
             }
-
-            Spacer(minLength: DesignToken.Spacing.small)
-
-            fileMenu
-            overflowMenu
         }
-        .padding(.horizontal, DesignToken.Spacing.compact)
-        .padding(.vertical, DesignToken.Spacing.tight)
-        .frame(height: DesignToken.Toolbar.height + DesignToken.Spacing.tight * 2)
-        .background(Material.bar)
-        .overlay(
-            Rectangle().frame(height: 1).foregroundColor(Color(nsColor: .separatorColor)),
-            alignment: .bottom
-        )
     }
 
     private var networkMenu: some View {
@@ -927,10 +928,27 @@ struct SurveyView: View {
                         }
                     }
                     .frame(width: sheet.width, height: sheet.height)
+                    .scaleEffect(planZoom, anchor: .center)
+                    .offset(planPan)
                     .contentShape(Rectangle())
                     .gesture(
                         DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                // A drag pans the plan instead of doing
+                                // nothing: before this, the gesture swallowed
+                                // every drag and the map could not be moved.
+                                if panStart == nil { panStart = planPan }
+                                let base = panStart ?? .zero
+                                planPan = clampPlanPan(
+                                    CGSize(
+                                        width: base.width
+                                            + value.translation.width * planZoom,
+                                        height: base.height
+                                            + value.translation.height * planZoom),
+                                    size: geo.size, sheet: sheet)
+                            }
                             .onEnded { value in
+                                panStart = nil
                                 guard abs(value.translation.width) < 4,
                                     abs(value.translation.height) < 4
                                 else { return }
@@ -955,10 +973,59 @@ struct SurveyView: View {
                             network: network
                         )
                     }
+                    .simultaneousGesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                let base = zoomStart ?? planZoom
+                                if zoomStart == nil { zoomStart = planZoom }
+                                planZoom = min(max(base * value, 0.6), 6)
+                                panStart = nil
+                            }
+                            .onEnded { _ in zoomStart = nil }
+                    )
+                }
+                .overlay(alignment: .bottomLeading) {
+                    planZoomControls()
+                        .padding(DesignToken.Spacing.small)
                 }
                 .clipped()
             }
         }
+    }
+
+    /// Zoom buttons, so the plan can be navigated without a trackpad pinch and
+    /// always has a way back to the fitted view.
+    private func planZoomControls() -> some View {
+        HStack(spacing: DesignToken.Spacing.tight) {
+            AppIconButton(systemImage: "minus.magnifyingglass", label: "Zoom out") {
+                planZoom = max(0.6, planZoom / 1.25)
+                if planZoom <= 1 { planPan = .zero }
+            }
+            Text(verbatim: "\(Int(planZoom * 100))%")
+                .font(.caption2.monospacedDigit())
+                .frame(width: 38)
+            AppIconButton(systemImage: "plus.magnifyingglass", label: "Zoom in") {
+                planZoom = min(6, planZoom * 1.25)
+            }
+            AppIconButton(systemImage: "arrow.counterclockwise", label: "Reset view") {
+                planZoom = 1
+                planPan = .zero
+            }
+            .disabled(planZoom == 1 && planPan == .zero)
+        }
+        .padding(.horizontal, DesignToken.Spacing.small)
+        .appCardSurface(radius: Theme.Radius.control)
+        .help("Drag the plan to move it; pinch or use these buttons to zoom")
+    }
+
+    /// Keeps the drawn sheet reachable: at 1× the plan already fits and does
+    /// not move, above that the pan stops at the plan's own edges.
+    private func clampPlanPan(_ pan: CGSize, size: CGSize, sheet: CGRect) -> CGSize {
+        let limitX = max(0, (sheet.width * planZoom - size.width) / 2)
+        let limitY = max(0, (sheet.height * planZoom - size.height) / 2)
+        return CGSize(
+            width: min(max(pan.width, -limitX), limitX),
+            height: min(max(pan.height, -limitY), limitY))
     }
 
     /// Records a tap on the plan. `SpatialTapGesture` is the supported way to

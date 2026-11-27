@@ -4,28 +4,42 @@ import LanFiCore
 
 struct WhoisToolView: View {
     @ObservedObject var model: WhoisToolModel
+    /// False when the merged Whois & GeoIP screen owns the query field and the
+    /// scroll view; the results are then stacked into its page.
+    var showsControls = true
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                controls
-                if let error = model.errorMessage {
-                    ToolkitErrorBanner(message: error)
+        if showsControls {
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+                    controls
+                    results
                 }
-                if let report = model.report {
-                    header(report)
-                    details(report)
-                    events(report)
-                } else if !model.isRunning {
-                    ToolkitEmptyState(
-                        icon: "doc.text.magnifyingglass",
-                        title: "Look up a domain",
-                        message:
-                            "Reads the registration over RDAP: registrar, statuses, dates, nameservers and events. No Terminal."
-                    )
-                }
+                .appContentPadding()
             }
-            .appContentPadding()
+        } else {
+            results
+        }
+    }
+
+    @ViewBuilder
+    private var results: some View {
+        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+            if let error = model.errorMessage {
+                ToolkitErrorBanner(message: error)
+            }
+            if let report = model.report {
+                header(report)
+                details(report)
+                events(report)
+            } else if !model.isRunning, showsControls {
+                ToolkitEmptyState(
+                    icon: "doc.text.magnifyingglass",
+                    title: "Look up a domain",
+                    message:
+                        "Reads the registration over RDAP: registrar, statuses, dates, nameservers and events. No Terminal."
+                )
+            }
         }
     }
 
