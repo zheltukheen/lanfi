@@ -22,13 +22,6 @@ struct GeoIPToolView: View {
                 results
             }
         }
-        .task {
-            // Show something useful as soon as the tool opens instead of an
-            // empty form: look up this Mac's public address automatically.
-            if model.report == nil, !model.isRunning, model.errorMessage == nil {
-                model.run(myIP: true)
-            }
-        }
     }
 
     @ViewBuilder

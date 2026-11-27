@@ -984,6 +984,19 @@ struct SurveyView: View {
                             .onEnded { _ in zoomStart = nil }
                     )
                 }
+                .overlay {
+                    // Two-finger scrolling never reaches a SwiftUI gesture, so
+                    // the plan could only be moved with a mouse drag and only
+                    // after zooming. The catcher pans it like a scroll view.
+                    PlanScrollCatcher { delta in
+                        planPan = clampPlanPan(
+                            CGSize(
+                                width: planPan.width + delta.width,
+                                height: planPan.height + delta.height),
+                            size: geo.size, sheet: sheet)
+                    }
+                    .allowsHitTesting(false)
+                }
                 .overlay(alignment: .bottomLeading) {
                     planZoomControls()
                         .padding(DesignToken.Spacing.small)
@@ -1508,5 +1521,60 @@ private struct BlankPlanSheet: View {
         }
         .padding(DesignToken.Layout.sheetPadding)
         .frame(width: DesignToken.Layout.sheetWidthCompact)
+    }
+}
+
+/// AppKit bridge for trackpad and wheel scrolling on the plan. SwiftUI has no
+/// scroll-wheel modifier on macOS 13, so the plan listens through a local event
+/// monitor and only consumes scrolls that land on its own frame; the rest of
+/// the window keeps scrolling normally.
+private struct PlanScrollCatcher: NSViewRepresentable {
+    var onScroll: (CGSize) -> Void
+
+    func makeNSView(context: Context) -> CatcherView {
+        let view = CatcherView()
+        view.onScroll = onScroll
+        return view
+    }
+
+    func updateNSView(_ view: CatcherView, context: Context) {
+        view.onScroll = onScroll
+    }
+
+    final class CatcherView: NSView {
+        var onScroll: ((CGSize) -> Void)?
+        private var monitor: Any?
+
+        override func viewWillMove(toWindow newWindow: NSWindow?) {
+            if newWindow == nil { removeMonitor() }
+            super.viewWillMove(toWindow: newWindow)
+        }
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            removeMonitor()
+            guard window != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.scrollWheel]) {
+                [weak self] event in
+                guard let self, let window = self.window, event.window === window else {
+                    return event
+                }
+                guard self.bounds.contains(self.convert(event.locationInWindow, from: nil))
+                else { return event }
+                self.onScroll?(
+                    CGSize(
+                        width: event.scrollingDeltaX, height: event.scrollingDeltaY))
+                return nil
+            }
+        }
+
+        private func removeMonitor() {
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+        }
+
+        /// The plan itself handles clicks and drags; this view only observes
+        /// scrolls, so it never takes a hit test.
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
     }
 }

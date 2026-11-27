@@ -2275,3 +2275,5 @@
 "Survey map" = "勘测地图";
 "Tag Last Sample" = "标记最新样本";
 "Tagged the newest sample with the current position." = "已用当前位置标记最新样本。";
+
+"Sockets to include and the listener watch" = "要包含的套接字与监听监控";

@@ -139,23 +139,6 @@ struct OpenConnectionsToolView: View {
             ) {
                 Task { await refresh() }
             }
-            Toggle("Include listening sockets", isOn: $includeListeners)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .onChange(of: includeListeners) { _ in
-                    Task { await refresh() }
-                }
-            Toggle("Include UDP listeners", isOn: $includeUDP)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .help("Adds UDP sockets, which answer clients without a TCP listener.")
-                .onChange(of: includeUDP) { _ in
-                    Task { await refresh() }
-                }
-            Toggle("Watch listeners", isOn: watchBinding)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .help("Samples listening sockets every 30 s and notifies when one appears or closes.")
             TextField("Filter by process, address or PID", text: $search)
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: DesignToken.Layout.controlWidthLarge)
@@ -167,6 +150,7 @@ struct OpenConnectionsToolView: View {
             }
             .pickerStyle(.menu)
             .fixedSize()
+            filtersMenu
             AppIconButton(
                 systemImage: expanded.count == groups.count
                     ? "rectangle.compress.vertical" : "rectangle.expand.vertical",
@@ -185,10 +169,46 @@ struct OpenConnectionsToolView: View {
         }
     }
 
+    /// The switches used to fill the toolbar with four labels. They are still
+    /// one click away, but the row now reads as a search field and a table.
+    private var filtersMenu: some View {
+        Menu {
+            Toggle("Include listening sockets", isOn: $includeListeners)
+            Toggle("Include UDP listeners", isOn: $includeUDP)
+            Divider()
+            Toggle("Watch listeners", isOn: watchBinding)
+            Button("Sample now") { Task { await watcher.sampleNow() } }
+                .disabled(!watcher.isWatching || watcher.isSampling)
+        } label: {
+            Label("Filters", systemImage: "line.3.horizontal.decrease.circle")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Sockets to include and the listener watch")
+        .onChange(of: includeListeners) { _ in
+            Task { await refresh() }
+        }
+        .onChange(of: includeUDP) { _ in
+            Task { await refresh() }
+        }
+    }
+
     private var summary: some View {
         AppCard {
             VStack(alignment: .leading, spacing: DesignToken.Spacing.small) {
-                SectionLabel(text: "Processes")
+                HStack(spacing: DesignToken.Spacing.large) {
+                    StatTile(value: "\(connections.count)", label: "Connections")
+                    StatTile(
+                        value: "\(OpenConnectionsParser.byProcess(connections).count)",
+                        label: "Processes", tint: AppPalette.info)
+                    StatTile(
+                        value: "\(connections.filter(\.isListener).count)", label: "Listening",
+                        tint: AppPalette.warning)
+                    StatTile(
+                        value: "\(connections.filter { $0.exposure.isLANReachable }.count)",
+                        label: "Reachable", tint: AppPalette.danger)
+                    Spacer()
+                }
                 if connections.isEmpty {
                     Text(
                         "No TCP connections were returned. lsof can hide other users' sockets without root; this screen never asks for a password."
@@ -196,36 +216,6 @@ struct OpenConnectionsToolView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                } else {
-                    HStack(spacing: DesignToken.Spacing.large) {
-                        StatTile(value: "\(connections.count)", label: "Connections")
-                        StatTile(
-                            value: "\(OpenConnectionsParser.byProcess(connections).count)",
-                            label: "Processes", tint: AppPalette.info)
-                        StatTile(
-                            value: "\(connections.filter(\.isListener).count)", label: "Listening",
-                            tint: AppPalette.warning)
-                        StatTile(
-                            value: "\(connections.filter { $0.exposure.isLANReachable }.count)",
-                            label: "Reachable", tint: AppPalette.danger)
-                        StatTile(
-                            value: "\(groups.count)",
-                            label: groupMode == .socket ? "Sockets" : "Process groups")
-                        Spacer()
-                    }
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: DesignToken.Spacing.tight) {
-                            ForEach(OpenConnectionsParser.byProcess(connections), id: \.process) {
-                                group in
-                                Text("\(group.process) · \(group.count)")
-                                    .font(.caption2)
-                                    .padding(.horizontal, DesignToken.Spacing.small)
-                                    .padding(.vertical, DesignToken.Spacing.hairline)
-                                    .background(
-                                        Color.secondary.opacity(0.10), in: Capsule())
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -314,13 +304,9 @@ struct OpenConnectionsToolView: View {
                 value: { .text(serviceTitle($0)) }
             ) { serviceLabel($0) },
             AppTableColumn(
-                id: "proto", title: "Proto", minWidth: AppColumnWidth.short,
-                value: { .text(protoLabel($0)) }
-            ) { Text(protoLabel($0)) },
-            AppTableColumn(
                 id: "local", title: "Local", minWidth: AppColumnWidth.long,
                 value: { .text(localText($0)) }
-            ) { Text(localText($0)).monospaced() },
+            ) { Text(localDisplay($0)).monospaced() },
             AppTableColumn(
                 id: "exposure", title: "Exposure", minWidth: AppColumnWidth.compact,
                 value: { .text(primary($0)?.exposure.title) }
@@ -471,11 +457,6 @@ struct OpenConnectionsToolView: View {
         }
     }
 
-    private func protoLabel(_ row: TableRow) -> String {
-        guard let connection = primary(row) else { return "—" }
-        return "\(connection.protocolName) \(connection.transport)"
-    }
-
     @ViewBuilder
     private func exposureLabel(_ row: TableRow) -> some View {
         if let connection = primary(row) {
@@ -563,13 +544,6 @@ struct OpenConnectionsToolView: View {
                             }
                         }
                     }
-
-                    Text(
-                        "One notification per new or closed listener. Loopback sockets are labelled local; everything else is LAN-reachable, never \"public\", because LanFi cannot see your router's port forwarding."
-                    )
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
@@ -599,6 +573,13 @@ struct OpenConnectionsToolView: View {
         case .group(let group): return group.local
         case .connection(let connection): return connection.local
         }
+    }
+
+    /// The protocol used to have its own column for a two-word value; it now
+    /// prefixes the address, which is where it is actually read.
+    private func localDisplay(_ row: TableRow) -> String {
+        guard let connection = primary(row) else { return localText(row) }
+        return "\(connection.protocolName) \(localText(row))"
     }
 
     private func stateText(_ row: TableRow) -> String {

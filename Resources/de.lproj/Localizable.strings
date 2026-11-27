@@ -2275,3 +2275,5 @@
 "Survey map" = "Survey-Karte";
 "Tag Last Sample" = "Letzte Messung markieren";
 "Tagged the newest sample with the current position." = "Die neueste Messung wurde mit der aktuellen Position markiert.";
+
+"Sockets to include and the listener watch" = "Einzuschließende Sockets und die Listener-Überwachung";

@@ -227,7 +227,7 @@ struct NetworkToolkitView: View {
             icon: tool.icon,
             title: tool.title,
             trailingText: tool.isAvailable ? nil : String(localized: "Soon"),
-            isSelected: toolkit.selection == tool,
+            isSelected: toolkit.selection.sidebarHost == tool,
             isEnabled: tool.isAvailable,
             help: tool.isAvailable ? tool.title : tool.plannedDetail
         ) {
@@ -238,12 +238,12 @@ struct NetworkToolkitView: View {
     private var detailHeader: some View {
         ToolkitHeaderBar {
             HStack(spacing: DesignToken.Spacing.compact) {
-                Image(systemName: toolkit.selection.icon)
+                Image(systemName: toolkit.selection.sidebarHost.icon)
                     .font(.title3)
                     .foregroundColor(.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(toolkit.selection.title)
+                    Text(toolkit.selection.sidebarHost.title)
                         .font(.title3.bold())
                     Text(toolkit.selection.section.title)
                         .font(.caption)

@@ -2312,3 +2312,5 @@
 "Survey map" = "Карта обследования";
 "Tag Last Sample" = "Пометить последний замер";
 "Tagged the newest sample with the current position." = "Последний замер отмечен текущей позицией.";
+
+"Sockets to include and the listener watch" = "Какие сокеты включать и наблюдение за слушателями";

@@ -114,8 +114,12 @@ struct ProcessTrafficToolView: View {
                 }
                 if enabled {
                     summary
-                    appHistoryCard
-                    domainAttributionCard
+                    // Two secondary cards side by side instead of a long stack
+                    // before the table the tab exists for.
+                    HStack(alignment: .top, spacing: DesignToken.Spacing.medium) {
+                        appHistoryCard
+                        domainAttributionCard
+                    }
                     table
                 } else {
                     consentCard

@@ -16,6 +16,20 @@ final class ToolRoutingTests: XCTestCase {
         XCTAssertTrue(ToolboxTool.openConnections.showsInSidebar)
     }
 
+    /// Selecting a tab (Traffic, GeoIP, Path Check) must keep its host's
+    /// sidebar row highlighted instead of leaving the sidebar blank.
+    func testTabsKeepTheirHostInTheSidebar() {
+        XCTAssertEqual(ToolboxTool.processTraffic.sidebarHost, .openConnections)
+        XCTAssertEqual(ToolboxTool.geoIP.sidebarHost, .whois)
+        XCTAssertEqual(ToolboxTool.pathCheck.sidebarHost, .portScan)
+        XCTAssertEqual(ToolboxTool.traceroute.sidebarHost, .visualTraceroute)
+        XCTAssertEqual(ToolboxTool.mtr.sidebarHost, .visualTraceroute)
+        XCTAssertEqual(ToolboxTool.dnsPropagation.sidebarHost, .dnsLookup)
+        for tool in ToolboxTool.allCases where tool.showsInSidebar {
+            XCTAssertEqual(tool.sidebarHost, tool)
+        }
+    }
+
     func testEveryScreenIsReachable() {
         // Every screen in the enum is reachable from at least one tool; the
         // merged screens (.visualTraceroute, .whoisGeoIP) are routes other

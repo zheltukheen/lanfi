@@ -10,8 +10,17 @@ struct WhoisGeoIPToolView: View {
     @ObservedObject var whois: WhoisToolModel
     @ObservedObject var geo: GeoIPToolModel
     @ObservedObject var toolkit: ToolkitViewModel
+    /// GeoIP used to fill itself with this Mac's address on appear, which put
+    /// the local connection under every Whois answer. The page now stays empty
+    /// until a search, and "My IP" is an explicit mode that hides the
+    /// registration instead of stacking under it.
+    @State private var showsMyIP = false
 
     private var isRunning: Bool { whois.isRunning || geo.isRunning }
+
+    private var hasGeoContent: Bool {
+        geo.isRunning || geo.report != nil || geo.errorMessage != nil
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,9 +41,17 @@ struct WhoisGeoIPToolView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
                     targetCard
-                    WhoisToolView(model: whois, showsControls: false)
-                    Divider()
-                    GeoIPToolView(model: geo, showsControls: false)
+                    if showsMyIP {
+                        if hasGeoContent {
+                            GeoIPToolView(model: geo, showsControls: false)
+                        }
+                    } else {
+                        WhoisToolView(model: whois, showsControls: false)
+                        if hasGeoContent {
+                            Divider()
+                            GeoIPToolView(model: geo, showsControls: false)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .appContentPadding()
@@ -62,9 +79,14 @@ struct WhoisGeoIPToolView: View {
                 .onSubmit(runBoth)
                 AppButton("Look Up", tone: .primary) { runBoth() }
                     .disabled(isRunning)
-                AppButton("My IP", systemImage: "location") { geo.run(myIP: true) }
-                    .disabled(isRunning)
+                AppButton("My IP", systemImage: "location") {
+                    showsMyIP = true
+                    geo.query = ""
+                    geo.run(myIP: true)
+                }
+                .disabled(isRunning)
                 AppButton("Clear", tone: .quiet) {
+                    showsMyIP = false
                     whois.clear()
                     geo.clear()
                 }
@@ -77,7 +99,10 @@ struct WhoisGeoIPToolView: View {
 
     private var statusText: String {
         if isRunning { return String(localized: "Looking up…") }
-        let target = whois.report?.name ?? geo.report?.ip ?? whois.query
+        let target =
+            showsMyIP
+            ? (geo.report?.ip ?? "")
+            : (whois.report?.name ?? geo.report?.ip ?? whois.query)
         return target.isEmpty ? String(localized: "Ready") : target
     }
 
@@ -87,6 +112,7 @@ struct WhoisGeoIPToolView: View {
     }
 
     private func runBoth() {
+        showsMyIP = false
         geo.query = whois.query
         whois.run()
         geo.run()
@@ -97,7 +123,9 @@ struct WhoisGeoIPToolView: View {
     private func autoRunForDeepLink() {
         switch toolkit.selection {
         case .geoIP:
-            if geo.report == nil, !geo.isRunning { geo.run(myIP: true) }
+            // No implicit "My IP": a deep link may carry a target in the
+            // mirrored query, and the page otherwise stays empty.
+            if geo.report == nil, !geo.isRunning, !geo.query.isEmpty { geo.run() }
         case .whois:
             if whois.report == nil, !whois.isRunning, !whois.query.isEmpty { whois.run() }
         default:

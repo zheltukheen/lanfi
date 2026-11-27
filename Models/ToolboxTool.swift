@@ -75,6 +75,14 @@ enum ToolboxTool: String, CaseIterable, Identifiable, Hashable, Sendable {
     /// False for screens that are a tab of a host tool (see `ToolDescriptor`).
     var showsInSidebar: Bool { ToolRegistry.descriptor(for: self).showsInSidebar }
 
+    /// The sidebar entry that owns this screen. Tabs such as Traffic, GeoIP or
+    /// Path Check share a screen with their host, so selecting one must keep
+    /// the host highlighted instead of blanking the sidebar.
+    var sidebarHost: ToolboxTool {
+        if showsInSidebar { return self }
+        return Self.allCases.first { $0.screen == screen && $0.showsInSidebar } ?? self
+    }
+
     /// The view route this tool draws (shared by tabbed tools).
     var screen: ToolScreen { ToolRegistry.descriptor(for: self).screen }
 

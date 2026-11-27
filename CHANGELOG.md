@@ -3,6 +3,23 @@
 ## Unreleased
 
 ### Changed
+- **Connections keeps its sidebar entry when a subtab is chosen.** Sockets,
+  Traffic and Rules share one screen, but switching to Traffic selected a tool
+  that is hidden from the sidebar, so the highlight vanished until the first
+  tab was back; the sidebar now always highlights the screen's host entry.
+- **Whois & GeoIP starts empty and My IP is its own mode.** GeoIP used to fill
+  itself with this Mac's public address on open, which put the local connection
+  under every registration answer. The bottom half now appears only after a
+  search or when My IP is pressed, and My IP hides the Whois answer instead of
+  stacking under it.
+- **The survey plan pans with a two-finger scroll.** Pinch and the zoom buttons
+  still work; the drag gesture was the only way to move the plan, so a trackpad
+  scroll did nothing at all.
+- **The Connections screen is quieter.** Four toolbar switches moved into one
+  Filters menu, the duplicate socket/process chips and an extra stat tile are
+  gone, the per-socket protocol became part of the Local address, and the two
+  traffic cards sit side by side. Every action, column value and block-rule path
+  is still reachable.
 - **Path Check is now a shortcut of Port Scan.** The reachability screen had its
   own TCP connect loop, target/port parsing and result type, duplicating the
   scanner. The screen is gone: its deep link routes to Port Scan, and the
