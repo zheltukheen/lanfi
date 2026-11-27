@@ -2,94 +2,13 @@
 
 ## 5.7.1 — 2026-11-27
 
-### Changed
-- **Connections keeps its sidebar entry when a subtab is chosen.** Sockets,
-  Traffic and Rules share one screen, but switching to Traffic selected a tool
-  that is hidden from the sidebar, so the highlight vanished until the first
-  tab was back; the sidebar now always highlights the screen's host entry.
-- **Whois & GeoIP starts empty and My IP is its own mode.** GeoIP used to fill
-  itself with this Mac's public address on open, which put the local connection
-  under every registration answer. The bottom half now appears only after a
-  search or when My IP is pressed, and My IP hides the Whois answer instead of
-  stacking under it.
-- **The survey plan pans with a two-finger scroll.** Pinch and the zoom buttons
-  still work; the drag gesture was the only way to move the plan, so a trackpad
-  scroll did nothing at all.
-- **The Connections screen is quieter.** Four toolbar switches moved into one
-  Filters menu, the duplicate socket/process chips and an extra stat tile are
-  gone, the per-socket protocol became part of the Local address, and the two
-  traffic cards sit side by side. Every action, column value and block-rule path
-  is still reachable.
-- **Path Check is now a shortcut of Port Scan.** The reachability screen had its
-  own TCP connect loop, target/port parsing and result type, duplicating the
-  scanner. The screen is gone: its deep link routes to Port Scan, and the
-  `lanfi_path_check` MCP tool runs the shared `PortScanner` probe. A reachability
-  check is a thirty-two-port scan, so it now reports the same states and timings.
-- **The empty device shelf links to the scan that fills it** (“Scan now” switches
-  to the Scan tab) instead of only describing where to go. The two LAN tabs stay
-  separate: one is a live sweep, the other the history that outlives it.
-- **Sixty more shared labels speak all five languages.** Air time, channels,
-  capture controls, controller rules and the common copy/forget/disconnect
-  actions were English-only in every locale because they never reached the
-  catalogue; they now do, and `scripts/localization_audit.py` ignores sample
-  values (`1.1.1.1`, `AA:BB:CC`, `-70 dBm`) so its count reflects real copy.
-- **The capture, workspace and inspector screens are translated.** Another 122
-  strings — the capture sheet's trigger, hop, truncation and Wireshark help, the
-  scan mode/interval toolbar, channel and SNR history, the field catalogue, the
-  general settings page and the device shelf's QR, warranty and wake controls —
-  existed only as literals, so every language showed them in English.
-- **HTTP traffic, sockets, per-process traffic, Security Watch and the survey map
-  are translated too.** 68 more strings: HAR import and credential redaction,
-  block rules and socket termination, the nettop privacy note, twin/downgrade
-  heuristics and baseline controls, and the GPX import/export and location
-  actions. The untranslated-literal backlog is down to 527.
-- **The Overview answers “is anything wrong?” first.** A plain-language card lists
-  what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
-  weak signal, unprotected network, hidden SSIDs) and links straight to the tool
-  that explains it; when nothing is wrong it says so in one line. The Automation
-  tile that most people never opened is now a Signal tile with the dBm value and
-  a word for it, and the connection card names the signal in words as well.
-- **Whois and GeoIP share one page instead of two tabs.** One target field runs
-  both lookups and both answers are visible at once, so the location is no
-  longer hidden behind a tab that also hid the registration.
-- **The site survey map can be moved.** The plan now pans with a drag and zooms
-  with a pinch or the new −/+/reset buttons, instead of a drag being swallowed
-  and nothing moving. Clicking still records a point, and the heat map, overlays
-  and calibration stay in plan coordinates.
-- **Known Networks, GPS map, the site survey and NAT now use the shared header,
-  padding and card components.** Known Networks moved five figures out of a
-  fixed-height toolbar into one caption; the survey and GPS screens use
-  `ToolkitHeaderBar` instead of hand-built strips; NAT no longer centres its
-  controls, which is why its target field used to sit in the middle.
-
-### Fixed
-- **Tables span their card.** Columns now fill the width, with no gap between
-  the card edge and the first or last column; the density and per-cell inset are
-  unchanged.
-- **Network Guard inventory follows the network it was scanned on.** Entries
-  now remember their subnet and scan interface, so a laptop that moves between
-  networks no longer reports another network's devices as "known devices were
-  not seen" or claims a device is trusted everywhere. Each network's first
-  scan adopts its devices silently; files written before this change keep their
-  entries and are attached to the network they are next seen on.
-- **The Traffic tab no longer drags its tab strip off the top.** The per-process
-  cards and table now scroll like the sockets tab instead of overflowing a
-  short window once sampling starts.
-
-### Changed
-- **Location Services is asked once, at launch, for the whole app.** The request
-  and the status check moved out of the Wi-Fi analyzer into `LocationAccessCenter`,
-  so every screen sees the same answer and picks up a change made in System
-  Settings. A wide prompt names the features that depend on the permission and
-  offers Allow / Open Settings / Check Again / Continue without; a one-line
-  banner in the app shell reopens it from any tool. The analyzer no longer
-  replaces its table with a permission empty state — without access it keeps
-  showing signal and channels and the banner explains what stays hidden.
-  The GPS map and the site survey no longer own a location manager that could
-  ask the system themselves: they read a fix through the same module and wait
-  for its answer, and the survey tool shows the shared prompt instead.
-
 ### Added
+- **Capture on all sensors, merged into one trace (G3).** Remote sensors can now
+  capture in one run: LanFi walks the saved sensors one at a time, reads each
+  pcap, and writes a single pcapng where every sensor is its own interface
+  (`if_name` = sensor name, `if_description` = host). Packets are ordered by
+  timestamp across sensors, so Wireshark shows which radio saw each frame and
+  an unreachable sensor is reported in the sheet without discarding the others.
 - **Sensor attribution in a merged capture (G3).** The analyzer now reads each
   pcapng interface's name and keeps it with every frame, so the Offline Capture
   screen can say which radio saw a beacon, a client and a deauth/disassoc frame:
@@ -97,17 +16,6 @@
   Sensors column, a finding names the sensor that saw the deauth, and CSV/JSON
   exports carry the names. The packet index is the single reader for both
   analyses, and the duplicated pcap/pcapng readers were removed.
-- **A localization audit.** `scripts/localization_audit.py` reports locale
-  parity and lists UI literals that never reached
-  `en.lproj/Localizable.strings`; 27 of those shared strings (Sensors, the new
-  capture labels, Delete, Reload, Copy SSID and friends) are now translated in
-  all five languages.
-- **Capture on all sensors, merged into one trace (G3).** Remote sensors can now
-  capture in one run: LanFi walks the saved sensors one at a time, reads each
-  pcap, and writes a single pcapng where every sensor is its own interface
-  (`if_name` = sensor name, `if_description` = host). Packets are ordered by
-  timestamp across sensors, so Wireshark shows which radio saw each frame and
-  an unreachable sensor is reported in the sheet without discarding the others.
 - **Switch port lookup (G15).** The LAN scanner can ask a switch where a device
   is plugged in: it walks the BRIDGE-MIB and Q-BRIDGE forwarding tables and the
   LLDP neighbours read-only, then shows the port, the VLAN (and its name) and
@@ -132,6 +40,92 @@
   classifier (advertised role, then Bonjour/UPnP services, then open ports, then
   the MAC vendor or hostname), and the inspector labels the row “Kind ·
   inferred” unless the device described itself.
+- **A localization audit.** `scripts/localization_audit.py` reports locale
+  parity and lists UI literals that never reached
+  `en.lproj/Localizable.strings`; 27 of those shared strings (Sensors, the new
+  capture labels, Delete, Reload, Copy SSID and friends) are now translated in
+  all five languages.
+
+### Changed
+- **Whois and GeoIP share one page, and it starts empty.** One target field runs
+  both lookups and both answers are visible at once, so the location is no
+  longer hidden behind a tab that also hid the registration. GeoIP no longer
+  fills itself with this Mac's public address on open — that put the local
+  connection under every registration answer — so the bottom half appears only
+  after a search or when My IP is pressed, and My IP is an explicit mode that
+  hides the Whois answer instead of stacking under it.
+- **The survey plan moves like a map.** The drag gesture used to be the only way
+  to pan and a trackpad scroll did nothing at all; the plan now pans with a
+  two-finger scroll as well as a drag, and zooms with a pinch or the −/+/reset
+  buttons. Clicking still records a point, and the heat map, overlays and
+  calibration stay in plan coordinates.
+- **The Overview answers “is anything wrong?” first.** A plain-language card lists
+  what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
+  weak signal, unprotected network, hidden SSIDs) and links straight to the tool
+  that explains it; when nothing is wrong it says so in one line. The Automation
+  tile that most people never opened is now a Signal tile with the dBm value and
+  a word for it, and the connection card names the signal in words as well.
+- **Connections is quieter and keeps its sidebar entry.** Sockets, Traffic and
+  Rules share one screen, but switching to Traffic selected a tool that is
+  hidden from the sidebar, so the highlight vanished until the first tab was
+  back; the sidebar now always highlights the screen's host entry. Four toolbar
+  switches moved into one Filters menu, the duplicate socket/process chips and
+  an extra stat tile are gone, the per-socket protocol became part of the Local
+  address, and the two traffic cards sit side by side. Every action, column value
+  and block-rule path is still reachable.
+- **Path Check is now a shortcut of Port Scan.** The reachability screen had its
+  own TCP connect loop, target/port parsing and result type, duplicating the
+  scanner. The screen is gone: its deep link routes to Port Scan, and the
+  `lanfi_path_check` MCP tool runs the shared `PortScanner` probe. A reachability
+  check is a thirty-two-port scan, so it now reports the same states and timings.
+- **The empty device shelf links to the scan that fills it** (“Scan now” switches
+  to the Scan tab) instead of only describing where to go. The two LAN tabs stay
+  separate: one is a live sweep, the other the history that outlives it.
+- **Known Networks, GPS map, the site survey and NAT now use the shared header,
+  padding and card components.** Known Networks moved five figures out of a
+  fixed-height toolbar into one caption; the survey and GPS screens use
+  `ToolkitHeaderBar` instead of hand-built strips; NAT no longer centres its
+  controls, which is why its target field used to sit in the middle.
+- **Location Services is asked once, at launch, for the whole app.** The request
+  and the status check moved out of the Wi-Fi analyzer into `LocationAccessCenter`,
+  so every screen sees the same answer and picks up a change made in System
+  Settings. A wide prompt names the features that depend on the permission and
+  offers Allow / Open Settings / Check Again / Continue without; a one-line
+  banner in the app shell reopens it from any tool. The analyzer no longer
+  replaces its table with a permission empty state — without access it keeps
+  showing signal and channels and the banner explains what stays hidden.
+  The GPS map and the site survey no longer own a location manager that could
+  ask the system themselves: they read a fix through the same module and wait
+  for its answer, and the survey tool shows the shared prompt instead.
+- **Sixty more shared labels speak all five languages.** Air time, channels,
+  capture controls, controller rules and the common copy/forget/disconnect
+  actions were English-only in every locale because they never reached the
+  catalogue; they now do, and `scripts/localization_audit.py` ignores sample
+  values (`1.1.1.1`, `AA:BB:CC`, `-70 dBm`) so its count reflects real copy.
+- **The capture, workspace and inspector screens are translated.** Another 122
+  strings — the capture sheet's trigger, hop, truncation and Wireshark help, the
+  scan mode/interval toolbar, channel and SNR history, the field catalogue, the
+  general settings page and the device shelf's QR, warranty and wake controls —
+  existed only as literals, so every language showed them in English.
+- **HTTP traffic, sockets, per-process traffic, Security Watch and the survey map
+  are translated too.** 68 more strings: HAR import and credential redaction,
+  block rules and socket termination, the nettop privacy note, twin/downgrade
+  heuristics and baseline controls, and the GPX import/export and location
+  actions. The untranslated-literal backlog is down to 527.
+
+### Fixed
+- **Tables span their card.** Columns now fill the width, with no gap between
+  the card edge and the first or last column; the density and per-cell inset are
+  unchanged.
+- **Network Guard inventory follows the network it was scanned on.** Entries
+  now remember their subnet and scan interface, so a laptop that moves between
+  networks no longer reports another network's devices as "known devices were
+  not seen" or claims a device is trusted everywhere. Each network's first
+  scan adopts its devices silently; files written before this change keep their
+  entries and are attached to the network they are next seen on.
+- **The Traffic tab no longer drags its tab strip off the top.** The per-process
+  cards and table now scroll like the sockets tab instead of overflowing a
+  short window once sampling starts.
 
 ## 5.7.0 — 2026-11-26
 
