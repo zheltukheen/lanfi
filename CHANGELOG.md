@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Changed
+- **Location Services is asked once, at launch, for the whole app.** The request
+  and the status check moved out of the Wi-Fi analyzer into `LocationAccessCenter`,
+  so every screen sees the same answer and picks up a change made in System
+  Settings. A wide prompt names the features that depend on the permission and
+  offers Allow / Open Settings / Check Again / Continue without; a one-line
+  banner in the app shell reopens it from any tool. The analyzer no longer
+  replaces its table with a permission empty state — without access it keeps
+  showing signal and channels and the banner explains what stays hidden.
+
 ### Added
 - **Switch port lookup (G15).** The LAN scanner can ask a switch where a device
   is plugged in: it walks the BRIDGE-MIB and Q-BRIDGE forwarding tables and the

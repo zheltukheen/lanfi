@@ -1930,3 +1930,16 @@
 "Possible VPN leaks" = "Possible VPN leaks";
 "%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld of 100 · %lld samples over %@ · average %lld dBm";
 "Not enough data: %lld samples over %@." = "Not enough data: %lld samples over %@.";
+
+"Location access is off" = "Location access is off";
+"macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services. LanFi uses it for scanning and for GPS-tagged survey points, and nothing leaves this Mac." = "macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services. LanFi uses it for scanning and for GPS-tagged survey points, and nothing leaves this Mac.";
+"Access was denied in System Settings. Turn LanFi on under Privacy & Security → Location Services, then check again." = "Access was denied in System Settings. Turn LanFi on under Privacy & Security → Location Services, then check again.";
+"Used by" = "Used by";
+"Wi-Fi analyzer and scan table" = "Wi-Fi analyzer and scan table";
+"Wi-Fi Monitor and its alerts" = "Wi-Fi Monitor and its alerts";
+"Roaming test" = "Roaming test";
+"Site survey and GPS points" = "Site survey and GPS points";
+"Menu bar signal" = "Menu bar signal";
+"Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific.";
+"Continue without" = "Continue without";
+"Location access is off — Wi-Fi names may stay hidden." = "Location access is off — Wi-Fi names may stay hidden.";

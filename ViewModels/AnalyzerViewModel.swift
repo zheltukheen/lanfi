@@ -44,7 +44,9 @@ class AnalyzerViewModel: ObservableObject {
 
     // MARK: - Dependencies
     let scanner: any WiFiScanning
-    let locationManager = LocationManager()
+    /// Owned by `LocationAccessCenter` (requested at launch, checked on every
+    /// screen); the analyzer only mirrors its status.
+    let access = LocationAccessCenter.shared
     let annotationStore = AnnotationStore()
     let sessionStore = SessionStore()
     let columnProfileStore = ColumnProfileStore()
@@ -237,16 +239,15 @@ class AnalyzerViewModel: ObservableObject {
             .store(in: &cancellables)
 
         // Location Status Binding
-        locationManager.$authorizationStatus
+        access.$state
             .receive(on: RunLoop.main)
-            .sink { [weak self] status in
+            .sink { [weak self] state in
                 guard let self = self else { return }
-                let authorized = (status == .authorizedAlways || status == .authorized)
                 #if DEBUG
                     if self.isDemoSeeded { return }
                 #endif
-                self.isLocationAuthorized = authorized
-                if authorized {
+                self.isLocationAuthorized = state.isGranted
+                if state.isGranted {
                     self.refresh()
                 }
             }
@@ -270,10 +271,9 @@ class AnalyzerViewModel: ObservableObject {
     /// Вызывается из App при переходе в активное состояние,
     /// чтобы проверить, не изменил ли пользователь права доступа в Настройках
     func checkLocationAuthorization() {
-        // Предполагается, что ваш класс LocationManager имеет этот метод.
-        // Если это стандартный CLLocationManager, то статус обновляется автоматически через делегат,
-        // но если это ваша обертка — вызываем её метод.
-        locationManager.refreshAuthorizationStatus()
+        // Re-reads System Settings through the shared access module instead of
+        // keeping a second location manager alive for one call.
+        access.refresh()
     }
 
 }

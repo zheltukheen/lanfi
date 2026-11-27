@@ -14,6 +14,7 @@ struct NetworkToolkitView: View {
     @EnvironmentObject private var analyzer: AnalyzerViewModel
     @EnvironmentObject private var survey: SurveyViewModel
     @Environment(\.openWindow) private var openWindow
+    @ObservedObject private var access = LocationAccessCenter.shared
     @State private var searchText = ""
     @State private var showingPalette = false
     @State private var showingSupport = false
@@ -40,6 +41,11 @@ struct NetworkToolkitView: View {
             sidebar
             sidebarResizer
             VStack(spacing: 0) {
+                // The Location check is app-wide, so the reminder sits in the
+                // shell every tool renders inside, not in the analyzer alone.
+                if !access.isAuthorized {
+                    LocationAccessBanner(access: access)
+                }
                 if !isWorkspaceTool {
                     detailHeader
                 }

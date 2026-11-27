@@ -1929,3 +1929,16 @@
 "Possible VPN leaks" = "Fuites VPN possibles";
 "%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld sur 100 · %lld échantillons sur %@ · moyenne %lld dBm";
 "Not enough data: %lld samples over %@." = "Données insuffisantes : %lld échantillons sur %@.";
+
+"Location access is off" = "Accès à la localisation désactivé";
+"macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services. LanFi uses it for scanning and for GPS-tagged survey points, and nothing leaves this Mac." = "macOS ne révèle les noms de réseaux Wi-Fi (SSID) et les identifiants de points d’accès (BSSID) qu’aux apps ayant accès aux services de localisation. LanFi l’utilise pour l’analyse et pour les points de relevé géolocalisés ; rien ne quitte ce Mac.";
+"Access was denied in System Settings. Turn LanFi on under Privacy & Security → Location Services, then check again." = "L’accès a été refusé dans Réglages Système. Activez LanFi dans Confidentialité et sécurité → Service de localisation, puis vérifiez à nouveau.";
+"Used by" = "Utilisé par";
+"Wi-Fi analyzer and scan table" = "Analyseur Wi-Fi et tableau de scan";
+"Wi-Fi Monitor and its alerts" = "Moniteur Wi-Fi et ses alertes";
+"Roaming test" = "Test d’itinérance";
+"Site survey and GPS points" = "Relevé de site et points GPS";
+"Menu bar signal" = "Signal dans la barre des menus";
+"Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "Sans cet accès, les scans fonctionnent encore, mais les noms et l’identification des fabricants restent masqués et les événements du moniteur sont moins précis.";
+"Continue without" = "Continuer sans";
+"Location access is off — Wi-Fi names may stay hidden." = "Accès à la localisation désactivé — les noms Wi-Fi peuvent rester masqués.";

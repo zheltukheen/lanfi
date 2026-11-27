@@ -244,10 +244,10 @@ extension AnalyzerViewModel {
     }
 
     func requestLocationAuthorization() {
-        locationManager.requestAuthorization()
+        access.request()
     }
 
     func openSystemLocationSettings() {
-        locationManager.openSystemSettings()
+        access.openSystemSettings()
     }
 }

@@ -96,37 +96,30 @@ struct MainTableView: View {
                                 .background(DesignToken.Surface.warningFill)
                             }
 
-                            if viewModel.isLocationAuthorized || !viewModel.networks.isEmpty {
-                                VStack(spacing: 0) {
-                                    if !viewModel.isLocationAuthorized {
-                                        CompactPermissionBanner(viewModel: viewModel)
-                                    }
-                                    if case .staleData = placeholder, !viewModel.networks.isEmpty {
-                                        StaleDataBanner(
-                                            lastScan: viewModel.lastScanDate,
-                                            onRefresh: { viewModel.refresh() })
-                                    }
-                                    ZStack {
-                                        WiFiTableView(viewModel: viewModel)
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            VStack(spacing: 0) {
+                                if case .staleData = placeholder, !viewModel.networks.isEmpty {
+                                    StaleDataBanner(
+                                        lastScan: viewModel.lastScanDate,
+                                        onRefresh: { viewModel.refresh() })
+                                }
+                                ZStack {
+                                    WiFiTableView(viewModel: viewModel)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                                        if viewModel.networks.isEmpty {
-                                            EmptyScanView(
-                                                placeholder: placeholder,
-                                                onRefresh: { viewModel.refresh() },
-                                                onAllowLocation: {
-                                                    viewModel.requestLocationAuthorization()
-                                                },
-                                                onOpenSettings: {
-                                                    viewModel.openSystemLocationSettings()
-                                                },
-                                                onClearFilters: { viewModel.clearAllFilters() }
-                                            )
-                                        }
+                                    if viewModel.networks.isEmpty {
+                                        EmptyScanView(
+                                            placeholder: placeholder,
+                                            onRefresh: { viewModel.refresh() },
+                                            onAllowLocation: {
+                                                viewModel.requestLocationAuthorization()
+                                            },
+                                            onOpenSettings: {
+                                                viewModel.openSystemLocationSettings()
+                                            },
+                                            onClearFilters: { viewModel.clearAllFilters() }
+                                        )
                                     }
                                 }
-                            } else {
-                                LocationPermissionView(viewModel: viewModel)
                             }
                         }
 
@@ -275,11 +268,6 @@ struct MainTableView: View {
             }
         }
         .textSelection(.enabled)
-        .onAppear {
-            if !viewModel.isLocationAuthorized {
-                viewModel.requestLocationAuthorization()
-            }
-        }
     }
 
 }

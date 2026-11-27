@@ -158,35 +158,6 @@ struct StaleDataBanner: View {
     }
 }
 
-struct CompactPermissionBanner: View {
-    @ObservedObject var viewModel: AnalyzerViewModel
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "location.slash.fill")
-                .foregroundColor(.orange)
-            Text("Location access is off — SSID/BSSID may be hidden. Other scan data still works.")
-                .font(.caption)
-            Spacer()
-            Button("Allow") {
-                viewModel.requestLocationAuthorization()
-            }
-            .controlSize(.small)
-            Button("Settings") {
-                viewModel.openSystemLocationSettings()
-            }
-            .controlSize(.small)
-        }
-        .padding(.horizontal, DesignToken.Spacing.compact)
-        .padding(.vertical, DesignToken.Spacing.tight)
-        .background(DesignToken.Surface.warningFill)
-        .overlay(
-            Rectangle().frame(height: 1)
-                .foregroundColor(DesignToken.Surface.tintStroke(AppPalette.warning)),
-            alignment: .bottom)
-    }
-}
-
 struct ScanHealthBanner: View {
     @ObservedObject var viewModel: AnalyzerViewModel
     let health: ScanHealth
@@ -223,46 +194,5 @@ struct ScanHealthBanner: View {
             Rectangle().frame(height: 1)
                 .foregroundColor(DesignToken.Surface.tintStroke(AppPalette.danger)),
             alignment: .bottom)
-    }
-}
-
-struct LocationPermissionView: View {
-    @ObservedObject var viewModel: AnalyzerViewModel
-
-    var body: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "location.circle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.accentColor)
-            Text("Location access is required")
-                .font(.title3.bold())
-            Text(
-                "macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services enabled. LanFi uses this permission solely for scanning and never stores or transmits your location."
-            )
-            .font(.callout)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: 480)
-
-            HStack(spacing: 10) {
-                Button("Allow Access") {
-                    viewModel.requestLocationAuthorization()
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button("Open System Settings") {
-                    viewModel.openSystemLocationSettings()
-                }
-                .buttonStyle(.bordered)
-
-                Button("Check Again") {
-                    viewModel.checkLocationAuthorization()
-                }
-                .buttonStyle(.borderless)
-            }
-        }
-        .padding(DesignToken.Spacing.emptyState)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 }

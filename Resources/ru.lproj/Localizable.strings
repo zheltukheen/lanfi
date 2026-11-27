@@ -1966,3 +1966,16 @@
 "Possible VPN leaks" = "Возможные утечки VPN";
 "%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld из 100 · %lld отсчётов за %@ · в среднем %lld dBm";
 "Not enough data: %lld samples over %@." = "Мало данных: %lld отсчётов за %@.";
+
+"Location access is off" = "Нет доступа к геопозиции";
+"macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services. LanFi uses it for scanning and for GPS-tagged survey points, and nothing leaves this Mac." = "macOS раскрывает имена Wi-Fi-сетей (SSID) и идентификаторы точек доступа (BSSID) только приложениям с доступом к службам геолокации. LanFi использует его для сканирования и для точек съёмки с GPS; ничего не покидает этот Mac.";
+"Access was denied in System Settings. Turn LanFi on under Privacy & Security → Location Services, then check again." = "Доступ запрещён в настройках системы. Включите LanFi в разделе «Конфиденциальность и безопасность» → «Службы геолокации» и проверьте снова.";
+"Used by" = "Используется в";
+"Wi-Fi analyzer and scan table" = "Анализатор Wi-Fi и таблица сканирования";
+"Wi-Fi Monitor and its alerts" = "Wi-Fi Monitor и его оповещения";
+"Roaming test" = "Тест роуминга";
+"Site survey and GPS points" = "Съёмка площадки и GPS-точки";
+"Menu bar signal" = "Сигнал в строке меню";
+"Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "Без доступа сканирование работает, но имена и определение вендора остаются скрытыми, а события монитора менее точны.";
+"Continue without" = "Продолжить без доступа";
+"Location access is off — Wi-Fi names may stay hidden." = "Нет доступа к геопозиции — имена Wi-Fi могут остаться скрытыми.";

@@ -1929,3 +1929,16 @@
 "Possible VPN leaks" = "可能的 VPN 泄漏";
 "%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld / 100 · %lld 个采样，跨度 %@ · 平均 %lld dBm";
 "Not enough data: %lld samples over %@." = "数据不足：%lld 个采样，跨度 %@。";
+
+"Location access is off" = "未开启定位权限";
+"macOS only reveals Wi-Fi network names (SSIDs) and access point identifiers (BSSIDs) to apps with Location Services. LanFi uses it for scanning and for GPS-tagged survey points, and nothing leaves this Mac." = "macOS 只会向拥有定位服务权限的应用显示 Wi-Fi 网络名称（SSID）和接入点标识（BSSID）。LanFi 用它进行扫描和带 GPS 的勘测点记录，任何数据都不会离开这台 Mac。";
+"Access was denied in System Settings. Turn LanFi on under Privacy & Security → Location Services, then check again." = "权限已在系统设置中被拒绝。请在「隐私与安全性」→「定位服务」中开启 LanFi，然后再次检查。";
+"Used by" = "用于";
+"Wi-Fi analyzer and scan table" = "Wi-Fi 分析器与扫描表格";
+"Wi-Fi Monitor and its alerts" = "Wi-Fi 监视器及其提醒";
+"Roaming test" = "漫游测试";
+"Site survey and GPS points" = "现场勘测与 GPS 点";
+"Menu bar signal" = "菜单栏信号";
+"Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "没有该权限仍可扫描，但名称和厂商识别会保持隐藏，监视器事件也会不够精确。";
+"Continue without" = "暂不开启";
+"Location access is off — Wi-Fi names may stay hidden." = "未开启定位权限 — Wi-Fi 名称可能保持隐藏。";

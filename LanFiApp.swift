@@ -41,6 +41,9 @@ struct LanFiApp: App {
     @StateObject private var toolkit = ToolkitViewModel()
     @StateObject private var uptime = UptimeMonitor()
     @StateObject private var meter = MenuBarMeterModel.shared
+    /// The one place that asks for Location Services. The request fires at
+    /// launch and the answer is visible to every screen.
+    @StateObject private var access = LocationAccessCenter.shared
     @StateObject private var connectivity = ConnectivityWatchdog.shared
     @StateObject private var route = RouteMonitor.shared
     @AppStorage("LanFi.highContrast") private var highContrast = false
@@ -84,6 +87,7 @@ struct LanFiApp: App {
                 .preferredColorScheme(preferredAppearance)
                 .background(WindowFitter())
                 .onAppear {
+                    access.start()
                     meter.start()
                     connectivity.start()
                     GatewayGuard.shared.start()
@@ -103,6 +107,15 @@ struct LanFiApp: App {
                     FirstRunView(
                         onAllowLocation: { viewModel.requestLocationAuthorization() },
                         onFinish: { hasCompletedFirstRun = true })
+                }
+                .sheet(
+                    isPresented: Binding(
+                        get: { access.isPromptPresented && hasCompletedFirstRun },
+                        set: { presented in
+                            if !presented { access.dismissPrompt() }
+                        })
+                ) {
+                    LocationAccessPrompt()
                 }
                 .onOpenURL { url in
                     guard let link = DeepLink.parse(url) else { return }
