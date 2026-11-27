@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 /// One document that carries the evidence a support call or a client handover
 /// needs: the current scan, the survey, security findings, diagnostics, speed
@@ -55,6 +56,57 @@ struct CombinedReport: Equatable {
         let detail: String
     }
 
+    /// G10 verdict over the stored monitor history. Absent when the monitor
+    /// has no samples, so a report never claims a score it cannot back.
+    struct ReliabilitySummary: Equatable {
+        struct ProblemRow: Equatable {
+            let title: String
+            let count: Int
+            let range: String
+        }
+
+        let grade: String
+        let score: Int?
+        let detail: String
+        let problems: [ProblemRow]
+
+        static func make(_ assessment: ReliabilityAssessment) -> ReliabilitySummary? {
+            guard assessment.sampleCount > 0 else { return nil }
+            let detail: String
+            if let score = assessment.score {
+                detail = String(
+                    format: String(
+                        localized: "%lld of 100 · %lld samples over %@ · average %lld dBm"),
+                    score, assessment.sampleCount, duration(assessment.observedSeconds),
+                    assessment.averageRSSI ?? 0)
+            } else {
+                detail = String(
+                    format: String(localized: "Not enough data: %lld samples over %@."),
+                    assessment.sampleCount, duration(assessment.observedSeconds))
+            }
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            let problems = assessment.problems.map { problem in
+                ProblemRow(
+                    title: problem.signal.title, count: problem.count,
+                    range:
+                        "\(formatter.string(from: problem.firstAt)) – \(formatter.string(from: problem.lastAt))"
+                )
+            }
+            return ReliabilitySummary(
+                grade: assessment.grade.title, score: assessment.score, detail: detail,
+                problems: problems)
+        }
+
+        private static func duration(_ seconds: TimeInterval) -> String {
+            let total = max(0, Int(seconds.rounded()))
+            if total >= 3_600 { return "\(total / 3_600) h \(total % 3_600 / 60) min" }
+            if total >= 60 { return "\(total / 60) min" }
+            return "\(total) s"
+        }
+    }
+
     /// Per-site branding for a client handover. Optional so reports made from
     /// an unnamed survey keep the generic LanFi header.
     struct Branding: Equatable {
@@ -73,6 +125,7 @@ struct CombinedReport: Equatable {
     let diagnostics: [DiagnosticRow]
     let speedTests: [SpeedRow]
     let events: [EventRow]
+    let reliability: ReliabilitySummary?
 }
 
 enum CombinedReportBuilder {
@@ -84,6 +137,7 @@ enum CombinedReportBuilder {
         diagnostics: DiagnosticsReport?,
         speedTests: [ThroughputMeasurement],
         events: [MonitorEvent],
+        monitorSamples: [MonitorSample] = [],
         maximumEvents: Int = 40
     ) -> CombinedReport {
         let scan =
@@ -151,6 +205,15 @@ enum CombinedReportBuilder {
             CombinedReport.EventRow(at: event.at, kind: event.kind.title, detail: event.detail)
         }
 
+        let reliability = CombinedReport.ReliabilitySummary.make(
+            ReliabilityAssessor.assess(
+                samples: monitorSamples.map { ReliabilitySample(at: $0.at, rssi: $0.rssi) },
+                signals: events.compactMap { event in
+                    event.kind.reliabilitySignal.map {
+                        ReliabilitySignalRecord(signal: $0, at: event.at)
+                    }
+                }))
+
         let branding = survey.flatMap { project -> CombinedReport.Branding? in
             let title = project.reportTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
             let client = project.clientName?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -173,7 +236,8 @@ enum CombinedReportBuilder {
             findings: findings,
             diagnostics: diagnosticRows,
             speedTests: speedRows,
-            events: eventRows
+            events: eventRows,
+            reliability: reliability
         )
     }
 

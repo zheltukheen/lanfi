@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 enum MonitorRetention: String, CaseIterable, Identifiable, Codable, Hashable {
     case hour
@@ -72,6 +73,54 @@ enum MonitorEventKind: String, Codable, CaseIterable, Hashable, Sendable {
         case .vpnDropped: return String(localized: "VPN dropped")
         case .vpnLeak: return String(localized: "Possible VPN leak")
         case .newAccessPoint: return String(localized: "New access point")
+        }
+    }
+}
+
+extension MonitorEventKind {
+    /// The kinds that cost reliability. A successful roam, a connection and a
+    /// new neighbour are neutral, so they never move the score.
+    var reliabilitySignal: ReliabilitySignal? {
+        switch self {
+        case .disconnected: return .disconnected
+        case .roamingFailure: return .roamingFailure
+        case .weakSignal: return .weakSignal
+        case .deauthBurst: return .deauthBurst
+        case .securityChanged: return .securityChanged
+        case .channelChanged: return .channelChanged
+        case .gatewayChanged: return .gatewayChanged
+        case .dnsMismatch: return .dnsMismatch
+        case .vpnDropped: return .vpnDropped
+        case .vpnLeak: return .vpnLeak
+        case .connected, .roamed, .newAccessPoint: return nil
+        }
+    }
+}
+
+extension ReliabilitySignal {
+    var title: String {
+        switch self {
+        case .disconnected: return String(localized: "Disconnections")
+        case .roamingFailure: return String(localized: "Roaming failures")
+        case .weakSignal: return String(localized: "Weak-signal transitions")
+        case .deauthBurst: return String(localized: "Deauth bursts")
+        case .securityChanged: return String(localized: "Security changes")
+        case .channelChanged: return String(localized: "Channel changes")
+        case .gatewayChanged: return String(localized: "Gateway MAC changes")
+        case .dnsMismatch: return String(localized: "DNS mismatches")
+        case .vpnDropped: return String(localized: "VPN drops")
+        case .vpnLeak: return String(localized: "Possible VPN leaks")
+        }
+    }
+}
+
+extension ReliabilityGrade {
+    var title: String {
+        switch self {
+        case .good: return String(localized: "Good")
+        case .fair: return String(localized: "Fair")
+        case .poor: return String(localized: "Poor")
+        case .insufficient: return String(localized: "Not enough data")
         }
     }
 }

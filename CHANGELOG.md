@@ -16,6 +16,13 @@
   and how many known devices this scan did not return. Files written by the old
   key-only guard are adopted as trusted, so upgrading does not flag the whole
   network as unverified.
+- **Reliability score and problem history (G10).** The Wi-Fi Monitor no longer
+  only plots the recorded window; it judges it: a score out of 100 with a
+  grade, the share of samples at a weak signal, and a ranked problem list
+  (disconnects, failed roams, deauth bursts, security, gateway, DNS and VPN
+  changes, channel changes) with counts and time ranges. Fewer than ten samples
+  or five minutes of history reports “not enough data” instead of scoring
+  noise. The combined HTML and PDF report gained the same Reliability section.
 - **Inferred device types.** A scanned device's kind is now chosen from a shared
   classifier (advertised role, then Bonjour/UPnP services, then open ports, then
   the MAC vendor or hostname), and the inspector labels the row “Kind ·

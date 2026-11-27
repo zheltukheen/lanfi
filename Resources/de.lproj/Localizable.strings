@@ -1905,3 +1905,27 @@
 "The switch did not answer SNMP. Check the address and the community." = "Der Switch hat nicht auf SNMP geantwortet. Adresse und Community prüfen.";
 "The switch answered but exposed no forwarding table. Bridge MIB access may be disabled, or the community may not be allowed to read it." = "Der Switch hat geantwortet, liefert aber keine Forwarding-Tabelle. Bridge-MIB-Zugriff ist vielleicht deaktiviert oder die Community darf ihn nicht lesen.";
 "MAC address" = "MAC-Adresse";
+
+"Reliability" = "Zuverlässigkeit";
+"out of 100" = "von 100";
+"Good" = "Gut";
+"Fair" = "Mittel";
+"Poor" = "Schlecht";
+"Not enough data" = "Zu wenige Daten";
+"Not enough data yet" = "Noch zu wenige Daten";
+"A verdict needs at least %lld samples over %@; this window has %lld." = "Für ein Urteil braucht es mindestens %lld Messwerte über %@; dieses Fenster hat %lld.";
+"Weak signal for %lld%% of samples" = "Schwaches Signal bei %lld%% der Messwerte";
+"No disconnects, failed roams or weak stretches in this window." = "Keine Abbrüche, fehlgeschlagenen Roamings oder Schwachsignal-Phasen in diesem Fenster.";
+"%lld samples over %@" = "%lld Messwerte über %@";
+"Disconnections" = "Verbindungsabbrüche";
+"Roaming failures" = "Fehlgeschlagene Roamings";
+"Weak-signal transitions" = "Schwachsignal-Wechsel";
+"Deauth bursts" = "Deauth-Bursts";
+"Security changes" = "Sicherheitsänderungen";
+"Channel changes" = "Kanalwechsel";
+"Gateway MAC changes" = "Gateway-MAC-Wechsel";
+"DNS mismatches" = "DNS-Abweichungen";
+"VPN drops" = "VPN-Abbrüche";
+"Possible VPN leaks" = "Mögliche VPN-Leaks";
+"%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld von 100 · %lld Messwerte über %@ · Ø %lld dBm";
+"Not enough data: %lld samples over %@." = "Zu wenige Daten: %lld Messwerte über %@.";

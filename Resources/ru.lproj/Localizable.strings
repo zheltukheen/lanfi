@@ -1942,3 +1942,27 @@
 "The switch did not answer SNMP. Check the address and the community." = "Коммутатор не ответил по SNMP. Проверьте адрес и community.";
 "The switch answered but exposed no forwarding table. Bridge MIB access may be disabled, or the community may not be allowed to read it." = "Коммутатор ответил, но не отдал таблицу пересылки. Возможно, доступ к Bridge MIB отключён или community его не разрешает.";
 "MAC address" = "MAC-адрес";
+
+"Reliability" = "Надёжность";
+"out of 100" = "из 100";
+"Good" = "Хорошо";
+"Fair" = "Средне";
+"Poor" = "Плохо";
+"Not enough data" = "Мало данных";
+"Not enough data yet" = "Пока мало данных";
+"A verdict needs at least %lld samples over %@; this window has %lld." = "Для вердикта нужно минимум %lld отсчётов за %@; в этом окне — %lld.";
+"Weak signal for %lld%% of samples" = "Слабый сигнал в %lld%% отсчётов";
+"No disconnects, failed roams or weak stretches in this window." = "В этом окне нет обрывов, неудачных роумингов и провалов сигнала.";
+"%lld samples over %@" = "%lld отсчётов за %@";
+"Disconnections" = "Обрывы связи";
+"Roaming failures" = "Неудачные роуминги";
+"Weak-signal transitions" = "Переходы в слабый сигнал";
+"Deauth bursts" = "Всплески deauth";
+"Security changes" = "Изменения безопасности";
+"Channel changes" = "Смены канала";
+"Gateway MAC changes" = "Смены MAC шлюза";
+"DNS mismatches" = "Расхождения DNS";
+"VPN drops" = "Обрывы VPN";
+"Possible VPN leaks" = "Возможные утечки VPN";
+"%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld из 100 · %lld отсчётов за %@ · в среднем %lld dBm";
+"Not enough data: %lld samples over %@." = "Мало данных: %lld отсчётов за %@.";

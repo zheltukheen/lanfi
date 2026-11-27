@@ -10,6 +10,9 @@ enum CombinedReportExporter {
         sections.append(scanSection(report.scan))
         if let survey = report.survey { sections.append(surveySection(survey)) }
         sections.append(findingsSection(CombinedReportBuilder.sortedFindings(report.findings)))
+        if let reliability = report.reliability {
+            sections.append(reliabilitySection(reliability))
+        }
         sections.append(diagnosticsSection(report.diagnostics))
         sections.append(speedSection(report.speedTests))
         sections.append(eventsSection(report.events))
@@ -128,6 +131,22 @@ enum CombinedReportExporter {
             <table><thead><tr><th>Severity</th><th>Finding</th><th>Detail</th><th>BSSID</th></tr></thead>\
             <tbody>\(body)</tbody></table>
             """)
+    }
+
+    private static func reliabilitySection(_ summary: CombinedReport.ReliabilitySummary) -> String {
+        var body = "<p class=\"meta\">\(escape(summary.detail))</p>"
+        if summary.problems.isEmpty {
+            body += "<p>No disconnects, failed roams or weak stretches in this window.</p>"
+        } else {
+            let rows = summary.problems.map { problem in
+                "<tr><td>\(escape(problem.title))</td><td>\(problem.count)</td>"
+                    + "<td>\(escape(problem.range))</td></tr>"
+            }.joined()
+            body +=
+                "<table><thead><tr><th>Problem</th><th>Times</th><th>When</th></tr></thead>"
+                + "<tbody>\(rows)</tbody></table>"
+        }
+        return section("Reliability — \(summary.grade)", body)
     }
 
     private static func diagnosticsSection(_ rows: [CombinedReport.DiagnosticRow]) -> String {

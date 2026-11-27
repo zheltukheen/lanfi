@@ -1,8 +1,8 @@
 # Competitor gap analysis — second pass, 26 November 2026
 
 Status: **active backlog**. Baseline: LanFi 5.6.34 (build 117). G1, G2, G4, G4b,
-G5, G6, G7, G8, G9 and G15 shipped on 2026-11-26/27 and are marked below; the
-next slice is G10.
+G5, G6, G7, G8, G9, G10 and G15 shipped on 2026-11-26/27 and are marked below;
+the next slice is G3 (multi-sensor capture merged into one trace).
 
 This is the second pass. [`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) asked *"can we
 sell this?"*; [`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md) asked *"what
@@ -74,7 +74,7 @@ code and `CHANGELOG.md`, not against the marketing table.
 | RSSI "radar" to physically locate one AP or client | WiFi Lens 1.6, Acrylic | ✅ smoothed RSSI locator on the captured BSSID, labelled signal guidance | delivered (G8b, not direction finding) |
 | 20+ heatmap visualisations (SNR, noise, SIR, AP count, band) | NetSpot, iBwave, NetAlly AirMapper | ◐ measured RSSI heatmap + pass/fail overlay; SNR/noise live in the scan, not per survey point | partly delivered (G9), layers open |
 | User-defined pass/fail validation profiles | NetAlly AutoTest, Sidos, Ekahau, iBwave, LanFi | ✅ per-floor profile (RSSI, throughput, latency) with PDF/HTML verdict | delivered |
-| Network reliability score and problem history | WiFi Lens Pro | ◐ event log, statistics | **G10** |
+| Network reliability score and problem history | WiFi Lens Pro | ✅ score, grade and ranked problems over the monitor window, also in the report | delivered (G10) |
 | Spectrum recording and replay | WiFi Lens Pro, Chanalyzer | — (live sweep + CSV import) | **G11** |
 | Continuous observation while the app is closed | WiFi Lens Pro | — (menu-bar app must run) | **G12** (blocked) |
 | AP placement optimisation, capacity planning, BOM | Ekahau AI Pro, Hamina, iBwave | ◐ predictive placement, no optimiser/capacity/BOM | **G13** |
@@ -469,6 +469,24 @@ problem list with time ranges. Surfaced as a Monitor card and in the report.
 **Acceptance.** Fixtures for a clean day, a flapping day and a sparse day
 produce high / low / insufficient verdicts; the score is deterministic.
 
+**Delivered 2026-11-27.** `ReliabilityAssessor` (in `LanFiCore`) turns monitor
+samples and the events that cost reliability into a verdict: a score from 100
+with every category capped, a grade, the average RSSI, the weak-signal share and
+a ranked problem list with counts and first/last timestamps. A successful roam,
+reconnecting and a new neighbour cost nothing; nine or fewer samples, or less
+than five minutes, report “not enough data” instead of a low score. The Wi-Fi
+Monitor shows it as a card above the comparison row, and the combined report
+(HTML and therefore PDF) has a Reliability section with the same verdict and
+problem table. Covered by `LanFiCoreTests.ReliabilityTests` (clean, flapping,
+sparse, empty, deterministic and ordering fixtures) and
+`Tests/MonitorReliabilityTests` (event mapping, summary, report HTML).
+
+Not delivered: the score covers whatever the monitor retains (24 hours by
+default), so a week-long verdict needs a longer retention, and nothing judges
+data the monitor never recorded — a period when LanFi was closed is absent from
+the window rather than reported as “insufficient observation”. The card was not
+viewed in a GUI session here.
+
 ### G11 — Spectrum recording and replay (P2, S/M)
 
 **Evidence.** WiFi Lens Pro records spectrum changes for a selected AP and
@@ -602,10 +620,11 @@ risk, in order:
    with G4b (import aliases and the unmapped-column report).
 
 G4 (field catalogue) and G7 (airtime attribution, legacy flag) shipped on
-2026-11-26 with G4b, G8 (client detail and signal locator) followed, and G15
-(SNMP bridge/VLAN path and an authorized device inventory) shipped on
-2026-11-27. The next slice is G10: a reliability score over stored monitor data,
-which needs no hardware and reuses the samples the monitor already keeps.
+2026-11-26 with G4b, G8 (client detail and signal locator) followed, G15
+(SNMP bridge/VLAN path and an authorized device inventory) shipped later the
+same day, and G10 (a reliability score over stored monitor data) closed the
+hardware-free items on 2026-11-27. The next slice is G3: multi-sensor capture
+merged into one annotated trace, which is the largest remaining parity gap.
 
 ## Sources
 

@@ -76,6 +76,18 @@ final class MonitorViewModel: ObservableObject {
     }
     var lastSample: MonitorSample? { snapshot.samples.last }
     var statistics: HistoryStatistics? { snapshot.statistics }
+
+    /// G10 verdict over the recorded window. Computed from the snapshot so it
+    /// always describes what the monitor currently holds.
+    var reliability: ReliabilityAssessment {
+        ReliabilityAssessor.assess(
+            samples: snapshot.samples.map { ReliabilitySample(at: $0.at, rssi: $0.rssi) },
+            signals: snapshot.events.compactMap { event in
+                event.kind.reliabilitySignal.map {
+                    ReliabilitySignalRecord(signal: $0, at: event.at)
+                }
+            })
+    }
     var csv: String { MonitorCSV.make(samples: snapshot.samples) }
     var peersCSV: String { MonitorCSV.make(peers: peers) }
 

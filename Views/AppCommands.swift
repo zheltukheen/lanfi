@@ -258,7 +258,8 @@ struct LanFiCommands: Commands {
             survey: survey.project,
             diagnostics: diagnostics.report,
             speedTests: ThroughputHistoryStore().load(),
-            events: viewModel.monitor.events
+            events: viewModel.monitor.events,
+            monitorSamples: viewModel.monitor.samples
         )
     }
 

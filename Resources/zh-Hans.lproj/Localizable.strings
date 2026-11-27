@@ -1905,3 +1905,27 @@
 "The switch did not answer SNMP. Check the address and the community." = "交换机未响应 SNMP。请检查地址和 community。";
 "The switch answered but exposed no forwarding table. Bridge MIB access may be disabled, or the community may not be allowed to read it." = "交换机已响应，但没有提供转发表。Bridge MIB 访问可能被禁用，或 community 无权读取。";
 "MAC address" = "MAC 地址";
+
+"Reliability" = "可靠性";
+"out of 100" = "满分 100";
+"Good" = "良好";
+"Fair" = "一般";
+"Poor" = "较差";
+"Not enough data" = "数据不足";
+"Not enough data yet" = "数据仍然不足";
+"A verdict needs at least %lld samples over %@; this window has %lld." = "给出结论至少需要 %lld 个采样、跨度 %@；当前窗口只有 %lld 个。";
+"Weak signal for %lld%% of samples" = "有 %lld%% 的采样处于弱信号";
+"No disconnects, failed roams or weak stretches in this window." = "本窗口内没有断连、漫游失败或弱信号阶段。";
+"%lld samples over %@" = "%lld 个采样，跨度 %@";
+"Disconnections" = "断连";
+"Roaming failures" = "漫游失败";
+"Weak-signal transitions" = "弱信号切换";
+"Deauth bursts" = "deauth 突发";
+"Security changes" = "安全变化";
+"Channel changes" = "信道变化";
+"Gateway MAC changes" = "网关 MAC 变化";
+"DNS mismatches" = "DNS 不一致";
+"VPN drops" = "VPN 断开";
+"Possible VPN leaks" = "可能的 VPN 泄漏";
+"%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld / 100 · %lld 个采样，跨度 %@ · 平均 %lld dBm";
+"Not enough data: %lld samples over %@." = "数据不足：%lld 个采样，跨度 %@。";

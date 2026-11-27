@@ -1,5 +1,6 @@
 import AppKit
 import Charts
+import LanFiCore
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -49,6 +50,7 @@ struct MonitorView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         currentLink
                         statisticsRow
+                        reliabilityCard
                         comparisonRow
                         chart
                         peerList
@@ -188,6 +190,118 @@ struct MonitorView: View {
             .padding(DesignToken.Spacing.compact)
             .background(Color(nsColor: .controlBackgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+        }
+    }
+
+    /// G10: a verdict over the recorded window instead of a timeline the reader
+    /// has to interpret themselves.
+    private var reliabilityCard: some View {
+        let assessment = monitor.reliability
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Reliability").font(.headline)
+                Spacer()
+                Text(assessment.grade.title)
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, DesignToken.Spacing.tight)
+                    .padding(.vertical, 2)
+                    .background(
+                        DesignToken.Surface.tintFill(color(for: assessment.grade)), in: Capsule())
+            }
+
+            if let score = assessment.score {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("\(score)")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundColor(color(for: assessment.grade))
+                    Text("out of 100")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(observationLabel(assessment))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                if assessment.weakSampleShare > 0 {
+                    Text(
+                        String(
+                            format: String(localized: "Weak signal for %lld%% of samples"),
+                            Int((assessment.weakSampleShare * 100).rounded()))
+                    )
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+                if assessment.problems.isEmpty {
+                    Text("No disconnects, failed roams or weak stretches in this window.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(assessment.problems.prefix(6)) { problem in
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                            Text(problem.signal.title)
+                                .font(.caption)
+                            Spacer()
+                            Text(problemRange(problem))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                            Text("×\(problem.count)")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            } else {
+                Text("Not enough data yet")
+                    .font(.caption.weight(.semibold))
+                Text(
+                    String(
+                        format: String(
+                            localized:
+                                "A verdict needs at least %lld samples over %@; this window has %lld."
+                        ), ReliabilityAssessor.minimumSamples,
+                        durationText(ReliabilityAssessor.minimumObservation), assessment.sampleCount)
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(DesignToken.Spacing.compact)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: DesignToken.Radius.control))
+    }
+
+    private func observationLabel(_ assessment: ReliabilityAssessment) -> String {
+        String(
+            format: String(localized: "%lld samples over %@"), assessment.sampleCount,
+            durationText(assessment.observedSeconds))
+    }
+
+    private func durationText(_ seconds: TimeInterval) -> String {
+        let total = max(0, Int(seconds.rounded()))
+        if total >= 3_600 { return "\(total / 3_600) h \(total % 3_600 / 60) min" }
+        if total >= 60 { return "\(total / 60) min" }
+        return "\(total) s"
+    }
+
+    private func problemRange(_ problem: ReliabilityProblem) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle =
+            Calendar.current.isDate(problem.firstAt, inSameDayAs: problem.lastAt) ? .none : .short
+        formatter.timeStyle = .short
+        return "\(formatter.string(from: problem.firstAt)) – \(formatter.string(from: problem.lastAt))"
+    }
+
+    private func color(for grade: ReliabilityGrade) -> Color {
+        switch grade {
+        case .good: return .green
+        case .fair: return .orange
+        case .poor: return .red
+        case .insufficient: return .secondary
         }
     }
 

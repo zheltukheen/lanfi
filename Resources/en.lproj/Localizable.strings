@@ -1906,3 +1906,27 @@
 "The switch did not answer SNMP. Check the address and the community." = "The switch did not answer SNMP. Check the address and the community.";
 "The switch answered but exposed no forwarding table. Bridge MIB access may be disabled, or the community may not be allowed to read it." = "The switch answered but exposed no forwarding table. Bridge MIB access may be disabled, or the community may not be allowed to read it.";
 "MAC address" = "MAC address";
+
+"Reliability" = "Reliability";
+"out of 100" = "out of 100";
+"Good" = "Good";
+"Fair" = "Fair";
+"Poor" = "Poor";
+"Not enough data" = "Not enough data";
+"Not enough data yet" = "Not enough data yet";
+"A verdict needs at least %lld samples over %@; this window has %lld." = "A verdict needs at least %lld samples over %@; this window has %lld.";
+"Weak signal for %lld%% of samples" = "Weak signal for %lld%% of samples";
+"No disconnects, failed roams or weak stretches in this window." = "No disconnects, failed roams or weak stretches in this window.";
+"%lld samples over %@" = "%lld samples over %@";
+"Disconnections" = "Disconnections";
+"Roaming failures" = "Roaming failures";
+"Weak-signal transitions" = "Weak-signal transitions";
+"Deauth bursts" = "Deauth bursts";
+"Security changes" = "Security changes";
+"Channel changes" = "Channel changes";
+"Gateway MAC changes" = "Gateway MAC changes";
+"DNS mismatches" = "DNS mismatches";
+"VPN drops" = "VPN drops";
+"Possible VPN leaks" = "Possible VPN leaks";
+"%lld of 100 · %lld samples over %@ · average %lld dBm" = "%lld of 100 · %lld samples over %@ · average %lld dBm";
+"Not enough data: %lld samples over %@." = "Not enough data: %lld samples over %@.";
