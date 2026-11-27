@@ -22,6 +22,8 @@ enum SNMPValue: Equatable {
     case string(String)
     case null
     case bytes([UInt8])
+    /// The agent has nothing past this OID; a walk stops here.
+    case endOfMibView
 
     var number: UInt64? {
         switch self {
@@ -38,6 +40,7 @@ enum SNMPValue: Equatable {
         case .string(let value): return value
         case .null: return "—"
         case .bytes(let value): return value.map { String(format: "%02X", $0) }.joined()
+        case .endOfMibView: return "—"
         }
     }
 }
@@ -89,9 +92,22 @@ enum SNMPBER {
     static func getRequest(
         community: String, oids: [String], requestID: Int = Int.random(in: 1...Int(Int32.max))
     ) -> [UInt8] {
+        request(pduTag: 0xA0, community: community, oids: oids, requestID: requestID)
+    }
+
+    /// SNMPv2c GetNextRequest: the primitive a table walk is built from.
+    static func getNextRequest(
+        community: String, oids: [String], requestID: Int = Int.random(in: 1...Int(Int32.max))
+    ) -> [UInt8] {
+        request(pduTag: 0xA1, community: community, oids: oids, requestID: requestID)
+    }
+
+    private static func request(
+        pduTag: UInt8, community: String, oids: [String], requestID: Int
+    ) -> [UInt8] {
         let bindings = oids.compactMap { oid($0) }.map { tlv(0x30, $0 + null()) }
         let pdu = tlv(
-            0xA0,
+            pduTag,
             integer(requestID) + integer(0) + integer(0)
                 + tlv(0x30, bindings.flatMap { $0 }))
         return tlv(0x30, integer(1) + octetString(community) + pdu)
@@ -139,8 +155,18 @@ enum SNMPBER {
     /// Parses a GetResponse into OID → value. Unknown PDUs and malformed
     /// variable bindings are skipped rather than guessed.
     static func parseResponse(_ bytes: [UInt8]) -> [String: SNMPValue] {
+        var result: [String: SNMPValue] = [:]
+        for binding in parseVarBinds(bytes) {
+            result[binding.oid] = binding.value
+        }
+        return result
+    }
+
+    /// The same response in the order the agent sent it, which a walk needs:
+    /// duplicates and ordering are meaningful when advancing the cursor.
+    static func parseVarBinds(_ bytes: [UInt8]) -> [(oid: String, value: SNMPValue)] {
         guard let (outer, _) = parseTLV(bytes, at: 0), outer.tag == 0x30 else {
-            return [:]
+            return []
         }
         var index = 0
         var fields: [TLV] = []
@@ -148,18 +174,18 @@ enum SNMPBER {
             fields.append(field)
             index = next
         }
-        guard fields.count >= 3, fields[0].tag == 0x02 else { return [:] }
+        guard fields.count >= 3, fields[0].tag == 0x02 else { return [] }
         // fields[1] is the community, fields[2] the PDU.
         let pdu = fields[2]
-        guard pdu.tag == 0xA2 else { return [:] }
+        guard pdu.tag == 0xA2 else { return [] }
         var listOffset = 0
         var pduFields: [TLV] = []
         while listOffset < pdu.body.count, let (field, next) = parseTLV(pdu.body, at: listOffset) {
             pduFields.append(field)
             listOffset = next
         }
-        guard let last = pduFields.last, last.tag == 0x30 else { return [:] }
-        var result: [String: SNMPValue] = [:]
+        guard let last = pduFields.last, last.tag == 0x30 else { return [] }
+        var result: [(oid: String, value: SNMPValue)] = []
         var cursor = 0
         while cursor < last.body.count,
             let (binding, next) = parseTLV(last.body, at: cursor)
@@ -169,7 +195,7 @@ enum SNMPBER {
                 oidField.tag == 0x06, oidEnd < binding.body.count,
                 let (valueField, _) = parseTLV(binding.body, at: oidEnd)
             else { continue }
-            result[decodeOID(oidField.body)] = value(valueField)
+            result.append((decodeOID(oidField.body), value(valueField)))
         }
         return result
     }
@@ -189,6 +215,8 @@ enum SNMPBER {
             return .counter(field.body.reduce(UInt64(0)) { $0 << 8 | UInt64($1) })
         case 0x46:
             return .counter(field.body.reduce(UInt64(0)) { $0 << 8 | UInt64($1) })
+        case 0x82:
+            return .endOfMibView
         default:
             return .bytes(field.body)
         }

@@ -23,6 +23,7 @@
 		0330652B018BDB05EC5C0984 /* RoamingAndReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE818C80D18B40E20A9B8C1 /* RoamingAndReportTests.swift */; };
 		034EA5961BF687A04130E259 /* SubnetToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B5B4E9B37894FE19EA35C4 /* SubnetToolView.swift */; };
 		03559CB3ABEE8BEBADC7939A /* MCPToolSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2882C100005D36324C3471C1 /* MCPToolSpec.swift */; };
+		0396E46277442E407385A80B /* SwitchInventoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D392D489FDEDFA0902720210 /* SwitchInventoryService.swift */; };
 		039AB40FABF47B0ADECAF5A1 /* AppTrafficHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B8AB7AAAA5FED2CFFA248D /* AppTrafficHistoryService.swift */; };
 		03CF77140CB81DF7D493B17D /* SubnetCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6325C3DDCA19ADC9BEA0533E /* SubnetCalculator.swift */; };
 		0414CEAA72E3B636E895180C /* ProcessTraffic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE2EDEB0966603FEAF5789D /* ProcessTraffic.swift */; };
@@ -136,6 +137,7 @@
 		1DB46460140986543F1BA01C /* RFExplorerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B348D4E69A2EE5ACBDA855E /* RFExplorerProtocol.swift */; };
 		1DFF1AD1CEE1CF507F7BF5F9 /* ChannelAirtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC2710C2AC8CF90C0DF933F /* ChannelAirtime.swift */; };
 		1EFC70956E27147CEDC78B37 /* DeviceShelfViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E655273CF1FC7D1022A52544 /* DeviceShelfViewModel.swift */; };
+		1F1822B84E69A05FBA14102B /* SwitchInventoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D392D489FDEDFA0902720210 /* SwitchInventoryService.swift */; };
 		20576C6CE715E5886BBD9D2C /* SurveyToolMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24E6961A4F201BABD47A5798 /* SurveyToolMode.swift */; };
 		20636A5C8E7B74A42614E1D0 /* RoamPingProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5522F29D6D5F4B75535C6AB8 /* RoamPingProbe.swift */; };
 		208BB97400CD7BDE717744BE /* DiagnosticsBundleExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E962425BD1FAD5D1CD1C8626 /* DiagnosticsBundleExporter.swift */; };
@@ -741,6 +743,7 @@
 		AAE42892771C2C4300EC0976 /* LiveThreatCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871DDCC7A56B7A10C2E02672 /* LiveThreatCounter.swift */; };
 		AB1A6CBA7071C7348E121C35 /* ServiceBannerParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E94D5CA3A991BCA72C33EB /* ServiceBannerParserTests.swift */; };
 		AB49A9A68F90C7B9211F09F6 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FD024E1089A2D2FC17D7DE /* DemoData.swift */; };
+		ABA32AAA1F1AEE39C6ACF1F4 /* SwitchInventoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3631A74B5DA04084B009F362 /* SwitchInventoryTests.swift */; };
 		ABB21C9B319DCB04A796814E /* DiagnosticsVerdictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C6645AA65DB8E7B56F2786 /* DiagnosticsVerdictTests.swift */; };
 		ABF22B4784B38A2B3B88A038 /* ChannelAirtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC2710C2AC8CF90C0DF933F /* ChannelAirtime.swift */; };
 		AC0AC1891255C2EB284C48AE /* RemoteCaptureSupervisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3C60A1DDF42194146B822D /* RemoteCaptureSupervisionTests.swift */; };
@@ -874,6 +877,7 @@
 		C798C36863567B3C5F58794E /* HardwareSpectrumController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C977D71047E72F5EE7FD045 /* HardwareSpectrumController.swift */; };
 		C813CAFE0D745891BA258E2A /* MCPLiveActionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E489B681C7777CF5C1221D46 /* MCPLiveActionService.swift */; };
 		C838E67620C7507F61B414A6 /* WiresharkLiveStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE1CCAA77CF66A0A9B58C71 /* WiresharkLiveStream.swift */; };
+		C849CD05418789B3057A3F23 /* SwitchInventoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D392D489FDEDFA0902720210 /* SwitchInventoryService.swift */; };
 		C924B9A44E307A85011C2703 /* MCPToolkit.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D01EE1E6CD07209D798EE4 /* MCPToolkit.swift */; };
 		C925F61CA545D6C5BA436748 /* ProtocolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D486B1748C166298A6029AF /* ProtocolsView.swift */; };
 		C96DA99231C835100E21E39F /* SecurityParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3543F9C8415CBB18D3FC7D /* SecurityParser.swift */; };
@@ -901,6 +905,7 @@
 		D0CE625FB3398E86F19E89EE /* LiveCaptureCounterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDAB2A1690004B3A1E607D1 /* LiveCaptureCounterService.swift */; };
 		D13F3638A8E9159EF1E890B2 /* TrafficAccountingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F6BA274B2173DEAAD167B5 /* TrafficAccountingService.swift */; };
 		D1648667B8154D468DB41503 /* NetworkMonitorToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA2422FC591B6EC50A468FC8 /* NetworkMonitorToolView.swift */; };
+		D1BB7B63F3C075AF51BB036B /* SwitchPortLookupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 197E43BB7D02D40E9C0C7DA3 /* SwitchPortLookupView.swift */; };
 		D1C7B1A449D306D1EBA688B5 /* APNameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD9DDB0042F741C0E9C0DDC4 /* APNameDetector.swift */; };
 		D1CBB7F1FEF856CF7CC45890 /* STUNTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7EE0457B7F983E14737372 /* STUNTester.swift */; };
 		D235C5022147C44A42D9B1AD /* InformationElementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F615B00753F1F4577B061 /* InformationElementParser.swift */; };
@@ -1149,6 +1154,7 @@
 		191E7257FF29A13F1D287F40 /* DiagnosticsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsModel.swift; sourceTree = "<group>"; };
 		192F86E002771C72C1DA379A /* SpectrumCSVImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrumCSVImporterTests.swift; sourceTree = "<group>"; };
 		1935527BA11697AF21ED58C9 /* LocalNetworkAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNetworkAccess.swift; sourceTree = "<group>"; };
+		197E43BB7D02D40E9C0C7DA3 /* SwitchPortLookupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchPortLookupView.swift; sourceTree = "<group>"; };
 		19E7FB850983AFFE4746A7C1 /* MLOInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLOInfoTests.swift; sourceTree = "<group>"; };
 		1A15755927E4D0684A0785FC /* AppLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLayout.swift; sourceTree = "<group>"; };
 		1B37874404CF5A22A6FBD506 /* DNSResolverSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSResolverSwitch.swift; sourceTree = "<group>"; };
@@ -1211,6 +1217,7 @@
 		35266E8DC3CAF14D8783A107 /* ProtocolDecoderVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolDecoderVersion.swift; sourceTree = "<group>"; };
 		352883E61F4B1915AF86ABAE /* FundingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundingService.swift; sourceTree = "<group>"; };
 		35E9FC12F0037B6A11AE1F1D /* HTTPTrafficToolModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPTrafficToolModel.swift; sourceTree = "<group>"; };
+		3631A74B5DA04084B009F362 /* SwitchInventoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchInventoryTests.swift; sourceTree = "<group>"; };
 		36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
 		37417F09ED94F9C9F85B6CC7 /* LanFiCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LanFiCore; path = Packages/LanFiCore; sourceTree = SOURCE_ROOT; };
 		3805F962E3C24A37E201581A /* DomainAttribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainAttribution.swift; sourceTree = "<group>"; };
@@ -1567,6 +1574,7 @@
 		D2F5B3E361879E843B9A0CCB /* SupervisedCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupervisedCommand.swift; sourceTree = "<group>"; };
 		D368881E2DEB581D710828AE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D37A2BD97C345A4AC7A86496 /* ThroughputNetworkSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThroughputNetworkSampler.swift; sourceTree = "<group>"; };
+		D392D489FDEDFA0902720210 /* SwitchInventoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchInventoryService.swift; sourceTree = "<group>"; };
 		D3BE013AC1ED9D3DAC0682A2 /* CrashLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogger.swift; sourceTree = "<group>"; };
 		D434AE2398E571E7D0231BB3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D4B07DC9641D64FC92A865A5 /* LANScannerToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LANScannerToolView.swift; sourceTree = "<group>"; };
@@ -1869,6 +1877,7 @@
 				55EECC86AC4031596CE3DFC3 /* SurveyTests.swift */,
 				DE87DB52DEA080817C5ABA9F /* SurveyToolModeTests.swift */,
 				C33DD9B926DECBAD8F95CA11 /* SurveyValidationTests.swift */,
+				3631A74B5DA04084B009F362 /* SwitchInventoryTests.swift */,
 				617F6573546BCAE0DF4E626D /* SystemInterfaceTests.swift */,
 				180B5BD80208CA54A3FA80C8 /* TableColumnLayoutTests.swift */,
 				BC7A369129025FC4EBB1BDFF /* TablePresentationTests.swift */,
@@ -1987,6 +1996,7 @@
 				70440EEB6DFBA56391EF9782 /* SpeedTestToolView.swift */,
 				F7C7744EF29C51E908F9D722 /* SSLToolView.swift */,
 				81B5B4E9B37894FE19EA35C4 /* SubnetToolView.swift */,
+				197E43BB7D02D40E9C0C7DA3 /* SwitchPortLookupView.swift */,
 				1251DE186EB932AAE19DEFA7 /* ToolkitComponents.swift */,
 				C3B5CC2CBB9EBE29F3970FF3 /* ToolkitSnapshot.swift */,
 				414F03575721ECEED7901DAD /* ToolTargetField.swift */,
@@ -2094,6 +2104,7 @@
 				30FFA0703F0A7F73955FD12C /* SurveyHeatmap.swift */,
 				E76D0661115093391A9191CE /* SurveyInterpolator.swift */,
 				B90B3763FEBE0A808B12AB64 /* SurveyReportExporter.swift */,
+				D392D489FDEDFA0902720210 /* SwitchInventoryService.swift */,
 				18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */,
 				CDEE9688DB8FED69CCE776BB /* TechnicalLocalizer.swift */,
 				AFE29058C545FB780778D85F /* TerminalLauncher.swift */,
@@ -2785,6 +2796,7 @@
 				658847047D757B644DF5EB8C /* SurveyReportExporter.swift in Sources */,
 				D821745F84216434D89CA514 /* SurveyRequirement.swift in Sources */,
 				53EA1B4173892849DEF3EE68 /* SurveyToolMode.swift in Sources */,
+				0396E46277442E407385A80B /* SwitchInventoryService.swift in Sources */,
 				9097E204620465AFD6E4251C /* SystemInterface.swift in Sources */,
 				58673DCC97B03896A7D17C6F /* SystemInterfaceScanner.swift in Sources */,
 				057C50671742F47A6745DDB0 /* TLSCertificateInspector.swift in Sources */,
@@ -3180,6 +3192,8 @@
 				E6320D655695DFDCC1166501 /* SurveyToolMode.swift in Sources */,
 				7B1381B45C3AED221C5DFDAD /* SurveyToolModeTests.swift in Sources */,
 				608C847C27B3254271CA8852 /* SurveyValidationTests.swift in Sources */,
+				C849CD05418789B3057A3F23 /* SwitchInventoryService.swift in Sources */,
+				ABA32AAA1F1AEE39C6ACF1F4 /* SwitchInventoryTests.swift in Sources */,
 				1C3C02C396F0120F287E7634 /* SystemInterface.swift in Sources */,
 				9EACC9A9F5C00542B19AA281 /* SystemInterfaceScanner.swift in Sources */,
 				E9991D8982D889943B4BDC3E /* SystemInterfaceTests.swift in Sources */,
@@ -3592,6 +3606,8 @@
 				20576C6CE715E5886BBD9D2C /* SurveyToolMode.swift in Sources */,
 				F6F8AF3652EA31397B4DE0B4 /* SurveyView.swift in Sources */,
 				8A566DC0965253A4A677EF9C /* SurveyViewModel.swift in Sources */,
+				1F1822B84E69A05FBA14102B /* SwitchInventoryService.swift in Sources */,
+				D1BB7B63F3C075AF51BB036B /* SwitchPortLookupView.swift in Sources */,
 				CC433033E5281E7434455AEE /* SystemInterface.swift in Sources */,
 				6D75B2F3E4FF6B9D91B48E76 /* SystemInterfaceScanner.swift in Sources */,
 				EE058151E745E400349F121C /* TLSCertificateInspector.swift in Sources */,

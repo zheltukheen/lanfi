@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Switch port lookup (G15).** The LAN scanner can ask a switch where a device
+  is plugged in: it walks the BRIDGE-MIB and Q-BRIDGE forwarding tables and the
+  LLDP neighbours read-only, then shows the port, the VLAN (and its name) and
+  the port's far end for the selected MAC. The sheet is opened from the device
+  inspector, defaults to the scan's gateway, keeps the community in memory for
+  that one read and says so. Devices behind another switch, on Wi-Fi, or absent
+  from the table are reported as such instead of guessed.
+- **An authorized device inventory.** Network Guard now remembers every device
+  with its first and last sighting and a trust flag the user sets per device or
+  for the whole list. The scanner shows how many devices are not trusted yet
+  and how many known devices this scan did not return. Files written by the old
+  key-only guard are adopted as trusted, so upgrading does not flag the whole
+  network as unverified.
+- **Inferred device types.** A scanned device's kind is now chosen from a shared
+  classifier (advertised role, then Bonjour/UPnP services, then open ports, then
+  the MAC vendor or hostname), and the inspector labels the row “Kind ·
+  inferred” unless the device described itself.
+
 ## 5.7.0 — 2026-11-26
 
 ### Added

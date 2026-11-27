@@ -9,6 +9,7 @@ struct LANScannerToolView: View {
     @State private var serviceDetails: [String: [UInt16: String]] = [:]
     @State private var detectingDeviceID: String?
     @State private var terminalError: String?
+    @State private var showingSwitchLookup = false
     @AppStorage(AppSettingsKey.lanScannerTab.rawValue) private var tabRaw = 0
     @StateObject private var shelf = DeviceShelfViewModel()
 
@@ -71,6 +72,13 @@ struct LANScannerToolView: View {
         .sheet(isPresented: $showingDiscover) {
             LiveClientDiscoveryView()
         }
+        .sheet(isPresented: $showingSwitchLookup) {
+            SwitchPortLookupView(
+                device: selectedDevice, gateway: model.result?.gateway
+            ) { inventory, host in
+                model.applySwitchInventory(inventory, host: host)
+            }
+        }
     }
 
     /// A `lanfi://device/<tag>` link (from a printed QR label) opens the shelf
@@ -99,6 +107,7 @@ struct LANScannerToolView: View {
                 }
                 if let result = model.result {
                     summary(result)
+                    trustSummary
                     HStack(alignment: .top, spacing: 14) {
                         devicesTable(result)
                         inspector(result)
@@ -200,6 +209,48 @@ struct LANScannerToolView: View {
         }
     }
 
+    /// What the inventory baseline has to say: devices the user has not trusted
+    /// yet and known devices that this scan did not return.
+    @ViewBuilder
+    private var trustSummary: some View {
+        if model.guardEnabled, model.result != nil {
+            let unverified = model.unverifiedDevices.count
+            let missing = model.missingDevices.count
+            if unverified > 0 || missing > 0 {
+                ToolkitCard {
+                    HStack(spacing: 8) {
+                        Image(systemName: unverified > 0 ? "shield.lefthalf.filled" : "questionmark.circle")
+                            .foregroundColor(.orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            if unverified > 0 {
+                                Text(
+                                    String(
+                                        format: String(localized: "%lld devices not yet trusted"),
+                                        unverified)
+                                )
+                                .font(.caption)
+                            }
+                            if missing > 0 {
+                                Text(
+                                    String(
+                                        format: String(
+                                            localized: "%lld known devices were not seen in this scan"),
+                                        missing)
+                                )
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            }
+                        }
+                        Spacer()
+                        if unverified > 0 {
+                            AppButton("Trust all devices", tone: .quiet) { model.authorizeAll() }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private var localNetworkGate: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
@@ -255,6 +306,21 @@ struct LANScannerToolView: View {
                         if let mac = device.mac {
                             Button("Copy MAC address") { copyText(mac) }
                         }
+                        if model.guardEnabled {
+                            Divider()
+                            if model.isAuthorized(device) {
+                                Button("Trusted device") {}.disabled(true)
+                            } else {
+                                Button("Trust this device") { model.authorize(device) }
+                            }
+                        }
+                        if let port = model.switchPort(for: device) {
+                            Button("Copy switch port") {
+                                copyText(
+                                    [port.portLabel, port.vlan.map { "VLAN \($0)" }]
+                                        .compactMap { $0 }.joined(separator: " · "))
+                            }
+                        }
                         if let launch = SSHLaunchCommand(device: device) {
                             Divider()
                             Button("Open SSH session") {
@@ -274,6 +340,10 @@ struct LANScannerToolView: View {
 
     /// Columns come from `LANSort`, so the table header and the sort values
     /// stay one list; only the cell drawing lives here.
+    private var selectedDevice: LANDevice? {
+        model.devices.first { $0.id == selectedID } ?? model.devices.first
+    }
+
     private var lanColumns: [AppTableColumn<LANDevice>] {
         LANSort.columns.map { column in
             AppTableColumn(
@@ -410,7 +480,8 @@ struct LANScannerToolView: View {
                             .background(DesignToken.Surface.tintFill(AppPalette.ok), in: Capsule())
                     }
                     Divider()
-                    inspectorRow("Kind", device.kindLabel)
+                    inspectorRow(
+                        device.kindIsInferred ? "Kind · inferred" : "Kind", device.kindLabel)
                     inspectorRow("Manufacturer", device.makeLabel)
                     if let model = device.model, !model.isEmpty {
                         inspectorRow("Model", model)
@@ -430,6 +501,26 @@ struct LANScannerToolView: View {
                     inspectorRow("Gateway", device.isGateway ? String(localized: "Yes") : "—")
                     inspectorRow(
                         "Latency", ToolkitFormat.milliseconds(device.latencyMilliseconds))
+                    if model.guardEnabled {
+                        Divider()
+                        HStack(spacing: 6) {
+                            Image(
+                                systemName: model.isAuthorized(device)
+                                    ? "checkmark.shield.fill" : "shield.lefthalf.filled"
+                            )
+                            .font(.caption2)
+                            .foregroundColor(model.isAuthorized(device) ? AppPalette.ok : .orange)
+                            Text(
+                                model.isAuthorized(device)
+                                    ? "Trusted device" : "Not verified yet"
+                            )
+                            .font(.caption2)
+                            Spacer()
+                            if !model.isAuthorized(device) {
+                                AppButton("Trust", tone: .quiet) { model.authorize(device) }
+                            }
+                        }
+                    }
                     if !device.serviceSummary.isEmpty {
                         Divider()
                         ToolkitSectionLabel(text: "Advertised services")
@@ -474,6 +565,36 @@ struct LANScannerToolView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                if let device, let inventory = model.switchInventory {
+                    Divider()
+                    ToolkitSectionLabel(text: "Switch")
+                    if let entry = model.switchPort(for: device) {
+                        inspectorRow("Port", entry.portLabel)
+                        if let vlan = entry.vlan {
+                            inspectorRow("VLAN", vlanLabel(vlan, in: inventory))
+                        }
+                        if let uplink = inventory.uplinkDescription(for: entry) {
+                            inspectorRow("Uplink", uplink)
+                        }
+                    } else if let host = model.switchHost {
+                        Text(
+                            String(
+                                format: String(
+                                    localized:
+                                        "Not in the forwarding table of %@. It may be behind another switch or silent right now."
+                                ), host)
+                        )
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Divider()
+                AppButton(
+                    "Locate on switch…", systemImage: "switch.2", tone: .quiet
+                ) {
+                    showingSwitchLookup = true
+                }
                 Divider()
                 AppButton(
                     "Discover Wi-Fi clients…", systemImage: "person.3", tone: .quiet
@@ -485,6 +606,11 @@ struct LANScannerToolView: View {
                     .foregroundColor(.secondary)
             }
         }
+    }
+
+    private func vlanLabel(_ vlan: Int, in inventory: SwitchInventory) -> String {
+        guard let name = inventory.bridge.vlanName(vlan) else { return "\(vlan)" }
+        return "\(vlan) · \(name)"
     }
 
     private func inspectorRow(_ title: String, _ value: String) -> some View {

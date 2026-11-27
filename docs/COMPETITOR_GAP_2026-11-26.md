@@ -1,8 +1,8 @@
 # Competitor gap analysis — second pass, 26 November 2026
 
 Status: **active backlog**. Baseline: LanFi 5.6.34 (build 117). G1, G2, G4, G4b,
-G5, G6, G7, G8 and G9 shipped on 2026-11-26 and are marked below; the next slice
-is G15.
+G5, G6, G7, G8, G9 and G15 shipped on 2026-11-26/27 and are marked below; the
+next slice is G10.
 
 This is the second pass. [`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) asked *"can we
 sell this?"*; [`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md) asked *"what
@@ -80,7 +80,7 @@ code and `CHANGELOG.md`, not against the marketing table.
 | AP placement optimisation, capacity planning, BOM | Ekahau AI Pro, Hamina, iBwave | ◐ predictive placement, no optimiser/capacity/BOM | **G13** |
 | Client roaming simulation in a plan | Hamina | — (live roaming test ships) | **G13b** |
 | 3D building model from CAD, auto wall detection | Ekahau, iBwave, Hamina, Sidos | ◐ multi-floor, wall materials, antenna patterns | **G14** (scoped out) |
-| Wired+wireless discovery with names, VLAN, switch port path | NetAlly EtherScope nXG | ◐ ARP/ICMP/Bonjour/SSDP/OUI/ports | **G15** |
+| Wired+wireless discovery with names, VLAN, switch port path | NetAlly EtherScope nXG | ✅ bridge/VLAN/LLDP port path over SNMP (no wired-side discovery of its own) | delivered (G15) |
 | MCP / agent access to live data | 7SIGNAL, WiFi Lens, LanFi | ✅ MCP 2.0 with live actions | **ahead** |
 | Menu-bar display pattern over many metrics | WiFi Signal (18 metrics) | ◐ 5 metrics, fixed formats | **G16** |
 | Interactive browser report with clickable APs | Hamina, Link-Live | ◐ self-contained HTML + PDF | minor |
@@ -450,7 +450,9 @@ Not delivered: per-band thresholds (a survey point stores no band) and
 noise/SNR criteria (they are not recorded per point, so judging them would mean
 inventing numbers). The extra NetSpot-style layers (SIR, AP count, interference)
 remain open; this slice delivered the verdict, not 20 visualisations. The card
-and the red rings were not viewed in a GUI session here. — Reliability score and problem history (P2, S/M)
+and the red rings were not viewed in a GUI session here.
+
+### G10 — Reliability score and problem history (P2, S/M)
 
 **Evidence.** WiFi Lens Pro rates a network's reliability over a chosen period
 from recorded evidence and lists detected problems with the time they occurred,
@@ -544,6 +546,30 @@ inferred.
 baseline diff reports one new and one missing device; the classifier's labels
 are stable and marked inferred in the UI.
 
+**Delivered 2026-11-27.** `BridgeMIB` (in `LanFiCore`) decodes a recorded
+BRIDGE-MIB/Q-BRIDGE walk into MAC → bridge port → ifIndex/ifDescr → VLAN, using
+`dot1dTpFdbPort`, `dot1qTpFdbPort` and `dot1qVlanFdbId`; a VLAN row replaces the
+plain row for the same MAC, and a missing VLAN table leaves the VLAN nil instead
+of assuming VLAN 1. `LLDP` decodes `lldpRemTable` into one neighbour per local
+port. `SNMPClient` gained a bounded GETNEXT walk (`SNMPBER.getNextRequest`,
+ordered variable bindings, `endOfMibView`, a row cap, and a mid-table timeout
+that returns the rows already received), and the LAN scanner's inspector opens a
+**Switch port lookup** sheet that reads those tables and shows the selected
+MAC's port, VLAN and uplink. `DeviceRoleClassifier` labels a device from its
+advertised role, services, open ports and vendor/hostname, and the inspector
+marks a derived kind as inferred. `DeviceInventoryEvaluator` keeps first/last
+seen and an authorization flag per device; the scan card reports untrusted and
+missing counts, seeds silently on the first guarded scan, and the old key-only
+`lan-guard.json` is migrated to trusted entries.
+
+Not delivered: LLDP is only used to name the far end of a port (no
+`lldpRemPortId`/chassis-id decoding), a device behind a downstream switch still
+reports that switch's port rather than the edge port, and SNMPv3 is not
+implemented. No real switch was queried here — the decoders and the walk wire
+format are covered by `LanFiCoreTests.BridgeMIBTests`,
+`LanFiCoreTests.DeviceInventoryTests` and `Tests/SwitchInventoryTests`; the
+sheet, its table and the trust actions were not opened in a GUI session.
+
 ### G16 — Menu-bar display template (P2, S)
 
 WiFi Signal exposes 18 metrics through a display-pattern string (`%N | Ch %C@%W
@@ -576,9 +602,10 @@ risk, in order:
    with G4b (import aliases and the unmapped-column report).
 
 G4 (field catalogue) and G7 (airtime attribution, legacy flag) shipped on
-2026-11-26 with G4b. The next slice is G8: a client detail sheet from a capture
-and an RSSI locator with an honest “signal guidance, not direction finding”
-label. G15 (SNMP bridge/VLAN path) is the next larger one after that.
+2026-11-26 with G4b, G8 (client detail and signal locator) followed, and G15
+(SNMP bridge/VLAN path and an authorized device inventory) shipped on
+2026-11-27. The next slice is G10: a reliability score over stored monitor data,
+which needs no hardware and reuses the samples the monitor already keeps.
 
 ## Sources
 

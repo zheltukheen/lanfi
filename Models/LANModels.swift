@@ -1,4 +1,5 @@
 import Foundation
+import LanFiCore
 
 struct ARPEntry: Equatable, Sendable {
     let ip: String
@@ -177,34 +178,54 @@ struct LANDevice: Identifiable, Equatable, Sendable {
         return labels
     }
 
+    /// What the device most likely is. A role the device published about
+    /// itself is a claim; anything else is this app's inference from services,
+    /// ports and the MAC vendor.
+    var roleGuess: DeviceRoleGuess? {
+        guard !isGateway, !isThisMac else { return nil }
+        return DeviceRoleClassifier.guess(
+            advertisedRole: deviceType, services: serviceSummary, openPorts: openPorts,
+            vendor: makeLabel == "—" ? nil : makeLabel, hostname: hostname)
+    }
+
     var kindLabel: String {
         if isGateway { return String(localized: "Router / gateway") }
         if isThisMac { return String(localized: "This Mac") }
-        if let deviceType, !deviceType.isEmpty,
-            !["UPnP", "UPnP device", "Basic"].contains(deviceType)
-        {
+        if let deviceType, !deviceType.isEmpty, !LANDeviceRoleLabel.placeholderRoles.contains(deviceType) {
             return deviceType
         }
-        let labels = serviceSummary
-        if labels.contains(where: { $0.contains("Printer") || $0.contains("printing") }) {
-            return String(localized: "Printer")
+        guard let roleGuess else { return String(localized: "Network device") }
+        return LANDeviceRoleLabel.label(for: roleGuess.role)
+    }
+
+    /// True when `kindLabel` came from LanFi rather than from the device.
+    var kindIsInferred: Bool {
+        guard !isGateway, !isThisMac else { return false }
+        if let deviceType, !deviceType.isEmpty, !LANDeviceRoleLabel.placeholderRoles.contains(deviceType) {
+            return false
         }
-        if labels.contains(where: {
-            $0.contains("AirPlay") || $0.contains("Cast") || $0.contains("Plex") || $0.contains("Media")
-        }) {
-            return String(localized: "Media device")
+        return roleGuess?.isInferred ?? false
+    }
+}
+
+/// Maps the shared role vocabulary to the app's localized labels.
+enum LANDeviceRoleLabel {
+    /// Roles that say nothing about the device, so the classifier is asked.
+    static let placeholderRoles: Set<String> = ["UPnP", "UPnP device", "Basic"]
+
+    static func label(for role: DeviceRole) -> String {
+        switch role {
+        case .router: return String(localized: "Router / gateway")
+        case .accessPoint: return String(localized: "Access point")
+        case .printer: return String(localized: "Printer")
+        case .mediaDevice: return String(localized: "Media device")
+        case .smartHome: return String(localized: "Smart home device")
+        case .storage: return String(localized: "File server / NAS")
+        case .computer: return String(localized: "Computer / server")
+        case .camera: return String(localized: "Camera")
+        case .phone: return String(localized: "Phone / tablet")
+        case .networkDevice: return String(localized: "Network device")
         }
-        if labels.contains(where: { $0.contains("HomeKit") || $0.contains("Matter") || $0.contains("Sonos") }) {
-            return String(localized: "Smart home device")
-        }
-        if labels.contains(where: { $0.contains("SMB") || $0.contains("AFP") || $0.contains("file sharing") }) {
-            return String(localized: "File server / NAS")
-        }
-        if openPorts.contains(22) || openPorts.contains(3389) {
-            return String(localized: "Computer / server")
-        }
-        if !labels.isEmpty { return labels[0] }
-        return String(localized: "Network device")
     }
 }
 
@@ -282,10 +303,12 @@ struct LANScanResult: Equatable, Sendable {
     var localNetworkAccessLikelyDenied: Bool = false
 }
 
+/// Persists the LAN device inventory: every device seen, when it was first and
+/// last seen, and whether the user trusts it.
 final class LANGuardStore {
     private let fileURL: URL
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
+    private let encoder: JSONEncoder
+    private let decoder: JSONDecoder
 
     init(directory: URL? = nil) {
         let support = FileManager.default.urls(
@@ -293,18 +316,50 @@ final class LANGuardStore {
         let base = directory ?? support.appendingPathComponent("LanFi", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         fileURL = base.appendingPathComponent("lan-guard.json")
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        self.encoder = encoder
+        self.decoder = decoder
     }
 
-    func load() -> Set<String> {
-        guard let data = try? Data(contentsOf: fileURL),
-            let macs = try? decoder.decode([String].self, from: data)
-        else { return [] }
-        return Set(macs.map { $0.uppercased() })
+    func loadState() -> DeviceInventoryState {
+        guard let data = try? Data(contentsOf: fileURL) else { return .empty }
+        if let state = try? decoder.decode(DeviceInventoryState.self, from: data) {
+            return state
+        }
+        // Before authorization existed the file was a plain array of keys.
+        // Those devices were trusted by the old guard, so they stay trusted
+        // instead of surfacing as unverified after an upgrade.
+        guard let keys = try? decoder.decode([String].self, from: data) else { return .empty }
+        let now = Date()
+        var state = DeviceInventoryState(seededAt: now)
+        for key in keys.map({ $0.uppercased() }) {
+            state.entries[key] = DeviceInventoryEntry(
+                key: key, name: key, firstSeen: now, lastSeen: now, authorized: true)
+        }
+        return state
     }
+
+    func save(_ state: DeviceInventoryState) {
+        guard let data = try? encoder.encode(state) else { return }
+        try? data.write(to: fileURL, options: .atomic)
+    }
+
+    /// Key-only access for callers that predate the inventory.
+    func load() -> Set<String> { Set(loadState().entries.keys) }
 
     func save(_ macs: Set<String>) {
-        guard let data = try? encoder.encode(macs.sorted()) else { return }
-        try? data.write(to: fileURL, options: .atomic)
+        var state = loadState()
+        let now = Date()
+        for key in macs.map({ $0.uppercased() }) where state.entries[key] == nil {
+            state.entries[key] = DeviceInventoryEntry(
+                key: key, name: key, firstSeen: now, lastSeen: now, authorized: true)
+        }
+        state.seededAt = state.seededAt ?? now
+        save(state)
     }
 }
 
