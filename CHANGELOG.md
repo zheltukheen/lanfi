@@ -16,6 +16,11 @@
   actions were English-only in every locale because they never reached the
   catalogue; they now do, and `scripts/localization_audit.py` ignores sample
   values (`1.1.1.1`, `AA:BB:CC`, `-70 dBm`) so its count reflects real copy.
+- **The capture, workspace and inspector screens are translated.** Another 122
+  strings — the capture sheet's trigger, hop, truncation and Wireshark help, the
+  scan mode/interval toolbar, channel and SNR history, the field catalogue, the
+  general settings page and the device shelf's QR, warranty and wake controls —
+  existed only as literals, so every language showed them in English.
 - **The Overview answers “is anything wrong?” first.** A plain-language card lists
   what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
   weak signal, unprotected network, hidden SSIDs) and links straight to the tool
