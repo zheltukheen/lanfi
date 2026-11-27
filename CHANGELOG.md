@@ -21,6 +21,11 @@
   scan mode/interval toolbar, channel and SNR history, the field catalogue, the
   general settings page and the device shelf's QR, warranty and wake controls —
   existed only as literals, so every language showed them in English.
+- **HTTP traffic, sockets, per-process traffic, Security Watch and the survey map
+  are translated too.** 68 more strings: HAR import and credential redaction,
+  block rules and socket termination, the nettop privacy note, twin/downgrade
+  heuristics and baseline controls, and the GPX import/export and location
+  actions. The untranslated-literal backlog is down to 527.
 - **The Overview answers “is anything wrong?” first.** A plain-language card lists
   what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
   weak signal, unprotected network, hidden SSIDs) and links straight to the tool
