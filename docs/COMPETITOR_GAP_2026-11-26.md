@@ -215,11 +215,21 @@ others away; the **Capture on all sensors** sheet exposes the interface,
 duration, monitor mode and BPF filter, then names the frames and the sensors in
 the merged file.
 
+Attribution followed on the same day: `PcapPacketIndex` reads `if_name` from
+every interface block and carries it with each packet, so `PcapAnalyzer` keeps
+the sensor set on a beacon, a client and a BSSID's management counters. Beacons
+merge by BSSID and keep every sensor that heard them, the Clients sheet and the
+Management-frames table show a Sensors column, a deauth finding names the
+radio that saw the frame, and CSV/JSON exports include the names. The two
+hand-written pcap/pcapng packet readers were replaced by the shared index, which
+was also adapted to 27 shared UI strings and a `scripts/localization_audit.py`
+report of the strings that still lack a catalogue entry.
+
 Not delivered: captures run sequentially, not in parallel (five simultaneous
-high-rate ssh captures still want the privileged helper, P4.1); the analyzer
-reads the merged file but does not yet show “seen by sensor X” on a client or a
-deauth event; and the merged trace is not opened automatically after it is
-written. No real sensor was captured here — the broadcaster state machine and
+high-rate ssh captures still want the privileged helper, P4.1); a deauth burst
+is still counted per BSSID across the whole merged file, so the sensor column
+says who saw it but not which radio saw which individual frame; and the merged
+trace is not opened automatically after it is written. No real sensor was captured here — the broadcaster state machine and
 the reader/writer are covered by `LanFiCoreTests.PcapMergeTests` and
 `Tests/MultiSensorMergeTests`, which merge two synthetic beacon captures and
 check that `PcapAnalyzer` reads every BSSID back.

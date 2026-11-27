@@ -10,8 +10,12 @@ struct EAPOLHandshake: Identifiable, Equatable {
     var hasPMKID: Bool
     var firstSeen: Date
     var lastSeen: Date
+    /// G3: sensors that saw these key frames.
+    var sensors: Set<String> = []
 
     var id: String { bssid }
+
+    var sensorNames: [String] { sensors.sorted() }
 
     /// Message 2 supplies the SNonce and MIC; message 1 (or 3) supplies the
     /// ANonce. Together they are what an offline dictionary attack needs.
@@ -46,9 +50,16 @@ struct ManagementCounters: Identifiable, Equatable {
     var reasons: [Reason] = []
     var firstSeen: Date?
     var lastSeen: Date?
+    /// G3: sensors that saw any management frame from this BSSID, and the ones
+    /// that saw its deauth/disassoc frames specifically.
+    var sensors: Set<String> = []
+    var deauthSensors: Set<String> = []
 
     var id: String { bssid }
     var disruptionCount: Int { deauth + disassoc }
+
+    var sensorNames: [String] { sensors.sorted() }
+    var deauthSensorNames: [String] { deauthSensors.sorted() }
 }
 
 /// The 802.11 reason codes that show up in a survey capture, with short text.
@@ -118,6 +129,11 @@ struct CaptureSecurityReport: Equatable {
     var findings: [CaptureFinding] = []
 
     static let empty = CaptureSecurityReport()
+
+    /// G3: sensors that saw a deauth/disassoc frame, sorted.
+    var deauthSensorNames: [String] {
+        Set(management.flatMap(\.deauthSensors)).sorted()
+    }
 
     var isEmpty: Bool {
         handshakes.isEmpty && management.isEmpty && findings.isEmpty
@@ -238,7 +254,7 @@ enum CaptureSecurityAnalyzer {
                         detail: String(
                             localized:
                                 "\(counter.disruptionCount) deauth/disassoc frames from \(counter.bssid) within seconds\(reasons). That is either a management-frame flood or a client whose driver keeps resetting; both drop every client on the BSSID."
-                        ),
+                        ) + sensorLine(counter.deauthSensorNames),
                         bssid: counter.bssid
                     ))
             } else if counter.disruptionCount > 0 {
@@ -250,7 +266,7 @@ enum CaptureSecurityAnalyzer {
                         detail: String(
                             localized:
                                 "\(counter.disruptionCount) deauth/disassoc frames from \(counter.bssid)\(reasons). Normal for roaming or a sleeping client; a burst would be a flood."
-                        ),
+                        ) + sensorLine(counter.deauthSensorNames),
                         bssid: counter.bssid
                     ))
             }
@@ -299,6 +315,16 @@ enum CaptureSecurityAnalyzer {
             if window <= burstWindow { return true }
         }
         return false
+    }
+
+    /// G3: names the sensors that saw the frame in a merged capture, so a
+    /// deauth attributed to one radio is not read as "the whole map saw it".
+    private static func sensorLine(_ sensors: [String]) -> String {
+        guard !sensors.isEmpty else { return "" }
+        return "\n"
+            + String(
+                format: String(localized: "Seen by sensor: %@"),
+                sensors.joined(separator: ", "))
     }
 
     private static func reasonSummary(_ reasons: [ManagementCounters.Reason]) -> String {

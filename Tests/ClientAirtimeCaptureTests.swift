@@ -30,10 +30,10 @@ final class ClientAirtimeCaptureTests: XCTestCase {
     func testAirtimeAndRetriesAreCountedPerClient() throws {
         let client = "AA:BB:CC:00:00:01"
         let ap = "00:11:22:33:44:55"
-        let packets: [(UInt32, Data, Date)] = [
-            (105, dataFrame(client: client, ap: ap, duration: 1000, retry: false), Date()),
-            (105, dataFrame(client: client, ap: ap, duration: 2000, retry: true), Date()),
-            (105, dataFrame(client: client, ap: ap, duration: 3000, retry: false), Date()),
+        let packets: [(UInt32, Data, Date, String?)] = [
+            (105, dataFrame(client: client, ap: ap, duration: 1000, retry: false), Date(), nil),
+            (105, dataFrame(client: client, ap: ap, duration: 2000, retry: true), Date(), nil),
+            (105, dataFrame(client: client, ap: ap, duration: 3000, retry: false), Date(), nil),
         ]
 
         let clients = PcapAnalyzer.clients(beacons: [], packets: packets)
@@ -48,15 +48,18 @@ final class ClientAirtimeCaptureTests: XCTestCase {
     }
 
     func testRetriesSplitAcrossClients() {
-        let packets: [(UInt32, Data, Date)] = [
-            (105, dataFrame(client: "AA:BB:CC:00:00:01", ap: "00:11:22:33:44:55", duration: 500, retry: true), Date()),
+        let packets: [(UInt32, Data, Date, String?)] = [
             (
-                105, dataFrame(client: "AA:BB:CC:00:00:02", ap: "00:11:22:33:44:55", duration: 1500, retry: false),
-                Date()
+                105, dataFrame(client: "AA:BB:CC:00:00:01", ap: "00:11:22:33:44:55", duration: 500, retry: true),
+                Date(), nil
             ),
             (
                 105, dataFrame(client: "AA:BB:CC:00:00:02", ap: "00:11:22:33:44:55", duration: 1500, retry: false),
-                Date()
+                Date(), nil
+            ),
+            (
+                105, dataFrame(client: "AA:BB:CC:00:00:02", ap: "00:11:22:33:44:55", duration: 1500, retry: false),
+                Date(), nil
             ),
         ]
 

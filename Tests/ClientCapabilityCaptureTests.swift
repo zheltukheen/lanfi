@@ -52,7 +52,7 @@ final class ClientCapabilityCaptureTests: XCTestCase {
                     security: "WPA3", isEHT: false, informationElements: [],
                     clientCount: 2, timestamp: timestamp, source: "pcap")
             ],
-            packets: [(UInt32(105), frame, timestamp)])
+            packets: [(UInt32(105), frame, timestamp, nil)])
 
         let entry = try XCTUnwrap(clients.first { $0.mac == client })
         XCTAssertEqual(entry.firstSeen, timestamp)
@@ -86,7 +86,7 @@ final class ClientCapabilityCaptureTests: XCTestCase {
         writeMAC(ap, at: 16, into: &data)
 
         let clients = PcapAnalyzer.clients(
-            beacons: [beacon], packets: [(UInt32(105), data, timestamp)])
+            beacons: [beacon], packets: [(UInt32(105), data, timestamp, nil)])
         let entry = try XCTUnwrap(clients.first { $0.mac == client })
         XCTAssertEqual(entry.capabilities?.source, .beacon)
         XCTAssertEqual(entry.capabilities?.generation, .ax)

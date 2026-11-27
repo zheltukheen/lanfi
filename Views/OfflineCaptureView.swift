@@ -162,6 +162,14 @@ struct OfflineCaptureView: View {
                                 value: { .number($0.informationElements.count) }
                             ) { Text("\($0.informationElements.count)") },
                             AppTableColumn(
+                                id: "sensors", title: "Sensors", minWidth: AppColumnWidth.medium,
+                                value: { .text($0.sensors.joined(separator: ", ")) }
+                            ) { beacon in
+                                Text(beacon.sensors.isEmpty ? "—" : beacon.sensors.joined(separator: ", "))
+                                    .lineLimit(1)
+                                    .foregroundColor(beacon.sensors.isEmpty ? .secondary : .primary)
+                            },
+                            AppTableColumn(
                                 id: "clients", title: "Clients", minWidth: AppColumnWidth.small,
                                 value: { .number($0.clientCount) }
                             ) { Text($0.clientCount.map(String.init) ?? "—") },
@@ -183,6 +191,15 @@ struct OfflineCaptureView: View {
                             HStack {
                                 Text("Information elements · \(selectedBeacon.informationElements.count)")
                                     .font(.caption.bold())
+                                if !selectedBeacon.sensors.isEmpty {
+                                    Text(
+                                        String(
+                                            format: String(localized: "seen by %@"),
+                                            selectedBeacon.sensors.joined(separator: ", "))
+                                    )
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                }
                                 Spacer()
                                 Button("Copy IEs") { copyIEs(selectedBeacon) }
                                     .controlSize(.mini)
@@ -286,6 +303,15 @@ struct OfflineCaptureView: View {
                             .help(client.probeSSIDs.joined(separator: "\n"))
                     },
                     AppTableColumn(
+                        id: "sensors", title: "Sensors", minWidth: AppColumnWidth.medium,
+                        value: { .text($0.sensorNames.joined(separator: ", ")) }
+                    ) { client in
+                        Text(client.sensorNames.isEmpty ? "—" : client.sensorNames.joined(separator: ", "))
+                            .lineLimit(2)
+                            .foregroundColor(client.sensorNames.isEmpty ? .secondary : .primary)
+                            .help(client.sensorNames.joined(separator: "\n"))
+                    },
+                    AppTableColumn(
                         id: "shelf", title: "Device Shelf", minWidth: AppColumnWidth.long,
                         value: { .text(shelfDevices[$0.mac.uppercased()]?.displayName) }
                     ) { client in
@@ -320,6 +346,15 @@ struct OfflineCaptureView: View {
                 .foregroundColor(.secondary)
                 Spacer()
                 Button("Close") { showingSecurity = false }
+            }
+            if !security.deauthSensorNames.isEmpty {
+                Text(
+                    String(
+                        format: String(localized: "Deauth seen by: %@"),
+                        security.deauthSensorNames.joined(separator: ", "))
+                )
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
 
             if security.findings.isEmpty {
@@ -405,6 +440,23 @@ struct OfflineCaptureView: View {
                             id: "burst", title: "Burst", minWidth: AppColumnWidth.tiny,
                             value: { .flag($0.burst) }
                         ) { Text($0.burst ? "Yes" : "—").foregroundColor($0.burst ? .red : .secondary) },
+                        AppTableColumn(
+                            id: "sensors", title: "Sensors", minWidth: AppColumnWidth.medium,
+                            value: { .text($0.sensorNames.joined(separator: ", ")) }
+                        ) { counters in
+                            let names =
+                                counters.deauthSensorNames.isEmpty
+                                ? counters.sensorNames : counters.deauthSensorNames
+                            return Text(names.isEmpty ? "—" : names.joined(separator: ", "))
+                                .lineLimit(2)
+                                .foregroundColor(names.isEmpty ? .secondary : .primary)
+                                .help(
+                                    counters.deauthSensorNames.isEmpty
+                                        ? String(localized: "No deauth frames from this BSSID")
+                                        : String(
+                                            format: String(localized: "Deauth seen by: %@"),
+                                            counters.deauthSensorNames.joined(separator: ", ")))
+                        },
                         AppTableColumn(
                             id: "reasons", title: "Reasons", minWidth: 160,
                             value: { .number($0.reasons.map(\.count).reduce(0, +)) }
@@ -614,6 +666,7 @@ struct OfflineCaptureView: View {
                     "security": beacon.security, "isEHT": beacon.isEHT,
                     "ieCount": beacon.informationElements.count,
                     "clientCount": beacon.clientCount as Any,
+                    "sensors": beacon.sensors,
                 ]
             },
             "mloGroups": mloGroups.map { group in
@@ -644,6 +697,8 @@ struct OfflineCaptureView: View {
                 "management": security.management.map { counters in
                     [
                         "bssid": counters.bssid,
+                        "sensors": counters.sensorNames,
+                        "deauthSensors": counters.deauthSensorNames,
                         "beacons": counters.beacons,
                         "probeResponses": counters.probeResponses,
                         "deauth": counters.deauth,
@@ -685,7 +740,9 @@ struct OfflineCaptureView: View {
         panel.nameFieldStringValue = "LanFi-Capture.csv"
         panel.allowedContentTypes = [.commaSeparatedText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        var lines = ["ssid,bssid,channel,rssi,security,eht,handshake,pmkid,deauth,disassoc"]
+        var lines = [
+            "ssid,bssid,channel,rssi,security,eht,handshake,pmkid,deauth,disassoc,sensors"
+        ]
         for item in beacons {
             let ssid = item.ssid.replacingOccurrences(of: "\"", with: "\"\"")
             let handshake = security.handshake(for: item.bssid)
@@ -695,7 +752,8 @@ struct OfflineCaptureView: View {
                     + "\(item.rssi.map(String.init) ?? ""),\"\(item.security)\",\(item.isEHT),"
                     + "\(handshake?.hasCompleteHandshake == true),"
                     + "\(handshake?.hasPMKID == true),"
-                    + "\(counters?.deauth ?? 0),\(counters?.disassoc ?? 0)"
+                    + "\(counters?.deauth ?? 0),\(counters?.disassoc ?? 0),"
+                    + "\"\(item.sensors.joined(separator: "; "))\""
             )
         }
         try? lines.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)

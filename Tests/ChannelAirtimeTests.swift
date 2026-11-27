@@ -39,10 +39,10 @@ final class ChannelAirtimeTests: XCTestCase {
     func testAirtimeIsAttributedToTheTransmittingBSSID() throws {
         let apA = "00:11:22:33:44:01"
         let apB = "00:11:22:33:44:02"
-        let packets: [(UInt32, Data, Date)] = [
-            (105, apFrame(client: "AA:00:00:00:00:01", ap: apA, duration: 3000), Date()),
-            (105, apFrame(client: "AA:00:00:00:00:01", ap: apA, duration: 1000), Date()),
-            (105, apFrame(client: "AA:00:00:00:00:02", ap: apB, duration: 1000), Date()),
+        let packets: [(UInt32, Data, Date, String?)] = [
+            (105, apFrame(client: "AA:00:00:00:00:01", ap: apA, duration: 3000), Date(), nil),
+            (105, apFrame(client: "AA:00:00:00:00:01", ap: apA, duration: 1000), Date(), nil),
+            (105, apFrame(client: "AA:00:00:00:00:02", ap: apB, duration: 1000), Date(), nil),
         ]
         let entries = PcapAnalyzer.channelAirtime(
             beacons: [beacon(apA, ssid: "Mine"), beacon(apB, ssid: "Neighbour")],
@@ -61,7 +61,7 @@ final class ChannelAirtimeTests: XCTestCase {
         let ap = "00:11:22:33:44:01"
         let slow = radiotap(rateMbps: 1) + apFrame(client: "AA:00:00:00:00:01", ap: ap, duration: 500)
         let fast = radiotap(rateMbps: 54) + apFrame(client: "AA:00:00:00:00:02", ap: ap, duration: 500)
-        let packets: [(UInt32, Data, Date)] = [(127, slow, Date()), (127, fast, Date())]
+        let packets: [(UInt32, Data, Date, String?)] = [(127, slow, Date(), nil), (127, fast, Date(), nil)]
         let entries = PcapAnalyzer.channelAirtime(
             beacons: [beacon(ap, ssid: "Legacy AP")], packets: packets)
 
@@ -73,7 +73,7 @@ final class ChannelAirtimeTests: XCTestCase {
 
     func testBSSIDWithoutFramesStillAppearsWithZeroShare() throws {
         let ap = "00:11:22:33:44:09"
-        let packets: [(UInt32, Data, Date)] = []
+        let packets: [(UInt32, Data, Date, String?)] = []
         let entries = PcapAnalyzer.channelAirtime(
             beacons: [beacon(ap, ssid: "Quiet")], packets: packets)
         XCTAssertEqual(entries.count, 1)

@@ -50,6 +50,18 @@
   for its answer, and the survey tool shows the shared prompt instead.
 
 ### Added
+- **Sensor attribution in a merged capture (G3).** The analyzer now reads each
+  pcapng interface's name and keeps it with every frame, so the Offline Capture
+  screen can say which radio saw a beacon, a client and a deauth/disassoc frame:
+  the capture table, the Clients sheet and the Management-frames table gain a
+  Sensors column, a finding names the sensor that saw the deauth, and CSV/JSON
+  exports carry the names. The packet index is the single reader for both
+  analyses, and the duplicated pcap/pcapng readers were removed.
+- **A localization audit.** `scripts/localization_audit.py` reports locale
+  parity and lists UI literals that never reached
+  `en.lproj/Localizable.strings`; 27 of those shared strings (Sensors, the new
+  capture labels, Delete, Reload, Copy SSID and friends) are now translated in
+  all five languages.
 - **Capture on all sensors, merged into one trace (G3).** Remote sensors can now
   capture in one run: LanFi walks the saved sensors one at a time, reads each
   pcap, and writes a single pcapng where every sensor is its own interface

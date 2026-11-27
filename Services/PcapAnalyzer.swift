@@ -20,12 +20,15 @@ struct CapturedBeacon: Identifiable, Equatable {
     /// G8: what this beacon advertises. Used as the fallback capability view
     /// for a client whose own association frames are not in the capture.
     let capabilities: ClientCapabilitySummary?
+    /// G3: the sensors (merged pcapng interfaces) that recorded this beacon.
+    /// Empty for a single-radio capture.
+    var sensors: [String]
 
     init(
         id: String, bssid: String, ssid: String, channel: Int?, rssi: Int?,
         security: String, isEHT: Bool, informationElements: [InformationElement],
         clientCount: Int?, timestamp: Date, source: String, frequencyMHz: Int? = nil,
-        capabilities: ClientCapabilitySummary? = nil
+        capabilities: ClientCapabilitySummary? = nil, sensor: String? = nil
     ) {
         self.id = id
         self.bssid = bssid
@@ -40,6 +43,7 @@ struct CapturedBeacon: Identifiable, Equatable {
         self.source = source
         self.frequencyMHz = frequencyMHz
         self.capabilities = capabilities
+        self.sensors = sensor.map { [$0] } ?? []
     }
 }
 
@@ -212,7 +216,8 @@ enum PcapAnalyzer {
     // MARK: - Frame parsing
 
     private static func parsePacket(
-        _ packet: Data, linkType: UInt32, timestamp: Date, source: String
+        _ packet: Data, linkType: UInt32, timestamp: Date, source: String,
+        sensor: String? = nil
     ) -> CapturedBeacon? {
         var frame = packet
         var rssi: Int?
@@ -269,7 +274,8 @@ enum PcapAnalyzer {
             isEHT: isEHT, informationElements: parsedIE.elements,
             clientCount: parsedIE.clients, timestamp: timestamp, source: source,
             frequencyMHz: frequencyMHz,
-            capabilities: ClientCapabilitySummary.decode(ieBytes: ies, source: .beacon)
+            capabilities: ClientCapabilitySummary.decode(ieBytes: ies, source: .beacon),
+            sensor: sensor
         )
     }
 
@@ -370,7 +376,13 @@ enum PcapAnalyzer {
 
     private static func merge(_ beacons: [CapturedBeacon]) -> [CapturedBeacon] {
         var merged: [String: CapturedBeacon] = [:]
+        var sensors: [String: [String]] = [:]
         for beacon in beacons {
+            var names = sensors[beacon.id] ?? []
+            for sensor in beacon.sensors where !names.contains(sensor) {
+                names.append(sensor)
+            }
+            sensors[beacon.id] = names
             if let existing = merged[beacon.id] {
                 if (beacon.rssi ?? -999) > (existing.rssi ?? -999) {
                     merged[beacon.id] = beacon
@@ -378,6 +390,11 @@ enum PcapAnalyzer {
             } else {
                 merged[beacon.id] = beacon
             }
+        }
+        // Every sensor that heard the beacon, not only the one with the
+        // strongest copy, so the table can name all of them.
+        for (id, names) in sensors {
+            merged[id]?.sensors = names
         }
         return merged.values.sorted { lhs, rhs in
             if lhs.ssid != rhs.ssid { return lhs.ssid.localizedStandardCompare(rhs.ssid) == .orderedAscending }
@@ -438,6 +455,11 @@ struct CapturedClient: Identifiable, Equatable {
     /// G8: capabilities from this client's association request, or from its
     /// access point's beacon when the capture has no association frames.
     var capabilities: ClientCapabilitySummary? = nil
+    /// G3: sensors (merged pcapng interfaces) that saw this client. Empty for
+    /// a single-radio capture, where there is nothing to attribute.
+    var sensors: Set<String> = []
+
+    var sensorNames: [String] { sensors.sorted() }
 
     /// Share of this client's frames that were retransmissions.
     var retryRate: Double? {
@@ -453,6 +475,11 @@ struct CaptureSummary: Equatable {
     var security: CaptureSecurityReport = .empty
     /// G7: per-BSSID transmitted airtime, busiest first.
     var channelAirtime: [ChannelAirtimeEntry] = []
+
+    /// G3: every sensor that contributed at least one frame.
+    var sensorNames: [String] {
+        Set(clients.flatMap(\.sensors)).sorted()
+    }
 }
 
 extension PcapAnalyzer {
@@ -469,9 +496,10 @@ extension PcapAnalyzer {
 
     static func parse(index: PcapPacketIndex) -> [CapturedBeacon] {
         var beacons: [CapturedBeacon] = []
-        for (linkType, packet, timestamp) in index {
+        for (linkType, packet, timestamp, sensor) in index {
             if let beacon = parsePacket(
-                packet, linkType: linkType, timestamp: timestamp, source: "pcap")
+                packet, linkType: linkType, timestamp: timestamp, source: "pcap",
+                sensor: sensor)
             {
                 beacons.append(beacon)
             }
@@ -497,7 +525,7 @@ extension PcapAnalyzer {
     /// client table's receiver-side accounting.
     static func channelAirtime<P: Sequence>(
         beacons: [CapturedBeacon], packets: P
-    ) -> [ChannelAirtimeEntry] where P.Element == (UInt32, Data, Date) {
+    ) -> [ChannelAirtimeEntry] where P.Element == (UInt32, Data, Date, String?) {
         var entries: [String: ChannelAirtimeEntry] = [:]
         for beacon in beacons where !beacon.bssid.isEmpty {
             let bssid = beacon.bssid.uppercased()
@@ -508,7 +536,7 @@ extension PcapAnalyzer {
                         ? String(localized: "Hidden network") : beacon.ssid)
             }
         }
-        for (linkType, packet, _) in packets {
+        for (linkType, packet, _, _) in packets {
             guard linkType == 127 || linkType == 105 else { continue }
             var frame = packet
             var rate: Double?
@@ -553,7 +581,7 @@ extension PcapAnalyzer {
     /// last-seen time, best RSSI, frame mix and probe-request SSIDs.
     static func clients<P: Sequence>(
         beacons: [CapturedBeacon], packets: P
-    ) -> [CapturedClient] where P.Element == (UInt32, Data, Date) {
+    ) -> [CapturedClient] where P.Element == (UInt32, Data, Date, String?) {
         let accessPointMACs = Set(beacons.map { $0.bssid.uppercased() })
         var beaconCapabilities: [String: ClientCapabilitySummary] = [:]
         for beacon in beacons {
@@ -563,7 +591,7 @@ extension PcapAnalyzer {
             }
         }
         var entries: [String: CapturedClient] = [:]
-        for (linkType, packet, timestamp) in packets {
+        for (linkType, packet, timestamp, sensor) in packets {
             guard linkType == 127 || linkType == 105 else { continue }
             var frame = packet
             var rssi: Int?
@@ -610,6 +638,7 @@ extension PcapAnalyzer {
                         capabilities: beaconCapabilities[bssid.uppercased()]
                     )
                 entry.frameCount += 1
+                if let sensor { entry.sensors.insert(sensor) }
                 entry.airtimeMicroseconds += duration
                 if isRetry { entry.retryFrames += 1 }
                 if entry.bssid.isEmpty, !bssid.isEmpty { entry.bssid = bssid }
@@ -653,11 +682,11 @@ extension PcapAnalyzer {
     /// BSSID. Read-only: nothing is framed, injected or deauthenticated.
     static func securityReport<P: Sequence>(
         beacons: [CapturedBeacon], packets: P
-    ) -> CaptureSecurityReport where P.Element == (UInt32, Data, Date) {
+    ) -> CaptureSecurityReport where P.Element == (UInt32, Data, Date, String?) {
         var handshakes: [String: EAPOLHandshake] = [:]
         var counters: [String: ManagementCounters] = [:]
         var deauthTimes: [String: [Date]] = [:]
-        for (linkType, packet, timestamp) in packets {
+        for (linkType, packet, timestamp, sensor) in packets {
             guard linkType == 127 || linkType == 105 else { continue }
             var frame = packet
             if linkType == 127 {
@@ -670,6 +699,7 @@ extension PcapAnalyzer {
                 guard bssid != "00:00:00:00:00:00", !isMulticast(bssid) else { continue }
                 guard [5, 8, 10, 12].contains(fields.subtype) else { continue }
                 var counter = counters[bssid] ?? ManagementCounters(bssid: bssid)
+                if let sensor { counter.sensors.insert(sensor) }
                 counter.firstSeen = min(counter.firstSeen ?? timestamp, timestamp)
                 counter.lastSeen = max(counter.lastSeen ?? timestamp, timestamp)
                 switch fields.subtype {
@@ -680,6 +710,7 @@ extension PcapAnalyzer {
                     if frame.count >= 26 { addReason(Int(frame.uint16(at: 24, littleEndian: true)), to: &counter) }
                 default:
                     counter.deauth += 1
+                    if let sensor { counter.deauthSensors.insert(sensor) }
                     deauthTimes[bssid, default: []].append(timestamp)
                     if frame.count >= 26 { addReason(Int(frame.uint16(at: 24, littleEndian: true)), to: &counter) }
                 }
@@ -693,6 +724,7 @@ extension PcapAnalyzer {
                         bssid: bssid, keyFrameCount: 0, messages: [], hasPMKID: false,
                         firstSeen: timestamp, lastSeen: timestamp
                     )
+                if let sensor { handshake.sensors.insert(sensor) }
                 handshake.keyFrameCount += 1
                 if let message = key.message { handshake.messages.insert(message) }
                 handshake.hasPMKID = handshake.hasPMKID || key.hasPMKID
@@ -821,84 +853,13 @@ extension PcapAnalyzer {
         return (message, hasPMKID)
     }
 
-    private static func rawPackets(_ data: Data) throws -> [(UInt32, Data, Date)] {
-        guard data.count >= 4 else { throw PcapAnalyzerError.unsupported("Capture is too small.") }
-        let magic = data.uint32(at: 0, littleEndian: true)
-        if magic == 0x0A0D0D0A || data.uint32(at: 0, littleEndian: false) == 0x0A0D0D0A {
-            return try rawPcapngPackets(data)
-        }
-        switch magic {
-        case 0xA1B2C3D4, 0xA1B23C4D:
-            return try rawPcapPackets(data, littleEndian: true, nanoseconds: magic == 0xA1B23C4D)
-        case 0xD4C3B2A1, 0x4D3CB2A1:
-            return try rawPcapPackets(data, littleEndian: false, nanoseconds: magic == 0x4D3CB2A1)
-        default:
-            throw PcapAnalyzerError.unsupported("Not a pcap or pcapng file.")
-        }
-    }
-
-    private static func rawPcapPackets(
-        _ data: Data, littleEndian: Bool, nanoseconds: Bool
-    ) throws -> [(UInt32, Data, Date)] {
-        guard data.count >= 24 else { throw PcapAnalyzerError.unsupported("Truncated pcap header.") }
-        let linkType = data.uint32(at: 20, littleEndian: littleEndian)
-        var offset = 24
-        var packets: [(UInt32, Data, Date)] = []
-        while offset + 16 <= data.count {
-            let seconds = data.uint32(at: offset, littleEndian: littleEndian)
-            let fraction = data.uint32(at: offset + 4, littleEndian: littleEndian)
-            let included = Int(data.uint32(at: offset + 8, littleEndian: littleEndian))
-            offset += 16
-            guard included > 0, offset + included <= data.count else { break }
-            let packet = data.subdata(in: offset..<(offset + included))
-            offset += included
-            let timestamp = Date(
-                timeIntervalSince1970: Double(seconds) + Double(fraction) / (nanoseconds ? 1e9 : 1e6)
-            )
-            packets.append((linkType, packet, timestamp))
-        }
-        return packets
-    }
-
-    private static func rawPcapngPackets(_ data: Data) throws -> [(UInt32, Data, Date)] {
-        var offset = 0
-        var littleEndian = true
-        var linkTypes: [UInt32] = []
-        var packets: [(UInt32, Data, Date)] = []
-        var timestampResolution = 1e-6
-        var timestampOffset: UInt64 = 0
-        while offset + 12 <= data.count {
-            let rawType = data.uint32(at: offset, littleEndian: littleEndian)
-            if rawType == 0x0A0D0D0A {
-                if data.uint32(at: offset + 8, littleEndian: true) == 0x1A2B3C4D {
-                    littleEndian = true
-                } else if data.uint32(at: offset + 8, littleEndian: false) == 0x1A2B3C4D {
-                    littleEndian = false
-                } else {
-                    break
-                }
-            }
-            let type = data.uint32(at: offset, littleEndian: littleEndian)
-            let length = Int(data.uint32(at: offset + 4, littleEndian: littleEndian))
-            guard length >= 12, offset + length <= data.count else { break }
-            let bodyStart = offset + 8
-            let bodyEnd = offset + length - 4
-            if type == 1, bodyEnd - bodyStart >= 8 {
-                linkTypes.append(data.uint32(at: bodyStart, littleEndian: littleEndian))
-            } else if type == 6, bodyEnd - bodyStart >= 20 {
-                let interfaceID = Int(data.uint32(at: bodyStart, littleEndian: littleEndian))
-                let high = UInt64(data.uint32(at: bodyStart + 4, littleEndian: littleEndian))
-                let low = UInt64(data.uint32(at: bodyStart + 8, littleEndian: littleEndian))
-                let captured = Int(data.uint32(at: bodyStart + 12, littleEndian: littleEndian))
-                if bodyStart + 20 + captured <= bodyEnd {
-                    let packet = data.subdata(in: (bodyStart + 20)..<(bodyStart + 20 + captured))
-                    let ticks = (high << 32) | low
-                    let seconds = Double(ticks) * timestampResolution + Double(timestampOffset)
-                    let link = linkTypes.indices.contains(interfaceID) ? linkTypes[interfaceID] : 127
-                    packets.append((link, packet, Date(timeIntervalSince1970: seconds)))
-                }
-            }
-            offset += length
+    /// The same packets the index yields, in capture order. Reusing the index
+    /// keeps one parser for pcap, pcapng, byte order and sensor names instead
+    /// of a second copy that could drift.
+    private static func rawPackets(_ data: Data) throws -> [(UInt32, Data, Date, String?)] {
+        var packets: [(UInt32, Data, Date, String?)] = []
+        for packet in try PcapPacketIndex(data: data) {
+            packets.append(packet)
         }
         return packets
     }

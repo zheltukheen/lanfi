@@ -12,6 +12,10 @@ struct PcapPacketIndex: Sequence {
         let length: Int
         let linkType: UInt32
         let timestamp: Date
+        /// The capture interface's name (`if_name`), which is the sensor name
+        /// in a file merged from several sensors. Nil for classic pcap and for
+        /// pcapng files written without the option.
+        let sensor: String?
     }
 
     struct Iterator: IteratorProtocol {
@@ -19,12 +23,16 @@ struct PcapPacketIndex: Sequence {
         let entries: [Entry]
         var index = 0
 
-        mutating func next() -> (UInt32, Data, Date)? {
+        mutating func next() -> (UInt32, Data, Date, String?)? {
             guard index < entries.count else { return nil }
             let entry = entries[index]
             index += 1
             guard entry.offset + entry.length <= data.count else { return next() }
-            return (entry.linkType, data.subdata(in: entry.offset..<(entry.offset + entry.length)), entry.timestamp)
+            return (
+                entry.linkType,
+                data.subdata(in: entry.offset..<(entry.offset + entry.length)),
+                entry.timestamp, entry.sensor
+            )
         }
     }
 
@@ -76,7 +84,9 @@ struct PcapPacketIndex: Sequence {
                 timeIntervalSince1970: Double(seconds)
                     + Double(fraction) / (nanoseconds ? 1e9 : 1e6))
             entries.append(
-                Entry(offset: offset, length: included, linkType: linkType, timestamp: timestamp))
+                Entry(
+                    offset: offset, length: included, linkType: linkType, timestamp: timestamp,
+                    sensor: nil))
             offset += included
         }
         return entries
@@ -86,6 +96,7 @@ struct PcapPacketIndex: Sequence {
         var offset = 0
         var littleEndian = true
         var linkTypes: [UInt32] = []
+        var interfaceNames: [String?] = []
         var entries: [Entry] = []
         var timestampResolution = 1e-6
         var timestampOffset: UInt64 = 0
@@ -111,12 +122,19 @@ struct PcapPacketIndex: Sequence {
                 linkTypes.append(data.uint32(at: bodyStart, littleEndian: littleEndian))
                 timestampResolution = 1e-6
                 timestampOffset = 0
+                var name: String?
                 var option = bodyStart + 8
                 while option + 4 <= bodyEnd {
                     let code = data.uint16(at: option, littleEndian: littleEndian)
                     let optionLength = Int(data.uint16(at: option + 2, littleEndian: littleEndian))
                     if code == 0 { break }
-                    if code == 9, optionLength >= 1, option + 5 <= bodyEnd {
+                    if code == 2, optionLength > 0, option + 4 + optionLength <= bodyEnd {
+                        let bytes = data.subdata(
+                            in: (option + 4)..<(option + 4 + optionLength))
+                        let text = String(decoding: bytes, as: UTF8.self)
+                            .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
+                        name = text.isEmpty ? nil : text
+                    } else if code == 9, optionLength >= 1, option + 5 <= bodyEnd {
                         let value = data[option + 4]
                         timestampResolution =
                             value & 0x80 == 0
@@ -127,6 +145,7 @@ struct PcapPacketIndex: Sequence {
                     }
                     option += 4 + optionLength + ((4 - optionLength % 4) % 4)
                 }
+                interfaceNames.append(name)
             } else if type == 6, bodyEnd - bodyStart >= 20 {
                 let interfaceID = Int(data.uint32(at: bodyStart, littleEndian: littleEndian))
                 let high = UInt64(data.uint32(at: bodyStart + 4, littleEndian: littleEndian))
@@ -136,10 +155,13 @@ struct PcapPacketIndex: Sequence {
                     let ticks = (high << 32) | low
                     let seconds = Double(ticks) * timestampResolution + Double(timestampOffset)
                     let link = linkTypes.indices.contains(interfaceID) ? linkTypes[interfaceID] : 127
+                    let sensor =
+                        interfaceNames.indices.contains(interfaceID)
+                        ? interfaceNames[interfaceID] : nil
                     entries.append(
                         Entry(
                             offset: bodyStart + 20, length: captured, linkType: link,
-                            timestamp: Date(timeIntervalSince1970: seconds)))
+                            timestamp: Date(timeIntervalSince1970: seconds), sensor: sensor))
                 }
             } else if type == 3, bodyEnd - bodyStart >= 8 {
                 let captured = Int(data.uint32(at: bodyStart + 4, littleEndian: littleEndian))
@@ -147,7 +169,8 @@ struct PcapPacketIndex: Sequence {
                 entries.append(
                     Entry(
                         offset: bodyStart + 8, length: length,
-                        linkType: linkTypes.first ?? 127, timestamp: Date()))
+                        linkType: linkTypes.first ?? 127, timestamp: Date(),
+                        sensor: interfaceNames.first ?? nil))
             }
             offset += length
         }
