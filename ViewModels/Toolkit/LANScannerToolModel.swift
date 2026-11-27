@@ -46,7 +46,8 @@ final class LANScannerToolModel: ObservableObject {
 
     var selectedSubnet: String { result?.subnet ?? String(localized: "Not scanned") }
 
-    var authorizedKeys: Set<String> { inventory.authorizedKeys }
+    /// Devices trusted on the subnet that is on screen, not everywhere.
+    var authorizedKeys: Set<String> { inventory.authorizedKeys(in: result?.subnet) }
 
     /// Devices on screen that the user has not confirmed as belonging here.
     var unverifiedDevices: [LANDevice] {
@@ -56,7 +57,7 @@ final class LANScannerToolModel: ObservableObject {
     /// Known devices that this scan did not return.
     var missingDevices: [DeviceInventoryEntry] {
         let seen = Set(devices.map(deviceKey))
-        return inventory.entries.values
+        return inventory.entries(in: result?.subnet)
             .filter { !seen.contains($0.key) }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
@@ -65,7 +66,7 @@ final class LANScannerToolModel: ObservableObject {
         guard !isScanning else { return }
         isScanning = true
         errorMessage = nil
-        let known = Set(inventory.entries.keys)
+        let known = Set(inventory.entries.values.map(\.key))
         let guarding = guardEnabled
         task = Task { [weak self] in
             guard let self else { return }
@@ -101,13 +102,13 @@ final class LANScannerToolModel: ObservableObject {
     func deviceKey(_ device: LANDevice) -> String { device.mac ?? device.ip }
 
     func isAuthorized(_ device: LANDevice) -> Bool {
-        inventory.authorizedKeys.contains(deviceKey(device))
+        inventory.authorizedKeys(in: result?.subnet).contains(deviceKey(device))
     }
 
     func authorize(_ device: LANDevice) {
         let key = deviceKey(device)
         var state = inventory
-        state.authorize([key])
+        state.authorize([key], in: result?.subnet)
         inventory = state
         guardStore.save(state)
         newMACs.remove(key)
@@ -115,7 +116,7 @@ final class LANScannerToolModel: ObservableObject {
 
     func authorizeAll() {
         var state = inventory
-        state.authorizeAll()
+        state.authorizeAll(in: result?.subnet)
         inventory = state
         guardStore.save(state)
         newMACs = []
@@ -123,7 +124,8 @@ final class LANScannerToolModel: ObservableObject {
 
     private func absorb(_ scan: LANScanResult) {
         let change = DeviceInventoryEvaluator.evaluate(
-            state: inventory, observed: records(scan))
+            state: inventory, observed: records(scan), subnet: scan.subnet,
+            interfaceName: scan.interfaceName)
         inventory = change.state
         guardStore.save(change.state)
     }
@@ -131,7 +133,8 @@ final class LANScannerToolModel: ObservableObject {
     private func applyGuard(_ scan: LANScanResult) {
         guard guardEnabled else { return }
         let change = DeviceInventoryEvaluator.evaluate(
-            state: inventory, observed: records(scan))
+            state: inventory, observed: records(scan), subnet: scan.subnet,
+            interfaceName: scan.interfaceName)
         inventory = change.state
         guardStore.save(change.state)
         newMACs = Set(change.added.map(\.key))

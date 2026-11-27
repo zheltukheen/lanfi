@@ -1,3 +1,4 @@
+import LanFiCore
 import XCTest
 
 final class LANScannerTests: XCTestCase {
@@ -88,5 +89,64 @@ final class LANScannerTests: XCTestCase {
         store.save(["AA:BB:CC:DD:EE:01", "AA:BB:CC:DD:EE:02"])
         XCTAssertEqual(
             store.load(), ["AA:BB:CC:DD:EE:01", "AA:BB:CC:DD:EE:02"])
+    }
+
+    func testGuardStoreKeepsEntriesPerSubnet() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lanfi-guard-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = LANGuardStore(directory: directory)
+
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let home = try DeviceInventoryEvaluator.evaluate(
+            state: .empty, observed: [LANDeviceRecord(key: "AA:BB:CC:DD:EE:01", name: "nas")],
+            subnet: "192.168.1.0/24", interfaceName: "en0", now: now
+        ).state
+        var state = home
+        state.authorize(["AA:BB:CC:DD:EE:01"], in: "192.168.1.0/24", now: now)
+        state =
+            DeviceInventoryEvaluator.evaluate(
+                state: state,
+                observed: [LANDeviceRecord(key: "AA:BB:CC:DD:EE:77", name: "printer")],
+                subnet: "10.0.0.0/24", interfaceName: "en5", now: now.addingTimeInterval(60)
+            ).state
+        store.save(state)
+
+        let loaded = store.loadState()
+        XCTAssertEqual(loaded.entries.count, 2)
+        XCTAssertEqual(loaded.entries(in: "192.168.1.0/24").map(\.key), ["AA:BB:CC:DD:EE:01"])
+        XCTAssertTrue(loaded.authorizedKeys(in: "192.168.1.0/24").contains("AA:BB:CC:DD:EE:01"))
+        XCTAssertTrue(loaded.authorizedKeys(in: "10.0.0.0/24").isEmpty)
+        XCTAssertEqual(loaded.entries(in: "10.0.0.0/24").first?.interfaceName, "en5")
+        XCTAssertEqual(loaded.seededSubnets, ["192.168.1.0/24", "10.0.0.0/24"])
+    }
+
+    func testGuardStoreReadsFileWrittenBeforeSubnets() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("lanfi-guard-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let legacy = """
+            {
+              "seededAt" : "2026-01-01T00:00:00Z",
+              "entries" : {
+                "AA:BB:CC:DD:EE:01" : {
+                  "authorized" : true,
+                  "firstSeen" : "2026-01-01T00:00:00Z",
+                  "key" : "AA:BB:CC:DD:EE:01",
+                  "lastSeen" : "2026-01-01T00:00:00Z",
+                  "name" : "nas"
+                }
+              }
+            }
+            """
+        try Data(legacy.utf8).write(
+            to: directory.appendingPathComponent("lan-guard.json"))
+
+        let loaded = LANGuardStore(directory: directory).loadState()
+        XCTAssertEqual(loaded.entries.count, 1)
+        XCTAssertNil(loaded.seededSubnets)
+        XCTAssertEqual(loaded.entries["AA:BB:CC:DD:EE:01"]?.subnet, nil)
+        XCTAssertTrue(loaded.entries["AA:BB:CC:DD:EE:01"]?.authorized == true)
     }
 }

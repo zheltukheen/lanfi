@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Fixed
+- **Network Guard inventory follows the network it was scanned on.** Entries
+  now remember their subnet and scan interface, so a laptop that moves between
+  networks no longer reports another network's devices as "known devices were
+  not seen" or claims a device is trusted everywhere. Each network's first
+  scan adopts its devices silently; files written before this change keep their
+  entries and are attached to the network they are next seen on.
+- **The Traffic tab no longer drags its tab strip off the top.** The per-process
+  cards and table now scroll like the sockets tab instead of overflowing a
+  short window once sampling starts.
+
 ### Changed
 - **Location Services is asked once, at launch, for the whole app.** The request
   and the status check moved out of the Wi-Fi analyzer into `LocationAccessCenter`,
@@ -11,6 +22,9 @@
   banner in the app shell reopens it from any tool. The analyzer no longer
   replaces its table with a permission empty state — without access it keeps
   showing signal and channels and the banner explains what stays hidden.
+  The GPS map and the site survey no longer own a location manager that could
+  ask the system themselves: they read a fix through the same module and wait
+  for its answer, and the survey tool shows the shared prompt instead.
 
 ### Added
 - **Capture on all sensors, merged into one trace (G3).** Remote sensors can now

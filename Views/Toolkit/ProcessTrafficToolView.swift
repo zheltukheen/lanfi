@@ -95,29 +95,35 @@ struct ProcessTrafficToolView: View {
     // MARK: Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
-            if enabled {
-                controls
+        // As on the sockets tab, the summary and attribution cards plus the
+        // table outgrow a short window once sampling starts; a plain VStack
+        // overflowed and dragged the tab strip above the top edge.
+        ScrollView {
+            VStack(alignment: .leading, spacing: DesignToken.Spacing.medium) {
+                if enabled {
+                    controls
+                }
+                if let errorMessage {
+                    ToolkitErrorBanner(message: errorMessage)
+                }
+                if let notice {
+                    ruleNotice(notice)
+                }
+                if enabled, !matchingRows.isEmpty {
+                    ruleBanner
+                }
+                if enabled {
+                    summary
+                    appHistoryCard
+                    domainAttributionCard
+                    table
+                } else {
+                    consentCard
+                }
             }
-            if let errorMessage {
-                ToolkitErrorBanner(message: errorMessage)
-            }
-            if let notice {
-                ruleNotice(notice)
-            }
-            if enabled, !matchingRows.isEmpty {
-                ruleBanner
-            }
-            if enabled {
-                summary
-                appHistoryCard
-                domainAttributionCard
-                table
-            } else {
-                consentCard
-            }
+            .appContentPadding()
         }
-        .appContentPadding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task(id: enabled) {
             guard enabled else {
                 rows = []

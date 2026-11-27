@@ -135,48 +135,107 @@ public struct DeviceInventoryEntry: Codable, Equatable, Sendable {
     public var lastSeen: Date
     /// False until the user says the device belongs on this network.
     public var authorized: Bool
+    /// The scan's network, e.g. "192.168.1.0/24". Nil for entries written
+    /// before the inventory was tied to a network.
+    public var subnet: String?
+    /// The interface the scan used, kept for context only.
+    public var interfaceName: String?
 
     public init(
-        key: String, name: String, firstSeen: Date, lastSeen: Date, authorized: Bool = false
+        key: String, name: String, firstSeen: Date, lastSeen: Date, authorized: Bool = false,
+        subnet: String? = nil, interfaceName: String? = nil
     ) {
         self.key = key
         self.name = name
         self.firstSeen = firstSeen
         self.lastSeen = lastSeen
         self.authorized = authorized
+        self.subnet = subnet
+        self.interfaceName = interfaceName
     }
+
+    /// Entries are stored per network, so the same MAC seen on two networks is
+    /// two records instead of one that keeps moving.
+    public static func scope(subnet: String?, key: String) -> String {
+        guard let subnet, !subnet.isEmpty else { return key }
+        return "\(subnet)|\(key)"
+    }
+
+    public var isScoped: Bool { subnet?.isEmpty == false }
 }
 
 public struct DeviceInventoryState: Codable, Equatable, Sendable {
     /// Nil until the first scan seeded the inventory; that scan adopts every
     /// device it sees instead of reporting the whole network as new.
     public var seededAt: Date?
+    /// Networks whose first scan was adopted silently. Nil in files written
+    /// before the inventory was tied to a network.
+    public var seededSubnets: Set<String>?
+    /// Keyed by `DeviceInventoryEntry.scope`, not by the bare device key.
     public var entries: [String: DeviceInventoryEntry]
 
-    public init(seededAt: Date? = nil, entries: [String: DeviceInventoryEntry] = [:]) {
+    public init(
+        seededAt: Date? = nil, entries: [String: DeviceInventoryEntry] = [:],
+        seededSubnets: Set<String>? = nil
+    ) {
         self.seededAt = seededAt
         self.entries = entries
+        self.seededSubnets = seededSubnets
     }
 
     public static let empty = DeviceInventoryState()
 
+    /// Trust across every network; screens should use `authorizedKeys(in:)`.
     public var authorizedKeys: Set<String> {
         Set(entries.values.filter(\.authorized).map(\.key))
     }
 
+    public func isSeeded(_ subnet: String?) -> Bool {
+        guard let subnet, !subnet.isEmpty else { return seededAt != nil }
+        return seededSubnets?.contains(subnet) ?? false
+    }
+
+    public func entryKey(_ key: String, in subnet: String?) -> String {
+        DeviceInventoryEntry.scope(subnet: subnet, key: key)
+    }
+
+    public func entry(_ key: String, in subnet: String?) -> DeviceInventoryEntry? {
+        entries[entryKey(key, in: subnet)]
+    }
+
+    /// Records that belong to this network; entries from other networks (and
+    /// unscoped leftovers) are excluded.
+    public func entries(in subnet: String?) -> [DeviceInventoryEntry] {
+        let scope = (subnet?.isEmpty == true) ? nil : subnet
+        return entries.values.filter { $0.subnet == scope }
+    }
+
+    public func authorizedKeys(in subnet: String?) -> Set<String> {
+        Set(entries(in: subnet).filter(\.authorized).map(\.key))
+    }
+
     /// Marks the given devices as belonging to this network. Unknown keys are
     /// ignored instead of being invented.
-    public mutating func authorize(_ keys: Set<String>, now: Date = Date()) {
+    public mutating func authorize(_ keys: Set<String>, in subnet: String? = nil, now: Date = Date()) {
         for key in keys {
-            guard var entry = entries[key] else { continue }
+            let scopedKey = entryKey(key, in: subnet)
+            guard var entry = entries[scopedKey] else { continue }
             entry.authorized = true
             entry.lastSeen = max(entry.lastSeen, now)
-            entries[key] = entry
+            entries[scopedKey] = entry
         }
     }
 
-    public mutating func authorizeAll(now: Date = Date()) {
-        authorize(Set(entries.keys), now: now)
+    public mutating func authorizeAll(in subnet: String? = nil, now: Date = Date()) {
+        authorize(Set(entries(in: subnet).map(\.key)), in: subnet, now: now)
+    }
+
+    public mutating func markSeeded(_ subnet: String?, now: Date = Date()) {
+        seededAt = seededAt ?? now
+        guard let subnet, !subnet.isEmpty else { return }
+        var seeded = seededSubnets ?? []
+        seeded.insert(subnet)
+        seededSubnets = seeded
     }
 }
 
@@ -209,31 +268,47 @@ public enum DeviceInventoryEvaluator {
     /// names and last-seen times, and leave authorization exactly as the user
     /// set it.
     public static func evaluate(
-        state: DeviceInventoryState, observed: [LANDeviceRecord], now: Date = Date()
+        state: DeviceInventoryState, observed: [LANDeviceRecord], subnet: String? = nil,
+        interfaceName: String? = nil, now: Date = Date()
     ) -> Change {
+        let scope = (subnet?.isEmpty == true) ? nil : subnet
         var updated = state
         var added: [LANDeviceRecord] = []
         let seen = Set(observed.map(\.key))
-        let didSeed = updated.seededAt == nil
+        let didSeed = !state.isSeeded(scope)
 
         for record in observed {
-            if var entry = updated.entries[record.key] {
+            let scopedKey = updated.entryKey(record.key, in: scope)
+            if var entry = updated.entries[scopedKey] {
                 entry.name = record.name
                 entry.lastSeen = max(entry.lastSeen, now)
-                updated.entries[record.key] = entry
+                entry.interfaceName = interfaceName ?? entry.interfaceName
+                updated.entries[scopedKey] = entry
+            } else if scope != nil, let legacy = updated.entries.removeValue(forKey: record.key),
+                legacy.subnet == nil
+            {
+                // Migration: an entry from before networks were tracked keeps
+                // its trust and first-seen date, now attached to this network.
+                var migrated = legacy
+                migrated.subnet = scope
+                migrated.interfaceName = interfaceName ?? legacy.interfaceName
+                migrated.name = record.name
+                migrated.lastSeen = max(legacy.lastSeen, now)
+                updated.entries[scopedKey] = migrated
             } else {
-                updated.entries[record.key] = DeviceInventoryEntry(
-                    key: record.key, name: record.name, firstSeen: now, lastSeen: now)
+                updated.entries[scopedKey] = DeviceInventoryEntry(
+                    key: record.key, name: record.name, firstSeen: now, lastSeen: now,
+                    subnet: scope, interfaceName: interfaceName)
                 if !didSeed { added.append(record) }
             }
         }
 
-        if didSeed { updated.seededAt = now }
-        let missing = updated.entries.values
+        if didSeed { updated.markSeeded(scope, now: now) }
+        let missing = updated.entries(in: scope)
             .filter { !seen.contains($0.key) }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         let unauthorized = observed.filter { record in
-            updated.entries[record.key]?.authorized == false
+            updated.entries[updated.entryKey(record.key, in: scope)]?.authorized == false
         }
         return Change(
             state: updated, added: added, missing: missing,

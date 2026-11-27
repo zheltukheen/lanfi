@@ -1,15 +1,21 @@
+import Combine
 import CoreLocation
 import Foundation
 
 /// One-shot location for GPS-tagged survey points. macOS has no GPS on most
 /// Macs, so this is Wi-Fi based and deliberately low precision; the map view
 /// says so instead of implying survey-grade accuracy.
+///
+/// This type only reads a fix; the permission itself is asked for by
+/// `LocationAccessCenter`, the app's single location module, so a map view can
+/// never trigger a second system prompt on its own.
 final class CurrentLocationProvider: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published private(set) var coordinate: GeoPoint?
     @Published private(set) var statusDescription = String(localized: "Location not requested")
     @Published private(set) var isRequesting = false
 
     private let manager = CLLocationManager()
+    private var accessCancellable: AnyCancellable?
 
     override init() {
         super.init()
@@ -19,10 +25,39 @@ final class CurrentLocationProvider: NSObject, ObservableObject, CLLocationManag
 
     @Published private(set) var errorMessage: String?
 
+    /// Asks for a fix. Without permission it shows the shared explanation sheet
+    /// and continues by itself once LocationAccessCenter reports access.
     func request() {
-        isRequesting = true
+        Task { @MainActor [weak self] in self?.beginRequest() }
+    }
+
+    @MainActor
+    private func beginRequest() {
         errorMessage = nil
-        manager.requestWhenInUseAuthorization()
+        let access = LocationAccessCenter.shared
+        access.refresh()
+        guard access.state.isGranted else {
+            isRequesting = false
+            statusDescription =
+                access.state == .denied
+                ? String(localized: "Location denied — enable it in Settings")
+                : String(localized: "Waiting for location permission")
+            accessCancellable = access.$state
+                .filter { $0.isGranted }
+                .first()
+                .sink { [weak self] _ in
+                    Task { @MainActor [weak self] in self?.requestSystemFix() }
+                }
+            access.presentPrompt()
+            return
+        }
+        requestSystemFix()
+    }
+
+    @MainActor
+    private func requestSystemFix() {
+        accessCancellable = nil
+        isRequesting = true
         manager.requestLocation()
     }
 
