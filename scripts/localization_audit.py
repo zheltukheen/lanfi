@@ -41,6 +41,16 @@ UI_LITERAL = [
 ]
 SKIP_PREFIXES = ("http://", "https://", "x-apple.")
 
+# Sample values and units that appear as literals in previews and fields
+# (`AA:BB:CC:DD:EE:FF`, `1.1.1.1`, `-70 dBm`, `192.168.1.20`) are data, not UI
+# copy, so they are not translation debt.
+SKIP_SHAPES = (
+    re.compile(r"^[-+]?\d"),
+    re.compile(r"^[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2})+$"),
+    re.compile(r"^\d{1,3}(\.\d{1,3}){3}$"),
+    re.compile(r"^[^\w\u0400-\u04FF\u4e00-\u9fff]+$"),
+)
+
 
 def load(locale: str) -> dict[str, str]:
     path = f"{ROOT}/{locale}.lproj/Localizable.strings"
@@ -69,7 +79,7 @@ def source_literals() -> set[str]:
         if value
         and "\\(" not in value
         and not value.startswith(SKIP_PREFIXES)
-        and not value.isdigit()
+        and not any(shape.match(value) for shape in SKIP_SHAPES)
     }
 
 

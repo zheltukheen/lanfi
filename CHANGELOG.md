@@ -11,6 +11,11 @@
 - **The empty device shelf links to the scan that fills it** (“Scan now” switches
   to the Scan tab) instead of only describing where to go. The two LAN tabs stay
   separate: one is a live sweep, the other the history that outlives it.
+- **Sixty more shared labels speak all five languages.** Air time, channels,
+  capture controls, controller rules and the common copy/forget/disconnect
+  actions were English-only in every locale because they never reached the
+  catalogue; they now do, and `scripts/localization_audit.py` ignores sample
+  values (`1.1.1.1`, `AA:BB:CC`, `-70 dBm`) so its count reflects real copy.
 - **The Overview answers “is anything wrong?” first.** A plain-language card lists
   what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
   weak signal, unprotected network, hidden SSIDs) and links straight to the tool
