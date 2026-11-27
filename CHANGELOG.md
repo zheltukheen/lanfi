@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 5.7.1 — 2026-11-27
 
 ### Changed
 - **Connections keeps its sidebar entry when a subtab is chosen.** Sockets,
