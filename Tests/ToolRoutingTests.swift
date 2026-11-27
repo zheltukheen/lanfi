@@ -46,6 +46,12 @@ final class ToolRoutingTests: XCTestCase {
         XCTAssertFalse(ToolboxTool.geoIP.showsInSidebar)
     }
 
+    func testPathCheckIsAShortPortScan() {
+        XCTAssertEqual(ToolboxTool.pathCheck.screen, .portScan)
+        XCTAssertFalse(ToolboxTool.pathCheck.showsInSidebar)
+        XCTAssertTrue(ToolboxTool.portScan.showsInSidebar)
+    }
+
     func testSidebarToolsHaveDistinctScreensOrASharedHost() {
         var seen: [ToolScreen: ToolboxTool] = [:]
         for tool in ToolboxTool.allCases where tool.showsInSidebar {

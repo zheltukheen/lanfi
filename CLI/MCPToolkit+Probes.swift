@@ -123,38 +123,28 @@ extension MCPToolkit {
         }
     }
 
+    /// Reachability is a short TCP port scan, so it runs through the same
+    /// `PortScanner` and probe as `lanfi_port_scan`; this used to carry its own
+    /// copy of the connect/parse switch.
     static func pathCheck(_ arguments: [String: Any]) async -> MCPToolOutcome {
         do {
             let host = try hostArgument(arguments)
             let spec = ports(arguments, fallback: "80,443")
             guard !spec.isEmpty else { return .error("No ports to check.") }
-            let results = await withTaskGroup(of: [String: Any].self) { group in
-                for port in spec.prefix(32) {
-                    group.addTask {
-                        let outcome = await TCPProbe.connect(host: host, port: port, timeout: 4)
-                        var row: [String: Any] = ["port": Int(port)]
-                        switch outcome {
-                        case .open(let milliseconds):
-                            row["state"] = "open"
-                            row["ms"] = milliseconds
-                        case .closed(let milliseconds, let detail):
-                            row["state"] = "closed"
-                            row["ms"] = milliseconds as Any
-                            row["detail"] = detail as Any
-                        case .filtered(let detail):
-                            row["state"] = "filtered"
-                            row["detail"] = detail as Any
-                        }
-                        return row
-                    }
-                }
-                var rows: [[String: Any]] = []
-                for await row in group { rows.append(row) }
-                return rows.sorted {
-                    ($0["port"] as? Int ?? 0) < ($1["port"] as? Int ?? 0)
-                }
-            }
-            return .json(["host": host, "results": results])
+            let results = await PortScanner(probe: TCPPortProbe()).scan(
+                host: host, ports: Array(spec.prefix(32)), timeout: 4)
+            return .json([
+                "host": host,
+                "reachable": results.filter { $0.state == .open }.count,
+                "results": results.map { result in
+                    [
+                        "port": Int(result.port),
+                        "state": result.state.rawValue,
+                        "ms": result.responseMilliseconds as Any,
+                        "detail": result.detail as Any,
+                    ] as [String: Any]
+                },
+            ])
         } catch {
             return .error(error.localizedDescription)
         }

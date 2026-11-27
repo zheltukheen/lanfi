@@ -3,6 +3,14 @@
 ## Unreleased
 
 ### Changed
+- **Path Check is now a shortcut of Port Scan.** The reachability screen had its
+  own TCP connect loop, target/port parsing and result type, duplicating the
+  scanner. The screen is gone: its deep link routes to Port Scan, and the
+  `lanfi_path_check` MCP tool runs the shared `PortScanner` probe. A reachability
+  check is a thirty-two-port scan, so it now reports the same states and timings.
+- **The empty device shelf links to the scan that fills it** (“Scan now” switches
+  to the Scan tab) instead of only describing where to go. The two LAN tabs stay
+  separate: one is a live sweep, the other the history that outlives it.
 - **The Overview answers “is anything wrong?” first.** A plain-language card lists
   what needs attention (no internet, captive portal, VPN leak, DNS mismatch,
   weak signal, unprotected network, hidden SSIDs) and links straight to the tool

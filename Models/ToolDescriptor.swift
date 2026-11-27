@@ -108,10 +108,14 @@ enum ToolRegistry {
             tool: .natTest, screen: .natTest, title: String(localized: "NAT Test"),
             icon: "network", section: .networkTools,
             plannedDetail: String(localized: "What the router does to this Mac's UDP traffic.")),
+        // A reachability check is a 32-port TCP scan: the same screen and the
+        // same probe do the work, so the sidebar lists one tool and the deep
+        // link still resolves.
         ToolDescriptor(
-            tool: .pathCheck, screen: .pathCheck, mcpTools: ["lanfi_path_check"],
+            tool: .pathCheck, screen: .portScan, mcpTools: ["lanfi_path_check"],
             title: String(localized: "Path Check"),
-            icon: "arrow.triangle.branch", section: .networkTools),
+            icon: "arrow.triangle.branch", section: .networkTools,
+            showsInSidebar: false),
         ToolDescriptor(
             tool: .subnetCalculator, screen: .subnetCalculator, mcpTools: ["lanfi_subnet"],
             title: String(localized: "Subnet Calculator"),

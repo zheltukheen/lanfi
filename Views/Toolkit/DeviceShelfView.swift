@@ -12,6 +12,9 @@ private func favouriteActionLabel(isFavourite: Bool) -> String {
 /// user's names, types, favourites, availability, risk findings and history.
 struct DeviceShelfView: View {
     @ObservedObject var model: DeviceShelfViewModel
+    /// The shelf lives beside the scan it is fed by; an empty one should take
+    /// the user there instead of telling them to find it themselves.
+    var onScanRequested: (() -> Void)?
     @State private var aliasDraft = ""
     @State private var notesDraft = ""
     @State private var aliasSaveTask: Task<Void, Never>?
@@ -39,6 +42,14 @@ struct DeviceShelfView: View {
                             message:
                                 "Run a scan on the Scan tab. Every device that answers is kept here with its name, type, ports, availability and history — even when it is offline."
                         )
+                        if let onScanRequested {
+                            HStack {
+                                Spacer()
+                                AppButton("Scan now", tone: .primary, action: onScanRequested)
+                                Spacer()
+                            }
+                            .padding(.bottom, 30)
+                        }
                     }
                 } else {
                     HStack(alignment: .top, spacing: 12) {

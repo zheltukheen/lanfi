@@ -21,7 +21,6 @@ final class ToolkitViewModel: ObservableObject {
     let visualTraceroute = VisualTracerouteToolModel()
     let ssl = SSLToolModel()
     let subnet = SubnetToolModel()
-    let pathCheck = PathCheckToolModel()
     let lanScanner = LANScannerToolModel()
     let iperf3 = Iperf3ToolModel()
     let speedTest = SpeedTestToolModel()

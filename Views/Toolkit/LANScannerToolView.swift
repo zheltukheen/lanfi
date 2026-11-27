@@ -46,7 +46,7 @@ struct LANScannerToolView: View {
             if tabRaw == 0 {
                 scanContent
             } else {
-                DeviceShelfView(model: shelf)
+                DeviceShelfView(model: shelf, onScanRequested: { tabRaw = 0 })
             }
         }
         .onAppear {

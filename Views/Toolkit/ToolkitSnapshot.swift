@@ -222,7 +222,6 @@
                 toolkit.portScan.run()
             case .traceroute: toolkit.traceroute.run()
             case .sslCertificate: toolkit.ssl.run()
-            case .pathCheck: toolkit.pathCheck.run()
             case .subnetCalculator: toolkit.subnet.calculate()
             case .speedTest: toolkit.speedTest.run()
             case .mtr:

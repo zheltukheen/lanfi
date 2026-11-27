@@ -19,7 +19,6 @@ enum ToolScreen: String, CaseIterable, Sendable {
     case sslCertificate
 
     case portScan
-    case pathCheck
     case subnetCalculator
     case iperf3
     case httpTraffic
