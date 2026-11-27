@@ -1979,3 +1979,18 @@
 "Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "Без доступа сканирование работает, но имена и определение вендора остаются скрытыми, а события монитора менее точны.";
 "Continue without" = "Продолжить без доступа";
 "Location access is off — Wi-Fi names may stay hidden." = "Нет доступа к геопозиции — имена Wi-Fi могут остаться скрытыми.";
+
+"Capture on all sensors" = "Захват на всех сенсорах";
+"Runs one tcpdump per sensor and merges the captures into a single pcapng with one interface per sensor, so Wireshark shows which radio saw each frame." = "Запускает tcpdump на каждом сенсоре и сливает записи в один pcapng с отдельным интерфейсом на сенсор, чтобы Wireshark показывал, какое радио видело каждый кадр.";
+"Monitor mode / radiotap" = "Режим монитора / radiotap";
+"Captures run one sensor at a time; a failed sensor is skipped and reported instead of discarding the rest." = "Сенсоры захватываются по очереди; упавший сенсор пропускается и попадает в отчёт, остальные не теряются.";
+"Sensors" = "Сенсоры";
+"Merged %lld frames from %lld sensors." = "Объединено %lld кадров с %lld сенсоров.";
+"No sensor produced a capture. See the failures below." = "Ни один сенсор не дал запись. Смотрите ошибки ниже.";
+"Sensors that failed" = "Сенсоры с ошибкой";
+"Capturing %lld of %lld · %@" = "Захват %lld из %lld · %@";
+"Start capture" = "Начать захват";
+"Capture on all…" = "Захват на всех…";
+"Capture from every saved sensor and merge the files into one pcapng." = "Захватить на всех сохранённых сенсорах и слить файлы в один pcapng.";
+"Captured link type %lld, not 802.11. Turn monitor mode on, or pick the monitor interface." = "Захвачен тип канала %lld, а не 802.11. Включите режим монитора или выберите monitor-интерфейс.";
+"Reveal" = "Показать в Finder";

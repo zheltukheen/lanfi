@@ -1942,3 +1942,18 @@
 "Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "没有该权限仍可扫描，但名称和厂商识别会保持隐藏，监视器事件也会不够精确。";
 "Continue without" = "暂不开启";
 "Location access is off — Wi-Fi names may stay hidden." = "未开启定位权限 — Wi-Fi 名称可能保持隐藏。";
+
+"Capture on all sensors" = "在所有传感器上抓包";
+"Runs one tcpdump per sensor and merges the captures into a single pcapng with one interface per sensor, so Wireshark shows which radio saw each frame." = "在每台传感器上运行 tcpdump，并将抓包合并为一个 pcapng，每个传感器一个接口，Wireshark 可显示每个帧由哪个无线电收到。";
+"Monitor mode / radiotap" = "监听模式 / radiotap";
+"Captures run one sensor at a time; a failed sensor is skipped and reported instead of discarding the rest." = "传感器依次抓包；失败的传感器会被跳过并记录，不会丢弃其余结果。";
+"Sensors" = "传感器";
+"Merged %lld frames from %lld sensors." = "已合并来自 %lld 个传感器的 %lld 个帧。";
+"No sensor produced a capture. See the failures below." = "没有传感器产生抓包。请查看下方失败信息。";
+"Sensors that failed" = "失败的传感器";
+"Capturing %lld of %lld · %@" = "正在抓取第 %lld / %lld · %@";
+"Start capture" = "开始抓包";
+"Capture on all…" = "在所有传感器上抓包…";
+"Capture from every saved sensor and merge the files into one pcapng." = "对每个已保存的传感器抓包，并将文件合并为一个 pcapng。";
+"Captured link type %lld, not 802.11. Turn monitor mode on, or pick the monitor interface." = "抓到的链路类型为 %lld，不是 802.11。请开启监听模式或选择监听接口。";
+"Reveal" = "在 Finder 中显示";

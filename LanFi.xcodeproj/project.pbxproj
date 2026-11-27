@@ -450,6 +450,7 @@
 		69170A51E1C39D1ACEB1B707 /* TracerouteRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094301D63FF35FEF9823C758 /* TracerouteRunner.swift */; };
 		693268DDACA5ECE6C13E66D3 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AF8181052152C9FCF0EAC1 /* DesignSystem.swift */; };
 		6976B80DF43E31FAE5BD0398 /* CommandIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 730B289196FCB15D5AE69B32 /* CommandIndex.swift */; };
+		69DFB4CF99B122FE69D0E794 /* MultiSensorMergeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BBBC47D9278AA2A8A4DDFF /* MultiSensorMergeTests.swift */; };
 		6A1EAEAE35302A77040B36E0 /* AnalyzerViewModel+Scanning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 345B3A328917BB25EB678F9B /* AnalyzerViewModel+Scanning.swift */; };
 		6A7C88EE8C26FF996905B925 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410E2165C37C6D0DADC7754 /* AboutView.swift */; };
 		6B2FB218B4D54BFB6179D9F8 /* NATProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B11F288FADBF31274E99163 /* NATProfileTests.swift */; };
@@ -549,6 +550,7 @@
 		7FEA36D79B28E565B476861A /* ColumnProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBCB97B25338A19AF78881E /* ColumnProfile.swift */; };
 		7FF32798FC90587A8BFB8431 /* SixGHzOperationInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76848189E951773D6D94885C /* SixGHzOperationInfo.swift */; };
 		8098AE614F87EFD37D52A707 /* AnnotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7CDFD106A306D2500FCD269 /* AnnotationTests.swift */; };
+		80B23070FFB0BDDF55A6BEE4 /* MultiSensorCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FF1CBABFD553D4C852F63B /* MultiSensorCaptureService.swift */; };
 		80BD9E5A2FBCEA63631E3ACD /* MenuBarMeterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0420B02F9C902627F1F5D /* MenuBarMeterModel.swift */; };
 		80C2784E447A56F1D21A96EC /* NativePingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9828CDEF1AAE61F5F7D0C97 /* NativePingService.swift */; };
 		811637E2688E2E3434FF11CE /* LaunchAtLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE71D9536A0640EEF40187E /* LaunchAtLoginController.swift */; };
@@ -683,6 +685,7 @@
 		9E163D0F01C427902FC8A9FA /* WiFiScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4E536F1E321D433C834C41 /* WiFiScanner.swift */; };
 		9E4BAD827258E125936D442E /* PortSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB0735CC7BCD75BA4920B4D /* PortSpec.swift */; };
 		9E6F679805E89816DB2E07B4 /* ExpressionColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774F454ECF83E0C9A1CAE3AA /* ExpressionColumn.swift */; };
+		9E797A82E9AE7CAEA743A6B7 /* MultiSensorCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FF1CBABFD553D4C852F63B /* MultiSensorCaptureService.swift */; };
 		9EACC9A9F5C00542B19AA281 /* SystemInterfaceScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18206A98F5831F9F435AD9CA /* SystemInterfaceScanner.swift */; };
 		9EEB6AD80C3FC523A7E83E91 /* OUIUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112365ADA072881067C1A1B0 /* OUIUpdaterTests.swift */; };
 		9F02802E76750F5C847CEBB1 /* ToolkitModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D0FDDBC5A669F1986F7F30 /* ToolkitModels.swift */; };
@@ -995,6 +998,7 @@
 		E560554BDCC7BF504F00B650 /* NativePingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9828CDEF1AAE61F5F7D0C97 /* NativePingService.swift */; };
 		E5A9CB7DE26E07DD53CE0578 /* SignalHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB745B8270157FB7B20A1F4A /* SignalHistoryView.swift */; };
 		E5D0A3BBF5D683A5732D0D68 /* LiveThreatCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871DDCC7A56B7A10C2E02672 /* LiveThreatCounter.swift */; };
+		E5E0FA35EF350F201703718C /* MultiSensorCaptureSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699D64F96F8DE20A0F8549F9 /* MultiSensorCaptureSheet.swift */; };
 		E6320D655695DFDCC1166501 /* SurveyToolMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24E6961A4F201BABD47A5798 /* SurveyToolMode.swift */; };
 		E6B3BACC76C46496446CA084 /* ThroughputNetworkSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37A2BD97C345A4AC7A86496 /* ThroughputNetworkSampler.swift */; };
 		E72C15A389C39001C6B92E4A /* ProtocolAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E854E978B6A152D6D8668E61 /* ProtocolAnalyzer.swift */; };
@@ -1100,6 +1104,7 @@
 		FCF5AC45A2EC50E0DE71BDBE /* FirstRunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D9D6C7F9AD4226358264618 /* FirstRunView.swift */; };
 		FD7D1B89EAA5470EB2317B98 /* WhoisModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D66DC61703E1A15BB0C0180 /* WhoisModels.swift */; };
 		FDA7ED9D1CADDBC0B7359E0C /* SpectrumSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26D326D520E21357FEABDB3 /* SpectrumSweep.swift */; };
+		FE038075692A232F65605935 /* MultiSensorCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FF1CBABFD553D4C852F63B /* MultiSensorCaptureService.swift */; };
 		FE6914C2742066632D1F076B /* CaptureSecurity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0056FB58A038BBB8CD8BBA /* CaptureSecurity.swift */; };
 		FF27F0FD0F9394533FA62CB2 /* ControllerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D856BE9B63CC2E3655BA90B /* ControllerService.swift */; };
 		FF880E078215E3AB03C2C11E /* HeatPaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D2A874BC789EE460BCA74C /* HeatPaletteTests.swift */; };
@@ -1223,6 +1228,7 @@
 		35E9FC12F0037B6A11AE1F1D /* HTTPTrafficToolModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPTrafficToolModel.swift; sourceTree = "<group>"; };
 		3631A74B5DA04084B009F362 /* SwitchInventoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchInventoryTests.swift; sourceTree = "<group>"; };
 		36803BC53C6666AF714838FF /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
+		36BBBC47D9278AA2A8A4DDFF /* MultiSensorMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSensorMergeTests.swift; sourceTree = "<group>"; };
 		37417F09ED94F9C9F85B6CC7 /* LanFiCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LanFiCore; path = Packages/LanFiCore; sourceTree = SOURCE_ROOT; };
 		3805F962E3C24A37E201581A /* DomainAttribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainAttribution.swift; sourceTree = "<group>"; };
 		38692DDEB63DF9515A8BDD2B /* DeviceLabelPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLabelPDF.swift; sourceTree = "<group>"; };
@@ -1332,6 +1338,7 @@
 		6923AC478E244EAF259A748C /* LinkTelemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkTelemetry.swift; sourceTree = "<group>"; };
 		693BBFC072DAE5D15252181D /* CombinedReportPDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombinedReportPDFExporter.swift; sourceTree = "<group>"; };
 		698DBB6C759F71B1B359E535 /* PingToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PingToolView.swift; sourceTree = "<group>"; };
+		699D64F96F8DE20A0F8549F9 /* MultiSensorCaptureSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSensorCaptureSheet.swift; sourceTree = "<group>"; };
 		6B487D67668DBB6742907454 /* ScanCadence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCadence.swift; sourceTree = "<group>"; };
 		6D3DA1A00ECCFD28E1C17175 /* MCPProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPProtocol.swift; sourceTree = "<group>"; };
 		6D8065D6445AB2F70AF53FC3 /* RoamProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamProbeTests.swift; sourceTree = "<group>"; };
@@ -1494,6 +1501,7 @@
 		B4E5CE2AEC745D4C33A639DB /* VisualTracerouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTracerouteTests.swift; sourceTree = "<group>"; };
 		B6121977D5E50DF33936ABD5 /* RoamingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamingTest.swift; sourceTree = "<group>"; };
 		B62DFA9AF9B39DB9CA4D0971 /* CoLocatedAPTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoLocatedAPTests.swift; sourceTree = "<group>"; };
+		B6FF1CBABFD553D4C852F63B /* MultiSensorCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSensorCaptureService.swift; sourceTree = "<group>"; };
 		B7848F2E358FAE8165A64403 /* SupervisedProcessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupervisedProcessTests.swift; sourceTree = "<group>"; };
 		B7AFE55080D3BCFEC057440B /* DiagnosticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsViewModel.swift; sourceTree = "<group>"; };
 		B7B563586CA7ACF3022DB506 /* ConnectionControlService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionControlService.swift; sourceTree = "<group>"; };
@@ -1826,6 +1834,7 @@
 				DC387357F392DD0089923BE0 /* MonitorReliabilityTests.swift */,
 				66E343CD0D76AE8DD0F57FEE /* MonitorTests.swift */,
 				24DDA493E56FB165F3DF48F5 /* MTRServiceTests.swift */,
+				36BBBC47D9278AA2A8A4DDFF /* MultiSensorMergeTests.swift */,
 				8B11F288FADBF31274E99163 /* NATProfileTests.swift */,
 				F63C5C7DB6639AEF0D9661CD /* NetworkAnalyzerTests.swift */,
 				834E4F21BA5B634E8BCF974A /* NetworkBaselineTests.swift */,
@@ -2079,6 +2088,7 @@
 				547357481C8F3E73DD13D920 /* MCPSnapshotWriter.swift */,
 				21064AFB1A9F6109BB6FA13F /* MonitorNotifier.swift */,
 				A07CE7C1EF74728BFAE416BD /* MonitorStore.swift */,
+				B6FF1CBABFD553D4C852F63B /* MultiSensorCaptureService.swift */,
 				D9828CDEF1AAE61F5F7D0C97 /* NativePingService.swift */,
 				53EF3A0A8F866D869011247D /* NetworkAnalyzer.swift */,
 				E6EF9AC85A4DD0786CCF0D7B /* NetworkBaselineService.swift */,
@@ -2175,6 +2185,7 @@
 				F539AFBA80B2812210B9BD40 /* MonitorView.swift */,
 				56E51135BACE9E5BA4BEA5C7 /* MultiFloorSurveyView.swift */,
 				E208CE84D2DA29FEB3D9C8F9 /* MultiNetworkComparisonView.swift */,
+				699D64F96F8DE20A0F8549F9 /* MultiSensorCaptureSheet.swift */,
 				9AA7B0F0189511DB7E761C6D /* NetworkComparisonTable.swift */,
 				D50E29FA26E38F5135D06F09 /* NetworkInspectorSections.swift */,
 				B4322DE958F9E2353026A60F /* OfflineCaptureView.swift */,
@@ -2716,6 +2727,7 @@
 				587FAB8399DF649A9AD13E81 /* MonitorModels.swift in Sources */,
 				64CCD907DD4F36558AA93C8D /* MonitorNotifier.swift in Sources */,
 				BB6E7D46FB1C1EEBD2BDC101 /* MonitorStore.swift in Sources */,
+				FE038075692A232F65605935 /* MultiSensorCaptureService.swift in Sources */,
 				026684C1824FD21E6EBE8155 /* NATProfile.swift in Sources */,
 				9A3CD59BB2C298DF19A8B6F6 /* NativePing.swift in Sources */,
 				E560554BDCC7BF504F00B650 /* NativePingService.swift in Sources */,
@@ -3055,6 +3067,8 @@
 				F26B375643647C7CBB2D87B8 /* MonitorReliabilityTests.swift in Sources */,
 				4C5B7504A4CBFB6A869490EA /* MonitorStore.swift in Sources */,
 				AFA67C9080097FF99172411A /* MonitorTests.swift in Sources */,
+				80B23070FFB0BDDF55A6BEE4 /* MultiSensorCaptureService.swift in Sources */,
+				69DFB4CF99B122FE69D0E794 /* MultiSensorMergeTests.swift in Sources */,
 				B808B3136B0AF25D3297B96E /* NATProfile.swift in Sources */,
 				6B2FB218B4D54BFB6179D9F8 /* NATProfileTests.swift in Sources */,
 				59672914F6C97D01B6F2A257 /* NativePing.swift in Sources */,
@@ -3482,6 +3496,8 @@
 				E4530EAEB9EA69A3AA00035F /* MonitorViewModel.swift in Sources */,
 				B42C43E34D45494983F2E2B2 /* MultiFloorSurveyView.swift in Sources */,
 				88748C02A7C7B1EB84148DEE /* MultiNetworkComparisonView.swift in Sources */,
+				9E797A82E9AE7CAEA743A6B7 /* MultiSensorCaptureService.swift in Sources */,
+				E5E0FA35EF350F201703718C /* MultiSensorCaptureSheet.swift in Sources */,
 				E3830F76F0896693AE976259 /* NATProfile.swift in Sources */,
 				4FFB7B325619BB66FC495993 /* NATToolModel.swift in Sources */,
 				0795C8B5503E4440505D5C4E /* NATToolView.swift in Sources */,

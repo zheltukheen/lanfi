@@ -180,7 +180,7 @@ Updated 21 November 2026 (LanFi 5.6.16), against common macOS tools:
 | Persistent monitor: history, events, roaming failures and alerts | ✅ | Partial | Partial | — |
 | Interfaces / gateway / DNS monitor | ✅ | Partial | — | Partial |
 | Per-process traffic, open connections and per-app history | ✅ | — | Partial | — |
-| Remote sensors over SSH and controller inventory (UniFi, Meraki, SNMP) | ✅ | ✅ (Pro) | — | — |
+| Remote sensors over SSH, multi-sensor capture merged into one pcapng, and controller inventory (UniFi, Meraki, SNMP) | ✅ | ✅ (Pro) | — | — |
 | CSV + JSON export | ✅ | CSV/PCAP | CSV/PDF | — |
 | Raw information elements, EHT/MLO decoding | ✅ | ✅ (Pro) | — | Partial |
 | Offline pcap/pcapng capture analysis | ✅ | ✅ | — | ✅ |

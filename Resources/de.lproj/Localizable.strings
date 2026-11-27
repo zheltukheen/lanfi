@@ -1942,3 +1942,18 @@
 "Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "Ohne Zugriff laufen Scans weiter, aber Namen und Herstellererkennung bleiben verborgen und Monitor-Ereignisse sind ungenauer.";
 "Continue without" = "Ohne fortfahren";
 "Location access is off — Wi-Fi names may stay hidden." = "Standortzugriff ist aus — Wi-Fi-Namen bleiben eventuell verborgen.";
+
+"Capture on all sensors" = "Auf allen Sensoren erfassen";
+"Runs one tcpdump per sensor and merges the captures into a single pcapng with one interface per sensor, so Wireshark shows which radio saw each frame." = "Startet ein tcpdump pro Sensor und führt die Aufzeichnungen zu einer pcapng-Datei mit einer Schnittstelle pro Sensor zusammen, sodass Wireshark zeigt, welches Funkgerät jedes Frame gesehen hat.";
+"Monitor mode / radiotap" = "Monitor-Modus / Radiotap";
+"Captures run one sensor at a time; a failed sensor is skipped and reported instead of discarding the rest." = "Die Sensoren werden nacheinander erfasst; ein fehlgeschlagener Sensor wird übersprungen und gemeldet, statt den Rest zu verwerfen.";
+"Sensors" = "Sensoren";
+"Merged %lld frames from %lld sensors." = "%lld Frames von %lld Sensoren zusammengeführt.";
+"No sensor produced a capture. See the failures below." = "Kein Sensor hat Frames geliefert. Siehe Fehler unten.";
+"Sensors that failed" = "Fehlgeschlagene Sensoren";
+"Capturing %lld of %lld · %@" = "Erfasse %lld von %lld · %@";
+"Start capture" = "Erfassung starten";
+"Capture on all…" = "Auf allen erfassen…";
+"Capture from every saved sensor and merge the files into one pcapng." = "Von jedem gespeicherten Sensor erfassen und die Dateien zu einer pcapng zusammenführen.";
+"Captured link type %lld, not 802.11. Turn monitor mode on, or pick the monitor interface." = "Erfasster Link-Typ %lld statt 802.11. Monitor-Modus einschalten oder die Monitor-Schnittstelle wählen.";
+"Reveal" = "Im Finder zeigen";

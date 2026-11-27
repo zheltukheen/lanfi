@@ -13,6 +13,12 @@
   showing signal and channels and the banner explains what stays hidden.
 
 ### Added
+- **Capture on all sensors, merged into one trace (G3).** Remote sensors can now
+  capture in one run: LanFi walks the saved sensors one at a time, reads each
+  pcap, and writes a single pcapng where every sensor is its own interface
+  (`if_name` = sensor name, `if_description` = host). Packets are ordered by
+  timestamp across sensors, so Wireshark shows which radio saw each frame and
+  an unreachable sensor is reported in the sheet without discarding the others.
 - **Switch port lookup (G15).** The LAN scanner can ask a switch where a device
   is plugged in: it walks the BRIDGE-MIB and Q-BRIDGE forwarding tables and the
   LLDP neighbours read-only, then shows the port, the VLAN (and its name) and

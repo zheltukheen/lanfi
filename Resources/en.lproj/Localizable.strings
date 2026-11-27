@@ -1943,3 +1943,18 @@
 "Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific." = "Without it scans still run, but names and vendor identification stay hidden and monitor events are less specific.";
 "Continue without" = "Continue without";
 "Location access is off — Wi-Fi names may stay hidden." = "Location access is off — Wi-Fi names may stay hidden.";
+
+"Capture on all sensors" = "Capture on all sensors";
+"Runs one tcpdump per sensor and merges the captures into a single pcapng with one interface per sensor, so Wireshark shows which radio saw each frame." = "Runs one tcpdump per sensor and merges the captures into a single pcapng with one interface per sensor, so Wireshark shows which radio saw each frame.";
+"Monitor mode / radiotap" = "Monitor mode / radiotap";
+"Captures run one sensor at a time; a failed sensor is skipped and reported instead of discarding the rest." = "Captures run one sensor at a time; a failed sensor is skipped and reported instead of discarding the rest.";
+"Sensors" = "Sensors";
+"Merged %lld frames from %lld sensors." = "Merged %lld frames from %lld sensors.";
+"No sensor produced a capture. See the failures below." = "No sensor produced a capture. See the failures below.";
+"Sensors that failed" = "Sensors that failed";
+"Capturing %lld of %lld · %@" = "Capturing %lld of %lld · %@";
+"Start capture" = "Start capture";
+"Capture on all…" = "Capture on all…";
+"Capture from every saved sensor and merge the files into one pcapng." = "Capture from every saved sensor and merge the files into one pcapng.";
+"Captured link type %lld, not 802.11. Turn monitor mode on, or pick the monitor interface." = "Captured link type %lld, not 802.11. Turn monitor mode on, or pick the monitor interface.";
+"Reveal" = "Reveal";

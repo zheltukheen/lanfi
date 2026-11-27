@@ -11,6 +11,7 @@ struct RemoteSensorsView: View {
     @State private var editingSensor: RemoteSensor?
     @State private var autoRefresh = false
     @State private var showingRemoteCapture = false
+    @State private var showingMultiCapture = false
 
     private let store = RemoteSensorStore()
     private let embedded: Bool
@@ -65,6 +66,9 @@ struct RemoteSensorsView: View {
             if let selected {
                 RemoteCaptureSheet(sensor: selected)
             }
+        }
+        .sheet(isPresented: $showingMultiCapture) {
+            MultiSensorCaptureSheet(sensors: sensors)
         }
         .sheet(isPresented: $showingEditor) {
             RemoteSensorEditor(sensor: editingSensor) { sensor in
@@ -173,6 +177,13 @@ struct RemoteSensorsView: View {
                         .disabled(isScanning)
                     Button("Capture…") { showingRemoteCapture = true }
                         .disabled(isScanning)
+                    if sensors.count > 1 {
+                        Button("Capture on all…") { showingMultiCapture = true }
+                            .disabled(isScanning)
+                            .help(
+                                "Capture from every saved sensor and merge the files into one pcapng."
+                            )
+                    }
                     Button {
                         openTerminal(selected)
                     } label: {

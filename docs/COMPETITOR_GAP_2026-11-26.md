@@ -1,8 +1,8 @@
 # Competitor gap analysis — second pass, 26 November 2026
 
 Status: **active backlog**. Baseline: LanFi 5.6.34 (build 117). G1, G2, G4, G4b,
-G5, G6, G7, G8, G9, G10 and G15 shipped on 2026-11-26/27 and are marked below;
-the next slice is G3 (multi-sensor capture merged into one trace).
+G5, G6, G7, G8, G9, G10, G15 and G3 shipped on 2026-11-26/27 and are marked
+below; the next slice is G11 (spectrum recording and replay).
 
 This is the second pass. [`COMMERCIAL_GAP.md`](COMMERCIAL_GAP.md) asked *"can we
 sell this?"*; [`GAP_ANALYSIS_2026-11.md`](GAP_ANALYSIS_2026-11.md) asked *"what
@@ -62,7 +62,7 @@ code and `CHANGELOG.md`, not against the marketing table.
 | Capture file rotation, size cap, frame slicing | Airtool 2, LanFi | ✅ size cap + post-capture slicing | delivered |
 | Channel dwell control during capture, PSC-only 6 GHz | Airtool 2, LanFi | ✅ dwell hopping + PSC filter | delivered |
 | Live capture streamed into Wireshark | Airtool 2, LanFi | ✅ tails the file into Wireshark | delivered |
-| Multi-sensor / multi-adapter capture merged into one trace | Airtool 2, MetaGeek App, NetAlly | ◐ one remote sensor at a time | **G3** |
+| Multi-sensor / multi-adapter capture merged into one trace | Airtool 2, MetaGeek App, NetAlly | ✅ sequential capture across the saved sensors, merged into one pcapng with one interface per sensor | delivered (G3) |
 | Remote capture from a WLAN Pi over SSH | Airtool 2, LanFi | ✅ | parity |
 | Automatic sensor discovery on the LAN | Airtool 2 | — (manual host) | **G3b** |
 | Cloud upload of captures | Airtool 2 (CloudShark, Packets) | — | non-goal (privacy stance) |
@@ -201,6 +201,28 @@ connection benefit from the privileged helper (P4.1) and are not promised here.
 **Acceptance.** Two local pcapng fixtures with different interface blocks merge
 into one file that Wireshark and `PcapAnalyzer` both read, with the sensor name
 preserved on every packet; a missing sensor is reported as a partial result.
+
+**Delivered 2026-11-27.** `PcapFile` (in `LanFiCore`) reads classic pcap in both
+byte orders and both timestamp resolutions, and `PcapMerge` writes one pcapng
+section with an interface description block per source — `if_name` is the
+sensor name, `if_description` its `user@host` — and enhanced packet blocks that
+keep each packet on its own interface id. Packets are sorted by timestamp
+across sources, and `MergedCapture` keeps the sensor name per packet index so
+later analysis can attribute a frame. `MultiSensorCaptureService` runs the
+authorized ssh capture for each saved sensor in turn, parses and merges the
+results into one file, and reports a sensor that failed without throwing the
+others away; the **Capture on all sensors** sheet exposes the interface,
+duration, monitor mode and BPF filter, then names the frames and the sensors in
+the merged file.
+
+Not delivered: captures run sequentially, not in parallel (five simultaneous
+high-rate ssh captures still want the privileged helper, P4.1); the analyzer
+reads the merged file but does not yet show “seen by sensor X” on a client or a
+deauth event; and the merged trace is not opened automatically after it is
+written. No real sensor was captured here — the broadcaster state machine and
+the reader/writer are covered by `LanFiCoreTests.PcapMergeTests` and
+`Tests/MultiSensorMergeTests`, which merge two synthetic beacon captures and
+check that `PcapAnalyzer` reads every BSSID back.
 
 ### G4 — Decoded-field catalogue (P1, M)
 
@@ -623,8 +645,9 @@ G4 (field catalogue) and G7 (airtime attribution, legacy flag) shipped on
 2026-11-26 with G4b, G8 (client detail and signal locator) followed, G15
 (SNMP bridge/VLAN path and an authorized device inventory) shipped later the
 same day, and G10 (a reliability score over stored monitor data) closed the
-hardware-free items on 2026-11-27. The next slice is G3: multi-sensor capture
-merged into one annotated trace, which is the largest remaining parity gap.
+hardware-free items on 2026-11-27, and G3 (multi-sensor capture merged into one
+trace) followed. The next slice is G11: recording a spectrum sweep and replaying
+it against the Wi-Fi table.
 
 ## Sources
 
